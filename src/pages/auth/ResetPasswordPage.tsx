@@ -8,6 +8,8 @@ import { Card } from '../../components/ui/Card'
 import { Field } from '../../components/ui/Field'
 import { Input } from '../../components/ui/Input'
 import { PasswordInput } from '../../components/ui/PasswordInput'
+import { validateForm } from '../../lib/validation/validateForm'
+import { confirmPassword, email as emailValidator, otp, passwordPolicy, required } from '../../lib/validation/validators'
 
 export function ResetPasswordPage() {
   const navigate = useNavigate()
@@ -17,9 +19,24 @@ export function ResetPasswordPage() {
   const [confirmNewPassword, setConfirmNewPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
+    const errors = validateForm(
+      { email, token, newPassword, confirmNewPassword },
+      {
+        email: [required(), emailValidator()],
+        token: [otp()],
+        newPassword: [passwordPolicy()],
+        confirmNewPassword: [confirmPassword('newPassword')],
+      },
+    )
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      return
+    }
+    setFieldErrors({})
     setError(null)
     setSubmitting(true)
     try {
@@ -41,7 +58,7 @@ export function ResetPasswordPage() {
         </div>
       ) : null}
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Email">
+        <Field label="Email" error={fieldErrors.email}>
           <Input
             type="email"
             value={email}
@@ -51,13 +68,13 @@ export function ResetPasswordPage() {
             placeholder="ban@example.com"
           />
         </Field>
-        <Field label="Mã đặt lại mật khẩu">
+        <Field label="Mã đặt lại mật khẩu" error={fieldErrors.token}>
           <Input value={token} onChange={(event) => setToken(event.target.value)} required placeholder="Mã trong email" />
         </Field>
-        <Field label="Mật khẩu mới">
+        <Field label="Mật khẩu mới" error={fieldErrors.newPassword}>
           <PasswordInput value={newPassword} onChange={(event) => setNewPassword(event.target.value)} required autoComplete="new-password" />
         </Field>
-        <Field label="Xác nhận mật khẩu mới">
+        <Field label="Xác nhận mật khẩu mới" error={fieldErrors.confirmNewPassword}>
           <PasswordInput
             value={confirmNewPassword}
             onChange={(event) => setConfirmNewPassword(event.target.value)}
