@@ -551,7 +551,7 @@ git commit -m "feat: apply reusable validation to create teacher page"
 Run: `npm run lint && npm run build`
 Expected: cả hai pass, không lỗi.
 
-- [ ] **Step 2: Test thủ công 6 form (Docker dev, http://localhost:5173)**
+- [x] **Step 2: Test thủ công 6 form (Docker dev, http://localhost:5173)**
 
 Checklist:
 1. **Login** `/login`: bỏ trống email/password → lỗi "Trường này là bắt buộc." dưới từng field, không gọi API. Email sai định dạng → "Email không hợp lệ."
