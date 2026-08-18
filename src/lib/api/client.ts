@@ -16,6 +16,7 @@ interface RetriableConfig extends AxiosRequestConfig {
 const PUBLIC_PATHS = new Set<string>([
   '/api/auth/login',
   '/api/auth/refresh',
+  '/api/auth/logout',
   '/api/auth/register/request-otp',
   '/api/auth/register/verify-otp',
   '/api/auth/register/resend-otp',
@@ -65,9 +66,13 @@ http.interceptors.response.use(
       !config ||
       !response ||
       response.status !== 401 ||
-      isPublicPath(config.url ?? '') ||
-      (config as RetriableConfig)._retried === true
+      isPublicPath(config.url ?? '')
     ) {
+      return Promise.reject(error)
+    }
+    if ((config as RetriableConfig)._retried === true) {
+      tokenStore.clear()
+      unauthorizedHandler?.()
       return Promise.reject(error)
     }
     try {
