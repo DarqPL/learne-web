@@ -546,7 +546,7 @@ git commit -m "feat: apply reusable validation to create teacher page"
 
 **Files:** không có
 
-- [ ] **Step 1: Chạy lint + build toàn project**
+- [x] **Step 1: Chạy lint + build toàn project**
 
 Run: `npm run lint && npm run build`
 Expected: cả hai pass, không lỗi.
@@ -563,7 +563,7 @@ Checklist:
 
 Mỗi trường hợp: thấy lỗi dưới field, xác nhận trong Network tab KHÔNG có request API mới.
 
-- [ ] **Step 3: Cập nhật tiến độ docs (nếu cần)**
+- [x] **Step 3: Cập nhật tiến độ docs (nếu cần)**
 
 Trong `../docs/Docs_Capstone/Phase2_UI_Implementation.md` (submodule docs), thêm mục ghi chú validator tái sử dụng vào "Công Việc Đã Làm" nếu thấy phù hợp. Commit:
 
