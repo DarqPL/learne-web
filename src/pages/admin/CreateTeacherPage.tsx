@@ -5,6 +5,8 @@ import { Alert } from '../../components/ui/Alert'
 import { Button } from '../../components/ui/Button'
 import { Field } from '../../components/ui/Field'
 import { Input } from '../../components/ui/Input'
+import { validateForm } from '../../lib/validation/validateForm'
+import { email as emailValidator, fullName as fullNameValidator, required } from '../../lib/validation/validators'
 
 export function CreateTeacherPage() {
   const [email, setEmail] = useState('')
@@ -12,9 +14,22 @@ export function CreateTeacherPage() {
   const [info, setInfo] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
+    const errors = validateForm(
+      { email, fullName },
+      {
+        fullName: [fullNameValidator()],
+        email: [required(), emailValidator()],
+      },
+    )
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      return
+    }
+    setFieldErrors({})
     setError(null)
     setInfo(null)
     setSubmitting(true)
@@ -46,10 +61,10 @@ export function CreateTeacherPage() {
         </div>
       ) : null}
       <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <Field label="Họ và tên">
+        <Field label="Họ và tên" error={fieldErrors.fullName}>
           <Input value={fullName} onChange={(event) => setFullName(event.target.value)} required autoComplete="off" />
         </Field>
-        <Field label="Email">
+        <Field label="Email" error={fieldErrors.email}>
           <Input
             type="email"
             value={email}
