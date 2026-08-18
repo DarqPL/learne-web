@@ -10,6 +10,8 @@ import { Card } from '../../components/ui/Card'
 import { Field } from '../../components/ui/Field'
 import { Input } from '../../components/ui/Input'
 import { PasswordInput } from '../../components/ui/PasswordInput'
+import { validateForm } from '../../lib/validation/validateForm'
+import { email as emailValidator, required } from '../../lib/validation/validators'
 
 export function LoginPage() {
   const { login: setAuth } = useAuth()
@@ -18,12 +20,25 @@ export function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
 
   const message = (location.state as { message?: string } | null)?.message ?? null
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
+    const errors = validateForm(
+      { email, password },
+      {
+        email: [required(), emailValidator()],
+        password: [required()],
+      },
+    )
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      return
+    }
+    setFieldErrors({})
     setError(null)
     setSubmitting(true)
     try {
@@ -52,7 +67,7 @@ export function LoginPage() {
         </div>
       ) : null}
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Email">
+        <Field label="Email" error={fieldErrors.email}>
           <Input
             type="email"
             required
@@ -62,7 +77,7 @@ export function LoginPage() {
             autoComplete="email"
           />
         </Field>
-        <Field label="Mật khẩu">
+        <Field label="Mật khẩu" error={fieldErrors.password}>
           <PasswordInput
             required
             value={password}
