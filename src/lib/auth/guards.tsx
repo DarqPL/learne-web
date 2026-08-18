@@ -31,6 +31,20 @@ export function RequireRole({ role }: { role: UserRole }) {
   return <Outlet />
 }
 
+export function PublicOnly() {
+  const { user, isInitializing } = useAuth()
+  if (isInitializing) {
+    return <FullPageSpinner />
+  }
+  if (user) {
+    if (user.mustChangePassword) {
+      return <Navigate to="/change-password?forced=1" replace />
+    }
+    return <Navigate to={homePathFor(user.role)} replace />
+  }
+  return <Outlet />
+}
+
 export function RequirePasswordChange() {
   const { user } = useAuth()
   if (user?.mustChangePassword) {
@@ -43,6 +57,9 @@ export function RootRedirect() {
   const { user, isInitializing } = useAuth()
   if (isInitializing) {
     return <FullPageSpinner />
+  }
+  if (user && user.mustChangePassword) {
+    return <Navigate to="/change-password?forced=1" replace />
   }
   return <Navigate to={user ? homePathFor(user.role) : '/login'} replace />
 }

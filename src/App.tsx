@@ -1,5 +1,5 @@
 import { Route, Routes } from 'react-router-dom'
-import { RequireAuth, RequirePasswordChange, RequireRole, RootRedirect } from './lib/auth/guards'
+import { RequireAuth, RequirePasswordChange, RequireRole, PublicOnly, RootRedirect } from './lib/auth/guards'
 import { AuthLayout } from './layouts/AuthLayout'
 import { StudentLayout } from './layouts/StudentLayout'
 import { TeacherLayout } from './layouts/TeacherLayout'
@@ -18,11 +18,13 @@ import { NotFoundPage } from './pages/NotFoundPage'
 export default function App() {
   return (
     <Routes>
-      <Route element={<AuthLayout />}>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route element={<PublicOnly />}>
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+        </Route>
       </Route>
 
       <Route element={<RequireAuth />}>
