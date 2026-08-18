@@ -8,6 +8,8 @@ import { Card } from '../../components/ui/Card'
 import { Field } from '../../components/ui/Field'
 import { Input } from '../../components/ui/Input'
 import { PasswordInput } from '../../components/ui/PasswordInput'
+import { validateForm } from '../../lib/validation/validateForm'
+import { confirmPassword, email, fullName, otp as otpValidator, passwordPolicy, required } from '../../lib/validation/validators'
 
 interface RegistrationForm {
   fullName: string
@@ -23,6 +25,8 @@ const initialForm: RegistrationForm = {
   confirmPassword: '',
 }
 
+const emptyFieldErrors = {}
+
 export function RegisterPage() {
   const navigate = useNavigate()
   const [step, setStep] = useState<1 | 2>(1)
@@ -31,34 +35,29 @@ export function RegisterPage() {
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>(emptyFieldErrors)
 
   const setField = (name: keyof RegistrationForm, value: string) => {
     setForm((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const validateStep1 = (): string | null => {
-    if (form.fullName.trim().length === 0) {
-      return 'Vui lòng nhập họ và tên.'
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      return 'Email không hợp lệ.'
-    }
-    if (form.password.length < 8 || !/[a-zA-Z]/.test(form.password) || !/[0-9]/.test(form.password)) {
-      return 'Mật khẩu phải có ít nhất 8 ký tự và gồm cả chữ và số.'
-    }
-    if (form.password !== form.confirmPassword) {
-      return 'Mật khẩu xác nhận không khớp.'
-    }
-    return null
+    setFieldErrors((prev) => ({ ...prev, [name]: '' }))
   }
 
   const handleRequestOtp = async (event: FormEvent) => {
     event.preventDefault()
-    const validationError = validateStep1()
-    if (validationError) {
-      setError(validationError)
+    const errors = validateForm(
+      { fullName: form.fullName, email: form.email, password: form.password, confirmPassword: form.confirmPassword },
+      {
+        fullName: [fullName()],
+        email: [required(), email()],
+        password: [passwordPolicy()],
+        confirmPassword: [confirmPassword('password')],
+      },
+    )
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
       return
     }
+    setFieldErrors(emptyFieldErrors)
     setError(null)
     setInfo(null)
     setSubmitting(true)
@@ -88,6 +87,12 @@ export function RegisterPage() {
 
   const handleVerifyOtp = async (event: FormEvent) => {
     event.preventDefault()
+    const errors = validateForm({ otp }, { otp: [otpValidator()] })
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      return
+    }
+    setFieldErrors(emptyFieldErrors)
     setError(null)
     setSubmitting(true)
     try {
@@ -118,7 +123,7 @@ export function RegisterPage() {
           </div>
         ) : null}
         <form onSubmit={handleVerifyOtp} className="space-y-4">
-          <Field label="Mã OTP (6 chữ số)">
+          <Field label="Mã OTP (6 chữ số)" error={fieldErrors.otp}>
             <Input
               inputMode="numeric"
               maxLength={6}
@@ -165,10 +170,10 @@ export function RegisterPage() {
         </div>
       ) : null}
       <form onSubmit={handleRequestOtp} className="space-y-4">
-        <Field label="Họ và tên">
+        <Field label="Họ và tên" error={fieldErrors.fullName}>
           <Input value={form.fullName} onChange={(event) => setField('fullName', event.target.value)} required autoComplete="name" />
         </Field>
-        <Field label="Email">
+        <Field label="Email" error={fieldErrors.email}>
           <Input
             type="email"
             value={form.email}
@@ -178,10 +183,10 @@ export function RegisterPage() {
             placeholder="ban@example.com"
           />
         </Field>
-        <Field label="Mật khẩu">
+        <Field label="Mật khẩu" error={fieldErrors.password}>
           <PasswordInput value={form.password} onChange={(event) => setField('password', event.target.value)} required autoComplete="new-password" />
         </Field>
-        <Field label="Xác nhận mật khẩu">
+        <Field label="Xác nhận mật khẩu" error={fieldErrors.confirmPassword}>
           <PasswordInput
             value={form.confirmPassword}
             onChange={(event) => setField('confirmPassword', event.target.value)}

@@ -7,15 +7,24 @@ import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { Field } from '../../components/ui/Field'
 import { Input } from '../../components/ui/Input'
+import { validateForm } from '../../lib/validation/validateForm'
+import { email as emailValidator, required } from '../../lib/validation/validators'
 
 export function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [info, setInfo] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
+    const errors = validateForm({ email }, { email: [required(), emailValidator()] })
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      return
+    }
+    setFieldErrors({})
     setError(null)
     setSubmitting(true)
     try {
@@ -42,7 +51,7 @@ export function ForgotPasswordPage() {
         </div>
       ) : null}
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Email">
+        <Field label="Email" error={fieldErrors.email}>
           <Input
             type="email"
             value={email}
