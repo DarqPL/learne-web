@@ -8,6 +8,8 @@ import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { Field } from '../../components/ui/Field'
 import { PasswordInput } from '../../components/ui/PasswordInput'
+import { validateForm } from '../../lib/validation/validateForm'
+import { confirmPassword, passwordPolicy, required } from '../../lib/validation/validators'
 
 export function ChangePasswordPage() {
   const { logout: clearAuth } = useAuth()
@@ -18,10 +20,24 @@ export function ChangePasswordPage() {
   const [newPassword, setNewPassword] = useState('')
   const [confirmNewPassword, setConfirmNewPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
+    const errors = validateForm(
+      { currentPassword, newPassword, confirmNewPassword },
+      {
+        currentPassword: [required()],
+        newPassword: [passwordPolicy()],
+        confirmNewPassword: [confirmPassword('newPassword')],
+      },
+    )
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      return
+    }
+    setFieldErrors({})
     setError(null)
     setSubmitting(true)
     try {
@@ -57,7 +73,7 @@ export function ChangePasswordPage() {
           </div>
         ) : null}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label="Mật khẩu hiện tại">
+          <Field label="Mật khẩu hiện tại" error={fieldErrors.currentPassword}>
             <PasswordInput
               value={currentPassword}
               onChange={(event) => setCurrentPassword(event.target.value)}
@@ -65,10 +81,10 @@ export function ChangePasswordPage() {
               autoComplete="current-password"
             />
           </Field>
-          <Field label="Mật khẩu mới">
+          <Field label="Mật khẩu mới" error={fieldErrors.newPassword}>
             <PasswordInput value={newPassword} onChange={(event) => setNewPassword(event.target.value)} required autoComplete="new-password" />
           </Field>
-          <Field label="Xác nhận mật khẩu mới">
+          <Field label="Xác nhận mật khẩu mới" error={fieldErrors.confirmNewPassword}>
             <PasswordInput
               value={confirmNewPassword}
               onChange={(event) => setConfirmNewPassword(event.target.value)}
