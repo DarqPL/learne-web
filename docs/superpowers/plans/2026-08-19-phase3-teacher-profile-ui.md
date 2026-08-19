@@ -1,6 +1,6 @@
 # Phase 3 Frontend: Teacher Profile & Password Validation Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Bổ sung validate client-side cho form đổi mật khẩu (mật khẩu mới không trùng mật khẩu hiện tại) và xây dựng 3 UI Phase 3: hồ sơ giảng viên, danh sách giảng viên và chi tiết giảng viên cho học viên.
 
@@ -31,6 +31,14 @@
 - `docs/Docs_Capstone/Project_Plan_Trello_Kanban.md` — cập nhật tiến độ Phase 3 (submodule docs)
 - `docs/Docs_Capstone/Phase2_UI_Implementation.md` — thêm ghi chú Phase 3 UI (submodule docs)
 
+## Deviations Ghi Nhận Khi Thực Thi
+
+1. **Task 7 — TeacherProfilePage thiếu load khi mount:** code mẫu trong plan không gọi `load()` khi mount (thiếu `useEffect`), trang sẽ treo Spinner mãi. Đã sửa bằng cách inline fetch vào effect với cờ `cancelled` (pattern của `AuthProvider.tsx`), giữ `load` cho nút "Thử lại" (commit `fix: load teacher profile on mount`).
+2. **Task 8 — TeacherListPage:** `useEffect(() => { void load() }, [])` vi phạm rule lint error-level `react-hooks/set-state-in-effect` (vì `load()` gọi `setError(null)` đồng bộ). Đã inline fetch vào effect, bỏ `load` (không cần nút retry). Ngoài ra code mẫu có lỗi hiển thị: khi fetch fail, `teachers` vẫn `null` → Spinner xoay mãi bên dưới Alert. Đã sửa bằng early-return `if (error)` (commit `fix: hide spinner when teacher list fails to load`).
+3. **Task 9 — TeacherDetailPage:** `setError('Không tìm thấy giảng viên.')` đồng bộ trong effect vi phạm `react-hooks/set-state-in-effect`. Đã chuyển kiểm tra `Number.isInteger` ra ngoài effect (`hasInvalidId`), effect early-return, render branch `if (error || hasInvalidId)` với `{error ?? 'Không tìm thấy giảng viên.'}` — hành vi giữ nguyên.
+4. **Task 3 — line ending:** implementer viết file CRLF → diff toàn file; đã normalize về LF và amend commit thành pure append.
+5. Tất cả commit đều pass `npm run lint` (0 error) và `npm run build`.
+
 ---
 
 ### Task 1: Thêm validators mới
@@ -38,7 +46,7 @@
 **Files:**
 - Modify: `src/lib/validation/validators.ts`
 
-- [ ] **Step 1: Thêm 3 validator vào cuối file**
+- [x] **Step 1: Thêm 3 validator vào cuối file**
 
 Thêm vào cuối `src/lib/validation/validators.ts`:
 
@@ -67,12 +75,12 @@ export function numberRange(
 }
 ```
 
-- [ ] **Step 2: Verify build**
+- [x] **Step 2: Verify build**
 
 Run: `npm run build`
 Expected: pass (tsc + vite), không lỗi.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/lib/validation/validators.ts
@@ -86,7 +94,7 @@ git commit -m "feat: add notEqualTo, maxLength and numberRange validators"
 **Files:**
 - Modify: `src/pages/auth/ChangePasswordPage.tsx:12` (import) và `:33` (rule)
 
-- [ ] **Step 1: Cập nhật import**
+- [x] **Step 1: Cập nhật import**
 
 Trong `src/pages/auth/ChangePasswordPage.tsx`, dòng 12 hiện tại:
 
@@ -100,7 +108,7 @@ import { confirmPassword, passwordPolicy, required } from '../../lib/validation/
 import { confirmPassword, notEqualTo, passwordPolicy, required } from '../../lib/validation/validators'
 ```
 
-- [ ] **Step 2: Cập nhật rule newPassword**
+- [x] **Step 2: Cập nhật rule newPassword**
 
 Dòng 32, rule hiện tại:
 
@@ -114,12 +122,12 @@ Dòng 32, rule hiện tại:
         newPassword: [passwordPolicy(), notEqualTo('currentPassword')],
 ```
 
-- [ ] **Step 3: Verify build**
+- [x] **Step 3: Verify build**
 
 Run: `npm run build`
 Expected: pass, không lỗi.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/pages/auth/ChangePasswordPage.tsx
@@ -133,7 +141,7 @@ git commit -m "feat: prevent new password equal to current password in change pa
 **Files:**
 - Modify: `src/lib/api/types.ts`
 
-- [ ] **Step 1: Thêm types vào cuối file**
+- [x] **Step 1: Thêm types vào cuối file**
 
 Thêm vào cuối `src/lib/api/types.ts`:
 
@@ -169,7 +177,7 @@ export interface UpdateTeacherProfileRequest {
 
 Lưu ý: `avatarUrl`/`introductionVideoUrl` optional vì backend không serialize null fields.
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add src/lib/api/types.ts
@@ -183,7 +191,7 @@ git commit -m "feat: add teacher profile types"
 **Files:**
 - Create: `src/lib/api/teacherApi.ts`
 
-- [ ] **Step 1: Tạo file**
+- [x] **Step 1: Tạo file**
 
 Tạo `src/lib/api/teacherApi.ts`:
 
@@ -208,12 +216,12 @@ export function getTeacherDetail(teacherId: number) {
 }
 ```
 
-- [ ] **Step 2: Verify build**
+- [x] **Step 2: Verify build**
 
 Run: `npm run build`
 Expected: pass, không lỗi.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/lib/api/teacherApi.ts
@@ -227,7 +235,7 @@ git commit -m "feat: add teacher profile api functions"
 **Files:**
 - Create: `src/components/ui/Textarea.tsx`
 
-- [ ] **Step 1: Tạo file**
+- [x] **Step 1: Tạo file**
 
 Tạo `src/components/ui/Textarea.tsx` (theo pattern `Input.tsx`, chỉ thêm `rows` mặc định):
 
@@ -244,12 +252,12 @@ export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTex
 }
 ```
 
-- [ ] **Step 2: Verify build**
+- [x] **Step 2: Verify build**
 
 Run: `npm run build`
 Expected: pass, không lỗi.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/components/ui/Textarea.tsx
@@ -263,7 +271,7 @@ git commit -m "feat: add textarea component"
 **Files:**
 - Create: `src/components/ui/Avatar.tsx`
 
-- [ ] **Step 1: Tạo file**
+- [x] **Step 1: Tạo file**
 
 Tạo `src/components/ui/Avatar.tsx`:
 
@@ -303,12 +311,12 @@ export function Avatar({ name, url, size = 'md' }: AvatarProps) {
 }
 ```
 
-- [ ] **Step 2: Verify build**
+- [x] **Step 2: Verify build**
 
 Run: `npm run build`
 Expected: pass, không lỗi.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/components/ui/Avatar.tsx
@@ -322,7 +330,7 @@ git commit -m "feat: add avatar component with initials fallback"
 **Files:**
 - Create: `src/pages/teacher/TeacherProfilePage.tsx`
 
-- [ ] **Step 1: Tạo file**
+- [x] **Step 1: Tạo file**
 
 Tạo `src/pages/teacher/TeacherProfilePage.tsx`:
 
@@ -542,12 +550,12 @@ export function TeacherProfilePage() {
 }
 ```
 
-- [ ] **Step 2: Verify build**
+- [x] **Step 2: Verify build**
 
 Run: `npm run build`
 Expected: pass, không lỗi.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/pages/teacher/TeacherProfilePage.tsx
@@ -561,7 +569,7 @@ git commit -m "feat: add teacher profile page with view and edit modes"
 **Files:**
 - Create: `src/pages/student/TeacherListPage.tsx`
 
-- [ ] **Step 1: Tạo file**
+- [x] **Step 1: Tạo file**
 
 Tạo `src/pages/student/TeacherListPage.tsx`:
 
@@ -636,12 +644,12 @@ export function TeacherListPage() {
 }
 ```
 
-- [ ] **Step 2: Verify build**
+- [x] **Step 2: Verify build**
 
 Run: `npm run build`
 Expected: pass, không lỗi.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/pages/student/TeacherListPage.tsx
@@ -655,7 +663,7 @@ git commit -m "feat: add student teacher list page"
 **Files:**
 - Create: `src/pages/student/TeacherDetailPage.tsx`
 
-- [ ] **Step 1: Tạo file**
+- [x] **Step 1: Tạo file**
 
 Tạo `src/pages/student/TeacherDetailPage.tsx`:
 
@@ -750,12 +758,12 @@ export function TeacherDetailPage() {
 }
 ```
 
-- [ ] **Step 2: Verify build**
+- [x] **Step 2: Verify build**
 
 Run: `npm run build`
 Expected: pass, không lỗi.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/pages/student/TeacherDetailPage.tsx
@@ -770,7 +778,7 @@ git commit -m "feat: add student teacher detail page"
 - Modify: `src/App.tsx`
 - Modify: `src/lib/auth/routes.ts`
 
-- [ ] **Step 1: Cập nhật imports trong App.tsx**
+- [x] **Step 1: Cập nhật imports trong App.tsx**
 
 Trong `src/App.tsx`, thêm imports sau dòng 14 (`CreateTeacherPage` import):
 
@@ -780,7 +788,7 @@ import { TeacherListPage } from './pages/student/TeacherListPage'
 import { TeacherDetailPage } from './pages/student/TeacherDetailPage'
 ```
 
-- [ ] **Step 2: Thêm route Teacher profile**
+- [x] **Step 2: Thêm route Teacher profile**
 
 Trong `src/App.tsx`, block TeacherLayout (dòng 38-42), sau dòng 40 (`/teacher` route):
 
@@ -793,7 +801,7 @@ Trong `src/App.tsx`, block TeacherLayout (dòng 38-42), sau dòng 40 (`/teacher`
           </Route>
 ```
 
-- [ ] **Step 3: Thêm route Student list + detail**
+- [x] **Step 3: Thêm route Student list + detail**
 
 Trong `src/App.tsx`, block StudentLayout (dòng 33-37), sau dòng 35 (`/student` route):
 
@@ -807,7 +815,7 @@ Trong `src/App.tsx`, block StudentLayout (dòng 33-37), sau dòng 35 (`/student`
           </Route>
 ```
 
-- [ ] **Step 4: Cập nhật navItemsFor trong routes.ts**
+- [x] **Step 4: Cập nhật navItemsFor trong routes.ts**
 
 Trong `src/lib/auth/routes.ts`, sửa `navItemsFor`:
 
@@ -833,12 +841,12 @@ export function navItemsFor(role: UserRole): NavItem[] {
 }
 ```
 
-- [ ] **Step 5: Verify build**
+- [x] **Step 5: Verify build**
 
 Run: `npm run build`
 Expected: pass, không lỗi.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/App.tsx src/lib/auth/routes.ts
@@ -851,12 +859,12 @@ git commit -m "feat: add teacher profile and teacher list routes with nav"
 
 **Files:** không có (chạy lệnh)
 
-- [ ] **Step 1: Chạy lint + build toàn project**
+- [x] **Step 1: Chạy lint + build toàn project**
 
 Run: `npm run lint && npm run build`
 Expected: cả hai pass, không lỗi.
 
-- [ ] **Step 2: Test thủ công bằng Playwright (Docker stack đang chạy)**
+- [x] **Step 2: Test thủ công bằng Playwright (Docker stack đang chạy)**
 
 Chạy script kiểm tra ở `C:\Users\Admin\AppData\Local\Temp\opencode\test_phase3.py` (tạo mới, xem mô tả dưới). Cần stack Docker dev đang chạy (frontend :5173, backend :8080).
 
@@ -1001,7 +1009,7 @@ print(f'\n===== {passed}/{len(RESULTS)} PASSED =====')
 
 Lưu ý: script dùng thư viện `requests` của Python — kiểm tra cài đặt: `python -c "import requests"`. Nếu chưa có, chạy `pip install requests` trước.
 
-- [ ] **Step 3: Cập nhật docs tiến độ**
+- [x] **Step 3: Cập nhật docs tiến độ**
 
 Trong submodule docs (`C:\baobao\KLTN\learne-platform\docs`), cập nhật file `Docs_Capstone/Project_Plan_Trello_Kanban.md`:
 
@@ -1011,7 +1019,7 @@ Trong submodule docs (`C:\baobao\KLTN\learne-platform\docs`), cập nhật file 
   - Đã xây dựng UI danh sách giảng viên tại `/student/teachers` (grid card) và chi tiết giảng viên tại `/student/teachers/:id` dựa trên API `GET /api/teachers` và `GET /api/teachers/{teacherId}`.
 - Trong `#### Đang Làm Tiếp Theo`, bỏ mục "Hoàn thiện nốt validate client-side cho form đổi mật khẩu..." và cập nhật mục UI còn lại.
 
-- [ ] **Step 4: Commit docs**
+- [x] **Step 4: Commit docs**
 
 ```bash
 cd C:/baobao/KLTN/learne-platform/docs
@@ -1019,7 +1027,7 @@ git add Docs_Capstone/Project_Plan_Trello_Kanban.md Docs_Capstone/Phase2_UI_Impl
 git commit -m "docs: update phase 3 teacher profile UI progress"
 ```
 
-- [ ] **Step 5: Commit plan tick trong frontend**
+- [x] **Step 5: Commit plan tick trong frontend**
 
 ```bash
 cd C:/baobao/KLTN/learne-platform/frontend
