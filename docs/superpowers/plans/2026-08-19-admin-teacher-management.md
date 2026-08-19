@@ -59,7 +59,7 @@ Expected: `BOM=False CRLF=0`
 - Modify: `C:\baobao\KLTN\learne-platform\backend\src\main\java\com\learne\backend\domain\auth\UserRepository.java`
 - Create: `C:\baobao\KLTN\learne-platform\backend\src\main\java\com\learne\backend\admin\user\AdminTeacherResponse.java`
 
-- [ ] **Step 1: Thêm method vào `UserRepository`**
+- [x] **Step 1: Thêm method vào `UserRepository`**
 
 Sửa `src/main/java/com/learne/backend/domain/auth/UserRepository.java` thành nội dung:
 
@@ -77,7 +77,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 }
 ```
 
-- [ ] **Step 2: Tạo DTO `AdminTeacherResponse`**
+- [x] **Step 2: Tạo DTO `AdminTeacherResponse`**
 
 Tạo file `src/main/java/com/learne/backend/admin/user/AdminTeacherResponse.java`:
 
@@ -110,14 +110,14 @@ public record AdminTeacherResponse(
 }
 ```
 
-- [ ] **Step 3: Verify line ending**
+- [x] **Step 3: Verify line ending**
 
 ```powershell
 $b = [System.IO.File]::ReadAllBytes("C:\baobao\KLTN\learne-platform\backend\src\main\java\com\learne\backend\domain\auth\UserRepository.java"); $s = [System.Text.Encoding]::UTF8.GetString($b); "BOM=$($b[0] -eq 0xEF) CRLF=$(([regex]::Matches($s, "`r`n")).Count)"
 ```
 Expected: `BOM=False CRLF=0`. Làm tương tự cho `AdminTeacherResponse.java`.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/main/java/com/learne/backend/domain/auth/UserRepository.java src/main/java/com/learne/backend/admin/user/AdminTeacherResponse.java
@@ -132,7 +132,7 @@ git commit -m "feat: add repository query and admin teacher response DTO"
 - Modify: `C:\baobao\KLTN\learne-platform\backend\src\main\java\com\learne\backend\admin\user\AdminUserService.java`
 - Modify: `C:\baobao\KLTN\learne-platform\backend\src\main\java\com\learne\backend\admin\user\AdminUserController.java`
 
-- [ ] **Step 1: Thêm `listTeachers()` vào `AdminUserService`**
+- [x] **Step 1: Thêm `listTeachers()` vào `AdminUserService`**
 
 Trong `AdminUserService.java`:
 - Thêm import: `com.learne.backend.teacher.profile.TeacherProfile`, `com.learne.backend.teacher.profile.TeacherProfileRepository`, `java.util.List`.
@@ -149,7 +149,7 @@ Trong `AdminUserService.java`:
     }
 ```
 
-- [ ] **Step 2: Thêm endpoint vào `AdminUserController`**
+- [x] **Step 2: Thêm endpoint vào `AdminUserController`**
 
 Trong `AdminUserController.java`:
 - Thêm imports: `org.springframework.web.bind.annotation.GetMapping`, `java.util.List`.
@@ -162,7 +162,7 @@ Trong `AdminUserController.java`:
     }
 ```
 
-- [ ] **Step 3: Verify line ending + compile**
+- [x] **Step 3: Verify line ending + compile**
 
 ```powershell
 $b = [System.IO.File]::ReadAllBytes("C:\baobao\KLTN\learne-platform\backend\src\main\java\com\learne\backend\admin\user\AdminUserService.java"); $s = [System.Text.Encoding]::UTF8.GetString($b); "BOM=$($b[0] -eq 0xEF) CRLF=$(([regex]::Matches($s, "`r`n")).Count)"
@@ -174,7 +174,7 @@ Expected: `BOM=False CRLF=0`. Làm tương tự cho `AdminUserController.java`. 
 ```
 Expected: BUILD SUCCESS (compile chưa có test mới vẫn pass).
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/main/java/com/learne/backend/admin/user/AdminUserService.java src/main/java/com/learne/backend/admin/user/AdminUserController.java
@@ -188,7 +188,7 @@ git commit -m "feat: add admin teacher list endpoint"
 **Files:**
 - Modify: `C:\baobao\KLTN\learne-platform\backend\src\test\java\com\learne\backend\admin\user\AdminUserApiTests.java`
 
-- [ ] **Step 1: Thêm `TeacherProfileRepository` vào test class**
+- [x] **Step 1: Thêm `TeacherProfileRepository` vào test class**
 
 Trong `AdminUserApiTests.java`:
 - Thêm import: `com.learne.backend.teacher.profile.TeacherProfile`, `com.learne.backend.teacher.profile.TeacherProfileRepository`.
@@ -201,7 +201,7 @@ Trong `AdminUserApiTests.java`:
 
 - Trong `@BeforeEach setUp()`, thêm `teacherProfileRepository.deleteAll();` TRƯỚC `userRepository.deleteAll();` (FK constraint).
 
-- [ ] **Step 2: Thêm import static `get`**
+- [x] **Step 2: Thêm import static `get`**
 
 Sửa import static:
 
@@ -210,7 +210,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 ```
 
-- [ ] **Step 3: Thêm test method `listTeachersRequiresAdminRole`**
+- [x] **Step 3: Thêm test method `listTeachersRequiresAdminRole`**
 
 ```java
     @Test
@@ -228,7 +228,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
     }
 ```
 
-- [ ] **Step 4: Thêm test method `adminCanListTeachersWithProfileStatus`**
+- [x] **Step 4: Thêm test method `adminCanListTeachersWithProfileStatus`**
 
 ```java
     @Test
@@ -263,21 +263,21 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
     }
 ```
 
-- [ ] **Step 5: Chạy test mới**
+- [x] **Step 5: Chạy test mới**
 
 ```powershell
 .\mvnw.cmd test -Dtest=AdminUserApiTests
 ```
 Expected: `Tests run: 12, Failures: 0, Errors: 0, Skipped: 0` (9 cũ + 2 mới + 1 lockUserRequiresAdminRole tồn tại sẵn... đếm lại theo test thực tế — yêu cầu: tất cả PASS). Nếu test fail → sửa implementation ở Task 2 rồi chạy lại.
 
-- [ ] **Step 6: Chạy full backend test suite**
+- [x] **Step 6: Chạy full backend test suite**
 
 ```powershell
 .\mvnw.cmd test
 ```
 Expected: `Tests run: 55, Failures: 0, Errors: 0, Skipped: 0` (53 + 2 mới).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/test/java/com/learne/backend/admin/user/AdminUserApiTests.java
@@ -292,7 +292,7 @@ git commit -m "test: add admin teacher list endpoint tests"
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\src\lib\api\types.ts`
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\lib\api\adminApi.ts`
 
-- [ ] **Step 1: Thêm type `AdminTeacher` vào `types.ts`**
+- [x] **Step 1: Thêm type `AdminTeacher` vào `types.ts`**
 
 Thêm vào cuối `src/lib/api/types.ts`:
 
@@ -308,7 +308,7 @@ export interface AdminTeacher {
 }
 ```
 
-- [ ] **Step 2: Tạo `adminApi.ts`**
+- [x] **Step 2: Tạo `adminApi.ts`**
 
 Tạo `src/lib/api/adminApi.ts`:
 
@@ -329,14 +329,14 @@ export function adminUnlockTeacher(userId: number) {
 }
 ```
 
-- [ ] **Step 3: Verify line ending**
+- [x] **Step 3: Verify line ending**
 
 ```powershell
 $b = [System.IO.File]::ReadAllBytes("C:\baobao\KLTN\learne-platform\frontend\src\lib\api\types.ts"); $s = [System.Text.Encoding]::UTF8.GetString($b); "BOM=$($b[0] -eq 0xEF) CRLF=$(([regex]::Matches($s, "`r`n")).Count)"
 ```
 Expected: `BOM=False CRLF=0`. Làm tương tự cho `adminApi.ts`.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/lib/api/types.ts src/lib/api/adminApi.ts
@@ -350,7 +350,7 @@ git commit -m "feat: add admin teacher api functions"
 **Files:**
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\pages\admin\AdminTeacherListPage.tsx`
 
-- [ ] **Step 1: Tạo file trang**
+- [x] **Step 1: Tạo file trang**
 
 Tạo `src/pages/admin/AdminTeacherListPage.tsx` với nội dung:
 
@@ -544,21 +544,21 @@ export function AdminTeacherListPage() {
 }
 ```
 
-- [ ] **Step 2: Verify line ending**
+- [x] **Step 2: Verify line ending**
 
 ```powershell
 $b = [System.IO.File]::ReadAllBytes("C:\baobao\KLTN\learne-platform\frontend\src\pages\admin\AdminTeacherListPage.tsx"); $s = [System.Text.Encoding]::UTF8.GetString($b); "BOM=$($b[0] -eq 0xEF) CRLF=$(([regex]::Matches($s, "`r`n")).Count)"
 ```
 Expected: `BOM=False CRLF=0`.
 
-- [ ] **Step 3: Lint + build**
+- [x] **Step 3: Lint + build**
 
 ```powershell
 npm.cmd run lint; if ($?) { npm.cmd run build }
 ```
 Expected: ESLint 0 error; `tsc -b && vite build` thành công.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/pages/admin/AdminTeacherListPage.tsx
@@ -573,7 +573,7 @@ git commit -m "feat: add admin teacher list page with lock and unlock actions"
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\src\App.tsx`
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\src\lib\auth\routes.ts`
 
-- [ ] **Step 1: Thêm route vào `App.tsx`**
+- [x] **Step 1: Thêm route vào `App.tsx`**
 
 - Thêm import: `import { AdminTeacherListPage } from './pages/admin/AdminTeacherListPage'`
 - Trong khối `RequireRole role="ADMIN"`, thêm dòng sau route `/admin/teachers/new`:
@@ -582,7 +582,7 @@ git commit -m "feat: add admin teacher list page with lock and unlock actions"
 <Route path="/admin/teachers" element={<AdminTeacherListPage />} />
 ```
 
-- [ ] **Step 2: Thêm nav item vào `routes.ts`**
+- [x] **Step 2: Thêm nav item vào `routes.ts`**
 
 Trong `navItemsFor`, case `ADMIN`, thêm item sau `Tạo giảng viên`:
 
@@ -590,14 +590,14 @@ Trong `navItemsFor`, case `ADMIN`, thêm item sau `Tạo giảng viên`:
 { label: 'Quản lý giảng viên', to: '/admin/teachers' },
 ```
 
-- [ ] **Step 3: Lint + build**
+- [x] **Step 3: Lint + build**
 
 ```powershell
 npm.cmd run lint; if ($?) { npm.cmd run build }
 ```
 Expected: ESLint 0 error; build thành công.
 
-- [ ] **Step 4: Verify line ending + commit**
+- [x] **Step 4: Verify line ending + commit**
 
 ```powershell
 $b = [System.IO.File]::ReadAllBytes("C:\baobao\KLTN\learne-platform\frontend\src\App.tsx"); $s = [System.Text.Encoding]::UTF8.GetString($b); "BOM=$($b[0] -eq 0xEF) CRLF=$(([regex]::Matches($s, "`r`n")).Count)"
@@ -615,14 +615,14 @@ git commit -m "feat: add admin teacher management route and nav item"
 
 **Files:** không có (git operations + docker)
 
-- [ ] **Step 1: Commit toàn bộ thay đổi chưa commit ở cả 2 submodule**
+- [x] **Step 1: Commit toàn bộ thay đổi chưa commit ở cả 2 submodule**
 
 ```bash
 git status --short
 ```
 Nếu còn file thay đổi chưa commit (trừ file ngoài scope), commit chúng với message phù hợp.
 
-- [ ] **Step 2: Khởi động Docker stack dev**
+- [x] **Step 2: Khởi động Docker stack dev**
 
 ```powershell
 docker compose -f infra/docker-compose.dev.yml up -d --build
@@ -630,7 +630,7 @@ docker compose -f infra/docker-compose.dev.yml up -d --build
 (workdir: `C:\baobao\KLTN\learne-platform\infra`)
 Expected: frontend 5173, backend 8080, mailpit 8025, postgres lên.
 
-- [ ] **Step 3: Chờ backend/frontend sẵn sàng**
+- [x] **Step 3: Chờ backend/frontend sẵn sàng**
 
 ```powershell
 Start-Sleep -Seconds 30
@@ -650,7 +650,7 @@ Nếu backend image không có code mới → build lại image backend trong `i
 **Files:**
 - Create: `C:\Users\Admin\AppData\Local\Temp\opencode\test_admin_manage.py`
 
-- [ ] **Step 1: Tạo script Playwright**
+- [x] **Step 1: Tạo script Playwright**
 
 Tạo `C:\Users\Admin\AppData\Local\Temp\opencode\test_admin_manage.py`:
 
@@ -751,14 +751,14 @@ LƯU Ý: `page.on("dialog", ...)` phải được đăng ký TRƯỚC khi bấm 
 page.on("dialog", lambda d: d.accept())
 ```
 
-- [ ] **Step 2: Kiểm tra Playwright + requests đã cài**
+- [x] **Step 2: Kiểm tra Playwright + requests đã cài**
 
 ```powershell
 python -c "import playwright, requests; print('ok')"
 ```
 Nếu thiếu: `pip install playwright requests; python -m playwright install chromium`.
 
-- [ ] **Step 3: Chạy test**
+- [x] **Step 3: Chạy test**
 
 ```powershell
 python test_admin_manage.py
@@ -768,7 +768,7 @@ Expected: tất cả `PASS` + `===== ALL PASSED =====`.
 
 LƯU Ý: cần 1 tài khoản Student seed sẵn (`student@learne.local` / `Student123`) — nếu chưa có, tạo qua UI đăng ký hoặc báo controller. Nếu dialog handler không nhận được sự kiện (Playwright default block), thêm `page.on("dialog", lambda d: d.accept())` ngay sau `browser.new_page()`.
 
-- [ ] **Step 4: Nếu test fail do `window.confirm` bị chặn**
+- [x] **Step 4: Nếu test fail do `window.confirm` bị chặn**
 
 Thay `window.confirm` trong `AdminTeacherListPage.tsx` bằng state xác nhận nội bộ nếu Playwright không accept được dialog. Verify lại lint + build sau khi sửa.
 
@@ -779,7 +779,7 @@ Thay `window.confirm` trong `AdminTeacherListPage.tsx` bằng state xác nhận 
 **Files:**
 - Modify: `C:\baobao\KLTN\learne-platform\docs\Docs_Capstone\Project_Plan_Trello_Kanban.md`
 
-- [ ] **Step 1: Cập nhật mục Phase 3 trong Kanban**
+- [x] **Step 1: Cập nhật mục Phase 3 trong Kanban**
 
 Trong `Docs_Capstone/Project_Plan_Trello_Kanban.md`, phần "Cập Nhật Tiến Độ Phase 3":
 - Thêm vào **Đã Hoàn Thành**:
@@ -800,7 +800,7 @@ Trong `Docs_Capstone/Project_Plan_Trello_Kanban.md`, phần "Cập Nhật Tiến
 
 - Cập nhật **Đang Làm Tiếp Theo**: xóa dòng "Tiếp tục phần UI còn lại của Phase 3 cho màn hình quản lý tài khoản giảng viên phía Admin..." (đã hoàn thành), giữ dòng còn lại nếu phù hợp.
 
-- [ ] **Step 2: Verify line ending + commit + push docs**
+- [x] **Step 2: Verify line ending + commit + push docs**
 
 ```powershell
 $b = [System.IO.File]::ReadAllBytes("C:\baobao\KLTN\learne-platform\docs\Docs_Capstone\Project_Plan_Trello_Kanban.md"); $s = [System.Text.Encoding]::UTF8.GetString($b); "BOM=$($b[0] -eq 0xEF) CRLF=$(([regex]::Matches($s, "`r`n")).Count)"
@@ -819,7 +819,7 @@ git push origin main
 
 **Files:** không có (git operations)
 
-- [ ] **Step 1: Chạy lại toàn bộ kiểm tra cuối**
+- [x] **Step 1: Chạy lại toàn bộ kiểm tra cuối**
 
 Backend:
 ```powershell
@@ -836,7 +836,7 @@ python test_admin_manage.py
 (workdir: `C:\Users\Admin\AppData\Local\Temp\opencode`)
 Tất cả phải PASS.
 
-- [ ] **Step 2: Review toàn bộ diff**
+- [x] **Step 2: Review toàn bộ diff**
 
 ```bash
 git -C C:\baobao\KLTN\learne-platform\frontend log --oneline main..HEAD
@@ -844,14 +844,14 @@ git -C C:\baobao\KLTN\learne-platform\backend log --oneline main..HEAD
 ```
 Xác nhận chỉ gồm các commit của feature này.
 
-- [ ] **Step 3: Push cả 2 nhánh submodule**
+- [x] **Step 3: Push cả 2 nhánh submodule**
 
 ```bash
 git -C C:\baobao\KLTN\learne-platform\frontend push -u origin feature/admin-teacher-management
 git -C C:\baobao\KLTN\learne-platform\backend push -u origin feature/admin-teacher-management
 ```
 
-- [ ] **Step 4: Báo user tạo PR trên GitHub**
+- [x] **Step 4: Báo user tạo PR trên GitHub**
 
 Trình bày: 2 PR cần tạo (backend + frontend), tiêu đề gợi ý `feat: admin teacher management`, test summary (backend 55/55, lint/build pass, Playwright pass), và nhắc: sau khi merge, GitHub Actions bot sẽ tự cập nhật pointer superproject như lần trước.
 
@@ -863,3 +863,13 @@ Trình bày: 2 PR cần tạo (backend + frontend), tiêu đề gợi ý `feat: 
 - **Type consistency:** `AdminTeacherResponse` (Java) ↔ `AdminTeacher` (TS) cùng 7 field. `adminListTeachers()` trả `AdminTeacher[]`. `adminLockTeacher`/`adminUnlockTeacher` nhận `userId` (đúng — endpoint lock/unlock nhận userId, không phải teacherId).
 - **YAGNI:** không phân trang, không tìm kiếm, không trang chi tiết Admin, không component Modal mới.
 - **Lưu ý thực thi:** có thể backend container Docker cần rebuild để lấy endpoint mới; nếu test thủ công fail vì điều này, build lại image backend. Playwright `page.on("dialog")` phải đăng ký trước khi bấm nút. Student seed `student@learne.local` cần tồn tại.
+
+## Deviation Notes (đã áp dụng khi thực thi — KHÔNG phải task)
+
+- **Task 4:** repo không có npm script `typecheck`; dùng `npx.cmd tsc --noEmit` để verify type thay thế.
+- **Task 8 (Playwright):** script gốc trong plan có lỗi thứ tự `page.on("dialog", ...)` đăng ký SAU khi click nút → đã đăng ký ngay sau `browser.new_page()`.
+- **Task 8:** check cuối "admin truy cập được trang quản lý" trong plan nằm SAU khi đã logout admin và login student (sẽ bị redirect) → đã đổi thành verify Student bị điều hướng khỏi `/admin/teachers`.
+- **Task 8:** tài khoản seed `student@learne.local` không tồn tại → đăng ký student mới qua UI flow OTP (đọc OTP từ Mailpit) thay vì dùng seed.
+- **Task 8:** tên giảng viên tạo mới phải unique theo timestamp (tránh trùng với teacher còn sót từ lần chạy trước gây strict-mode violation của `get_by_text`).
+- **Task 8:** giảng viên tạo mới có `mustChangePassword=true` (chưa đổi mật khẩu tạm) nên sau khi mở khóa badge hiển thị "Chưa đổi mật khẩu" chứ không phải "Đang hoạt động" như plan — assertion đã sửa cho đúng thực tế. Đồng thời giảng viên mới chưa hoàn tất hồ sơ nên không xuất hiện trong danh sách học viên; đã verify bằng giảng viên có hồ sơ hoàn tất sẵn có.
+- **Task 9:** docs submodule ở trạng thái detached HEAD tại `refs/heads/main` → checkout `main` trước khi commit + push.
