@@ -13,6 +13,7 @@ import { StudentDashboardPage } from './pages/student/StudentDashboardPage'
 import { TeacherDashboardPage } from './pages/teacher/TeacherDashboardPage'
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
 import { CreateTeacherPage } from './pages/admin/CreateTeacherPage'
+import { AdminTeacherListPage } from './pages/admin/AdminTeacherListPage'
 import { TeacherProfilePage } from './pages/teacher/TeacherProfilePage'
 import { TeacherListPage } from './pages/student/TeacherListPage'
 import { TeacherDetailPage } from './pages/student/TeacherDetailPage'
@@ -50,6 +51,7 @@ export default function App() {
             <Route element={<AdminLayout />}>
               <Route path="/admin" element={<AdminDashboardPage />} />
               <Route path="/admin/teachers/new" element={<CreateTeacherPage />} />
+              <Route path="/admin/teachers" element={<AdminTeacherListPage />} />
             </Route>
           </Route>
         </Route>
