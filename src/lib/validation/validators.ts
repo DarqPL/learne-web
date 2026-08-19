@@ -49,6 +49,6 @@ export function numberRange(
   return (value) => {
     if (value.trim() === '') return null
     const n = Number(value)
-    return Number.isFinite(n) && n >= min && n <= max ? null : message
+    return Number.isInteger(n) && n >= min && n <= max ? null : message
   }
 }
