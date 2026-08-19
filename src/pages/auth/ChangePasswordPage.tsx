@@ -9,7 +9,7 @@ import { Card } from '../../components/ui/Card'
 import { Field } from '../../components/ui/Field'
 import { PasswordInput } from '../../components/ui/PasswordInput'
 import { validateForm } from '../../lib/validation/validateForm'
-import { confirmPassword, passwordPolicy, required } from '../../lib/validation/validators'
+import { confirmPassword, notEqualTo, passwordPolicy, required } from '../../lib/validation/validators'
 
 export function ChangePasswordPage() {
   const { logout: clearAuth } = useAuth()
@@ -29,7 +29,7 @@ export function ChangePasswordPage() {
       { currentPassword, newPassword, confirmNewPassword },
       {
         currentPassword: [required()],
-        newPassword: [passwordPolicy()],
+        newPassword: [passwordPolicy(), notEqualTo('currentPassword')],
         confirmNewPassword: [confirmPassword('newPassword')],
       },
     )
