@@ -19,9 +19,15 @@ export interface NavItem {
 export function navItemsFor(role: UserRole): NavItem[] {
   switch (role) {
     case 'STUDENT':
-      return [{ label: 'Trang chủ', to: '/student' }]
+      return [
+        { label: 'Trang chủ', to: '/student' },
+        { label: 'Giảng viên', to: '/student/teachers' },
+      ]
     case 'TEACHER':
-      return [{ label: 'Dashboard', to: '/teacher' }]
+      return [
+        { label: 'Dashboard', to: '/teacher' },
+        { label: 'Hồ sơ', to: '/teacher/profile' },
+      ]
     case 'ADMIN':
       return [
         { label: 'Dashboard', to: '/admin' },
