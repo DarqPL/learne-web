@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { getApiErrorMessage } from '../../lib/api/client'
 import { getTeacherProfile, updateTeacherProfile } from '../../lib/api/teacherApi'
 import type { TeacherProfile } from '../../lib/api/types'
@@ -49,6 +49,23 @@ export function TeacherProfilePage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      try {
+        const response = await getTeacherProfile()
+        if (!cancelled) setProfile(response.data)
+      } catch (err) {
+        if (!cancelled) setLoadError(getApiErrorMessage(err, 'Không thể tải hồ sơ giảng viên.'))
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const startEdit = () => {
     if (!profile) return
