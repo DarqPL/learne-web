@@ -13,6 +13,9 @@ import { StudentDashboardPage } from './pages/student/StudentDashboardPage'
 import { TeacherDashboardPage } from './pages/teacher/TeacherDashboardPage'
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
 import { CreateTeacherPage } from './pages/admin/CreateTeacherPage'
+import { TeacherProfilePage } from './pages/teacher/TeacherProfilePage'
+import { TeacherListPage } from './pages/student/TeacherListPage'
+import { TeacherDetailPage } from './pages/student/TeacherDetailPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 
 export default function App() {
@@ -33,11 +36,14 @@ export default function App() {
           <Route element={<RequireRole role="STUDENT" />}>
             <Route element={<StudentLayout />}>
               <Route path="/student" element={<StudentDashboardPage />} />
+              <Route path="/student/teachers" element={<TeacherListPage />} />
+              <Route path="/student/teachers/:id" element={<TeacherDetailPage />} />
             </Route>
           </Route>
           <Route element={<RequireRole role="TEACHER" />}>
             <Route element={<TeacherLayout />}>
               <Route path="/teacher" element={<TeacherDashboardPage />} />
+              <Route path="/teacher/profile" element={<TeacherProfilePage />} />
             </Route>
           </Route>
           <Route element={<RequireRole role="ADMIN" />}>
