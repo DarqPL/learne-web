@@ -45,3 +45,13 @@ export interface UpdateTeacherProfileRequest {
   expertise: string
   yearsOfExperience: number
 }
+
+export interface AdminTeacher {
+  userId: number
+  fullName: string
+  email: string
+  locked: boolean
+  mustChangePassword: boolean
+  profileStatus: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | null
+  completed: boolean
+}
