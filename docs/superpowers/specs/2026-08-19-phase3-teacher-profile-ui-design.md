@@ -22,7 +22,7 @@ Hoàn thiện các việc còn lại đầu Phase 3 theo plan Kanban:
 ## Phạm Vi
 
 **Trong phạm vi:**
-- Validator mới `notEqualTo` + áp dụng vào `ChangePasswordPage`.
+- Validator mới `notEqualTo`, `maxLength`, `numberRange` + áp dụng `notEqualTo` vào `ChangePasswordPage`.
 - `Textarea` + `Avatar` components mới.
 - Types + `teacherApi.ts` cho 4 endpoint.
 - 3 trang UI: Teacher Profile (view+edit inline), Student teacher list, Student teacher detail.
@@ -41,8 +41,8 @@ Tuân theo pattern hiện có (feature-based, validator tự viết, component d
 
 ```
 src/
-  lib/validation/validators.ts      → + notEqualTo(referenceKey, message)
-  lib/api/types.ts                  → + TeacherProfile, TeacherProfileSummary
+  lib/validation/validators.ts      → + notEqualTo, maxLength, numberRange
+  lib/api/types.ts                  → + TeacherProfile, TeacherProfileSummary, UpdateTeacherProfileRequest
   lib/api/teacherApi.ts             → mới (4 hàm)
   components/ui/Textarea.tsx        → mới
   components/ui/Avatar.tsx          → mới
@@ -65,6 +65,29 @@ export function notEqualTo(
   message = 'Mật khẩu mới không được trùng mật khẩu hiện tại.',
 ): Validator {
   return (value, values) => (value === values[referenceKey] ? message : null)
+}
+```
+
+Bổ sung 2 validator dùng cho form profile (mirror backend `@Size`/`@Min`/`@Max`):
+
+```ts
+export function maxLength(
+  max: number,
+  message: string,
+): Validator {
+  return (value) => (value.length > max ? message : null)
+}
+
+export function numberRange(
+  min: number,
+  max: number,
+  message = `Giá trị phải từ ${min} đến ${max}.`,
+): Validator {
+  return (value) => {
+    if (value.trim() === '') return null // required() đảm nhận
+    const n = Number(value)
+    return Number.isFinite(n) && n >= min && n <= max ? null : message
+  }
 }
 ```
 
@@ -150,7 +173,10 @@ interface AvatarProps { name: string; url?: string; size?: 'sm' | 'md' | 'lg' }
   - Nút "Chỉnh sửa" → chuyển edit mode.
 - **Edit mode:**
   - Form (pattern CreateTeacherPage): Field+Textarea "Giới thiệu" (maxLength 2000), Field+Input "Chuyên môn" (maxLength 255), Field+Input number "Số năm kinh nghiệm" (min 0, max 80).
-  - Validate client-side mirror backend: required bio/expertise, range yearsOfExperience, max lengths; dùng `validateForm` + validators mới (cần thêm validator tương ứng cho bio/expertise — dùng `required` với message override hoặc `fullName`-style; đề xuất dùng `required('Vui lòng nhập giới thiệu.')` và `required('Vui lòng nhập chuyên môn.')`).
+  - Validate client-side mirror backend với `validateForm` + validators:
+    - `bio: [required('Vui lòng nhập giới thiệu.'), maxLength(2000, 'Giới thiệu tối đa 2000 ký tự.')]`
+    - `expertise: [required('Vui lòng nhập chuyên môn.'), maxLength(255, 'Chuyên môn tối đa 255 ký tự.')]`
+    - `yearsOfExperience: [required(), numberRange(0, 80)]` (state lưu string, chuyển `Number()` khi gọi API)
   - Lưu → `updateTeacherProfile` → thành công: Alert success + quay về view mode với dữ liệu mới; thất bại: `getApiErrorMessage`.
   - Nút "Hủy" → về view mode, không gửi API.
   - Avatar không nằm trong form (chỉ hiển thị view mode).
