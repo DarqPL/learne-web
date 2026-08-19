@@ -29,3 +29,26 @@ export function confirmPassword(
 export function otp(message = 'Mã OTP phải gồm đúng 6 chữ số.'): Validator {
   return (value) => (/^\d{6}$/.test(value) ? null : message)
 }
+
+export function notEqualTo(
+  referenceKey: string,
+  message = 'Mật khẩu mới không được trùng mật khẩu hiện tại.',
+): Validator {
+  return (value, values) => (value === values[referenceKey] ? message : null)
+}
+
+export function maxLength(max: number, message: string): Validator {
+  return (value) => (value.length > max ? message : null)
+}
+
+export function numberRange(
+  min: number,
+  max: number,
+  message = `Giá trị phải từ ${min} đến ${max}.`,
+): Validator {
+  return (value) => {
+    if (value.trim() === '') return null
+    const n = Number(value)
+    return Number.isFinite(n) && n >= min && n <= max ? null : message
+  }
+}
