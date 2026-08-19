@@ -20,6 +20,8 @@ export function TeacherDetailPage() {
     if (hasInvalidId) return
     let cancelled = false
     void (async () => {
+      setProfile(null)
+      setError(null)
       try {
         const response = await getTeacherDetail(teacherId)
         if (!cancelled) setProfile(response.data)
