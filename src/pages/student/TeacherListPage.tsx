@@ -27,14 +27,18 @@ export function TeacherListPage() {
     }
   }, [])
 
+  if (error) {
+    return (
+      <div>
+        <h1 className="mb-6 text-2xl font-bold text-gray-900">Đội ngũ giảng viên</h1>
+        <Alert>{error}</Alert>
+      </div>
+    )
+  }
+
   return (
     <div>
       <h1 className="mb-6 text-2xl font-bold text-gray-900">Đội ngũ giảng viên</h1>
-      {error ? (
-        <div className="mb-4">
-          <Alert>{error}</Alert>
-        </div>
-      ) : null}
       {teachers === null ? (
         <div className="flex justify-center py-16">
           <Spinner />
