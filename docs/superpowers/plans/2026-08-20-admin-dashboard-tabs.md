@@ -194,7 +194,7 @@ git commit -m "feat: remove admin nav items entirely"
 **Files:**
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\src\pages\admin\AdminTeacherListPage.tsx`
 
-- [ ] **Step 1: Thêm import `useNavigate` và `Button` (nếu chưa có)**
+- [x] **Step 1: Thêm import `useNavigate` và `Button` (nếu chưa có)**
 
 File hiện tại đã import `Button`. Thêm `useNavigate` vào import react-router-dom. Hiện tại file KHÔNG import react-router-dom — thêm dòng import đầu file:
 
@@ -204,7 +204,7 @@ import { useNavigate } from 'react-router-dom'
 
 Import `useEffect`, `useState` hiện có giữ nguyên.
 
-- [ ] **Step 2: Thêm `navigate` vào component**
+- [x] **Step 2: Thêm `navigate` vào component**
 
 Trong `export function AdminTeacherListPage() {`, thêm dòng đầu:
 
@@ -214,7 +214,7 @@ export function AdminTeacherListPage() {
   const [teachers, setTeachers] = useState<AdminTeacher[] | null>(null)
 ```
 
-- [ ] **Step 3: Tạo header dùng chung**
+- [x] **Step 3: Tạo header dùng chung**
 
 Thay 2 chỗ `<h1>` (nhánh error và nhánh chính) bằng một header dùng chung. Chèn một biến `header` ngay trước `if (error) {`:
 
@@ -245,21 +245,21 @@ Thay 2 chỗ `<h1>` (nhánh error và nhánh chính) bằng một header dùng c
 
 Lưu ý: xóa 2 `<h1 className="mb-6 text-2xl font-bold text-gray-900">Quản lý giảng viên</h1>` cũ (một ở nhánh error, một ở nhánh chính) — thay bằng `{header}`.
 
-- [ ] **Step 4: Verify line ending**
+- [x] **Step 4: Verify line ending**
 
 ```powershell
 $b = [System.IO.File]::ReadAllBytes("C:\baobao\KLTN\learne-platform\frontend\src\pages\admin\AdminTeacherListPage.tsx"); $s = [System.Text.Encoding]::UTF8.GetString($b); "BOM=$($b[0] -eq 0xEF) CRLF=$(([regex]::Matches($s, "`r`n")).Count)"
 ```
 Expected: `BOM=False CRLF=0`.
 
-- [ ] **Step 5: Lint + build**
+- [x] **Step 5: Lint + build**
 
 ```powershell
 npm.cmd run lint; if ($?) { npm.cmd run build }
 ```
 Expected: ESLint 0 errors; build thành công.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/pages/admin/AdminTeacherListPage.tsx
@@ -273,7 +273,7 @@ git commit -m "feat: add create teacher button to admin teacher list"
 **Files:**
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\src\pages\admin\CreateTeacherPage.tsx`
 
-- [ ] **Step 1: Thêm import `useNavigate`**
+- [x] **Step 1: Thêm import `useNavigate`**
 
 File hiện tại import: `useState, type FormEvent` từ react. Thêm import mới:
 
@@ -281,7 +281,7 @@ File hiện tại import: `useState, type FormEvent` từ react. Thêm import m�
 import { useNavigate } from 'react-router-dom'
 ```
 
-- [ ] **Step 2: Thêm `navigate` vào component**
+- [x] **Step 2: Thêm `navigate` vào component**
 
 ```tsx
 export function CreateTeacherPage() {
@@ -289,7 +289,7 @@ export function CreateTeacherPage() {
   const [email, setEmail] = useState('')
 ```
 
-- [ ] **Step 3: Thêm nút "Quay lại" phía trên form**
+- [x] **Step 3: Thêm nút "Quay lại" phía trên form**
 
 Thay đoạn đầu của return hiện tại:
 
@@ -314,21 +314,21 @@ bằng:
 
 `Button` đã được import sẵn trong file.
 
-- [ ] **Step 4: Verify line ending**
+- [x] **Step 4: Verify line ending**
 
 ```powershell
 $b = [System.IO.File]::ReadAllBytes("C:\baobao\KLTN\learne-platform\frontend\src\pages\admin\CreateTeacherPage.tsx"); $s = [System.Text.Encoding]::UTF8.GetString($b); "BOM=$($b[0] -eq 0xEF) CRLF=$(([regex]::Matches($s, "`r`n")).Count)"
 ```
 Expected: `BOM=False CRLF=0`.
 
-- [ ] **Step 5: Lint + build**
+- [x] **Step 5: Lint + build**
 
 ```powershell
 npm.cmd run lint; if ($?) { npm.cmd run build }
 ```
 Expected: ESLint 0 errors; build thành công.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/pages/admin/CreateTeacherPage.tsx
@@ -342,14 +342,14 @@ git commit -m "feat: add back button to create teacher page"
 **Files:**
 - Test: `C:\Users\Admin\AppData\Local\Temp\opencode\test_admin_manage.py`
 
-- [ ] **Step 1: Kiểm tra Playwright + requests đã cài**
+- [x] **Step 1: Kiểm tra Playwright + requests đã cài**
 
 ```powershell
 python -c "import playwright, requests; print('ok')"
 ```
 Expected: `ok`.
 
-- [ ] **Step 2: Chạy test**
+- [x] **Step 2: Chạy test**
 
 ```powershell
 python test_admin_manage.py
@@ -357,7 +357,7 @@ python test_admin_manage.py
 (workdir: `C:\Users\Admin\AppData\Local\Temp\opencode`)
 Expected: `6/6 PASSED` — script hiện dùng `page.goto` trực tiếp vào `/admin/teachers` và `/admin/teachers/new` nên không phụ thuộc nav; không cần sửa script.
 
-- [ ] **Step 3: Chạy kiểm tra bổ sung nav + tab (tạo script tạm hoặc thêm check)**
+- [x] **Step 3: Chạy kiểm tra bổ sung nav + tab (tạo script tạm hoặc thêm check)**
 
 Tạo `C:\Users\Admin\AppData\Local\Temp\opencode\test_admin_tabs.py`:
 
@@ -431,7 +431,7 @@ Lưu ý: nếu selector nav/tab không khớp do cấu trúc DOM, mở browser k
 
 **Files:** không có (git operations)
 
-- [ ] **Step 1: Chạy lại toàn bộ kiểm tra cuối**
+- [x] **Step 1: Chạy lại toàn bộ kiểm tra cuối**
 
 ```powershell
 npm.cmd run lint; if ($?) { npm.cmd run build }
@@ -444,7 +444,7 @@ python test_admin_manage.py
 (workdir: `C:\Users\Admin\AppData\Local\Temp\opencode`)
 Expected: `6/6 PASSED`.
 
-- [ ] **Step 2: Review toàn bộ diff**
+- [x] **Step 2: Review toàn bộ diff**
 
 ```bash
 git log --oneline main..HEAD
@@ -452,22 +452,22 @@ git diff main..HEAD --stat
 ```
 Expected: chỉ gồm các commit của feature này (spec + 5 task) và file thay đổi gồm: `docs/superpowers/specs/2026-08-20-admin-dashboard-tabs-design.md`, `docs/superpowers/plans/2026-08-20-admin-dashboard-tabs.md`, `src/layouts/AdminSidebar.tsx`, `src/layouts/AdminTabs.tsx` (xóa), `src/layouts/AdminLayout.tsx`, `src/lib/auth/routes.ts`, `src/pages/admin/AdminTeacherListPage.tsx`, `src/pages/admin/CreateTeacherPage.tsx`.
 
-- [ ] **Step 3: Cập nhật plan tick checkboxes**
+- [x] **Step 3: Cập nhật plan tick checkboxes**
 
-Tick tất cả checkbox `- [ ]` trong file plan này thành `- [x]` (trừ dòng note trong blockquote header). Commit:
+Tick tất cả checkbox `- [x]` trong file plan này thành `- [x]` (trừ dòng note trong blockquote header). Commit:
 
 ```bash
 git add docs/superpowers/plans/2026-08-20-admin-dashboard-tabs.md
 git commit -m "docs: mark admin dashboard tabs plan complete"
 ```
 
-- [ ] **Step 4: Push nhánh**
+- [x] **Step 4: Push nhánh**
 
 ```bash
 git push -u origin feature/admin-dashboard-tabs
 ```
 
-- [ ] **Step 5: Báo user tạo PR trên GitHub**
+- [x] **Step 5: Báo user tạo PR trên GitHub**
 
 Trình bày: 1 PR cần tạo (frontend `feature/admin-dashboard-tabs`), test summary (lint/build pass, Playwright pass), nhắc sau khi merge GitHub Actions bot sẽ tự cập nhật pointer superproject như các lần trước.
 
