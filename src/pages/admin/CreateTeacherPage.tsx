@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { adminCreateTeacher } from '../../lib/api/authApi'
 import { getApiErrorMessage } from '../../lib/api/client'
 import { Alert } from '../../components/ui/Alert'
@@ -9,6 +10,7 @@ import { validateForm } from '../../lib/validation/validateForm'
 import { email as emailValidator, fullName as fullNameValidator, required } from '../../lib/validation/validators'
 
 export function CreateTeacherPage() {
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [fullName, setFullName] = useState('')
   const [info, setInfo] = useState<string | null>(null)
@@ -49,6 +51,11 @@ export function CreateTeacherPage() {
 
   return (
     <div className="mx-auto max-w-md">
+      <div className="mb-4">
+        <Button variant="secondary" onClick={() => navigate('/admin/teachers')}>
+          Quay lại
+        </Button>
+      </div>
       <h1 className="mb-6 text-2xl font-bold text-gray-900">Tạo tài khoản giảng viên</h1>
       {info ? (
         <div className="mb-4">
