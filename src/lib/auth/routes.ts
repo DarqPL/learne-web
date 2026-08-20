@@ -29,8 +29,6 @@ export function navItemsFor(role: UserRole): NavItem[] {
         { label: 'Hồ sơ', to: '/teacher/profile' },
       ]
     case 'ADMIN':
-      return [
-        { label: 'Dashboard', to: '/admin' },
-      ]
+      return []
   }
 }
