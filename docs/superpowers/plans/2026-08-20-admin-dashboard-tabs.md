@@ -2,22 +2,31 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rút gọn nav ADMIN còn 1 mục "Dashboard" và đưa "Quản lý giảng viên" vào thành tab bên trong dashboard (kèm nút tạo giảng viên và form tạo ở view riêng).
+**Goal:** Gỡ hẳn nav ADMIN trên header (chỉ còn logo + avatar) và đưa toàn bộ điều hướng admin vào **sidebar dọc full-height bên trái** với 2 tab: "Tổng quan" và "Quản lý giảng viên" (gồm danh sách + form tạo ở view riêng).
 
-**Architecture:** Giữ nguyên route hiện tại (`/admin`, `/admin/teachers`, `/admin/teachers/new`) — tab dùng `NavLink` đồng bộ với URL (approach B, ít sửa nhất). Thêm component `AdminTabs` đặt trong `AdminLayout` phía trên `<Outlet />`. Nav ADMIN trong `routes.ts` rút về 1 mục "Dashboard". `AdminTeacherListPage` và `CreateTeacherPage` giữ nguyên nội dung, chỉ thêm nút điều hướng.
+**Architecture:** Giữ nguyên route hiện tại (`/admin`, `/admin/teachers`, `/admin/teachers/new`) — tab dùng `NavLink` đồng bộ với URL (approach B, ít sửa nhất). Thêm component `AdminSidebar` đặt trong `AdminLayout` (flex: sidebar trái + nội dung phải). Nav ADMIN trong `routes.ts` trả về mảng rỗng (header admin không còn nav). `AdminTeacherListPage` và `CreateTeacherPage` giữ nguyên nội dung, chỉ thêm nút điều hướng.
 
 **Tech Stack:** React 19, react-router-dom (NavLink), TypeScript (`verbatimModuleSyntax`, `noUnusedLocals`, `erasableSyntaxOnly`), Tailwind CSS, Vite. Không có test framework frontend — verify bằng `npm run lint` + `npm run build` + Playwright `test_admin_manage.py`.
 
 ---
 
-### Task 1: Component `AdminTabs`
+### Task 1: Component `AdminSidebar` (thay `AdminTabs` đã tạo sơ bộ)
 
 **Files:**
-- Create: `C:\baobao\KLTN\learne-platform\frontend\src\layouts\AdminTabs.tsx`
+- Create: `C:\baobao\KLTN\learne-platform\frontend\src\layouts\AdminSidebar.tsx`
+- Delete: `C:\baobao\KLTN\learne-platform\frontend\src\layouts\AdminTabs.tsx`
 
-- [ ] **Step 1: Tạo file `AdminTabs.tsx`**
+**Step 0: Xóa file `AdminTabs.tsx`**
 
-Tạo `src/layouts/AdminTabs.tsx` với nội dung:
+File `AdminTabs.tsx` (thanh tab ngang) đã được tạo ở commit trước (thiết kế cũ). Xóa nó vì thiết kế mới dùng sidebar dọc:
+
+```bash
+git rm src/layouts/AdminTabs.tsx
+```
+
+**Step 1: Tạo file `AdminSidebar.tsx`**
+
+Tạo `src/layouts/AdminSidebar.tsx` với nội dung:
 
 ```tsx
 import { NavLink } from 'react-router-dom'
@@ -27,73 +36,58 @@ const tabs = [
   { label: 'Quản lý giảng viên', to: '/admin/teachers', end: false },
 ]
 
-export function AdminTabs() {
+export function AdminSidebar() {
   return (
-    <nav className="border-b border-gray-200">
-      <div className="mx-auto flex max-w-6xl gap-1 px-4">
+    <aside className="w-56 shrink-0">
+      <nav className="flex flex-col gap-1">
         {tabs.map((tab) => (
           <NavLink
             key={tab.to}
             to={tab.to}
             end={tab.end}
             className={({ isActive }) =>
-              `-mb-px border-b-2 px-4 py-2.5 text-sm font-medium ${
+              `rounded-lg px-3 py-2 text-sm font-medium ${
                 isActive
-                  ? 'border-indigo-600 text-indigo-700'
-                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-900'
+                  ? 'bg-indigo-50 text-indigo-700'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`
             }
           >
             {tab.label}
           </NavLink>
         ))}
-      </div>
-    </nav>
+      </nav>
+    </aside>
   )
 }
 ```
 
-Lưu ý: `-mb-px` cần thiết để border-bottom 2px khớp với `border-b` của nav (đè lên đường viền container).
+Lưu ý: style tab trong sidebar dùng dạng nav-link (`rounded-lg`, `bg-indigo-50`) — đồng bộ với nav header hiện tại trong `AppShell.tsx`. Kích thước `w-56` cố định, full-height do flex container trong `AdminLayout`.
 
-- [ ] **Step 2: Verify line ending**
+**Step 2: Verify line ending**
 
 ```powershell
-$b = [System.IO.File]::ReadAllBytes("C:\baobao\KLTN\learne-platform\frontend\src\layouts\AdminTabs.tsx"); $s = [System.Text.Encoding]::UTF8.GetString($b); "BOM=$($b[0] -eq 0xEF) CRLF=$(([regex]::Matches($s, "`r`n")).Count)"
+$b = [System.IO.File]::ReadAllBytes("C:\baobao\KLTN\learne-platform\frontend\src\layouts\AdminSidebar.tsx"); $s = [System.Text.Encoding]::UTF8.GetString($b); "BOM=$($b[0] -eq 0xEF) CRLF=$(([regex]::Matches($s, "`r`n")).Count)"
 ```
 Expected: `BOM=False CRLF=0`. Nếu Write tool sinh CRLF, viết lại dạng UTF8 no-BOM + LF.
 
-- [ ] **Step 3: Commit**
+**Step 3: Commit**
 
 ```bash
-git add src/layouts/AdminTabs.tsx
-git commit -m "feat: add admin dashboard tabs component"
+git add src/layouts/AdminSidebar.tsx src/layouts/AdminTabs.tsx
+git commit -m "feat: replace admin tabs with left sidebar"
 ```
 
 ---
 
-### Task 2: Gắn `AdminTabs` vào `AdminLayout`
+### Task 2: Gắn `AdminSidebar` vào `AdminLayout`
 
 **Files:**
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\src\layouts\AdminLayout.tsx`
 
-- [ ] **Step 1: Sửa `AdminLayout.tsx`**
+**Step 1: Sửa `AdminLayout.tsx`**
 
-File hiện tại:
-
-```tsx
-import { Outlet } from 'react-router-dom'
-import { AppShell } from './AppShell'
-
-export function AdminLayout() {
-  return (
-    <AppShell>
-      <Outlet />
-    </AppShell>
-  )
-}
-```
-
-Sửa thành:
+File hiện tại (sau commit Task 2 trước đó đã gắn `AdminTabs`):
 
 ```tsx
 import { Outlet } from 'react-router-dom'
@@ -110,37 +104,56 @@ export function AdminLayout() {
 }
 ```
 
-- [ ] **Step 2: Verify line ending**
+Sửa thành:
+
+```tsx
+import { Outlet } from 'react-router-dom'
+import { AdminSidebar } from './AdminSidebar'
+import { AppShell } from './AppShell'
+
+export function AdminLayout() {
+  return (
+    <AppShell>
+      <div className="flex gap-8">
+        <AdminSidebar />
+        <div className="min-w-0 flex-1">
+          <Outlet />
+        </div>
+      </div>
+    </AppShell>
+  )
+}
+```
+
+**Step 2: Verify line ending**
 
 ```powershell
 $b = [System.IO.File]::ReadAllBytes("C:\baobao\KLTN\learne-platform\frontend\src\layouts\AdminLayout.tsx"); $s = [System.Text.Encoding]::UTF8.GetString($b); "BOM=$($b[0] -eq 0xEF) CRLF=$(([regex]::Matches($s, "`r`n")).Count)"
 ```
 Expected: `BOM=False CRLF=0`.
 
-- [ ] **Step 3: Commit**
+**Step 3: Commit**
 
 ```bash
 git add src/layouts/AdminLayout.tsx
-git commit -m "feat: render admin tabs inside admin layout"
+git commit -m "feat: render admin sidebar inside admin layout"
 ```
 
 ---
 
-### Task 3: Rút nav ADMIN còn 1 mục
+### Task 3: Gỡ hẳn nav ADMIN (trả về mảng rỗng)
 
 **Files:**
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\src\lib\auth\routes.ts`
 
-- [ ] **Step 1: Sửa `routes.ts`**
+**Step 1: Sửa `routes.ts`**
 
-File hiện tại có case `ADMIN`:
+File hiện tại (sau commit Task 3 trước đó) có case `ADMIN`:
 
 ```ts
     case 'ADMIN':
       return [
         { label: 'Dashboard', to: '/admin' },
-        { label: 'Tạo giảng viên', to: '/admin/teachers/new' },
-        { label: 'Quản lý giảng viên', to: '/admin/teachers' },
       ]
 ```
 
@@ -148,23 +161,30 @@ Sửa thành:
 
 ```ts
     case 'ADMIN':
-      return [
-        { label: 'Dashboard', to: '/admin' },
-      ]
+      return []
 ```
 
-- [ ] **Step 2: Verify line ending**
+`AppShell.tsx` tự render nav từ mảng này — mảng rỗng nghĩa là header admin chỉ còn logo + thông tin người dùng.
+
+**Step 2: Verify line ending**
 
 ```powershell
 $b = [System.IO.File]::ReadAllBytes("C:\baobao\KLTN\learne-platform\frontend\src\lib\auth\routes.ts"); $s = [System.Text.Encoding]::UTF8.GetString($b); "BOM=$($b[0] -eq 0xEF) CRLF=$(([regex]::Matches($s, "`r`n")).Count)"
 ```
 Expected: `BOM=False CRLF=0`.
 
-- [ ] **Step 3: Commit**
+**Step 3: Typecheck**
+
+```powershell
+node node_modules/typescript/bin/tsc --noEmit
+```
+Expected: exit 0, không lỗi (không có unused — `navItemsFor` vẫn được dùng cho các role khác).
+
+**Step 4: Commit**
 
 ```bash
 git add src/lib/auth/routes.ts
-git commit -m "feat: reduce admin nav to dashboard only"
+git commit -m "feat: remove admin nav items entirely"
 ```
 
 ---
@@ -376,13 +396,13 @@ with sync_playwright() as p:
     page.goto(f"{BASE}/admin")
     page.wait_for_load_state("networkidle")
     nav_labels = page.locator("header nav a").all_text_contents()
-    check("nav chi con 1 muc Dashboard", len(nav_labels) == 1 and nav_labels[0] == "Dashboard", str(nav_labels))
-
-    tab_labels = page.locator("main > nav a, div > nav a").all_text_contents()
-    check("tab Tổng quan + Quản lý giảng viên hiển thị", "Tổng quan" in tab_labels and "Quản lý giảng viên" in tab_labels, str(tab_labels))
+    check("nav header admin rong (khong con link)", len(nav_labels) == 0, str(nav_labels))
 
     page.goto(f"{BASE}/admin/teachers")
     page.wait_for_load_state("networkidle")
+    sidebar_labels = page.locator("aside a").all_text_contents()
+    check("sidebar co Tổng quan + Quản lý giảng viên", "Tổng quan" in sidebar_labels and "Quản lý giảng viên" in sidebar_labels, str(sidebar_labels))
+
     page.get_by_role("button", name="Tạo giảng viên").wait_for(timeout=8000)
     page.get_by_role("button", name="Tạo giảng viên").click()
     page.wait_for_url("**/admin/teachers/new*", timeout=8000)
@@ -430,7 +450,7 @@ Expected: `6/6 PASSED`.
 git log --oneline main..HEAD
 git diff main..HEAD --stat
 ```
-Expected: chỉ gồm các commit của feature này (spec + 5 task) và file thay đổi gồm: `docs/superpowers/specs/2026-08-20-admin-dashboard-tabs-design.md`, `src/layouts/AdminTabs.tsx`, `src/layouts/AdminLayout.tsx`, `src/lib/auth/routes.ts`, `src/pages/admin/AdminTeacherListPage.tsx`, `src/pages/admin/CreateTeacherPage.tsx`.
+Expected: chỉ gồm các commit của feature này (spec + 5 task) và file thay đổi gồm: `docs/superpowers/specs/2026-08-20-admin-dashboard-tabs-design.md`, `docs/superpowers/plans/2026-08-20-admin-dashboard-tabs.md`, `src/layouts/AdminSidebar.tsx`, `src/layouts/AdminTabs.tsx` (xóa), `src/layouts/AdminLayout.tsx`, `src/lib/auth/routes.ts`, `src/pages/admin/AdminTeacherListPage.tsx`, `src/pages/admin/CreateTeacherPage.tsx`.
 
 - [ ] **Step 3: Cập nhật plan tick checkboxes**
 
@@ -455,8 +475,9 @@ Trình bày: 1 PR cần tạo (frontend `feature/admin-dashboard-tabs`), test su
 
 ## Self-Review Notes (cho người viết plan — KHÔNG phải task)
 
-- **Spec coverage:** mọi mục trong spec (AdminTabs, AdminLayout, nav rút gọn, nút tạo giảng viên, nút quay lại, giữ route) đều có task tương ứng: Task 1 (AdminTabs), Task 2 (AdminLayout), Task 3 (routes.ts), Task 4 (AdminTeacherListPage), Task 5 (CreateTeacherPage), Task 6 (Playwright), Task 7 (finish).
-- **YAGNI:** không thêm route mới, không đổi backend, không state nội bộ, không modal.
+- **Spec coverage:** mọi mục trong spec (AdminSidebar, AdminLayout, gỡ nav admin, nút tạo giảng viên, nút quay lại, giữ route) đều có task tương ứng: Task 1 (AdminSidebar + xóa AdminTabs), Task 2 (AdminLayout), Task 3 (routes.ts), Task 4 (AdminTeacherListPage), Task 5 (CreateTeacherPage), Task 6 (Playwright), Task 7 (finish).
+- **YAGNI:** không thêm route mới, không đổi backend, không state nội bộ, không modal, không icon/avatar trong sidebar.
 - **Lưu ý thực thi:** `Button` đã có sẵn trong cả 2 page (import không cần thêm). `AdminTeacherListPage` hiện chưa import react-router-dom — cần thêm `useNavigate`. Header dùng chung cho cả 2 nhánh (error + bình thường) để nút "Tạo giảng viên" luôn hiển thị.
+- **Đã chốt thiết kế:** user yêu cầu sidebar trái full-height thay vì tab ngang; nav admin gỡ hẳn (header chỉ logo + avatar). Tasks 1-3 cũ (AdminTabs tab ngang) được thay bằng bản mới (AdminSidebar dọc).
 - **Tại sao không TDD:** repo không có test framework frontend (đã xác nhận ở Phase 3); verification dùng lint + build + Playwright.
 - **Lưu ý `test_admin_tabs.py`:** token không nằm trong localStorage (giữ trong module variable `tokenStore` + cookie refresh_token) → script phải đăng nhập qua UI như `test_admin_manage.py` (dùng `login(page, ...)` pattern), không dùng `add_init_script` với localStorage. Đã áp dụng trong code trên.

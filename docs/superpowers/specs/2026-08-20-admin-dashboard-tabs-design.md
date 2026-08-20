@@ -1,8 +1,8 @@
-# Thiết kế: Admin Dashboard Tabs — Quản lý giảng viên trong Dashboard
+# Thiết kế: Admin Dashboard Sidebar — Quản lý giảng viên trong Dashboard
 
 ## Mục tiêu
 
-Rút gọn navigation của ADMIN từ 3 mục ("Dashboard", "Tạo giảng viên", "Quản lý giảng viên") xuống còn **1 mục "Dashboard"**. Bên trong dashboard có thanh tab điều hướng 2 khu vực: **"Tổng quan"** và **"Quản lý giảng viên"** (gồm danh sách + form tạo tài khoản giảng viên).
+Gỡ bỏ navigation ADMIN trên header (hiện có "Dashboard", "Tạo giảng viên", "Quản lý giảng viên") — header admin chỉ còn logo + thông tin người dùng. Bên trong dashboard có **sidebar dọc full-height bên trái** điều hướng 2 khu vực: **"Tổng quan"** và **"Quản lý giảng viên"** (gồm danh sách + form tạo tài khoản giảng viên).
 
 ## Phạm vi
 
@@ -12,32 +12,36 @@ Rút gọn navigation của ADMIN từ 3 mục ("Dashboard", "Tạo giảng viê
 
 ## Kiến trúc / Thành phần
 
-### 1. Component mới `AdminTabs` (`frontend/src/layouts/AdminTabs.tsx`)
+### 1. Component mới `AdminSidebar` (`frontend/src/layouts/AdminSidebar.tsx`)
 
-- Thanh tab nằm ngang, dùng `NavLink` để đồng bộ trạng thái active với URL.
+- Sidebar dọc full-height bên trái, dùng `NavLink` để đồng bộ trạng thái active với URL.
 - 2 tab:
   - **"Tổng quan"** → `to="/admin"`, dùng prop `end` (chỉ active khi URL chính xác `/admin`).
   - **"Quản lý giảng viên"** → `to="/admin/teachers"`, active cho cả `/admin/teachers` và `/admin/teachers/new` (khi đang tạo GV tab vẫn sáng).
-- Style: container `border-b border-gray-200`, mỗi tab `px-4 py-2.5 text-sm font-medium`, active: `border-indigo-600 text-indigo-700`, inactive: `border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300`; dùng border-bottom như tab convention.
+- Style: `aside` có `border-r`, chiều rộng cố định (vd `w-56`), full-height (`sticky top-16 h-[calc(100vh-4rem)]` để đè lên vùng nội dung bên phải). Mỗi tab `rounded-lg px-3 py-2 text-sm font-medium`, active: `bg-indigo-50 text-indigo-700`, inactive: `text-gray-600 hover:bg-gray-100 hover:text-gray-900` — đồng bộ style với nav hiện tại trong `AppShell.tsx`.
 
-### 2. `AdminLayout.tsx` — đặt tab phía trên `<Outlet />`
+### 2. `AdminLayout.tsx` — đặt sidebar cạnh `<Outlet />`
 
 ```tsx
 <AppShell>
-  <AdminTabs />
-  <Outlet />
+  <div className="flex gap-8">
+    <AdminSidebar />
+    <div className="min-w-0 flex-1">
+      <Outlet />
+    </div>
+  </div>
 </AppShell>
 ```
 
-### 3. `routes.ts` — rút nav ADMIN còn 1 mục
+### 3. `routes.ts` — gỡ hẳn nav ADMIN
 
-Mục `ADMIN` trong `navItemsFor`:
+Mục `ADMIN` trong `navItemsFor` trả về mảng rỗng:
 ```ts
 case 'ADMIN':
-  return [
-    { label: 'Dashboard', to: '/admin' },
-  ]
+  return []
 ```
+
+Header admin chỉ còn logo + thông tin người dùng + nút đăng xuất (logic `AppShell.tsx` giữ nguyên, tự render mảng rỗng).
 
 ### 4. `AdminTeacherListPage.tsx` — thêm nút "Tạo giảng viên"
 
@@ -67,9 +71,10 @@ Không có luồng dữ liệu mới. Tất cả thay đổi là điều hướn
 - `npm.cmd run lint` — 0 error.
 - `npm.cmd run build` — thành công.
 - Chạy lại Playwright `test_admin_manage.py` (script hiện tại dùng `page.goto` trực tiếp vào `/admin/teachers`, `/admin/teachers/new` nên vẫn pass; nếu nav thay đổi làm lệch selector thì cập nhật script).
-- Kiểm tra thủ công trên browser: nav chỉ còn "Dashboard", tab chuyển đổi giữa Tổng quan và Quản lý giảng viên, nút tạo/quit lại hoạt động, refresh giữ đúng tab.
+- Kiểm tra thủ công trên browser: header admin không còn nav (chỉ logo + avatar), sidebar trái hiển thị "Tổng quan" và "Quản lý giảng viên", chuyển đổi giữa 2 tab hoạt động, nút tạo/quay lại hoạt động, refresh giữ đúng tab.
 
 ## YAGNI
 
 - Không tạo tab mới ngoài 2 tab trên (không có tab Student, không có tab Kiểm duyệt).
 - Không dùng state nội bộ cho tab (dùng route) — không có query string, không có modal.
+- Không thêm icon/avatar placeholder cho sidebar (chỉ text label).
