@@ -29,10 +29,6 @@ export function navItemsFor(role: UserRole): NavItem[] {
         { label: 'Hồ sơ', to: '/teacher/profile' },
       ]
     case 'ADMIN':
-      return [
-        { label: 'Dashboard', to: '/admin' },
-        { label: 'Tạo giảng viên', to: '/admin/teachers/new' },
-        { label: 'Quản lý giảng viên', to: '/admin/teachers' },
-      ]
+      return []
   }
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { getApiErrorMessage } from '../../lib/api/client'
 import { adminListTeachers, adminLockTeacher, adminUnlockTeacher } from '../../lib/api/adminApi'
 import type { AdminTeacher } from '../../lib/api/types'
@@ -39,6 +40,7 @@ const profileStatusStyles: Record<NonNullable<AdminTeacher['profileStatus']>, st
 }
 
 export function AdminTeacherListPage() {
+  const navigate = useNavigate()
   const [teachers, setTeachers] = useState<AdminTeacher[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
@@ -93,10 +95,19 @@ export function AdminTeacherListPage() {
     }
   }
 
+  const header = (
+    <div className="mb-6 flex items-center justify-between">
+      <h1 className="text-2xl font-bold text-gray-900">Quản lý giảng viên</h1>
+      <Button variant="primary" onClick={() => navigate('/admin/teachers/new')}>
+        Tạo giảng viên
+      </Button>
+    </div>
+  )
+
   if (error) {
     return (
       <div>
-        <h1 className="mb-6 text-2xl font-bold text-gray-900">Quản lý giảng viên</h1>
+        {header}
         <Alert>{error}</Alert>
       </div>
     )
@@ -104,7 +115,7 @@ export function AdminTeacherListPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Quản lý giảng viên</h1>
+      {header}
       {info ? (
         <div className="mb-4">
           <Alert variant="success">{info}</Alert>
