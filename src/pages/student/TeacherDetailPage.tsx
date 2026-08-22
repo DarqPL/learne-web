@@ -73,6 +73,12 @@ export function TeacherDetailPage() {
           </div>
         </div>
         <div className="space-y-6 p-6">
+          {profile.introductionVideoUrl ? (
+            <section>
+              <h2 className="mb-2 text-sm font-semibold text-gray-900">Video giới thiệu</h2>
+              <video className="w-full rounded-xl border border-gray-200 bg-black" src={profile.introductionVideoUrl} controls />
+            </section>
+          ) : null}
           <section>
             <h2 className="mb-1 text-sm font-semibold text-gray-900">Giới thiệu</h2>
             <p className="whitespace-pre-wrap text-sm text-gray-700">{profile.bio}</p>
