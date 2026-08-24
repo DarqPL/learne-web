@@ -26,6 +26,7 @@ export function navItemsFor(role: UserRole): NavItem[] {
     case 'TEACHER':
       return [
         { label: 'Dashboard', to: '/teacher' },
+        { label: 'Nội dung học tập', to: '/teacher/content' },
         { label: 'Hồ sơ', to: '/teacher/profile' },
       ]
     case 'ADMIN':

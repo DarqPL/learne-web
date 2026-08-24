@@ -6,7 +6,7 @@ export function TeacherDashboardPage() {
     <div>
       <h1 className="mb-2 text-2xl font-bold text-gray-900">Dashboard Giảng viên</h1>
       <p className="text-gray-600">
-        Chào mừng {user?.fullName}! Quản lý nội dung khóa học sẽ được triển khai ở Phase 4.
+        Chào mừng {user?.fullName}! Vào mục "Nội dung học tập" để tạo khóa học, chủ đề, bài học và câu hỏi trước khi gửi duyệt.
       </p>
     </div>
   )
