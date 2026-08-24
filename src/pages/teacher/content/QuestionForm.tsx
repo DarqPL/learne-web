@@ -6,6 +6,7 @@ import { questionTypeLabels, questionTypes } from './contentLabels'
 export interface QuestionFormProps {
   initialValue?: TeacherQuestionRequest
   loading?: boolean
+  disabled?: boolean
   submitLabel: string
   onSubmit: (payload: TeacherQuestionRequest) => void
 }
@@ -74,7 +75,7 @@ function getNextOptionOrderIndex(options: QuestionOptionForm[]) {
   return String(maxOrderIndex + 1)
 }
 
-export function QuestionForm({ initialValue, loading = false, submitLabel, onSubmit }: QuestionFormProps) {
+export function QuestionForm({ initialValue, loading = false, disabled = false, submitLabel, onSubmit }: QuestionFormProps) {
   const initialForm = initialValue ?? defaultQuestion
   const [previousInitialValue, setPreviousInitialValue] = useState(initialValue)
   const [form, setForm] = useState<QuestionFormState>(toFormState(initialForm))
@@ -95,6 +96,7 @@ export function QuestionForm({ initialValue, loading = false, submitLabel, onSub
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (disabled) return
 
     const nextValidationMessages: string[] = []
     const trimmedOrderIndexInput = orderIndexInput.trim()
@@ -347,7 +349,7 @@ export function QuestionForm({ initialValue, loading = false, submitLabel, onSub
         </div>
       ) : null}
 
-      <Button type="submit" loading={loading}>
+      <Button type="submit" loading={loading} disabled={disabled}>
         {submitLabel}
       </Button>
     </form>

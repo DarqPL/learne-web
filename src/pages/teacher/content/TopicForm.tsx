@@ -5,6 +5,7 @@ import type { TeacherTopicRequest } from '../../../lib/api/types'
 interface TopicFormProps {
   initialValue?: TeacherTopicRequest
   loading?: boolean
+  disabled?: boolean
   submitLabel: string
   onSubmit: (payload: TeacherTopicRequest) => void
 }
@@ -18,7 +19,7 @@ const defaultTopic: TeacherTopicRequest = {
 const fieldClassName =
   'mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500'
 
-export function TopicForm({ initialValue, loading = false, submitLabel, onSubmit }: TopicFormProps) {
+export function TopicForm({ initialValue, loading = false, disabled = false, submitLabel, onSubmit }: TopicFormProps) {
   const initialForm = initialValue ?? defaultTopic
   const [previousInitialValue, setPreviousInitialValue] = useState(initialValue)
   const [form, setForm] = useState<TeacherTopicRequest>(initialForm)
@@ -35,6 +36,8 @@ export function TopicForm({ initialValue, loading = false, submitLabel, onSubmit
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (disabled) return
+
     const orderIndex = Number(orderIndexInput)
 
     if (!form.name.trim()) {
@@ -83,7 +86,7 @@ export function TopicForm({ initialValue, loading = false, submitLabel, onSubmit
 
       {validationMessage ? <p className="text-sm text-red-600">{validationMessage}</p> : null}
 
-      <Button type="submit" loading={loading}>
+      <Button type="submit" loading={loading} disabled={disabled}>
         {submitLabel}
       </Button>
     </form>

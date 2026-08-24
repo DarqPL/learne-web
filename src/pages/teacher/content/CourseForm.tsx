@@ -6,6 +6,7 @@ import { courseTypeLabels, courseTypes } from './contentLabels'
 interface CourseFormProps {
   initialValue?: TeacherCourseRequest
   loading?: boolean
+  disabled?: boolean
   submitLabel: string
   onSubmit: (payload: TeacherCourseRequest) => void
 }
@@ -21,7 +22,7 @@ const defaultCourse: TeacherCourseRequest = {
 const fieldClassName =
   'mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500'
 
-export function CourseForm({ initialValue, loading = false, submitLabel, onSubmit }: CourseFormProps) {
+export function CourseForm({ initialValue, loading = false, disabled = false, submitLabel, onSubmit }: CourseFormProps) {
   const initialForm = initialValue ?? defaultCourse
   const [previousInitialValue, setPreviousInitialValue] = useState(initialValue)
   const [form, setForm] = useState<TeacherCourseRequest>(initialForm)
@@ -38,6 +39,8 @@ export function CourseForm({ initialValue, loading = false, submitLabel, onSubmi
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (disabled) return
+
     const orderIndex = Number(orderIndexInput)
 
     if (!form.name.trim() || !form.level.trim()) {
@@ -110,7 +113,7 @@ export function CourseForm({ initialValue, loading = false, submitLabel, onSubmi
 
       {validationMessage ? <p className="text-sm text-red-600">{validationMessage}</p> : null}
 
-      <Button type="submit" loading={loading}>
+      <Button type="submit" loading={loading} disabled={disabled}>
         {submitLabel}
       </Button>
     </form>

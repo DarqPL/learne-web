@@ -106,6 +106,7 @@ export function TeacherContentPage() {
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [action, setAction] = useState<string | null>(null)
+  const [formResetVersion, setFormResetVersion] = useState(0)
 
   const selectedCourse = courses?.find((course) => course.id === selectedCourseId) ?? null
   const selectedCourseEditable = selectedCourse ? canEditContent(selectedCourse.status) : false
@@ -120,7 +121,10 @@ export function TeacherContentPage() {
           setSelectedCourseId((current) => current ?? response.data[0]?.id ?? null)
         }
       } catch (err) {
-        if (!cancelled) setError(getApiErrorMessage(err, 'Không thể tải nội dung học tập.'))
+        if (!cancelled) {
+          setError(getApiErrorMessage(err, 'Không thể tải nội dung học tập.'))
+          setCourses([])
+        }
       }
     })()
     return () => {
@@ -141,6 +145,7 @@ export function TeacherContentPage() {
     try {
       const response = await createTeacherCourse(payload)
       await refreshCourses(response.data.id)
+      setFormResetVersion((version) => version + 1)
       setInfo('Đã tạo khóa học.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể cập nhật nội dung học tập.'))
@@ -157,7 +162,7 @@ export function TeacherContentPage() {
     try {
       await updateTeacherCourse(selectedCourse.id, payload)
       await refreshCourses(selectedCourse.id)
-      setInfo('Đã cập nhật khóa học.')
+      setInfo('Đã lưu khóa học.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể cập nhật nội dung học tập.'))
     } finally {
@@ -204,6 +209,7 @@ export function TeacherContentPage() {
     try {
       await createTeacherTopic(courseId, payload)
       await refreshCourses(courseId)
+      setFormResetVersion((version) => version + 1)
       setInfo('Đã tạo chủ đề.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể cập nhật nội dung học tập.'))
@@ -219,7 +225,7 @@ export function TeacherContentPage() {
     try {
       await updateTeacherTopic(topicId, payload)
       await refreshCourses(selectedCourseId)
-      setInfo('Đã cập nhật chủ đề.')
+      setInfo('Đã lưu chủ đề.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể cập nhật nội dung học tập.'))
     } finally {
@@ -250,6 +256,7 @@ export function TeacherContentPage() {
     try {
       await createTeacherLesson(topicId, payload)
       await refreshCourses(selectedCourseId)
+      setFormResetVersion((version) => version + 1)
       setInfo('Đã tạo bài học.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể cập nhật nội dung học tập.'))
@@ -265,7 +272,7 @@ export function TeacherContentPage() {
     try {
       await updateTeacherLesson(lessonId, payload)
       await refreshCourses(selectedCourseId)
-      setInfo('Đã cập nhật bài học.')
+      setInfo('Đã lưu bài học.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể cập nhật nội dung học tập.'))
     } finally {
@@ -296,6 +303,7 @@ export function TeacherContentPage() {
     try {
       await createTeacherQuestion(lessonId, payload)
       await refreshCourses(selectedCourseId)
+      setFormResetVersion((version) => version + 1)
       setInfo('Đã tạo câu hỏi.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể cập nhật nội dung học tập.'))
@@ -311,7 +319,7 @@ export function TeacherContentPage() {
     try {
       await updateTeacherQuestion(questionId, payload)
       await refreshCourses(selectedCourseId)
-      setInfo('Đã cập nhật câu hỏi.')
+      setInfo('Đã lưu câu hỏi.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể cập nhật nội dung học tập.'))
     } finally {
@@ -356,7 +364,13 @@ export function TeacherContentPage() {
           <aside className={cardClassName}>
             <h2 className="text-lg font-semibold text-gray-900">Khóa học của tôi</h2>
             <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
-              <CourseForm loading={action === 'create-course'} submitLabel="Tạo khóa học" onSubmit={handleCreateCourse} />
+              <CourseForm
+                key={`create-course-${formResetVersion}`}
+                loading={action === 'create-course'}
+                disabled={action !== null && action !== 'create-course'}
+                submitLabel="Tạo khóa học"
+                onSubmit={handleCreateCourse}
+              />
             </div>
 
             <div className="mt-5 space-y-3">
@@ -423,6 +437,7 @@ export function TeacherContentPage() {
                         key={`course-${selectedCourse.id}`}
                         initialValue={getCourseInitialValue(selectedCourse)}
                         loading={action === `update-course-${selectedCourse.id}`}
+                        disabled={action !== null && action !== `update-course-${selectedCourse.id}`}
                         submitLabel="Lưu khóa học"
                         onSubmit={handleUpdateCourse}
                       />
@@ -464,7 +479,9 @@ export function TeacherContentPage() {
                   {selectedCourseEditable ? (
                     <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
                       <TopicForm
+                        key={`create-topic-${selectedCourse.id}-${formResetVersion}`}
                         loading={action === `create-topic-${selectedCourse.id}`}
+                        disabled={action !== null && action !== `create-topic-${selectedCourse.id}`}
                         submitLabel="Thêm chủ đề"
                         onSubmit={(payload) => handleCreateTopic(selectedCourse.id, payload)}
                       />
@@ -490,6 +507,7 @@ export function TeacherContentPage() {
                               key={`topic-${topic.id}`}
                               initialValue={getTopicInitialValue(topic)}
                               loading={action === `update-topic-${topic.id}`}
+                              disabled={action !== null && action !== `update-topic-${topic.id}`}
                               submitLabel="Lưu chủ đề"
                               onSubmit={(payload) => handleUpdateTopic(topic.id, payload)}
                             />
@@ -503,7 +521,9 @@ export function TeacherContentPage() {
                             </Button>
                             <div className="rounded-xl border border-gray-200 bg-white p-4">
                               <LessonForm
+                                key={`create-lesson-${topic.id}-${formResetVersion}`}
                                 loading={action === `create-lesson-${topic.id}`}
+                                disabled={action !== null && action !== `create-lesson-${topic.id}`}
                                 submitLabel="Thêm bài học"
                                 onSubmit={(payload) => handleCreateLesson(topic.id, payload)}
                               />
@@ -538,6 +558,7 @@ export function TeacherContentPage() {
                                     key={`lesson-${lesson.id}`}
                                     initialValue={getLessonInitialValue(lesson)}
                                     loading={action === `update-lesson-${lesson.id}`}
+                                    disabled={action !== null && action !== `update-lesson-${lesson.id}`}
                                     submitLabel="Lưu bài học"
                                     onSubmit={(payload) => handleUpdateLesson(lesson.id, payload)}
                                   />
@@ -551,7 +572,9 @@ export function TeacherContentPage() {
                                   </Button>
                                   <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                                     <QuestionForm
+                                      key={`create-question-${lesson.id}-${formResetVersion}`}
                                       loading={action === `create-question-${lesson.id}`}
+                                      disabled={action !== null && action !== `create-question-${lesson.id}`}
                                       submitLabel="Thêm câu hỏi"
                                       onSubmit={(payload) => handleCreateQuestion(lesson.id, payload)}
                                     />
@@ -583,6 +606,7 @@ export function TeacherContentPage() {
                                           key={`question-${question.id}`}
                                           initialValue={getQuestionInitialValue(question)}
                                           loading={action === `update-question-${question.id}`}
+                                          disabled={action !== null && action !== `update-question-${question.id}`}
                                           submitLabel="Lưu câu hỏi"
                                           onSubmit={(payload) => handleUpdateQuestion(question.id, payload)}
                                         />
