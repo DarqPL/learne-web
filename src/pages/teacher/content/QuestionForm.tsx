@@ -126,8 +126,10 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
         nextValidationMessages.push('Vui lòng nhập ít nhất 2 lựa chọn.')
       }
 
-      if (!nonEmptyOptions.some((option) => option.correct)) {
-        nextValidationMessages.push('Vui lòng chọn ít nhất 1 lựa chọn đúng.')
+      const correctOptions = nonEmptyOptions.filter((option) => option.correct)
+
+      if (correctOptions.length !== 1) {
+        nextValidationMessages.push('Vui lòng chọn đúng 1 lựa chọn đúng.')
       }
 
       const hasInvalidOptionOrderIndex = nonEmptyOptions.some((option) => !isNonNegativeIntegerInput(option.orderIndexInput))
@@ -242,6 +244,7 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
 
       {form.type === 'MULTIPLE_CHOICE' ? (
         <div className="space-y-2">
+          <p className="text-sm text-gray-600">Chọn đúng 1 lựa chọn đúng cho câu hỏi trắc nghiệm.</p>
           {form.options.map((option, optionIndex) => (
             <div className="grid gap-2 rounded-lg border border-gray-200 p-3 md:grid-cols-[1fr_auto_auto]" key={optionIndex}>
               <input
@@ -259,13 +262,16 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
               />
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                 <input
-                  type="checkbox"
+                  type="radio"
+                  name="multipleChoiceCorrectOption"
                   checked={option.correct}
-                  onChange={(event) =>
+                  onChange={() =>
                     setForm((current) => ({
                       ...current,
                       options: current.options.map((currentOption, currentIndex) =>
-                        currentIndex === optionIndex ? { ...currentOption, correct: event.target.checked } : currentOption,
+                        currentIndex === optionIndex
+                          ? { ...currentOption, correct: true }
+                          : { ...currentOption, correct: false },
                       ),
                     }))
                   }
