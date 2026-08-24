@@ -3,7 +3,7 @@ import { Button } from '../../../components/ui/Button'
 import type { TeacherQuestionOptionRequest, TeacherQuestionRequest } from '../../../lib/api/types'
 import { questionTypeLabels, questionTypes } from './contentLabels'
 
-interface QuestionFormProps {
+export interface QuestionFormProps {
   initialValue?: TeacherQuestionRequest
   loading?: boolean
   submitLabel: string
@@ -27,6 +27,8 @@ const defaultQuestion: TeacherQuestionRequest = {
 
 const fieldClassName =
   'mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500'
+
+const nonNegativeIntegerPattern = /^\d+$/
 
 type QuestionOptionForm = Omit<TeacherQuestionOptionRequest, 'orderIndex'> & {
   orderIndexInput: string
@@ -54,6 +56,24 @@ function getTrueFalseAnswer(question: TeacherQuestionRequest) {
   return question.correctAnswer === 'Sai' ? 'Sai' : 'Đúng'
 }
 
+function isNonNegativeIntegerInput(value: string) {
+  return nonNegativeIntegerPattern.test(value.trim())
+}
+
+function getNextOptionOrderIndex(options: QuestionOptionForm[]) {
+  let maxOrderIndex = -1
+
+  for (const option of options) {
+    const orderIndexInput = option.orderIndexInput.trim()
+
+    if (isNonNegativeIntegerInput(orderIndexInput)) {
+      maxOrderIndex = Math.max(maxOrderIndex, Number(orderIndexInput))
+    }
+  }
+
+  return String(maxOrderIndex + 1)
+}
+
 export function QuestionForm({ initialValue, loading = false, submitLabel, onSubmit }: QuestionFormProps) {
   const initialForm = initialValue ?? defaultQuestion
   const [previousInitialValue, setPreviousInitialValue] = useState(initialValue)
@@ -77,28 +97,28 @@ export function QuestionForm({ initialValue, loading = false, submitLabel, onSub
     event.preventDefault()
 
     const nextValidationMessages: string[] = []
-    const orderIndex = Number(orderIndexInput)
-    const xpReward = Number(xpRewardInput)
+    const trimmedOrderIndexInput = orderIndexInput.trim()
+    const trimmedXpRewardInput = xpRewardInput.trim()
+    const orderIndex = Number(trimmedOrderIndexInput)
+    const xpReward = Number(trimmedXpRewardInput)
 
     if (!form.questionText.trim()) {
       nextValidationMessages.push('Vui lòng nhập câu hỏi.')
     }
 
-    if (!orderIndexInput.trim() || !Number.isFinite(orderIndex)) {
+    if (!isNonNegativeIntegerInput(trimmedOrderIndexInput)) {
       nextValidationMessages.push('Vui lòng nhập thứ tự hợp lệ.')
     }
 
-    if (!xpRewardInput.trim() || !Number.isFinite(xpReward)) {
+    if (!isNonNegativeIntegerInput(trimmedXpRewardInput)) {
       nextValidationMessages.push('Vui lòng nhập XP hợp lệ.')
-    } else if (xpReward < 0) {
-      nextValidationMessages.push('XP không được nhỏ hơn 0.')
     }
 
     let options: TeacherQuestionOptionRequest[] = []
     let correctAnswer = form.correctAnswer
 
     if (form.type === 'MULTIPLE_CHOICE') {
-      const nonEmptyOptions = form.options.filter((option) => option.optionText.trim())
+      const nonEmptyOptions = form.options.filter((option) => option.optionText.trim() !== '')
 
       if (nonEmptyOptions.length < 2) {
         nextValidationMessages.push('Vui lòng nhập ít nhất 2 lựa chọn.')
@@ -108,18 +128,16 @@ export function QuestionForm({ initialValue, loading = false, submitLabel, onSub
         nextValidationMessages.push('Vui lòng chọn ít nhất 1 lựa chọn đúng.')
       }
 
-      const hasInvalidOptionOrderIndex = form.options.some(
-        (option) => !option.orderIndexInput.trim() || !Number.isFinite(Number(option.orderIndexInput)),
-      )
+      const hasInvalidOptionOrderIndex = nonEmptyOptions.some((option) => !isNonNegativeIntegerInput(option.orderIndexInput))
 
       if (hasInvalidOptionOrderIndex) {
         nextValidationMessages.push('Vui lòng nhập thứ tự lựa chọn hợp lệ.')
       }
 
       options = nonEmptyOptions.map((option) => ({
-        optionText: option.optionText,
+        optionText: option.optionText.trim(),
         correct: option.correct,
-        orderIndex: Number(option.orderIndexInput),
+        orderIndex: Number(option.orderIndexInput.trim()),
       }))
     } else if (form.type === 'TRUE_FALSE') {
       correctAnswer = trueFalseAnswer
@@ -225,6 +243,7 @@ export function QuestionForm({ initialValue, loading = false, submitLabel, onSub
           {form.options.map((option, optionIndex) => (
             <div className="grid gap-2 rounded-lg border border-gray-200 p-3 md:grid-cols-[1fr_auto_auto]" key={optionIndex}>
               <input
+                aria-label={`Nội dung lựa chọn ${optionIndex + 1}`}
                 className={fieldClassName}
                 value={option.optionText}
                 onChange={(event) =>
@@ -252,6 +271,7 @@ export function QuestionForm({ initialValue, loading = false, submitLabel, onSub
                 Đúng
               </label>
               <input
+                aria-label={`Thứ tự lựa chọn ${optionIndex + 1}`}
                 className={fieldClassName}
                 type="number"
                 value={option.orderIndexInput}
@@ -285,7 +305,7 @@ export function QuestionForm({ initialValue, loading = false, submitLabel, onSub
             onClick={() =>
               setForm((current) => ({
                 ...current,
-                options: [...current.options, { optionText: '', correct: false, orderIndexInput: String(current.options.length) }],
+                options: [...current.options, { optionText: '', correct: false, orderIndexInput: getNextOptionOrderIndex(current.options) }],
               }))
             }
           >
