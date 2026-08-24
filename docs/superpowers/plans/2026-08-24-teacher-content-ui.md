@@ -32,7 +32,7 @@
 **Files:**
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\src\lib\api\types.ts`
 
-- [ ] **Step 1: Append content enums and interfaces**
+- [x] **Step 1: Append content enums and interfaces**
 
 Append this block to the end of `src/lib/api/types.ts`:
 
@@ -160,7 +160,7 @@ export interface TeacherQuestionRequest {
 
 Do not add lesson media fields. The current backend response DTO does not return lesson media yet.
 
-- [ ] **Step 2: Typecheck**
+- [x] **Step 2: Typecheck**
 
 Run:
 
@@ -170,7 +170,7 @@ node node_modules/typescript/bin/tsc --noEmit
 
 Expected: exit 0.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/lib/api/types.ts
@@ -184,7 +184,7 @@ git commit -m "feat: add teacher content API types"
 **Files:**
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\lib\api\teacherContentApi.ts`
 
-- [ ] **Step 1: Create API wrapper**
+- [x] **Step 1: Create API wrapper**
 
 Create `src/lib/api/teacherContentApi.ts`:
 
@@ -265,7 +265,7 @@ export function submitTeacherCourse(courseId: number) {
 }
 ```
 
-- [ ] **Step 2: Typecheck**
+- [x] **Step 2: Typecheck**
 
 Run:
 
@@ -275,7 +275,7 @@ node node_modules/typescript/bin/tsc --noEmit
 
 Expected: exit 0.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/lib/api/teacherContentApi.ts
@@ -290,7 +290,7 @@ git commit -m "feat: add teacher content API client"
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\pages\teacher\content\contentLabels.ts`
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\pages\teacher\content\contentUtils.ts`
 
-- [ ] **Step 1: Create labels file**
+- [x] **Step 1: Create labels file**
 
 Create `src/pages/teacher/content/contentLabels.ts`:
 
@@ -349,7 +349,7 @@ export const skillTypes = Object.keys(skillTypeLabels) as SkillType[]
 export const questionTypes = Object.keys(questionTypeLabels) as QuestionType[]
 ```
 
-- [ ] **Step 2: Create utility file**
+- [x] **Step 2: Create utility file**
 
 Create `src/pages/teacher/content/contentUtils.ts`:
 
@@ -376,7 +376,7 @@ export function canSubmitCourse(course: TeacherCourse) {
 }
 ```
 
-- [ ] **Step 3: Typecheck and commit**
+- [x] **Step 3: Typecheck and commit**
 
 Run:
 
@@ -402,7 +402,7 @@ git commit -m "feat: add teacher content UI helpers"
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\pages\teacher\content\TopicForm.tsx`
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\pages\teacher\content\LessonForm.tsx`
 
-- [ ] **Step 1: Create CourseForm**
+- [x] **Step 1: Create CourseForm**
 
 Create `CourseForm.tsx` with controlled fields for `TeacherCourseRequest`. Use `courseTypes` labels. Submit calls `onSubmit(payload)` and keeps validation local: `name` and `level` must be non-empty. Include `Button` loading state from prop.
 
@@ -433,7 +433,7 @@ const defaultCourse: TeacherCourseRequest = {
 
 The rendered form must include labels exactly: `Tên khóa học`, `Mô tả`, `Loại khóa học`, `Cấp độ`, `Thứ tự`.
 
-- [ ] **Step 2: Create TopicForm**
+- [x] **Step 2: Create TopicForm**
 
 Create `TopicForm.tsx` with controlled fields for `TeacherTopicRequest`.
 
@@ -462,7 +462,7 @@ const defaultTopic: TeacherTopicRequest = {
 
 The rendered form must include labels exactly: `Tên chủ đề`, `Mô tả`, `Thứ tự`.
 
-- [ ] **Step 3: Create LessonForm**
+- [x] **Step 3: Create LessonForm**
 
 Create `LessonForm.tsx` with controlled fields for `TeacherLessonRequest`. Use `skillTypes` labels. Do **not** add media upload inputs.
 
@@ -495,7 +495,7 @@ const defaultLesson: TeacherLessonRequest = {
 
 The rendered form must include labels exactly: `Tiêu đề bài học`, `Mô tả`, `Nội dung`, `Kỹ năng`, `Thứ tự`, `XP`, `Bài kiểm tra đầu vào`.
 
-- [ ] **Step 4: Typecheck and commit**
+- [x] **Step 4: Typecheck and commit**
 
 Run:
 
@@ -519,7 +519,7 @@ git commit -m "feat: add teacher content course topic lesson forms"
 **Files:**
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\pages\teacher\content\QuestionForm.tsx`
 
-- [ ] **Step 1: Create QuestionForm**
+- [x] **Step 1: Create QuestionForm**
 
 Create a controlled `QuestionForm` that supports all backend question types.
 
@@ -571,7 +571,7 @@ Frontend validation before `onSubmit`:
 
 Show validation errors in a small red text block above the submit button.
 
-- [ ] **Step 2: Typecheck and commit**
+- [x] **Step 2: Typecheck and commit**
 
 Run:
 
@@ -595,7 +595,7 @@ git commit -m "feat: add teacher content question form"
 **Files:**
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\pages\teacher\content\TeacherContentPage.tsx`
 
-- [ ] **Step 1: Create page skeleton and loading flow**
+- [x] **Step 1: Create page skeleton and loading flow**
 
 Create `TeacherContentPage.tsx` that imports all API functions from `teacherContentApi.ts`, uses `getApiErrorMessage`, `Alert`, `Button`, `Spinner`, all forms, labels and helpers.
 
@@ -611,7 +611,7 @@ const [action, setAction] = useState<string | null>(null)
 
 Load on mount with async IIFE and cancellation flag, following the existing `AdminTeacherListPage.tsx` pattern. After load, if there is no selected course and response is non-empty, select the first course.
 
-- [ ] **Step 2: Implement course list**
+- [x] **Step 2: Implement course list**
 
 Render left column with:
 
@@ -621,7 +621,7 @@ Render left column with:
 
 Use `selectedCourseId` to highlight active course.
 
-- [ ] **Step 3: Implement course create/edit/delete/submit actions**
+- [x] **Step 3: Implement course create/edit/delete/submit actions**
 
 Implement handlers:
 
@@ -699,7 +699,7 @@ Rules:
 - On submit, show success `Đã gửi khóa học sang trạng thái chờ duyệt.`.
 - On backend error, show `getApiErrorMessage(err, 'Không thể cập nhật nội dung học tập.')`.
 
-- [ ] **Step 4: Implement topic/lesson/question actions**
+- [x] **Step 4: Implement topic/lesson/question actions**
 
 Implement handlers:
 
@@ -840,7 +840,7 @@ Rules:
 - After each mutation, call `refreshCourses(selectedCourseId)`.
 - Do not call or create any media upload/delete/update function.
 
-- [ ] **Step 5: Render nested content tree**
+- [x] **Step 5: Render nested content tree**
 
 For selected course:
 
@@ -854,7 +854,7 @@ For selected course:
 
 Keep nesting readable using bordered white cards with headings: `Chủ đề`, `Bài học`, `Câu hỏi`.
 
-- [ ] **Step 6: Typecheck, lint/build, commit**
+- [x] **Step 6: Typecheck, lint/build, commit**
 
 Run:
 
@@ -881,7 +881,7 @@ git commit -m "feat: add teacher content management page"
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\src\lib\auth\routes.ts`
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\src\pages\teacher\TeacherDashboardPage.tsx`
 
-- [ ] **Step 1: Add route**
+- [x] **Step 1: Add route**
 
 In `App.tsx`, import:
 
@@ -895,7 +895,7 @@ Under TeacherLayout routes add:
 <Route path="/teacher/content" element={<TeacherContentPage />} />
 ```
 
-- [ ] **Step 2: Add nav item**
+- [x] **Step 2: Add nav item**
 
 In `routes.ts`, update TEACHER nav to:
 
@@ -908,7 +908,7 @@ case 'TEACHER':
   ]
 ```
 
-- [ ] **Step 3: Update dashboard copy**
+- [x] **Step 3: Update dashboard copy**
 
 In `TeacherDashboardPage.tsx`, replace the paragraph text with:
 
@@ -916,7 +916,7 @@ In `TeacherDashboardPage.tsx`, replace the paragraph text with:
 Chào mừng {user?.fullName}! Vào mục "Nội dung học tập" để tạo khóa học, chủ đề, bài học và câu hỏi trước khi gửi duyệt.
 ```
 
-- [ ] **Step 4: Verify and commit**
+- [x] **Step 4: Verify and commit**
 
 Run:
 
@@ -940,7 +940,7 @@ git commit -m "feat: add teacher content route and nav item"
 **Files:**
 - Test: `C:\Users\Admin\AppData\Local\Temp\opencode\test_teacher_content.py`
 
-- [ ] **Step 1: Ensure dev stack is running**
+- [x] **Step 1: Ensure dev stack is running**
 
 Run from `infra` if needed:
 
@@ -950,7 +950,7 @@ docker compose -f docker-compose.dev.yml up -d --build
 
 Expected services: frontend 5173, backend 8080, Mailpit 8025, PostgreSQL healthy.
 
-- [ ] **Step 2: Create Playwright script**
+- [x] **Step 2: Create Playwright script**
 
 Create `C:\Users\Admin\AppData\Local\Temp\opencode\test_teacher_content.py` that logs in as an existing teacher. If the seed teacher password is unknown, create a teacher through admin UI first using the existing `test_admin_manage.py` pattern and read the temporary password from Mailpit.
 
@@ -963,7 +963,7 @@ The script must verify:
 5. Teacher can create a `MULTIPLE_CHOICE` question.
 6. Teacher can submit the course and see `Chờ duyệt`.
 
-- [ ] **Step 3: Run script**
+- [x] **Step 3: Run script**
 
 Run:
 
@@ -980,7 +980,7 @@ Expected: all checks PASS. If selectors need adjustment, update only the temp sc
 **Files:**
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\docs\superpowers\plans\2026-08-24-teacher-content-ui.md`
 
-- [ ] **Step 1: Final verification**
+- [x] **Step 1: Final verification**
 
 Run:
 
@@ -998,7 +998,7 @@ python test_teacher_content.py
 
 Expected: all checks PASS.
 
-- [ ] **Step 2: Review diff**
+- [x] **Step 2: Review diff**
 
 Run:
 
@@ -1009,9 +1009,9 @@ git log --oneline origin/main..HEAD
 
 Expected changed files are limited to the spec, this plan, Teacher Content UI/API/types/routing files. No backend/schema changes and no lesson media upload/delete/update implementation.
 
-- [ ] **Step 3: Tick plan checkboxes**
+- [x] **Step 3: Tick plan checkboxes**
 
-Change every task checkbox in this file from `- [ ]` to `- [x]`, except the literal checkbox example in the header sentence.
+Change every task checkbox in this file from `- [x]` to `- [x]`, except the literal checkbox example in the header sentence.
 
 Commit:
 
@@ -1020,7 +1020,7 @@ git add docs/superpowers/plans/2026-08-24-teacher-content-ui.md
 git commit -m "docs: mark teacher content UI plan complete"
 ```
 
-- [ ] **Step 4: Push branch**
+- [x] **Step 4: Push branch**
 
 ```bash
 git push -u origin feature/teacher-content-ui
