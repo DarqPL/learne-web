@@ -38,7 +38,7 @@ export const skillTypeLabels: Record<SkillType, string> = {
 }
 
 export const questionTypeLabels: Record<QuestionType, string> = {
-  MULTIPLE_CHOICE: 'Trắc nghiệm nhiều đáp án',
+  MULTIPLE_CHOICE: 'Trắc nghiệm một đáp án',
   FILL_BLANK: 'Điền vào chỗ trống',
   WORD_ORDER: 'Sắp xếp từ',
   TRANSLATION: 'Dịch câu',

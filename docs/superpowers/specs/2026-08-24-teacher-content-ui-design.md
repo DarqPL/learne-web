@@ -188,7 +188,7 @@ Options:
 
 - Voi `MULTIPLE_CHOICE`, hien danh sach options co:
   - `optionText`
-  - checkbox `correct`
+  - radio `correct` de chi chon mot dap an dung
   - `orderIndex`
 - Voi `TRUE_FALSE`, UI co the tu tao 2 options `Dung` va `Sai`, cho teacher chon dap an dung.
 - Voi cac type con lai, khong hien options; dung `correctAnswer`.
@@ -217,7 +217,7 @@ Frontend chi validate toi thieu de UX tot hon:
 - Topic: `name` bat buoc.
 - Lesson: `title`, `skillType` bat buoc; `xpReward >= 0`.
 - Question: `type`, `questionText` bat buoc; `xpReward >= 0`.
-- Multiple choice can toi thieu 2 option va it nhat 1 option correct.
+- Multiple choice can toi thieu 2 option va dung 1 option correct.
 
 Backend van la nguon validate cuoi cung.
 

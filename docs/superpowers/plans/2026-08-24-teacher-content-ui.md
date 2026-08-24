@@ -335,7 +335,7 @@ export const skillTypeLabels: Record<SkillType, string> = {
 }
 
 export const questionTypeLabels: Record<QuestionType, string> = {
-  MULTIPLE_CHOICE: 'Trắc nghiệm nhiều đáp án',
+  MULTIPLE_CHOICE: 'Trắc nghiệm một đáp án',
   FILL_BLANK: 'Điền vào chỗ trống',
   WORD_ORDER: 'Sắp xếp từ',
   TRANSLATION: 'Dịch câu',
@@ -566,7 +566,7 @@ Behavior:
 Frontend validation before `onSubmit`:
 
 - `questionText.trim()` must not be empty.
-- `MULTIPLE_CHOICE` must have at least 2 non-empty options and at least 1 correct option.
+- `MULTIPLE_CHOICE` must have at least 2 non-empty options and exactly 1 correct option.
 - `xpReward` must be `>= 0`.
 
 Show validation errors in a small red text block above the submit button.
