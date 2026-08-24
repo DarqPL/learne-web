@@ -19,19 +19,36 @@ const fieldClassName =
   'mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500'
 
 export function TopicForm({ initialValue, loading = false, submitLabel, onSubmit }: TopicFormProps) {
-  const [form, setForm] = useState<TeacherTopicRequest>(initialValue ?? defaultTopic)
+  const initialForm = initialValue ?? defaultTopic
+  const [previousInitialValue, setPreviousInitialValue] = useState(initialValue)
+  const [form, setForm] = useState<TeacherTopicRequest>(initialForm)
+  const [orderIndexInput, setOrderIndexInput] = useState(String(initialForm.orderIndex))
   const [validationMessage, setValidationMessage] = useState('')
+
+  if (initialValue !== previousInitialValue) {
+    const nextForm = initialValue ?? defaultTopic
+    setPreviousInitialValue(initialValue)
+    setForm(nextForm)
+    setOrderIndexInput(String(nextForm.orderIndex))
+    setValidationMessage('')
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    const orderIndex = Number(orderIndexInput)
 
     if (!form.name.trim()) {
       setValidationMessage('Vui lòng nhập tên chủ đề.')
       return
     }
 
+    if (!orderIndexInput.trim() || !Number.isFinite(orderIndex)) {
+      setValidationMessage('Vui lòng nhập thứ tự hợp lệ.')
+      return
+    }
+
     setValidationMessage('')
-    onSubmit(form)
+    onSubmit({ ...form, orderIndex })
   }
 
   return (
@@ -59,8 +76,8 @@ export function TopicForm({ initialValue, loading = false, submitLabel, onSubmit
         <input
           className={fieldClassName}
           type="number"
-          value={form.orderIndex}
-          onChange={(event) => setForm((current) => ({ ...current, orderIndex: Number(event.target.value) }))}
+          value={orderIndexInput}
+          onChange={(event) => setOrderIndexInput(event.target.value)}
         />
       </label>
 

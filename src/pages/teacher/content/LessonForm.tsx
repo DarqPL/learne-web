@@ -24,24 +24,49 @@ const fieldClassName =
   'mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500'
 
 export function LessonForm({ initialValue, loading = false, submitLabel, onSubmit }: LessonFormProps) {
-  const [form, setForm] = useState<TeacherLessonRequest>(initialValue ?? defaultLesson)
+  const initialForm = initialValue ?? defaultLesson
+  const [previousInitialValue, setPreviousInitialValue] = useState(initialValue)
+  const [form, setForm] = useState<TeacherLessonRequest>(initialForm)
+  const [orderIndexInput, setOrderIndexInput] = useState(String(initialForm.orderIndex))
+  const [xpRewardInput, setXpRewardInput] = useState(String(initialForm.xpReward))
   const [validationMessage, setValidationMessage] = useState('')
+
+  if (initialValue !== previousInitialValue) {
+    const nextForm = initialValue ?? defaultLesson
+    setPreviousInitialValue(initialValue)
+    setForm(nextForm)
+    setOrderIndexInput(String(nextForm.orderIndex))
+    setXpRewardInput(String(nextForm.xpReward))
+    setValidationMessage('')
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    const orderIndex = Number(orderIndexInput)
+    const xpReward = Number(xpRewardInput)
 
     if (!form.title.trim()) {
       setValidationMessage('Vui lòng nhập tiêu đề bài học.')
       return
     }
 
-    if (form.xpReward < 0) {
+    if (!orderIndexInput.trim() || !Number.isFinite(orderIndex)) {
+      setValidationMessage('Vui lòng nhập thứ tự hợp lệ.')
+      return
+    }
+
+    if (!xpRewardInput.trim() || !Number.isFinite(xpReward)) {
+      setValidationMessage('Vui lòng nhập XP hợp lệ.')
+      return
+    }
+
+    if (xpReward < 0) {
       setValidationMessage('XP không được nhỏ hơn 0.')
       return
     }
 
     setValidationMessage('')
-    onSubmit(form)
+    onSubmit({ ...form, orderIndex, xpReward })
   }
 
   return (
@@ -93,8 +118,8 @@ export function LessonForm({ initialValue, loading = false, submitLabel, onSubmi
         <input
           className={fieldClassName}
           type="number"
-          value={form.orderIndex}
-          onChange={(event) => setForm((current) => ({ ...current, orderIndex: Number(event.target.value) }))}
+          value={orderIndexInput}
+          onChange={(event) => setOrderIndexInput(event.target.value)}
         />
       </label>
 
@@ -103,8 +128,8 @@ export function LessonForm({ initialValue, loading = false, submitLabel, onSubmi
         <input
           className={fieldClassName}
           type="number"
-          value={form.xpReward}
-          onChange={(event) => setForm((current) => ({ ...current, xpReward: Number(event.target.value) }))}
+          value={xpRewardInput}
+          onChange={(event) => setXpRewardInput(event.target.value)}
         />
       </label>
 

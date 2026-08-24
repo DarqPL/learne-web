@@ -22,19 +22,36 @@ const fieldClassName =
   'mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500'
 
 export function CourseForm({ initialValue, loading = false, submitLabel, onSubmit }: CourseFormProps) {
-  const [form, setForm] = useState<TeacherCourseRequest>(initialValue ?? defaultCourse)
+  const initialForm = initialValue ?? defaultCourse
+  const [previousInitialValue, setPreviousInitialValue] = useState(initialValue)
+  const [form, setForm] = useState<TeacherCourseRequest>(initialForm)
+  const [orderIndexInput, setOrderIndexInput] = useState(String(initialForm.orderIndex))
   const [validationMessage, setValidationMessage] = useState('')
+
+  if (initialValue !== previousInitialValue) {
+    const nextForm = initialValue ?? defaultCourse
+    setPreviousInitialValue(initialValue)
+    setForm(nextForm)
+    setOrderIndexInput(String(nextForm.orderIndex))
+    setValidationMessage('')
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    const orderIndex = Number(orderIndexInput)
 
     if (!form.name.trim() || !form.level.trim()) {
       setValidationMessage('Vui lòng nhập tên khóa học và cấp độ.')
       return
     }
 
+    if (!orderIndexInput.trim() || !Number.isFinite(orderIndex)) {
+      setValidationMessage('Vui lòng nhập thứ tự hợp lệ.')
+      return
+    }
+
     setValidationMessage('')
-    onSubmit(form)
+    onSubmit({ ...form, orderIndex })
   }
 
   return (
@@ -86,8 +103,8 @@ export function CourseForm({ initialValue, loading = false, submitLabel, onSubmi
         <input
           className={fieldClassName}
           type="number"
-          value={form.orderIndex}
-          onChange={(event) => setForm((current) => ({ ...current, orderIndex: Number(event.target.value) }))}
+          value={orderIndexInput}
+          onChange={(event) => setOrderIndexInput(event.target.value)}
         />
       </label>
 
