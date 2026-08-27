@@ -165,7 +165,7 @@ export function AdminContentReviewPage() {
 
         <section className={cardClassName}>
           {selectedCourse === null ? (
-            <p className="text-gray-600">Chọn một khóa học để xem nội dung cần duyệt.</p>
+            <p className="text-sm text-gray-600">Chọn một khóa học để xem nội dung cần duyệt.</p>
           ) : (
             <div className="space-y-6">
               <div className="flex flex-col gap-4 border-b border-gray-200 pb-5 lg:flex-row lg:items-start lg:justify-between">
