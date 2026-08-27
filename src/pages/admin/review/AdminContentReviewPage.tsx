@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { approveReviewCourse, getReviewCourse, listPendingReviewCourses, rejectReviewCourse } from '../../../lib/api/adminReviewApi'
 import type { AdminReviewCourseDetail, AdminReviewCourseSummary } from '../../../lib/api/types'
@@ -22,26 +22,33 @@ export function AdminContentReviewPage() {
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [action, setAction] = useState<string | null>(null)
+  const mountedRef = useRef(false)
+  const detailRequestIdRef = useRef(0)
 
   useEffect(() => {
     let cancelled = false
+    mountedRef.current = true
     void (async () => {
       try {
         const response = await listPendingReviewCourses()
         const pendingCourses = response.data
-        if (cancelled) return
+        if (cancelled || !mountedRef.current) return
 
         setCourses(pendingCourses)
         const firstCourseId = pendingCourses[0]?.id ?? null
         if (firstCourseId === null) {
+          detailRequestIdRef.current += 1
           setSelectedCourse(null)
           return
         }
 
+        const requestId = detailRequestIdRef.current + 1
+        detailRequestIdRef.current = requestId
         const detailResponse = await getReviewCourse(firstCourseId)
-        if (!cancelled) setSelectedCourse(detailResponse.data)
+        if (!cancelled && mountedRef.current && detailRequestIdRef.current === requestId) setSelectedCourse(detailResponse.data)
       } catch (err) {
-        if (!cancelled) {
+        if (!cancelled && mountedRef.current) {
+          detailRequestIdRef.current += 1
           setError(getApiErrorMessage(err, 'Không thể tải khóa học chờ duyệt.'))
           setCourses([])
           setSelectedCourse(null)
@@ -50,32 +57,46 @@ export function AdminContentReviewPage() {
     })()
     return () => {
       cancelled = true
+      mountedRef.current = false
+      detailRequestIdRef.current += 1
     }
   }, [])
 
   const loadPendingCourses = async (nextSelectedId?: number | null) => {
     const response = await listPendingReviewCourses()
     const pendingCourses = response.data
+    if (!mountedRef.current) return
+
     setCourses(pendingCourses)
 
     const nextCourseId = nextSelectedId ?? pendingCourses[0]?.id ?? null
     if (nextCourseId === null) {
+      detailRequestIdRef.current += 1
       setSelectedCourse(null)
       return
     }
 
+    const requestId = detailRequestIdRef.current + 1
+    detailRequestIdRef.current = requestId
+    setSelectedCourse(null)
     const detailResponse = await getReviewCourse(nextCourseId)
-    setSelectedCourse(detailResponse.data)
+    if (mountedRef.current && detailRequestIdRef.current === requestId) setSelectedCourse(detailResponse.data)
   }
 
   const handleSelectCourse = async (courseId: number) => {
+    const requestId = detailRequestIdRef.current + 1
+    detailRequestIdRef.current = requestId
     setError(null)
     setInfo(null)
+    setSelectedCourse(null)
     try {
       const response = await getReviewCourse(courseId)
-      setSelectedCourse(response.data)
+      if (mountedRef.current && detailRequestIdRef.current === requestId) setSelectedCourse(response.data)
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Không thể tải khóa học chờ duyệt.'))
+      if (mountedRef.current && detailRequestIdRef.current === requestId) {
+        setSelectedCourse(null)
+        setError(getApiErrorMessage(err, 'Không thể tải khóa học chờ duyệt.'))
+      }
     }
   }
 
@@ -86,12 +107,13 @@ export function AdminContentReviewPage() {
     setInfo(null)
     try {
       await approveReviewCourse(selectedCourse.id)
+      if (!mountedRef.current) return
       setInfo('Đã duyệt khóa học.')
       await loadPendingCourses(null)
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Không thể cập nhật kiểm duyệt nội dung.'))
+      if (mountedRef.current) setError(getApiErrorMessage(err, 'Không thể cập nhật kiểm duyệt nội dung.'))
     } finally {
-      setAction(null)
+      if (mountedRef.current) setAction(null)
     }
   }
 
@@ -102,12 +124,13 @@ export function AdminContentReviewPage() {
     setInfo(null)
     try {
       await rejectReviewCourse(selectedCourse.id, { reason })
+      if (!mountedRef.current) return
       setInfo('Đã từ chối khóa học.')
       await loadPendingCourses(null)
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Không thể cập nhật kiểm duyệt nội dung.'))
+      if (mountedRef.current) setError(getApiErrorMessage(err, 'Không thể cập nhật kiểm duyệt nội dung.'))
     } finally {
-      setAction(null)
+      if (mountedRef.current) setAction(null)
     }
   }
 
@@ -135,14 +158,16 @@ export function AdminContentReviewPage() {
           ) : (
             <div className="mt-4 space-y-3">
               {courses.map((course) => {
-                const selected = selectedCourse?.id === course.id
+                const isSelected = selectedCourse?.id === course.id
                 return (
                   <button
                     key={course.id}
                     type="button"
                     className={`w-full rounded-xl border p-4 text-left transition-colors ${
-                      selected ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200 bg-white hover:border-indigo-200 hover:bg-gray-50'
+                      isSelected ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200 bg-white hover:border-indigo-200 hover:bg-gray-50'
                     }`}
+                    disabled={action !== null}
+                    aria-current={isSelected ? 'true' : undefined}
                     onClick={() => handleSelectCourse(course.id)}
                   >
                     <span className="block font-medium text-gray-900">{course.name}</span>
