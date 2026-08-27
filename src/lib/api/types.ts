@@ -175,3 +175,91 @@ export interface TeacherQuestionRequest {
   xpReward: number
   options: TeacherQuestionOptionRequest[]
 }
+
+export interface AdminReviewCourseSummary {
+  id: number
+  name: string
+  description: string | null
+  type: CourseType
+  level: string
+  status: ContentStatus
+  teacherId: number
+  teacherName: string
+  teacherEmail: string
+  topicCount: number
+  lessonCount: number
+  questionCount: number
+  updatedAt: string
+}
+
+export interface AdminReviewQuestionOption {
+  id: number
+  optionText: string
+  correct: boolean
+  orderIndex: number
+}
+
+export interface AdminReviewQuestion {
+  id: number
+  type: QuestionType
+  questionText: string
+  explanation: string | null
+  correctAnswer: string | null
+  knowledgePoint: string | null
+  orderIndex: number
+  difficulty: string | null
+  xpReward: number
+  status: ContentStatus
+  rejectionReason: string | null
+  reviewedByAdminId: number | null
+  reviewedAt: string | null
+  options: AdminReviewQuestionOption[]
+}
+
+export interface AdminReviewLesson {
+  id: number
+  title: string
+  description: string | null
+  content: string | null
+  skillType: SkillType
+  orderIndex: number
+  xpReward: number
+  placementTest: boolean
+  status: ContentStatus
+  rejectionReason: string | null
+  reviewedByAdminId: number | null
+  reviewedAt: string | null
+  publishedAt: string | null
+  questions: AdminReviewQuestion[]
+}
+
+export interface AdminReviewTopic {
+  id: number
+  name: string
+  description: string | null
+  orderIndex: number
+  lessons: AdminReviewLesson[]
+}
+
+export interface AdminReviewCourseDetail {
+  id: number
+  name: string
+  description: string | null
+  type: CourseType
+  level: string
+  orderIndex: number
+  status: ContentStatus
+  rejectionReason: string | null
+  teacherId: number
+  teacherName: string
+  teacherEmail: string
+  reviewedByAdminId: number | null
+  reviewedAt: string | null
+  publishedAt: string | null
+  updatedAt: string
+  topics: AdminReviewTopic[]
+}
+
+export interface RejectContentRequest {
+  reason: string
+}
