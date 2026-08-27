@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom'
 const tabs = [
   { label: 'Tổng quan', to: '/admin', end: true },
   { label: 'Quản lý giảng viên', to: '/admin/teachers', end: false },
+  { label: 'Kiểm duyệt nội dung', to: '/admin/reviews', end: false },
 ]
 
 export function AdminSidebar() {

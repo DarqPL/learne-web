@@ -15,6 +15,7 @@ import { TeacherContentPage } from './pages/teacher/content/TeacherContentPage'
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
 import { CreateTeacherPage } from './pages/admin/CreateTeacherPage'
 import { AdminTeacherListPage } from './pages/admin/AdminTeacherListPage'
+import { AdminContentReviewPage } from './pages/admin/review/AdminContentReviewPage'
 import { TeacherProfilePage } from './pages/teacher/TeacherProfilePage'
 import { TeacherListPage } from './pages/student/TeacherListPage'
 import { TeacherDetailPage } from './pages/student/TeacherDetailPage'
@@ -54,6 +55,7 @@ export default function App() {
               <Route path="/admin" element={<AdminDashboardPage />} />
               <Route path="/admin/teachers/new" element={<CreateTeacherPage />} />
               <Route path="/admin/teachers" element={<AdminTeacherListPage />} />
+              <Route path="/admin/reviews" element={<AdminContentReviewPage />} />
             </Route>
           </Route>
         </Route>
