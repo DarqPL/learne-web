@@ -10,6 +10,7 @@ export interface RejectCourseFormProps {
 export function RejectCourseForm({ loading = false, disabled = false, onSubmit }: RejectCourseFormProps) {
   const [reason, setReason] = useState('')
   const [validation, setValidation] = useState<string | null>(null)
+  const validationId = 'reject-course-reason-error'
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -37,11 +38,17 @@ export function RejectCourseForm({ loading = false, disabled = false, onSubmit }
           className="mt-1 min-h-28 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           value={reason}
           maxLength={2000}
+          aria-invalid={validation ? true : undefined}
+          aria-describedby={validation ? validationId : undefined}
           onChange={(event) => setReason(event.target.value)}
           placeholder="Nhập nội dung cần giảng viên chỉnh sửa trước khi gửi duyệt lại."
         />
       </label>
-      {validation ? <div className="text-sm text-red-600">{validation}</div> : null}
+      {validation ? (
+        <div id={validationId} role="alert" className="text-sm text-red-600">
+          {validation}
+        </div>
+      ) : null}
       <Button type="submit" variant="danger" loading={loading} disabled={disabled}>
         Từ chối khóa học
       </Button>
