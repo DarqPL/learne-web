@@ -3,25 +3,18 @@ import type { AdminReviewCourseDetail, AdminReviewCourseSummary, RejectContentRe
 
 const base = '/api/admin/content'
 
-export async function getPendingCourses(): Promise<AdminReviewCourseSummary[]> {
-  const response = await http.get<AdminReviewCourseSummary[]>(`${base}/courses/pending`)
-  return response.data
+export function listPendingReviewCourses() {
+  return http.get<AdminReviewCourseSummary[]>(`${base}/courses/pending`)
 }
 
-export async function getCourseReviewDetail(courseId: number): Promise<AdminReviewCourseDetail> {
-  const response = await http.get<AdminReviewCourseDetail>(`${base}/courses/${courseId}`)
-  return response.data
+export function getReviewCourse(courseId: number) {
+  return http.get<AdminReviewCourseDetail>(`${base}/courses/${courseId}`)
 }
 
-export async function approveCourse(courseId: number): Promise<AdminReviewCourseDetail> {
-  const response = await http.post<AdminReviewCourseDetail>(`${base}/courses/${courseId}/approve`)
-  return response.data
+export function approveReviewCourse(courseId: number) {
+  return http.post<AdminReviewCourseDetail>(`${base}/courses/${courseId}/approve`, {})
 }
 
-export async function rejectCourse(
-  courseId: number,
-  payload: RejectContentRequest,
-): Promise<AdminReviewCourseDetail> {
-  const response = await http.post<AdminReviewCourseDetail>(`${base}/courses/${courseId}/reject`, payload)
-  return response.data
+export function rejectReviewCourse(courseId: number, payload: RejectContentRequest) {
+  return http.post<AdminReviewCourseDetail>(`${base}/courses/${courseId}/reject`, payload)
 }
