@@ -233,7 +233,7 @@ export function AdminContentReviewPage() {
                 <Button loading={action?.startsWith('approve-course') ?? false} disabled={action !== null} onClick={handleApproveCourse}>
                   Duyệt khóa học
                 </Button>
-                <RejectCourseForm loading={action?.startsWith('reject-course') ?? false} disabled={action !== null} onSubmit={handleRejectCourse} />
+                <RejectCourseForm key={selectedCourse.id} loading={action?.startsWith('reject-course') ?? false} disabled={action !== null} onSubmit={handleRejectCourse} />
               </div>
 
               <div className="space-y-5">
