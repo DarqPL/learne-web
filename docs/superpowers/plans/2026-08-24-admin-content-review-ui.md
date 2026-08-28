@@ -53,7 +53,7 @@ Out of scope for this Phase 5 UI plan:
 **Files:**
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\src\lib\api\types.ts`
 
-- [ ] **Step 1: Append admin review types**
+- [x] **Step 1: Append admin review types**
 
 Append this block to `src/lib/api/types.ts`. If `ContentStatus`, `CourseType`, `SkillType`, or `QuestionType` already exist from Phase 4 UI, do not duplicate those enum type definitions; append only the `AdminReview*` interfaces and reuse the existing enum types. If those enum types do not exist in the execution branch, add them exactly as shown before the interfaces.
 
@@ -170,7 +170,7 @@ export interface RejectContentRequest {
 }
 ```
 
-- [ ] **Step 2: Typecheck**
+- [x] **Step 2: Typecheck**
 
 Run:
 
@@ -180,7 +180,7 @@ node node_modules/typescript/bin/tsc --noEmit
 
 Expected: exit 0.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/lib/api/types.ts
@@ -194,7 +194,7 @@ git commit -m "feat: add admin content review API types"
 **Files:**
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\lib\api\adminReviewApi.ts`
 
-- [ ] **Step 1: Create API wrapper**
+- [x] **Step 1: Create API wrapper**
 
 Create `src/lib/api/adminReviewApi.ts`:
 
@@ -221,7 +221,7 @@ export function rejectReviewCourse(courseId: number, payload: RejectContentReque
 }
 ```
 
-- [ ] **Step 2: Verify and commit**
+- [x] **Step 2: Verify and commit**
 
 Run:
 
@@ -246,7 +246,7 @@ git commit -m "feat: add admin content review API client"
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\pages\admin\review\adminReviewLabels.ts`
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\pages\admin\review\adminReviewUtils.ts`
 
-- [ ] **Step 1: Create labels**
+- [x] **Step 1: Create labels**
 
 Create `adminReviewLabels.ts`:
 
@@ -301,7 +301,7 @@ export const reviewQuestionTypeLabels: Record<QuestionType, string> = {
 }
 ```
 
-- [ ] **Step 2: Create utilities**
+- [x] **Step 2: Create utilities**
 
 Create `adminReviewUtils.ts`:
 
@@ -328,7 +328,7 @@ export function formatReviewDate(value: string | null) {
 }
 ```
 
-- [ ] **Step 3: Verify and commit**
+- [x] **Step 3: Verify and commit**
 
 Run:
 
@@ -352,7 +352,7 @@ git commit -m "feat: add admin review labels and helpers"
 **Files:**
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\pages\admin\review\RejectCourseForm.tsx`
 
-- [ ] **Step 1: Create form**
+- [x] **Step 1: Create form**
 
 Create `RejectCourseForm.tsx`:
 
@@ -407,7 +407,7 @@ export function RejectCourseForm({ loading = false, disabled = false, onSubmit }
 }
 ```
 
-- [ ] **Step 2: Verify and commit**
+- [x] **Step 2: Verify and commit**
 
 Run:
 
@@ -431,7 +431,7 @@ git commit -m "feat: add reject course review form"
 **Files:**
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\pages\admin\review\AdminContentReviewPage.tsx`
 
-- [ ] **Step 1: Create page state and load flow**
+- [x] **Step 1: Create page state and load flow**
 
 Create `AdminContentReviewPage.tsx` with these imports:
 
@@ -460,7 +460,7 @@ const [action, setAction] = useState<string | null>(null)
 
 Load pending list on mount using async IIFE + cancellation flag. If list is non-empty, load the first course detail.
 
-- [ ] **Step 2: Add load/select/action handlers**
+- [x] **Step 2: Add load/select/action handlers**
 
 Implement handlers:
 
@@ -490,7 +490,7 @@ Common error fallback:
 getApiErrorMessage(err, 'Không thể cập nhật kiểm duyệt nội dung.')
 ```
 
-- [ ] **Step 3: Render pending list**
+- [x] **Step 3: Render pending list**
 
 Render header:
 
@@ -510,7 +510,7 @@ Left card:
   - topic/lesson/question counts from summary
   - updated date via `formatReviewDate(course.updatedAt)`
 
-- [ ] **Step 4: Render selected course detail**
+- [x] **Step 4: Render selected course detail**
 
 Right card when no selection:
 
@@ -533,7 +533,7 @@ When selected:
 
 Do not render edit/create/delete controls for content. This page is review-only except approve/reject course.
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 Run:
 
@@ -559,7 +559,7 @@ git commit -m "feat: add admin content review page"
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\src\layouts\AdminSidebar.tsx`
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\src\pages\admin\AdminDashboardPage.tsx`
 
-- [ ] **Step 1: Add route**
+- [x] **Step 1: Add route**
 
 In `App.tsx`, import:
 
@@ -573,7 +573,7 @@ Under `AdminLayout`, add route:
 <Route path="/admin/reviews" element={<AdminContentReviewPage />} />
 ```
 
-- [ ] **Step 2: Add sidebar item**
+- [x] **Step 2: Add sidebar item**
 
 In `AdminSidebar.tsx`, update `tabs` to:
 
@@ -585,7 +585,7 @@ const tabs = [
 ]
 ```
 
-- [ ] **Step 3: Update dashboard copy**
+- [x] **Step 3: Update dashboard copy**
 
 In `AdminDashboardPage.tsx`, update the paragraph to:
 
@@ -593,7 +593,7 @@ In `AdminDashboardPage.tsx`, update the paragraph to:
 Chào mừng {user?.fullName}! Quản lý giảng viên và kiểm duyệt nội dung học tập ở các tab bên trái.
 ```
 
-- [ ] **Step 4: Verify and commit**
+- [x] **Step 4: Verify and commit**
 
 Run:
 
@@ -617,7 +617,7 @@ git commit -m "feat: add admin content review route"
 **Files:**
 - Test: `C:\Users\Admin\AppData\Local\Temp\opencode\test_admin_content_review.py`
 
-- [ ] **Step 1: Ensure dev stack is running**
+- [x] **Step 1: Ensure dev stack is running**
 
 From `C:\baobao\KLTN\learne-platform\infra`, run if needed:
 
@@ -627,7 +627,7 @@ docker compose -f docker-compose.dev.yml up -d --build
 
 Expected services: frontend 5173, backend 8080, Mailpit 8025, PostgreSQL healthy.
 
-- [ ] **Step 2: Create test script**
+- [x] **Step 2: Create test script**
 
 Create `C:\Users\Admin\AppData\Local\Temp\opencode\test_admin_content_review.py`.
 
@@ -646,7 +646,7 @@ Script requirements:
 
 Use UI login flow, not localStorage token injection. If using backend API setup, authenticate with `/api/auth/login` and pass `Authorization: Bearer <accessToken>` for teacher/admin API calls.
 
-- [ ] **Step 3: Run script**
+- [x] **Step 3: Run script**
 
 Run from temp directory:
 
@@ -663,7 +663,7 @@ Expected: all checks PASS. If selectors need adjustment, update only the temp sc
 **Files:**
 - Modify: `C:\baobao\KLTN\learne-platform\docs\Docs_Capstone\Project_Plan_Trello_Kanban.md`
 
-- [ ] **Step 1: Update Phase 5 section**
+- [x] **Step 1: Update Phase 5 section**
 
 After successful frontend implementation and Playwright verification, update Phase 5 with a new subsection:
 
@@ -678,7 +678,7 @@ After successful frontend implementation and Playwright verification, update Pha
 
 Update `### Công Việc Chính` by removing or marking complete the three frontend Phase 5 bullets now completed. Keep the Phase 6 approved-filter bullet as future work.
 
-- [ ] **Step 2: Commit docs**
+- [x] **Step 2: Commit docs**
 
 Commit inside docs submodule if `docs/` is a submodule and this file belongs there:
 
@@ -696,7 +696,7 @@ If working from root, do not commit root pointer until frontend and docs submodu
 **Files:**
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\docs\superpowers\plans\2026-08-24-admin-content-review-ui.md`
 
-- [ ] **Step 1: Final verification**
+- [x] **Step 1: Final verification**
 
 Run from frontend:
 
@@ -714,7 +714,7 @@ python test_admin_content_review.py
 
 Expected: all checks PASS.
 
-- [ ] **Step 2: Review diffs**
+- [x] **Step 2: Review diffs**
 
 Run in frontend:
 
@@ -734,7 +734,7 @@ git log --oneline origin/main..HEAD
 
 Expected docs changes are limited to `Docs_Capstone/Project_Plan_Trello_Kanban.md`.
 
-- [ ] **Step 3: Tick plan checkboxes**
+- [x] **Step 3: Tick plan checkboxes**
 
 Change every task checkbox in this file from `- [ ]` to `- [x]`, except the literal checkbox example in the header sentence.
 
@@ -745,7 +745,7 @@ git add docs/superpowers/plans/2026-08-24-admin-content-review-ui.md
 git commit -m "docs: mark admin content review UI plan complete"
 ```
 
-- [ ] **Step 4: Push branches**
+- [x] **Step 4: Push branches**
 
 Push frontend branch:
 
