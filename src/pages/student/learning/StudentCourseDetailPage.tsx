@@ -31,6 +31,7 @@ export function StudentCourseDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [enrollingCourseId, setEnrollingCourseId] = useState<number | null>(null)
+  const [redirectingEnrollmentId, setRedirectingEnrollmentId] = useState<number | null>(null)
   const enrollmentRedirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const currentCourseIdRef = useRef(courseId)
   const mountedRef = useRef(true)
@@ -53,6 +54,7 @@ export function StudentCourseDetailPage() {
         clearTimeout(enrollmentRedirectTimerRef.current)
         enrollmentRedirectTimerRef.current = null
       }
+      setRedirectingEnrollmentId(null)
     }
   }, [courseId])
 
@@ -83,7 +85,7 @@ export function StudentCourseDetailPage() {
   }, [courseId])
 
   async function handleEnroll() {
-    if (!course || enrollingCourseId === course.id) return
+    if (!course || enrollingCourseId === course.id || redirectingEnrollmentId === course.id) return
 
     const enrollCourseId = course.id
     setError(null)
@@ -93,6 +95,7 @@ export function StudentCourseDetailPage() {
       const response = await enrollStudentCourse(enrollCourseId)
       if (!mountedRef.current || currentCourseIdRef.current !== enrollCourseId) return
       setInfo('Đăng ký khóa học thành công.')
+      setRedirectingEnrollmentId(enrollCourseId)
       if (enrollmentRedirectTimerRef.current) clearTimeout(enrollmentRedirectTimerRef.current)
       enrollmentRedirectTimerRef.current = setTimeout(() => {
         navigate(`/student/enrollments/${response.data.id}`)
@@ -133,6 +136,7 @@ export function StudentCourseDetailPage() {
 
   const lessonCount = countStudentLessons(course)
   const questionCount = countStudentQuestions(course)
+  const enrollmentActionPending = enrollingCourseId === course.id || redirectingEnrollmentId === course.id
 
   return (
     <div className="space-y-6">
@@ -163,7 +167,7 @@ export function StudentCourseDetailPage() {
               <Button onClick={() => navigate(`/student/enrollments/${course.activeEnrollmentId}`)}>Tiếp tục học</Button>
             ) : null}
             {!course.enrolled ? (
-              <Button loading={enrollingCourseId === course.id} onClick={handleEnroll}>
+              <Button loading={enrollmentActionPending} onClick={handleEnroll}>
                 Đăng ký khóa học
               </Button>
             ) : null}
