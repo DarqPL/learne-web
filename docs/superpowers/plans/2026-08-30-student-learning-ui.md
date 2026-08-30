@@ -707,9 +707,9 @@ Required behavior:
 - Left/topic list shows lesson buttons with title, status badge, skill label, progress percent, and `aria-current` for selected lesson.
 - Right learning panel:
   - If no selected lesson: `Chưa có bài học nào trong khóa học này.`
-  - If selected: show lesson title, skill label, status, started/completed dates, content as whitespace-preserving text or `Bài học chưa có nội dung.`
+  - If selected: show lesson title, skill label, status, started/completed dates, content as whitespace-preserving text or `Bài học chưa có nội dung.`. For `LOCKED` lessons, do not show content; show `Bài học này chưa được mở khóa.` instead.
   - If status `UNLOCKED`, show button `Bắt đầu học` calling `startStudentLesson`.
-  - If status is not `COMPLETED`, show button `Hoàn thành bài học` calling `completeStudentLesson`.
+  - If status `IN_PROGRESS`, show button `Hoàn thành bài học` calling `completeStudentLesson`.
   - Disable action buttons while `action !== null`.
   - Success messages: `Đã bắt đầu bài học.` and `Đã hoàn thành bài học.`
   - Error fallback: `Không thể cập nhật tiến độ bài học.`
