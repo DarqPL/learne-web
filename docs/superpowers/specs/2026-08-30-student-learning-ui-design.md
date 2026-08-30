@@ -86,7 +86,7 @@ Trang `/student/enrollments/:id` gọi `GET /api/student/enrollments/{enrollment
 
 Mỗi lesson progress hiển thị title, status, progressPercent, skillType và nội dung bài học. Với MVP Phase 6, lesson content có thể hiển thị trực tiếp trong panel khi học viên chọn lesson. Các nút hành động:
 
-- `Bắt đầu học` gọi start lesson khi status là `NOT_STARTED`.
+- `Bắt đầu học` gọi start lesson khi status là `UNLOCKED`.
 - `Hoàn thành bài học` gọi complete lesson khi status chưa hoàn thành.
 - Sau mỗi action, reload enrollment progress từ response hoặc gọi lại detail để cập nhật tiến độ.
 

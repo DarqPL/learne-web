@@ -55,7 +55,7 @@ Append this block after `RejectContentRequest` in `src/lib/api/types.ts`. Reuse 
 ```ts
 export type EnrollmentStatus = 'ACTIVE' | 'COMPLETED' | 'CANCELLED'
 
-export type LessonProgressStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED'
+export type LessonProgressStatus = 'LOCKED' | 'UNLOCKED' | 'IN_PROGRESS' | 'COMPLETED'
 
 export interface StudentCourseSummary {
   id: number
@@ -321,13 +321,15 @@ export const enrollmentStatusStyles: Record<EnrollmentStatus, string> = {
 }
 
 export const lessonProgressStatusLabels: Record<LessonProgressStatus, string> = {
-  NOT_STARTED: 'Chưa bắt đầu',
+  LOCKED: 'Chưa mở khóa',
+  UNLOCKED: 'Chưa bắt đầu',
   IN_PROGRESS: 'Đang học',
   COMPLETED: 'Đã hoàn thành',
 }
 
 export const lessonProgressStatusStyles: Record<LessonProgressStatus, string> = {
-  NOT_STARTED: 'bg-gray-100 text-gray-600',
+  LOCKED: 'bg-slate-100 text-slate-500',
+  UNLOCKED: 'bg-gray-100 text-gray-600',
   IN_PROGRESS: 'bg-amber-100 text-amber-700',
   COMPLETED: 'bg-green-100 text-green-700',
 }
@@ -706,7 +708,7 @@ Required behavior:
 - Right learning panel:
   - If no selected lesson: `Chưa có bài học nào trong khóa học này.`
   - If selected: show lesson title, skill label, status, started/completed dates, content as whitespace-preserving text or `Bài học chưa có nội dung.`
-  - If status `NOT_STARTED`, show button `Bắt đầu học` calling `startStudentLesson`.
+  - If status `UNLOCKED`, show button `Bắt đầu học` calling `startStudentLesson`.
   - If status is not `COMPLETED`, show button `Hoàn thành bài học` calling `completeStudentLesson`.
   - Disable action buttons while `action !== null`.
   - Success messages: `Đã bắt đầu bài học.` and `Đã hoàn thành bài học.`
