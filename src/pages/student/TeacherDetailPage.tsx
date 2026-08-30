@@ -58,10 +58,11 @@ export function TeacherDetailPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="mb-4">
+      <div className="mb-4 flex flex-wrap gap-3">
         <Button variant="secondary" onClick={() => navigate('/student/teachers')}>
           Quay lại danh sách
         </Button>
+        <Button onClick={() => navigate(`/student/courses?teacherId=${teacherId}`)}>Xem khóa học của giảng viên</Button>
       </div>
       <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
         <div className="flex items-center gap-6 border-b border-gray-200 p-6">

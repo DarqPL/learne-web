@@ -102,6 +102,17 @@ export function StudentCourseListPage() {
         </label>
       </div>
 
+      {teacherId ? (
+        <div className="mb-6 flex flex-wrap items-center gap-3">
+          <span className="rounded-full bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-700">
+            Đang lọc theo giảng viên #{teacherId}
+          </span>
+          <Button variant="secondary" onClick={clearFilters}>
+            Xóa bộ lọc
+          </Button>
+        </div>
+      ) : null}
+
       {error ? (
         <div className="space-y-4">
           <Alert>{error}</Alert>
