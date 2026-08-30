@@ -30,7 +30,7 @@ export function StudentCourseDetailPage() {
   const [course, setCourse] = useState<StudentCourseDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
-  const [enrolling, setEnrolling] = useState(false)
+  const [enrollingCourseId, setEnrollingCourseId] = useState<number | null>(null)
   const enrollmentRedirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const currentCourseIdRef = useRef(courseId)
   const mountedRef = useRef(true)
@@ -83,24 +83,24 @@ export function StudentCourseDetailPage() {
   }, [courseId])
 
   async function handleEnroll() {
-    if (!course || enrolling) return
+    if (!course || enrollingCourseId === course.id) return
 
-    const enrollingCourseId = course.id
+    const enrollCourseId = course.id
     setError(null)
     setInfo(null)
-    setEnrolling(true)
+    setEnrollingCourseId(enrollCourseId)
     try {
-      const response = await enrollStudentCourse(enrollingCourseId)
-      if (!mountedRef.current || currentCourseIdRef.current !== enrollingCourseId) return
+      const response = await enrollStudentCourse(enrollCourseId)
+      if (!mountedRef.current || currentCourseIdRef.current !== enrollCourseId) return
       setInfo('Đăng ký khóa học thành công.')
       if (enrollmentRedirectTimerRef.current) clearTimeout(enrollmentRedirectTimerRef.current)
       enrollmentRedirectTimerRef.current = setTimeout(() => {
         navigate(`/student/enrollments/${response.data.id}`)
       }, enrollmentRedirectDelayMs)
     } catch (err) {
-      if (!mountedRef.current) return
+      if (!mountedRef.current || currentCourseIdRef.current !== enrollCourseId) return
       setError(getApiErrorMessage(err, 'Không thể đăng ký khóa học.'))
-      setEnrolling(false)
+      setEnrollingCourseId(null)
     }
   }
 
@@ -160,7 +160,7 @@ export function StudentCourseDetailPage() {
               <Button onClick={() => navigate(`/student/enrollments/${course.activeEnrollmentId}`)}>Tiếp tục học</Button>
             ) : null}
             {!course.enrolled ? (
-              <Button loading={enrolling} onClick={handleEnroll}>
+              <Button loading={enrollingCourseId === course.id} onClick={handleEnroll}>
                 Đăng ký khóa học
               </Button>
             ) : null}
