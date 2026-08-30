@@ -7,9 +7,9 @@ export function StudentLayout() {
     <AppShell>
       <div className="lg:flex lg:gap-6">
         <StudentSidebar />
-        <main className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1">
           <Outlet />
-        </main>
+        </div>
       </div>
     </AppShell>
   )
