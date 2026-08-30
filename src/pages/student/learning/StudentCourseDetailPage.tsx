@@ -35,11 +35,21 @@ export function StudentCourseDetailPage() {
   const mountedRef = useRef(true)
 
   useEffect(() => {
+    mountedRef.current = true
     return () => {
       mountedRef.current = false
       if (enrollmentRedirectTimerRef.current) clearTimeout(enrollmentRedirectTimerRef.current)
     }
   }, [])
+
+  useEffect(() => {
+    return () => {
+      if (enrollmentRedirectTimerRef.current) {
+        clearTimeout(enrollmentRedirectTimerRef.current)
+        enrollmentRedirectTimerRef.current = null
+      }
+    }
+  }, [courseId])
 
   useEffect(() => {
     let cancelled = false
@@ -77,6 +87,7 @@ export function StudentCourseDetailPage() {
       const response = await enrollStudentCourse(course.id)
       if (!mountedRef.current) return
       setInfo('Đăng ký khóa học thành công.')
+      if (enrollmentRedirectTimerRef.current) clearTimeout(enrollmentRedirectTimerRef.current)
       enrollmentRedirectTimerRef.current = setTimeout(() => {
         navigate(`/student/enrollments/${response.data.id}`)
       }, enrollmentRedirectDelayMs)
@@ -88,11 +99,19 @@ export function StudentCourseDetailPage() {
   }
 
   if (courseId === null) {
-    return <Alert>Không tìm thấy khóa học.</Alert>
+    return (
+      <div role="alert">
+        <Alert>Không tìm thấy khóa học.</Alert>
+      </div>
+    )
   }
 
   if (error && !course) {
-    return <Alert>{error}</Alert>
+    return (
+      <div role="alert">
+        <Alert>{error}</Alert>
+      </div>
+    )
   }
 
   if (!course) {
@@ -164,8 +183,16 @@ export function StudentCourseDetailPage() {
         </dl>
       </section>
 
-      {error ? <Alert>{error}</Alert> : null}
-      {info ? <Alert variant="success">{info}</Alert> : null}
+      {error ? (
+        <div role="alert">
+          <Alert>{error}</Alert>
+        </div>
+      ) : null}
+      {info ? (
+        <div role="alert">
+          <Alert variant="success">{info}</Alert>
+        </div>
+      ) : null}
 
       <div className="space-y-6">
         {course.topics.map((topic) => (
