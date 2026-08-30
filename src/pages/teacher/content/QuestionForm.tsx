@@ -35,6 +35,8 @@ const nonNegativeIntegerPattern = /^\d+$/
 
 const textAnswerQuestionTypes: TeacherQuestionRequest['type'][] = ['FILL_BLANK', 'WORD_ORDER', 'TRANSLATION', 'SHORT_ANSWER']
 
+const difficultyOptions = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
+
 function usesTextAnswer(type: TeacherQuestionRequest['type']) {
   return textAnswerQuestionTypes.includes(type) || type === 'PRONUNCIATION'
 }
@@ -244,21 +246,17 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
 
       <label className="block text-sm font-medium text-gray-700">
         Độ khó
-        <input
+        <select
           className={fieldClassName}
           value={form.difficulty}
           onChange={(event) => setForm((current) => ({ ...current, difficulty: event.target.value }))}
-        />
-      </label>
-
-      <label className="block text-sm font-medium text-gray-700">
-        Thứ tự
-        <input
-          className={fieldClassName}
-          type="number"
-          value={orderIndexInput}
-          onChange={(event) => setOrderIndexInput(event.target.value)}
-        />
+        >
+          {difficultyOptions.map((difficulty) => (
+            <option key={difficulty} value={difficulty}>
+              {difficulty}
+            </option>
+          ))}
+        </select>
       </label>
 
       <label className="block text-sm font-medium text-gray-700">
@@ -275,7 +273,7 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
         <div className="space-y-2">
           <p className="text-sm text-gray-600">Trắc nghiệm nhiều lựa chọn, hiện chỉ hỗ trợ một đáp án đúng.</p>
           {form.options.map((option, optionIndex) => (
-            <div className="grid gap-2 rounded-lg border border-gray-200 p-3 md:grid-cols-[1fr_auto_auto]" key={optionIndex}>
+            <div className="grid gap-2 rounded-lg border border-gray-200 p-3 md:grid-cols-[1fr_auto]" key={optionIndex}>
               <input
                 aria-label={`Nội dung lựa chọn ${optionIndex + 1}`}
                 className={fieldClassName}
@@ -307,20 +305,6 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
                 />
                 Đúng
               </label>
-              <input
-                aria-label={`Thứ tự lựa chọn ${optionIndex + 1}`}
-                className={fieldClassName}
-                type="number"
-                value={option.orderIndexInput}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    options: current.options.map((currentOption, currentIndex) =>
-                      currentIndex === optionIndex ? { ...currentOption, orderIndexInput: event.target.value } : currentOption,
-                    ),
-                  }))
-                }
-              />
               <Button
                 type="button"
                 variant="secondary"
