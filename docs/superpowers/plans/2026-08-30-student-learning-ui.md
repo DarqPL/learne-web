@@ -48,7 +48,7 @@
 **Files:**
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\src\lib\api\types.ts`
 
-- [ ] **Step 1: Append Student Learning status unions and DTOs**
+- [x] **Step 1: Append Student Learning status unions and DTOs**
 
 Append this block after `RejectContentRequest` in `src/lib/api/types.ts`. Reuse existing `CourseType`, `SkillType`, and `QuestionType` unions; do not duplicate them.
 
@@ -173,7 +173,7 @@ export interface StudentEnrollmentProgress {
 }
 ```
 
-- [ ] **Step 2: Typecheck**
+- [x] **Step 2: Typecheck**
 
 Run:
 
@@ -183,7 +183,7 @@ node node_modules/typescript/bin/tsc --noEmit
 
 Expected: exit code 0.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/lib/api/types.ts
@@ -197,7 +197,7 @@ git commit -m "feat: add student learning API types"
 **Files:**
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\lib\api\studentLearningApi.ts`
 
-- [ ] **Step 1: Create API wrapper**
+- [x] **Step 1: Create API wrapper**
 
 Create `studentLearningApi.ts` with direct Axios-returning functions matching existing API module style.
 
@@ -245,7 +245,7 @@ export function completeStudentLesson(enrollmentId: number, lessonId: number) {
 }
 ```
 
-- [ ] **Step 2: Typecheck**
+- [x] **Step 2: Typecheck**
 
 Run:
 
@@ -255,7 +255,7 @@ node node_modules/typescript/bin/tsc --noEmit
 
 Expected: exit code 0.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/lib/api/studentLearningApi.ts
@@ -270,7 +270,7 @@ git commit -m "feat: add student learning API client"
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\pages\student\learning\studentLearningLabels.ts`
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\pages\student\learning\studentLearningUtils.ts`
 
-- [ ] **Step 1: Create labels**
+- [x] **Step 1: Create labels**
 
 Create `studentLearningLabels.ts`:
 
@@ -335,7 +335,7 @@ export const lessonProgressStatusStyles: Record<LessonProgressStatus, string> = 
 }
 ```
 
-- [ ] **Step 2: Create helpers**
+- [x] **Step 2: Create helpers**
 
 Create `studentLearningUtils.ts`:
 
@@ -372,7 +372,7 @@ export function findFirstAvailableLesson(enrollment: StudentEnrollmentProgress):
 }
 ```
 
-- [ ] **Step 3: Verify and commit**
+- [x] **Step 3: Verify and commit**
 
 Run:
 
@@ -398,7 +398,7 @@ git commit -m "feat: add student learning labels and helpers"
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\src\layouts\StudentLayout.tsx`
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\src\pages\student\StudentDashboardPage.tsx`
 
-- [ ] **Step 1: Create StudentSidebar**
+- [x] **Step 1: Create StudentSidebar**
 
 Create `StudentSidebar.tsx`:
 
@@ -436,7 +436,7 @@ export function StudentSidebar() {
 }
 ```
 
-- [ ] **Step 2: Update StudentLayout**
+- [x] **Step 2: Update StudentLayout**
 
 Replace `StudentLayout.tsx` with:
 
@@ -459,7 +459,7 @@ export function StudentLayout() {
 }
 ```
 
-- [ ] **Step 3: Update dashboard entry points**
+- [x] **Step 3: Update dashboard entry points**
 
 Replace `StudentDashboardPage.tsx` with:
 
@@ -490,7 +490,7 @@ export function StudentDashboardPage() {
 }
 ```
 
-- [ ] **Step 4: Verify and commit**
+- [x] **Step 4: Verify and commit**
 
 Run:
 
@@ -514,7 +514,7 @@ git commit -m "feat: add student learning navigation"
 **Files:**
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\pages\student\learning\StudentCourseListPage.tsx`
 
-- [ ] **Step 1: Create catalog page**
+- [x] **Step 1: Create catalog page**
 
 Create a React page with these imports and state:
 
@@ -548,7 +548,7 @@ Required behavior:
 - Each card is a button navigating to `/student/courses/${course.id}` and shows name, description, teacher avatar/name/email, level, course type, topic/lesson/question counts, published date, and enrolled badge `Đã đăng ký` when `course.enrolled`.
 - Do not render any content status or Admin/Teacher controls.
 
-- [ ] **Step 2: Verify and commit**
+- [x] **Step 2: Verify and commit**
 
 Run:
 
@@ -572,7 +572,7 @@ git commit -m "feat: add student course catalog"
 **Files:**
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\pages\student\learning\StudentCourseDetailPage.tsx`
 
-- [ ] **Step 1: Create detail page**
+- [x] **Step 1: Create detail page**
 
 Create a React page with these imports:
 
@@ -604,7 +604,7 @@ Required behavior:
 - Question summaries show question type, question text, knowledge point, difficulty, XP, option count as `Số lựa chọn: {question.optionCount}`.
 - Do not display answers, options, correct/incorrect status, edit/create/delete/media controls.
 
-- [ ] **Step 2: Verify and commit**
+- [x] **Step 2: Verify and commit**
 
 Run:
 
@@ -628,7 +628,7 @@ git commit -m "feat: add student course detail enrollment"
 **Files:**
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\pages\student\learning\StudentEnrollmentsPage.tsx`
 
-- [ ] **Step 1: Create enrollments page**
+- [x] **Step 1: Create enrollments page**
 
 Create a React page with these imports:
 
@@ -655,7 +655,7 @@ Required behavior:
 - Each enrollment card is a button navigating to `/student/enrollments/${enrollment.id}`.
 - Card shows courseName, teacherName, status badge, progress bar, `{completedLessonCount}/{totalLessonCount} bài học`, enrolled date, completed date if present.
 
-- [ ] **Step 2: Verify and commit**
+- [x] **Step 2: Verify and commit**
 
 Run:
 
@@ -679,7 +679,7 @@ git commit -m "feat: add student enrollments page"
 **Files:**
 - Create: `C:\baobao\KLTN\learne-platform\frontend\src\pages\student\learning\StudentEnrollmentProgressPage.tsx`
 
-- [ ] **Step 1: Create progress page**
+- [x] **Step 1: Create progress page**
 
 Create a React page with these imports:
 
@@ -716,7 +716,7 @@ Required behavior:
 - After start/complete, update `enrollment` from response data and keep selected lesson id.
 - Do not render quiz answer inputs, answer correctness, question option lists, edit/create/delete/media controls.
 
-- [ ] **Step 2: Verify and commit**
+- [x] **Step 2: Verify and commit**
 
 Run:
 
@@ -740,7 +740,7 @@ git commit -m "feat: add student enrollment progress page"
 **Files:**
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\src\App.tsx`
 
-- [ ] **Step 1: Add imports**
+- [x] **Step 1: Add imports**
 
 Add imports near existing student page imports:
 
@@ -751,7 +751,7 @@ import { StudentEnrollmentsPage } from './pages/student/learning/StudentEnrollme
 import { StudentEnrollmentProgressPage } from './pages/student/learning/StudentEnrollmentProgressPage'
 ```
 
-- [ ] **Step 2: Add routes under StudentLayout**
+- [x] **Step 2: Add routes under StudentLayout**
 
 Inside the existing `RequireRole role="STUDENT"` and `StudentLayout` route group, add:
 
@@ -762,7 +762,7 @@ Inside the existing `RequireRole role="STUDENT"` and `StudentLayout` route group
 <Route path="/student/enrollments/:id" element={<StudentEnrollmentProgressPage />} />
 ```
 
-- [ ] **Step 3: Verify and commit**
+- [x] **Step 3: Verify and commit**
 
 Run:
 
@@ -786,7 +786,7 @@ git commit -m "feat: add student learning routes"
 **Files:**
 - Test: `C:\Users\Admin\AppData\Local\Temp\opencode\test_student_learning_phase6.py`
 
-- [ ] **Step 1: Ensure dev stack is running**
+- [x] **Step 1: Ensure dev stack is running**
 
 From `C:\baobao\KLTN\learne-platform\infra`, run if needed:
 
@@ -796,7 +796,7 @@ docker compose -f docker-compose.dev.yml up -d --build
 
 Expected services: frontend 5173, backend 8080, Mailpit 8025, PostgreSQL healthy.
 
-- [ ] **Step 2: Create Playwright script**
+- [x] **Step 2: Create Playwright script**
 
 Create `C:\Users\Admin\AppData\Local\Temp\opencode\test_student_learning_phase6.py`.
 
@@ -819,7 +819,7 @@ Script requirements:
 13. Complete the lesson with `Hoàn thành bài học`, verify success `Đã hoàn thành bài học.` and progress reaches 100% or status becomes completed.
 14. Open `/student/enrollments`, verify the enrolled course appears with progress.
 
-- [ ] **Step 3: Run script**
+- [x] **Step 3: Run script**
 
 Run from temp directory:
 
@@ -836,7 +836,7 @@ Expected: all checks PASS. If selectors need adjustment, update only the temp sc
 **Files:**
 - Modify: `C:\baobao\KLTN\learne-platform\docs\Docs_Capstone\Project_Plan_Trello_Kanban.md`
 
-- [ ] **Step 1: Update Phase 6 frontend progress**
+- [x] **Step 1: Update Phase 6 frontend progress**
 
 After successful frontend implementation and Playwright verification, add a subsection under Phase 6:
 
@@ -858,7 +858,7 @@ Update `### Công Việc Chính` in Phase 6 by marking or removing frontend bull
 
 Keep Phase 7 quiz and Phase 8 AI items as future work.
 
-- [ ] **Step 2: Commit docs submodule**
+- [x] **Step 2: Commit docs submodule**
 
 Inside docs submodule:
 
@@ -874,7 +874,7 @@ git commit -m "docs: update phase 6 frontend learning progress"
 **Files:**
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\docs\superpowers\plans\2026-08-30-student-learning-ui.md`
 
-- [ ] **Step 1: Run final frontend verification**
+- [x] **Step 1: Run final frontend verification**
 
 Run from frontend:
 
@@ -884,7 +884,7 @@ npm.cmd run lint; if ($?) { npm.cmd run build }
 
 Expected: ESLint 0 errors, build success.
 
-- [ ] **Step 2: Run final Playwright verification**
+- [x] **Step 2: Run final Playwright verification**
 
 Run from temp directory:
 
@@ -894,7 +894,7 @@ python test_student_learning_phase6.py
 
 Expected: all checks PASS.
 
-- [ ] **Step 3: Review diffs**
+- [x] **Step 3: Review diffs**
 
 Run in frontend:
 
@@ -914,7 +914,7 @@ git log --oneline origin/main..HEAD
 
 Expected docs changes are limited to `Docs_Capstone/Project_Plan_Trello_Kanban.md`.
 
-- [ ] **Step 4: Mark plan complete**
+- [x] **Step 4: Mark plan complete**
 
 Change every task checkbox in this file from `- [ ]` to `- [x]`, except the literal checkbox example in the header sentence.
 
@@ -925,7 +925,7 @@ git add docs/superpowers/plans/2026-08-30-student-learning-ui.md
 git commit -m "docs: mark student learning UI plan complete"
 ```
 
-- [ ] **Step 5: Push branches**
+- [x] **Step 5: Push branches**
 
 Push frontend branch:
 
