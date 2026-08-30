@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { enrollStudentCourse, getStudentCourse } from '../../../lib/api/studentLearningApi'
@@ -21,6 +21,8 @@ function getContentPreview(content: string | null) {
   return text.length > 260 ? `${text.slice(0, 260).trimEnd()}...` : text
 }
 
+const enrollmentRedirectDelayMs = 900
+
 export function StudentCourseDetailPage() {
   const navigate = useNavigate()
   const { id } = useParams()
@@ -29,6 +31,15 @@ export function StudentCourseDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [enrolling, setEnrolling] = useState(false)
+  const enrollmentRedirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const mountedRef = useRef(true)
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false
+      if (enrollmentRedirectTimerRef.current) clearTimeout(enrollmentRedirectTimerRef.current)
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -64,9 +75,13 @@ export function StudentCourseDetailPage() {
     setEnrolling(true)
     try {
       const response = await enrollStudentCourse(course.id)
+      if (!mountedRef.current) return
       setInfo('Đăng ký khóa học thành công.')
-      navigate(`/student/enrollments/${response.data.id}`)
+      enrollmentRedirectTimerRef.current = setTimeout(() => {
+        navigate(`/student/enrollments/${response.data.id}`)
+      }, enrollmentRedirectDelayMs)
     } catch (err) {
+      if (!mountedRef.current) return
       setError(getApiErrorMessage(err, 'Không thể đăng ký khóa học.'))
       setEnrolling(false)
     }
