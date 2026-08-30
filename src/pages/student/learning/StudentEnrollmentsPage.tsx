@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { listStudentEnrollments } from '../../../lib/api/studentLearningApi'
 import type { StudentEnrollment } from '../../../lib/api/types'
@@ -66,10 +66,9 @@ export function StudentEnrollmentsPage() {
             const progressPercent = getProgressPercent(enrollment.progressPercent)
 
             return (
-              <button
+              <Link
                 key={enrollment.id}
-                type="button"
-                onClick={() => navigate(`/student/enrollments/${enrollment.id}`)}
+                to={`/student/enrollments/${enrollment.id}`}
                 className="rounded-2xl border border-gray-200 bg-white p-6 text-left shadow-sm transition-colors hover:border-indigo-200 hover:shadow focus:outline-none focus:ring-2 focus:ring-indigo-100"
               >
                 <div className="flex items-start justify-between gap-4">
@@ -89,7 +88,14 @@ export function StudentEnrollmentsPage() {
                       {enrollment.completedLessonCount}/{enrollment.totalLessonCount} bài học
                     </span>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+                  <div
+                    className="h-2 overflow-hidden rounded-full bg-gray-100"
+                    role="progressbar"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={enrollment.progressPercent}
+                    aria-label={`Tiến độ khóa học ${enrollment.courseName}`}
+                  >
                     <div className="h-full rounded-full bg-indigo-600" style={{ width: `${progressPercent}%` }} />
                   </div>
                   <p className="mt-2 text-xs font-medium text-gray-500">{progressPercent}% hoàn thành</p>
@@ -107,7 +113,7 @@ export function StudentEnrollmentsPage() {
                     </div>
                   ) : null}
                 </dl>
-              </button>
+              </Link>
             )
           })}
         </div>
