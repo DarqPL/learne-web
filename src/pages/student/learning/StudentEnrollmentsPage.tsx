@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { listStudentEnrollments } from '../../../lib/api/studentLearningApi'
 import type { StudentEnrollment } from '../../../lib/api/types'
 import { Alert } from '../../../components/ui/Alert'
-import { Button } from '../../../components/ui/Button'
 import { Spinner } from '../../../components/ui/Spinner'
 import { enrollmentStatusLabels, enrollmentStatusStyles } from './studentLearningLabels'
 import { formatStudentLearningDate } from './studentLearningUtils'
@@ -15,7 +14,6 @@ function getProgressPercent(value: number) {
 }
 
 export function StudentEnrollmentsPage() {
-  const navigate = useNavigate()
   const [enrollments, setEnrollments] = useState<StudentEnrollment[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -56,9 +54,12 @@ export function StudentEnrollmentsPage() {
       ) : enrollments.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center shadow-sm">
           <p className="text-gray-600">Bạn chưa đăng ký khóa học nào.</p>
-          <Button className="mt-4" onClick={() => navigate('/student/courses')}>
+          <Link
+            to="/student/courses"
+            className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
+          >
             Khám phá khóa học
-          </Button>
+          </Link>
         </div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-2">
@@ -93,7 +94,7 @@ export function StudentEnrollmentsPage() {
                     role="progressbar"
                     aria-valuemin={0}
                     aria-valuemax={100}
-                    aria-valuenow={enrollment.progressPercent}
+                    aria-valuenow={progressPercent}
                     aria-label={`Tiến độ khóa học ${enrollment.courseName}`}
                   >
                     <div className="h-full rounded-full bg-indigo-600" style={{ width: `${progressPercent}%` }} />
