@@ -29,6 +29,8 @@ const defaultQuestion: TeacherQuestionRequest = {
 const fieldClassName =
   'mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500'
 
+const validationId = 'teacher-question-form-errors'
+
 const nonNegativeIntegerPattern = /^\d+$/
 
 const textAnswerQuestionTypes: TeacherQuestionRequest['type'][] = ['FILL_BLANK', 'WORD_ORDER', 'TRANSLATION', 'SHORT_ANSWER']
@@ -136,6 +138,8 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
     let correctAnswer = form.correctAnswer
 
     if (form.type === 'MULTIPLE_CHOICE') {
+      correctAnswer = ''
+
       const nonEmptyOptions = form.options.filter((option) => option.optionText.trim() !== '')
 
       if (nonEmptyOptions.length < 2) {
@@ -177,7 +181,7 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
   }
 
   return (
-    <form className="space-y-3" onSubmit={handleSubmit}>
+    <form className="space-y-3" aria-describedby={validationMessages.length > 0 ? validationId : undefined} onSubmit={handleSubmit}>
       <label className="block text-sm font-medium text-gray-700">
         Loại câu hỏi
         <select
@@ -373,7 +377,7 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
       ) : null}
 
       {validationMessages.length > 0 ? (
-        <div className="space-y-1 text-sm text-red-600">
+        <div id={validationId} className="space-y-1 text-sm text-red-600" role="alert">
           {validationMessages.map((validationMessage) => (
             <p key={validationMessage}>{validationMessage}</p>
           ))}
