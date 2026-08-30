@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { enrollStudentCourse, getStudentCourse } from '../../../lib/api/studentLearningApi'
@@ -32,7 +32,12 @@ export function StudentCourseDetailPage() {
   const [info, setInfo] = useState<string | null>(null)
   const [enrolling, setEnrolling] = useState(false)
   const enrollmentRedirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const currentCourseIdRef = useRef(courseId)
   const mountedRef = useRef(true)
+
+  useLayoutEffect(() => {
+    currentCourseIdRef.current = courseId
+  }, [courseId])
 
   useEffect(() => {
     mountedRef.current = true
@@ -80,12 +85,13 @@ export function StudentCourseDetailPage() {
   async function handleEnroll() {
     if (!course || enrolling) return
 
+    const enrollingCourseId = course.id
     setError(null)
     setInfo(null)
     setEnrolling(true)
     try {
-      const response = await enrollStudentCourse(course.id)
-      if (!mountedRef.current) return
+      const response = await enrollStudentCourse(enrollingCourseId)
+      if (!mountedRef.current || currentCourseIdRef.current !== enrollingCourseId) return
       setInfo('Đăng ký khóa học thành công.')
       if (enrollmentRedirectTimerRef.current) clearTimeout(enrollmentRedirectTimerRef.current)
       enrollmentRedirectTimerRef.current = setTimeout(() => {
