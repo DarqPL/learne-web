@@ -34,7 +34,7 @@
 **Files:**
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\src\pages\teacher\content\QuestionForm.tsx`
 
-- [ ] **Step 1: Add type predicates and dynamic answer label**
+- [x] **Step 1: Add type predicates and dynamic answer label**
 
 Add these constants/helpers near the existing `nonNegativeIntegerPattern`.
 
@@ -50,7 +50,7 @@ function getCorrectAnswerLabel(type: TeacherQuestionRequest['type']) {
 }
 ```
 
-- [ ] **Step 2: Hide text answer input for MULTIPLE_CHOICE and TRUE_FALSE**
+- [x] **Step 2: Hide text answer input for MULTIPLE_CHOICE and TRUE_FALSE**
 
 Replace the always-rendered `Đáp án đúng` label block with this conditional block.
 
@@ -67,7 +67,7 @@ Replace the always-rendered `Đáp án đúng` label block with this conditional
 ) : null}
 ```
 
-- [ ] **Step 3: Clarify MULTIPLE_CHOICE helper text**
+- [x] **Step 3: Clarify MULTIPLE_CHOICE helper text**
 
 Replace the current multiple-choice helper text with this exact text.
 
@@ -75,7 +75,7 @@ Replace the current multiple-choice helper text with this exact text.
 <p className="text-sm text-gray-600">Trắc nghiệm nhiều lựa chọn, hiện chỉ hỗ trợ một đáp án đúng.</p>
 ```
 
-- [ ] **Step 4: Require text answer when relevant**
+- [x] **Step 4: Require text answer when relevant**
 
 Inside `handleSubmit`, after common `questionText`, `orderIndex`, and `xpReward` checks, add this validation.
 
@@ -87,7 +87,7 @@ if (usesTextAnswer(form.type) && !form.correctAnswer.trim()) {
 }
 ```
 
-- [ ] **Step 5: Clear irrelevant correctAnswer on type change**
+- [x] **Step 5: Clear irrelevant correctAnswer on type change**
 
 Replace the question type `onChange` handler with a small inline transition that clears irrelevant answer data when switching type.
 
@@ -104,7 +104,7 @@ onChange={(event) => {
 
 Keep existing `trueFalseAnswer` state and option state. The submit handler already maps `TRUE_FALSE` to `correctAnswer` and generated options.
 
-- [ ] **Step 6: Verify and commit**
+- [x] **Step 6: Verify and commit**
 
 Run:
 
@@ -128,7 +128,7 @@ git commit -m "fix: tailor teacher question answer fields"
 **Files:**
 - Modify if needed: `C:\baobao\KLTN\learne-platform\frontend\src\pages\teacher\content\contentLabels.ts`
 
-- [ ] **Step 1: Check MULTIPLE_CHOICE label**
+- [x] **Step 1: Check MULTIPLE_CHOICE label**
 
 Ensure the `MULTIPLE_CHOICE` entry remains this clear wording.
 
@@ -138,7 +138,7 @@ MULTIPLE_CHOICE: 'Trắc nghiệm một đáp án',
 
 If the file already has exactly that value, do not commit a no-op change.
 
-- [ ] **Step 2: Verify and commit only if changed**
+- [x] **Step 2: Verify and commit only if changed**
 
 If changed, run:
 
@@ -162,7 +162,7 @@ git commit -m "fix: clarify multiple choice wording"
 **Files:**
 - Test: `C:\Users\Admin\AppData\Local\Temp\opencode\test_phase4_question_form_backlog.py`
 
-- [ ] **Step 1: Ensure dev stack is running**
+- [x] **Step 1: Ensure dev stack is running**
 
 From `C:\baobao\KLTN\learne-platform\infra`, run if needed:
 
@@ -172,7 +172,7 @@ docker compose -f docker-compose.dev.yml up -d --build
 
 Expected services: frontend 5173, backend 8080, Mailpit 8025, PostgreSQL healthy.
 
-- [ ] **Step 2: Create smoke script**
+- [x] **Step 2: Create smoke script**
 
 Create `C:\Users\Admin\AppData\Local\Temp\opencode\test_phase4_question_form_backlog.py`.
 
@@ -196,7 +196,7 @@ Script must:
 8. Select `PRONUNCIATION` and assert:
    - label `Mẫu phát âm / target text` is visible.
 
-- [ ] **Step 3: Run smoke script**
+- [x] **Step 3: Run smoke script**
 
 Run from temp directory:
 
@@ -213,7 +213,7 @@ Expected: all checks PASS. If selectors need adjustment, update only the temp sc
 **Files:**
 - Modify: `C:\baobao\KLTN\learne-platform\frontend\docs\superpowers\plans\2026-08-30-phase4-question-form-backlog.md`
 
-- [ ] **Step 1: Run final frontend verification**
+- [x] **Step 1: Run final frontend verification**
 
 Run from frontend:
 
@@ -223,7 +223,7 @@ npm.cmd run lint; if ($?) { npm.cmd run build }
 
 Expected: ESLint 0 errors, build success.
 
-- [ ] **Step 2: Run final Playwright smoke**
+- [x] **Step 2: Run final Playwright smoke**
 
 Run from temp directory:
 
@@ -233,7 +233,7 @@ python test_phase4_question_form_backlog.py
 
 Expected: all checks PASS.
 
-- [ ] **Step 3: Review diff scope**
+- [x] **Step 3: Review diff scope**
 
 Run in frontend:
 
@@ -244,7 +244,7 @@ git log --oneline origin/main..HEAD
 
 Expected changes include Phase 6 work plus this Phase 4 backlog fix if still on `feature/student-learning-ui`. If creating a separate branch, expected changes should be limited to `QuestionForm`, optional labels, spec and plan.
 
-- [ ] **Step 4: Mark plan complete**
+- [x] **Step 4: Mark plan complete**
 
 Change every task checkbox in this file from `- [ ]` to `- [x]`, except the literal checkbox example in the header sentence.
 
@@ -255,7 +255,7 @@ git add docs/superpowers/plans/2026-08-30-phase4-question-form-backlog.md
 git commit -m "docs: mark phase 4 question form backlog plan complete"
 ```
 
-- [ ] **Step 5: Push frontend branch**
+- [x] **Step 5: Push frontend branch**
 
 Run:
 
