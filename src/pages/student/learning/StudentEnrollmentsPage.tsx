@@ -1,0 +1,117 @@
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { getApiErrorMessage } from '../../../lib/api/client'
+import { listStudentEnrollments } from '../../../lib/api/studentLearningApi'
+import type { StudentEnrollment } from '../../../lib/api/types'
+import { Alert } from '../../../components/ui/Alert'
+import { Button } from '../../../components/ui/Button'
+import { Spinner } from '../../../components/ui/Spinner'
+import { enrollmentStatusLabels, enrollmentStatusStyles } from './studentLearningLabels'
+import { formatStudentLearningDate } from './studentLearningUtils'
+
+function getProgressPercent(value: number) {
+  if (!Number.isFinite(value)) return 0
+  return Math.min(100, Math.max(0, value))
+}
+
+export function StudentEnrollmentsPage() {
+  const navigate = useNavigate()
+  const [enrollments, setEnrollments] = useState<StudentEnrollment[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    void (async () => {
+      setEnrollments(null)
+      setError(null)
+      try {
+        const response = await listStudentEnrollments()
+        if (!cancelled) setEnrollments(response.data)
+      } catch (err) {
+        if (!cancelled) setError(getApiErrorMessage(err, 'Không thể tải danh sách khóa học đã đăng ký.'))
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  return (
+    <div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Khóa học đã đăng ký</h1>
+        <p className="mt-2 text-gray-600">Theo dõi các khóa học bạn đang tham gia và tiếp tục bài học còn dang dở.</p>
+      </div>
+
+      {error ? (
+        <div role="alert">
+          <Alert>{error}</Alert>
+        </div>
+      ) : enrollments === null ? (
+        <div className="flex justify-center py-16">
+          <Spinner />
+        </div>
+      ) : enrollments.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center shadow-sm">
+          <p className="text-gray-600">Bạn chưa đăng ký khóa học nào.</p>
+          <Button className="mt-4" onClick={() => navigate('/student/courses')}>
+            Khám phá khóa học
+          </Button>
+        </div>
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-2">
+          {enrollments.map((enrollment) => {
+            const progressPercent = getProgressPercent(enrollment.progressPercent)
+
+            return (
+              <button
+                key={enrollment.id}
+                type="button"
+                onClick={() => navigate(`/student/enrollments/${enrollment.id}`)}
+                className="rounded-2xl border border-gray-200 bg-white p-6 text-left shadow-sm transition-colors hover:border-indigo-200 hover:shadow focus:outline-none focus:ring-2 focus:ring-indigo-100"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <h2 className="text-lg font-semibold text-gray-900">{enrollment.courseName}</h2>
+                    <p className="mt-2 text-sm text-gray-600">{enrollment.teacherName}</p>
+                  </div>
+                  <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${enrollmentStatusStyles[enrollment.status]}`}>
+                    {enrollmentStatusLabels[enrollment.status]}
+                  </span>
+                </div>
+
+                <div className="mt-5">
+                  <div className="mb-2 flex items-center justify-between gap-3 text-sm">
+                    <span className="font-medium text-gray-700">Tiến độ</span>
+                    <span className="font-semibold text-gray-900">
+                      {enrollment.completedLessonCount}/{enrollment.totalLessonCount} bài học
+                    </span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+                    <div className="h-full rounded-full bg-indigo-600" style={{ width: `${progressPercent}%` }} />
+                  </div>
+                  <p className="mt-2 text-xs font-medium text-gray-500">{progressPercent}% hoàn thành</p>
+                </div>
+
+                <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
+                  <div className="rounded-xl bg-gray-50 p-3">
+                    <dt className="text-xs text-gray-500">Ngày đăng ký</dt>
+                    <dd className="mt-1 font-semibold text-gray-900">{formatStudentLearningDate(enrollment.enrolledAt)}</dd>
+                  </div>
+                  {enrollment.completedAt ? (
+                    <div className="rounded-xl bg-gray-50 p-3">
+                      <dt className="text-xs text-gray-500">Ngày hoàn thành</dt>
+                      <dd className="mt-1 font-semibold text-gray-900">{formatStudentLearningDate(enrollment.completedAt)}</dd>
+                    </div>
+                  ) : null}
+                </dl>
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
