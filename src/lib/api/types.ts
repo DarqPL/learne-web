@@ -266,7 +266,7 @@ export interface RejectContentRequest {
 
 export type EnrollmentStatus = 'ACTIVE' | 'COMPLETED' | 'CANCELLED'
 
-export type LessonProgressStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED'
+export type LessonProgressStatus = 'LOCKED' | 'UNLOCKED' | 'IN_PROGRESS' | 'COMPLETED'
 
 export interface StudentCourseSummary {
   id: number
