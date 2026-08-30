@@ -100,7 +100,10 @@ export function StudentCourseDetailPage() {
     } catch (err) {
       if (!mountedRef.current || currentCourseIdRef.current !== enrollCourseId) return
       setError(getApiErrorMessage(err, 'Không thể đăng ký khóa học.'))
-      setEnrollingCourseId(null)
+    } finally {
+      if (mountedRef.current) {
+        setEnrollingCourseId((currentId) => (currentId === enrollCourseId ? null : currentId))
+      }
     }
   }
 
