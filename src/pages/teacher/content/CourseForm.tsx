@@ -22,6 +22,8 @@ const defaultCourse: TeacherCourseRequest = {
 const fieldClassName =
   'mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500'
 
+const levelOptions = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
+
 export function CourseForm({ initialValue, loading = false, disabled = false, submitLabel, onSubmit }: CourseFormProps) {
   const initialForm = initialValue ?? defaultCourse
   const [previousInitialValue, setPreviousInitialValue] = useState(initialValue)
@@ -94,11 +96,17 @@ export function CourseForm({ initialValue, loading = false, disabled = false, su
 
       <label className="block text-sm font-medium text-gray-700">
         Cấp độ
-        <input
+        <select
           className={fieldClassName}
           value={form.level}
           onChange={(event) => setForm((current) => ({ ...current, level: event.target.value }))}
-        />
+        >
+          {levelOptions.map((level) => (
+            <option key={level} value={level}>
+              {level}
+            </option>
+          ))}
+        </select>
       </label>
 
       <label className="block text-sm font-medium text-gray-700">
