@@ -23,11 +23,9 @@ function getProgressPercent(value: number) {
 
 function getInitialSelectedLessonId(enrollment: StudentEnrollmentProgress) {
   const lessons = flattenProgressLessons(enrollment)
-  const firstAvailableLesson = findFirstAvailableLesson(enrollment)
-  const actionableLesson = lessons.find((lesson) => lesson.status === 'UNLOCKED' || lesson.status === 'IN_PROGRESS')
-  const selectedLesson = firstAvailableLesson?.status === 'LOCKED' ? (actionableLesson ?? firstAvailableLesson) : firstAvailableLesson
+  const selectedLesson = findFirstAvailableLesson(enrollment) ?? lessons[0] ?? null
 
-  return selectedLesson?.lessonId ?? lessons[0]?.lessonId ?? null
+  return selectedLesson?.lessonId ?? null
 }
 
 function findLessonById(enrollment: StudentEnrollmentProgress, lessonId: number | null) {
