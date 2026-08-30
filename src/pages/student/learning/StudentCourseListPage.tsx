@@ -16,8 +16,9 @@ export function StudentCourseListPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const level = searchParams.get('level')?.trim() || undefined
-  const teacherIdParam = searchParams.get('teacherId')?.trim() || undefined
-  const teacherId = teacherIdParam ? Number(teacherIdParam) : undefined
+  const rawTeacherId = searchParams.get('teacherId') ?? ''
+  const parsedTeacherId = Number(rawTeacherId)
+  const teacherId = Number.isInteger(parsedTeacherId) && parsedTeacherId > 0 ? parsedTeacherId : undefined
   const [courses, setCourses] = useState<StudentCourseSummary[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [localSearch, setLocalSearch] = useState('')
@@ -49,7 +50,7 @@ export function StudentCourseListPage() {
     return [course.name, course.teacherName, description].some((value) => value.toLowerCase().includes(searchText))
   })
 
-  const hasFilters = Boolean(level || teacherIdParam || localSearch.trim())
+  const hasFilters = Boolean(level || rawTeacherId.trim() || localSearch.trim())
   const hasNoResults = courses !== null && filteredCourses?.length === 0
 
   function updateLevelFilter(value: string) {
