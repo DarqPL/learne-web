@@ -19,6 +19,10 @@ import { AdminContentReviewPage } from './pages/admin/review/AdminContentReviewP
 import { TeacherProfilePage } from './pages/teacher/TeacherProfilePage'
 import { TeacherListPage } from './pages/student/TeacherListPage'
 import { TeacherDetailPage } from './pages/student/TeacherDetailPage'
+import { StudentCourseListPage } from './pages/student/learning/StudentCourseListPage'
+import { StudentCourseDetailPage } from './pages/student/learning/StudentCourseDetailPage'
+import { StudentEnrollmentsPage } from './pages/student/learning/StudentEnrollmentsPage'
+import { StudentEnrollmentProgressPage } from './pages/student/learning/StudentEnrollmentProgressPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 
 export default function App() {
@@ -41,6 +45,10 @@ export default function App() {
               <Route path="/student" element={<StudentDashboardPage />} />
               <Route path="/student/teachers" element={<TeacherListPage />} />
               <Route path="/student/teachers/:id" element={<TeacherDetailPage />} />
+              <Route path="/student/courses" element={<StudentCourseListPage />} />
+              <Route path="/student/courses/:id" element={<StudentCourseDetailPage />} />
+              <Route path="/student/enrollments" element={<StudentEnrollmentsPage />} />
+              <Route path="/student/enrollments/:id" element={<StudentEnrollmentProgressPage />} />
             </Route>
           </Route>
           <Route element={<RequireRole role="TEACHER" />}>

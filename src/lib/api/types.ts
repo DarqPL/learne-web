@@ -263,3 +263,122 @@ export interface AdminReviewCourseDetail {
 export interface RejectContentRequest {
   reason: string
 }
+
+export type EnrollmentStatus = 'ACTIVE' | 'COMPLETED' | 'CANCELLED'
+
+export type LessonProgressStatus = 'LOCKED' | 'UNLOCKED' | 'IN_PROGRESS' | 'COMPLETED'
+
+export interface StudentCourseSummary {
+  id: number
+  name: string
+  description: string | null
+  type: CourseType
+  level: string
+  teacherId: number
+  teacherName: string
+  teacherEmail: string
+  teacherAvatarUrl: string | null
+  topicCount: number
+  lessonCount: number
+  questionCount: number
+  publishedAt: string | null
+  enrolled: boolean
+}
+
+export interface StudentQuestionSummary {
+  id: number
+  type: QuestionType
+  questionText: string
+  knowledgePoint: string | null
+  difficulty: string | null
+  xpReward: number
+  optionCount: number
+}
+
+export interface StudentLesson {
+  id: number
+  title: string
+  description: string | null
+  content: string | null
+  skillType: SkillType
+  orderIndex: number
+  xpReward: number
+  questionCount: number
+  questions: StudentQuestionSummary[]
+}
+
+export interface StudentTopic {
+  id: number
+  name: string
+  description: string | null
+  orderIndex: number
+  lessons: StudentLesson[]
+}
+
+export interface StudentCourseDetail {
+  id: number
+  name: string
+  description: string | null
+  type: CourseType
+  level: string
+  teacherId: number
+  teacherName: string
+  teacherEmail: string
+  teacherAvatarUrl: string | null
+  publishedAt: string | null
+  enrolled: boolean
+  activeEnrollmentId: number | null
+  topics: StudentTopic[]
+}
+
+export interface StudentEnrollment {
+  id: number
+  courseId: number
+  courseName: string
+  teacherId: number
+  teacherName: string
+  status: EnrollmentStatus
+  progressPercent: number
+  completedLessonCount: number
+  totalLessonCount: number
+  enrolledAt: string
+  completedAt: string | null
+}
+
+export interface StudentProgressCourse {
+  id: number
+  name: string
+  level: string
+  type: CourseType
+  teacherId: number
+  teacherName: string
+}
+
+export interface StudentLessonProgress {
+  lessonId: number
+  title: string
+  content: string | null
+  skillType: SkillType
+  orderIndex: number
+  status: LessonProgressStatus
+  progressPercent: number
+  startedAt: string | null
+  completedAt: string | null
+}
+
+export interface StudentProgressTopic {
+  id: number
+  name: string
+  orderIndex: number
+  lessons: StudentLessonProgress[]
+}
+
+export interface StudentEnrollmentProgress {
+  enrollmentId: number
+  status: EnrollmentStatus
+  progressPercent: number
+  completedLessonCount: number
+  totalLessonCount: number
+  course: StudentProgressCourse
+  topics: StudentProgressTopic[]
+}
