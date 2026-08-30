@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { listStudentCourses } from '../../../lib/api/studentLearningApi'
 import type { StudentCourseSummary } from '../../../lib/api/types'
@@ -10,12 +10,12 @@ import { Spinner } from '../../../components/ui/Spinner'
 import { studentCourseTypeLabels } from './studentLearningLabels'
 import { formatStudentLearningDate } from './studentLearningUtils'
 
-const levelOptions = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED']
+const levelOptions = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
 
 export function StudentCourseListPage() {
-  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const level = searchParams.get('level')?.trim() || undefined
+  const rawLevel = searchParams.get('level')?.trim() ?? ''
+  const level = levelOptions.includes(rawLevel) ? rawLevel : undefined
   const rawTeacherId = searchParams.get('teacherId') ?? ''
   const parsedTeacherId = Number(rawTeacherId)
   const teacherId = Number.isInteger(parsedTeacherId) && parsedTeacherId > 0 ? parsedTeacherId : undefined
@@ -50,7 +50,7 @@ export function StudentCourseListPage() {
     return [course.name, course.teacherName, description].some((value) => value.toLowerCase().includes(searchText))
   })
 
-  const hasFilters = Boolean(level || rawTeacherId.trim() || localSearch.trim())
+  const hasFilters = Boolean(level || teacherId || localSearch.trim())
   const hasNoResults = courses !== null && filteredCourses?.length === 0
 
   function updateLevelFilter(value: string) {
@@ -127,10 +127,9 @@ export function StudentCourseListPage() {
       ) : (
         <div className="grid gap-6 lg:grid-cols-2">
           {filteredCourses?.map((course) => (
-            <button
+            <Link
               key={course.id}
-              type="button"
-              onClick={() => navigate(`/student/courses/${course.id}`)}
+              to={`/student/courses/${course.id}`}
               className="rounded-2xl border border-gray-200 bg-white p-6 text-left shadow-sm transition-colors hover:border-indigo-200 hover:shadow"
             >
               <div className="flex items-start justify-between gap-4">
@@ -177,7 +176,7 @@ export function StudentCourseListPage() {
                   <dd className="mt-1 font-semibold text-gray-900">{course.questionCount}</dd>
                 </div>
               </dl>
-            </button>
+            </Link>
           ))}
         </div>
       )}
