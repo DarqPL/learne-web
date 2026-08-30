@@ -29,7 +29,19 @@ const defaultQuestion: TeacherQuestionRequest = {
 const fieldClassName =
   'mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500'
 
+const validationId = 'teacher-question-form-errors'
+
 const nonNegativeIntegerPattern = /^\d+$/
+
+const textAnswerQuestionTypes: TeacherQuestionRequest['type'][] = ['FILL_BLANK', 'WORD_ORDER', 'TRANSLATION', 'SHORT_ANSWER']
+
+function usesTextAnswer(type: TeacherQuestionRequest['type']) {
+  return textAnswerQuestionTypes.includes(type) || type === 'PRONUNCIATION'
+}
+
+function getCorrectAnswerLabel(type: TeacherQuestionRequest['type']) {
+  return type === 'PRONUNCIATION' ? 'Mẫu phát âm / target text' : 'Đáp án đúng'
+}
 
 type QuestionOptionForm = Omit<TeacherQuestionOptionRequest, 'orderIndex'> & {
   orderIndexInput: string
@@ -116,10 +128,18 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
       nextValidationMessages.push('Vui lòng nhập XP hợp lệ.')
     }
 
+    if (usesTextAnswer(form.type) && !form.correctAnswer.trim()) {
+      nextValidationMessages.push(
+        form.type === 'PRONUNCIATION' ? 'Vui lòng nhập mẫu phát âm.' : 'Vui lòng nhập đáp án đúng.',
+      )
+    }
+
     let options: TeacherQuestionOptionRequest[] = []
     let correctAnswer = form.correctAnswer
 
     if (form.type === 'MULTIPLE_CHOICE') {
+      correctAnswer = ''
+
       const nonEmptyOptions = form.options.filter((option) => option.optionText.trim() !== '')
 
       if (nonEmptyOptions.length < 2) {
@@ -161,13 +181,20 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
   }
 
   return (
-    <form className="space-y-3" onSubmit={handleSubmit}>
+    <form className="space-y-3" aria-describedby={validationMessages.length > 0 ? validationId : undefined} onSubmit={handleSubmit}>
       <label className="block text-sm font-medium text-gray-700">
         Loại câu hỏi
         <select
           className={fieldClassName}
           value={form.type}
-          onChange={(event) => setForm((current) => ({ ...current, type: event.target.value as TeacherQuestionRequest['type'] }))}
+          onChange={(event) => {
+            const nextType = event.target.value as TeacherQuestionRequest['type']
+            setForm((current) => ({
+              ...current,
+              type: nextType,
+              correctAnswer: usesTextAnswer(nextType) ? current.correctAnswer : '',
+            }))
+          }}
         >
           {questionTypes.map((questionType) => (
             <option key={questionType} value={questionType}>
@@ -186,14 +213,16 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
         />
       </label>
 
-      <label className="block text-sm font-medium text-gray-700">
-        Đáp án đúng
-        <input
-          className={fieldClassName}
-          value={form.correctAnswer}
-          onChange={(event) => setForm((current) => ({ ...current, correctAnswer: event.target.value }))}
-        />
-      </label>
+      {usesTextAnswer(form.type) ? (
+        <label className="block text-sm font-medium text-gray-700">
+          {getCorrectAnswerLabel(form.type)}
+          <input
+            className={fieldClassName}
+            value={form.correctAnswer}
+            onChange={(event) => setForm((current) => ({ ...current, correctAnswer: event.target.value }))}
+          />
+        </label>
+      ) : null}
 
       <label className="block text-sm font-medium text-gray-700">
         Giải thích
@@ -244,7 +273,7 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
 
       {form.type === 'MULTIPLE_CHOICE' ? (
         <div className="space-y-2">
-          <p className="text-sm text-gray-600">Chọn đúng 1 lựa chọn đúng cho câu hỏi trắc nghiệm.</p>
+          <p className="text-sm text-gray-600">Trắc nghiệm nhiều lựa chọn, hiện chỉ hỗ trợ một đáp án đúng.</p>
           {form.options.map((option, optionIndex) => (
             <div className="grid gap-2 rounded-lg border border-gray-200 p-3 md:grid-cols-[1fr_auto_auto]" key={optionIndex}>
               <input
@@ -348,7 +377,7 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
       ) : null}
 
       {validationMessages.length > 0 ? (
-        <div className="space-y-1 text-sm text-red-600">
+        <div id={validationId} className="space-y-1 text-sm text-red-600" role="alert">
           {validationMessages.map((validationMessage) => (
             <p key={validationMessage}>{validationMessage}</p>
           ))}
