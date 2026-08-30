@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { completeStudentLesson, getStudentEnrollment, startStudentLesson } from '../../../lib/api/studentLearningApi'
@@ -37,11 +37,24 @@ export function StudentEnrollmentProgressPage() {
   const navigate = useNavigate()
   const { id } = useParams()
   const enrollmentId = parseEnrollmentId(id)
+  const mountedRef = useRef(false)
+  const currentEnrollmentIdRef = useRef(enrollmentId)
   const [enrollment, setEnrollment] = useState<StudentEnrollmentProgress | null>(null)
   const [selectedLessonId, setSelectedLessonId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [action, setAction] = useState<LessonAction | null>(null)
+
+  useLayoutEffect(() => {
+    currentEnrollmentIdRef.current = enrollmentId
+  }, [enrollmentId])
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -57,6 +70,7 @@ export function StudentEnrollmentProgressPage() {
       setSelectedLessonId(null)
       setError(null)
       setInfo(null)
+      setAction(null)
       try {
         const response = await getStudentEnrollment(enrollmentId)
         if (cancelled) return
@@ -75,38 +89,44 @@ export function StudentEnrollmentProgressPage() {
   async function handleStartLesson(lesson: StudentLessonProgress) {
     if (enrollmentId === null || action !== null || lesson.status !== 'UNLOCKED') return
 
+    const currentEnrollmentId = enrollmentId
     const lessonId = lesson.lessonId
     setAction('start')
     setError(null)
     setInfo(null)
     try {
-      const response = await startStudentLesson(enrollmentId, lessonId)
+      const response = await startStudentLesson(currentEnrollmentId, lessonId)
+      if (!mountedRef.current || currentEnrollmentIdRef.current !== currentEnrollmentId) return
       setEnrollment(response.data)
       setSelectedLessonId(lessonId)
       setInfo('Đã bắt đầu bài học.')
     } catch (err) {
+      if (!mountedRef.current || currentEnrollmentIdRef.current !== currentEnrollmentId) return
       setError(getApiErrorMessage(err, 'Không thể cập nhật tiến độ bài học.'))
     } finally {
-      setAction(null)
+      if (mountedRef.current && currentEnrollmentIdRef.current === currentEnrollmentId) setAction(null)
     }
   }
 
   async function handleCompleteLesson(lesson: StudentLessonProgress) {
-    if (enrollmentId === null || action !== null || lesson.status === 'COMPLETED') return
+    if (enrollmentId === null || action !== null || lesson.status !== 'IN_PROGRESS') return
 
+    const currentEnrollmentId = enrollmentId
     const lessonId = lesson.lessonId
     setAction('complete')
     setError(null)
     setInfo(null)
     try {
-      const response = await completeStudentLesson(enrollmentId, lessonId)
+      const response = await completeStudentLesson(currentEnrollmentId, lessonId)
+      if (!mountedRef.current || currentEnrollmentIdRef.current !== currentEnrollmentId) return
       setEnrollment(response.data)
       setSelectedLessonId(lessonId)
       setInfo('Đã hoàn thành bài học.')
     } catch (err) {
+      if (!mountedRef.current || currentEnrollmentIdRef.current !== currentEnrollmentId) return
       setError(getApiErrorMessage(err, 'Không thể cập nhật tiến độ bài học.'))
     } finally {
-      setAction(null)
+      if (mountedRef.current && currentEnrollmentIdRef.current === currentEnrollmentId) setAction(null)
     }
   }
 
@@ -256,7 +276,7 @@ export function StudentEnrollmentProgressPage() {
                       Bắt đầu học
                     </Button>
                   ) : null}
-                  {selectedLesson.status !== 'COMPLETED' ? (
+                  {selectedLesson.status === 'IN_PROGRESS' ? (
                     <Button variant="secondary" loading={action === 'complete'} disabled={action !== null} onClick={() => void handleCompleteLesson(selectedLesson)}>
                       Hoàn thành bài học
                     </Button>
@@ -275,9 +295,13 @@ export function StudentEnrollmentProgressPage() {
                 </div>
               </dl>
 
-              <div className="mt-6 rounded-2xl bg-gray-50 p-5">
-                <p className="whitespace-pre-wrap text-sm leading-6 text-gray-700">{selectedLesson.content?.trim() ? selectedLesson.content : 'Bài học chưa có nội dung.'}</p>
-              </div>
+              {selectedLesson.status === 'LOCKED' ? (
+                <p className="mt-6 rounded-2xl bg-gray-50 p-5 text-sm leading-6 text-gray-700">Bài học này chưa được mở khóa.</p>
+              ) : (
+                <div className="mt-6 rounded-2xl bg-gray-50 p-5">
+                  <p className="whitespace-pre-wrap text-sm leading-6 text-gray-700">{selectedLesson.content?.trim() ? selectedLesson.content : 'Bài học chưa có nội dung.'}</p>
+                </div>
+              )}
             </div>
           )}
         </section>
