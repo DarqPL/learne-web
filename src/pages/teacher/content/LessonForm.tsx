@@ -117,16 +117,6 @@ export function LessonForm({ initialValue, loading = false, disabled = false, su
       </label>
 
       <label className="block text-sm font-medium text-gray-700">
-        Thứ tự
-        <input
-          className={fieldClassName}
-          type="number"
-          value={orderIndexInput}
-          onChange={(event) => setOrderIndexInput(event.target.value)}
-        />
-      </label>
-
-      <label className="block text-sm font-medium text-gray-700">
         XP
         <input
           className={fieldClassName}

@@ -109,16 +109,6 @@ export function CourseForm({ initialValue, loading = false, disabled = false, su
         </select>
       </label>
 
-      <label className="block text-sm font-medium text-gray-700">
-        Thứ tự
-        <input
-          className={fieldClassName}
-          type="number"
-          value={orderIndexInput}
-          onChange={(event) => setOrderIndexInput(event.target.value)}
-        />
-      </label>
-
       {validationMessage ? <p className="text-sm text-red-600">{validationMessage}</p> : null}
 
       <Button type="submit" loading={loading} disabled={disabled}>
