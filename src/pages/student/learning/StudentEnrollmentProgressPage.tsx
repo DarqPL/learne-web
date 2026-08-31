@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getApiErrorMessage } from '../../../lib/api/client'
-import { completeStudentLesson, getStudentEnrollment, startStudentLesson } from '../../../lib/api/studentLearningApi'
+import { getStudentEnrollment, startStudentLesson } from '../../../lib/api/studentLearningApi'
 import type { StudentEnrollmentProgress, StudentLessonProgress } from '../../../lib/api/types'
 import { Alert } from '../../../components/ui/Alert'
 import { Button } from '../../../components/ui/Button'
@@ -9,7 +9,7 @@ import { Spinner } from '../../../components/ui/Spinner'
 import { enrollmentStatusLabels, enrollmentStatusStyles, lessonProgressStatusLabels, lessonProgressStatusStyles, studentCourseTypeLabels, studentSkillTypeLabels } from './studentLearningLabels'
 import { findFirstAvailableLesson, flattenProgressLessons, formatStudentLearningDate } from './studentLearningUtils'
 
-type LessonAction = 'start' | 'complete'
+type LessonAction = 'start'
 
 function parseEnrollmentId(value: string | undefined) {
   const id = Number(value)
@@ -100,28 +100,6 @@ export function StudentEnrollmentProgressPage() {
       setEnrollment(response.data)
       setSelectedLessonId(lessonId)
       setInfo('Đã bắt đầu bài học.')
-    } catch (err) {
-      if (!mountedRef.current || currentEnrollmentIdRef.current !== currentEnrollmentId) return
-      setError(getApiErrorMessage(err, 'Không thể cập nhật tiến độ bài học.'))
-    } finally {
-      if (mountedRef.current && currentEnrollmentIdRef.current === currentEnrollmentId) setAction(null)
-    }
-  }
-
-  async function handleCompleteLesson(lesson: StudentLessonProgress) {
-    if (enrollmentId === null || action !== null || lesson.status === 'LOCKED' || lesson.status === 'COMPLETED') return
-
-    const currentEnrollmentId = enrollmentId
-    const lessonId = lesson.lessonId
-    setAction('complete')
-    setError(null)
-    setInfo(null)
-    try {
-      const response = await completeStudentLesson(currentEnrollmentId, lessonId)
-      if (!mountedRef.current || currentEnrollmentIdRef.current !== currentEnrollmentId) return
-      setEnrollment(response.data)
-      setSelectedLessonId(getInitialSelectedLessonId(response.data) ?? lessonId)
-      setInfo('Đã hoàn thành bài học.')
     } catch (err) {
       if (!mountedRef.current || currentEnrollmentIdRef.current !== currentEnrollmentId) return
       setError(getApiErrorMessage(err, 'Không thể cập nhật tiến độ bài học.'))
@@ -276,9 +254,9 @@ export function StudentEnrollmentProgressPage() {
                       Bắt đầu học
                     </Button>
                   ) : null}
-                  {selectedLesson.status === 'UNLOCKED' || selectedLesson.status === 'IN_PROGRESS' ? (
-                    <Button variant="secondary" loading={action === 'complete'} disabled={action !== null} onClick={() => void handleCompleteLesson(selectedLesson)}>
-                      {selectedLesson.status === 'UNLOCKED' ? 'Đánh dấu hoàn thành' : 'Hoàn thành bài học'}
+                  {selectedLesson.status !== 'LOCKED' ? (
+                    <Button onClick={() => navigate(`/student/enrollments/${enrollment.enrollmentId}/lessons/${selectedLesson.lessonId}/quiz`)}>
+                      {selectedLesson.status === 'COMPLETED' ? 'Làm lại quiz' : 'Bắt đầu làm quiz'}
                     </Button>
                   ) : null}
                 </div>
