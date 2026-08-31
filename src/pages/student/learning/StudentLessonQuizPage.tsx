@@ -106,6 +106,12 @@ export function StudentLessonQuizPage() {
   async function handleSubmit() {
     if (quiz === null || enrollmentId === null || lessonId === null || submitting) return
 
+    const gradableQuestionCount = quiz.questions.filter((question) => !isPronunciationQuestion(question)).length
+    if (gradableQuestionCount === 0) {
+      setError('Quiz này chưa có câu hỏi tính điểm.')
+      return
+    }
+
     const unansweredQuestions = getUnansweredGradableQuestions(quiz.questions, answers)
     if (unansweredQuestions.length > 0) {
       const firstUnansweredIndex = quiz.questions.findIndex((question) => question.id === unansweredQuestions[0].id)
@@ -165,6 +171,8 @@ export function StudentLessonQuizPage() {
 
   const questionCount = quiz.questions.length
   const currentQuestion = quiz.questions[currentQuestionIndex] ?? null
+  const currentQuestionLabelId = currentQuestion ? `student-quiz-question-${currentQuestion.id}` : undefined
+  const gradableQuestionCount = quiz.questions.filter((question) => !isPronunciationQuestion(question)).length
   const progressPercent = getQuestionProgressPercent(currentQuestionIndex, questionCount)
   const isFirstQuestion = currentQuestionIndex === 0
   const isLastQuestion = currentQuestionIndex >= questionCount - 1
@@ -215,6 +223,11 @@ export function StudentLessonQuizPage() {
           <Alert>{error}</Alert>
         </div>
       ) : null}
+      {gradableQuestionCount === 0 ? (
+        <div role="alert">
+          <Alert variant="info">Quiz này chưa có câu hỏi tính điểm.</Alert>
+        </div>
+      ) : null}
 
       {questionCount === 0 || currentQuestion === null ? (
         <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -229,7 +242,9 @@ export function StudentLessonQuizPage() {
                 {currentQuestion.difficulty ? <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-700">{currentQuestion.difficulty}</span> : null}
               </div>
               <p className="mt-4 text-sm font-semibold text-indigo-600">{getQuestionTypePrompt(currentQuestion.type)}</p>
-              <h2 className="mt-2 whitespace-pre-wrap text-xl font-bold text-gray-900">{currentQuestion.questionText}</h2>
+              <h2 id={currentQuestionLabelId} className="mt-2 whitespace-pre-wrap text-xl font-bold text-gray-900">
+                {currentQuestion.questionText}
+              </h2>
             </div>
           </div>
 
@@ -241,17 +256,18 @@ export function StudentLessonQuizPage() {
                 <p className="mt-4 text-sm leading-6 text-gray-600">Phase 7 chưa hỗ trợ ghi âm và chấm điểm phát âm. Câu hỏi này không tính vào phần nộp bài.</p>
               </div>
             ) : isOptionQuestion(currentQuestion) ? (
-              <div className="space-y-3">
+              <div className="space-y-3" role="radiogroup" aria-labelledby={currentQuestionLabelId}>
                 {currentQuestion.options.map((option) => {
                   const selected = getAnswerValue(answers, currentQuestion.id).selectedOptionId === option.id
                   return (
                     <button
                       key={option.id}
                       type="button"
+                      role="radio"
                       className={`w-full rounded-xl border p-4 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-100 ${
                         selected ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200 bg-white hover:border-indigo-200 hover:bg-gray-50'
                       }`}
-                      aria-pressed={selected}
+                      aria-checked={selected}
                       onClick={() => updateSelectedOption(currentQuestion.id, option.id)}
                     >
                       <span className="text-sm font-semibold text-gray-900">{option.optionText}</span>
@@ -262,6 +278,7 @@ export function StudentLessonQuizPage() {
             ) : currentQuestion.type === 'TRANSLATION' || currentQuestion.type === 'SHORT_ANSWER' ? (
               <textarea
                 className="min-h-36 w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                aria-labelledby={currentQuestionLabelId}
                 value={getAnswerValue(answers, currentQuestion.id).answerText}
                 onChange={(event) => updateTextAnswer(currentQuestion.id, event.target.value)}
                 placeholder="Nhập câu trả lời của bạn"
@@ -269,6 +286,7 @@ export function StudentLessonQuizPage() {
             ) : (
               <input
                 className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                aria-labelledby={currentQuestionLabelId}
                 value={getAnswerValue(answers, currentQuestion.id).answerText}
                 onChange={(event) => updateTextAnswer(currentQuestion.id, event.target.value)}
                 placeholder="Nhập đáp án của bạn"
@@ -283,7 +301,7 @@ export function StudentLessonQuizPage() {
           Quay lại
         </Button>
         {isLastQuestion ? (
-          <Button loading={submitting} disabled={questionCount === 0} onClick={() => void handleSubmit()}>
+          <Button loading={submitting} disabled={gradableQuestionCount === 0} onClick={() => void handleSubmit()}>
             Nộp bài
           </Button>
         ) : (
