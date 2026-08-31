@@ -393,7 +393,6 @@ export interface StudentQuizQuestion {
   id: number
   type: QuestionType
   questionText: string
-  explanation: string | null
   knowledgePoint: string | null
   difficulty: string | null
   xpReward: number
@@ -407,8 +406,9 @@ export interface StudentQuiz {
   lessonId: number
   lessonTitle: string
   lessonContent: string | null
-  lessonSkillType: SkillType
-  lessonXpReward: number
+  passPercent: number
+  bestScorePercent: number | null
+  alreadyPassed: boolean
   questions: StudentQuizQuestion[]
 }
 
@@ -436,23 +436,26 @@ export interface SubmitQuizResponse {
   lessonId: number
   scorePercent: number
   passed: boolean
-  xpAwarded: number
-  totalXp: number
-  currentStreak: number
+  earnedXp: number
+  xpAwarded: boolean
   progress: StudentQuizProgressResult
+  stats: StudentStats
+  answers: StudentQuizAnswerResult[]
 }
 
 export interface StudentQuizAnswerResult {
   questionId: number
+  type: QuestionType
   questionText: string
-  questionType: QuestionType
   answerText: string | null
   selectedOptionId: number | null
-  selectedOptionText: string | null
-  correctAnswer: string | null
-  correctOptionText: string | null
   correct: boolean
   scorePercent: number
+  earnedXp: number
+  gradingMethod: string
+  feedback: string | null
+  correctAnswer: string | null
+  correctOptionId: number | null
   explanation: string | null
 }
 
@@ -460,18 +463,17 @@ export interface StudentQuizAttemptResult {
   attemptId: number
   enrollmentId: number
   lessonId: number
-  lessonTitle: string
   scorePercent: number
   passed: boolean
-  xpAwarded: number
-  totalXp: number
-  currentStreak: number
-  submittedAt: string
+  earnedXp: number
+  progress: StudentQuizProgressResult
+  stats: StudentStats
   answers: StudentQuizAnswerResult[]
 }
 
 export interface StudentStats {
   totalXp: number
-  currentStreak: number
-  longestStreak: number
+  currentStreakDays: number
+  longestStreakDays: number
+  lastActivityDate: string | null
 }
