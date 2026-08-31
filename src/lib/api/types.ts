@@ -414,8 +414,8 @@ export interface StudentQuiz {
 
 export interface SubmitQuizAnswerRequest {
   questionId: number
-  answerText: string | null
-  selectedOptionId: number | null
+  answerText?: string | null
+  selectedOptionId?: number | null
 }
 
 export interface SubmitQuizRequest {
@@ -423,11 +423,9 @@ export interface SubmitQuizRequest {
 }
 
 export interface StudentQuizProgressResult {
-  enrollmentId: number
-  progressPercent: number
-  completedLessonCount: number
-  totalLessonCount: number
   lessonStatus: LessonProgressStatus
+  enrollmentProgressPercent: number
+  unlockedNextLessonId: number | null
 }
 
 export interface SubmitQuizResponse {
