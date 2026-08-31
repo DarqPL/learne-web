@@ -20,12 +20,14 @@ function getProgressPercent(value: number) {
 }
 
 function getAnswerDisplay(answer: StudentQuizAnswerResult) {
+  if (answer.selectedOptionText?.trim()) return answer.selectedOptionText
   if (answer.selectedOptionId !== null) return `Lựa chọn #${answer.selectedOptionId}`
   if (answer.answerText?.trim()) return answer.answerText
   return 'Không có câu trả lời'
 }
 
 function getCorrectAnswerDisplay(answer: StudentQuizAnswerResult) {
+  if (answer.correctOptionText?.trim()) return answer.correctOptionText
   if (answer.correctAnswer?.trim()) return answer.correctAnswer
   if (answer.correctOptionId !== null) return `Lựa chọn #${answer.correctOptionId}`
   return 'Không có đáp án hiển thị'

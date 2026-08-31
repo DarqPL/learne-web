@@ -447,6 +447,7 @@ export interface StudentQuizAnswerResult {
   questionText: string
   answerText: string | null
   selectedOptionId: number | null
+  selectedOptionText: string | null
   correct: boolean
   scorePercent: number
   earnedXp: number
@@ -454,6 +455,7 @@ export interface StudentQuizAnswerResult {
   feedback: string | null
   correctAnswer: string | null
   correctOptionId: number | null
+  correctOptionText: string | null
   explanation: string | null
 }
 
