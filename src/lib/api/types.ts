@@ -382,3 +382,96 @@ export interface StudentEnrollmentProgress {
   course: StudentProgressCourse
   topics: StudentProgressTopic[]
 }
+
+export interface StudentQuizOption {
+  id: number
+  optionText: string
+  orderIndex: number
+}
+
+export interface StudentQuizQuestion {
+  id: number
+  type: QuestionType
+  questionText: string
+  explanation: string | null
+  knowledgePoint: string | null
+  difficulty: string | null
+  xpReward: number
+  orderIndex: number
+  targetText: string | null
+  options: StudentQuizOption[]
+}
+
+export interface StudentQuiz {
+  enrollmentId: number
+  lessonId: number
+  lessonTitle: string
+  lessonContent: string | null
+  lessonSkillType: SkillType
+  lessonXpReward: number
+  questions: StudentQuizQuestion[]
+}
+
+export interface SubmitQuizAnswerRequest {
+  questionId: number
+  answerText: string | null
+  selectedOptionId: number | null
+}
+
+export interface SubmitQuizRequest {
+  answers: SubmitQuizAnswerRequest[]
+}
+
+export interface StudentQuizProgressResult {
+  enrollmentId: number
+  progressPercent: number
+  completedLessonCount: number
+  totalLessonCount: number
+  lessonStatus: LessonProgressStatus
+}
+
+export interface SubmitQuizResponse {
+  attemptId: number
+  enrollmentId: number
+  lessonId: number
+  scorePercent: number
+  passed: boolean
+  xpAwarded: number
+  totalXp: number
+  currentStreak: number
+  progress: StudentQuizProgressResult
+}
+
+export interface StudentQuizAnswerResult {
+  questionId: number
+  questionText: string
+  questionType: QuestionType
+  answerText: string | null
+  selectedOptionId: number | null
+  selectedOptionText: string | null
+  correctAnswer: string | null
+  correctOptionText: string | null
+  correct: boolean
+  scorePercent: number
+  explanation: string | null
+}
+
+export interface StudentQuizAttemptResult {
+  attemptId: number
+  enrollmentId: number
+  lessonId: number
+  lessonTitle: string
+  scorePercent: number
+  passed: boolean
+  xpAwarded: number
+  totalXp: number
+  currentStreak: number
+  submittedAt: string
+  answers: StudentQuizAnswerResult[]
+}
+
+export interface StudentStats {
+  totalXp: number
+  currentStreak: number
+  longestStreak: number
+}
