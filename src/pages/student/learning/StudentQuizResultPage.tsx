@@ -151,7 +151,7 @@ export function StudentQuizResultPage() {
         <StatCard label="Tiến độ" value={`${progressPercent}%`} detail="khóa học" />
       </div>
 
-      {result.earnedXp === 0 ? (
+      {result.passed && result.earnedXp === 0 ? (
         <div role="alert">
           <Alert variant="info">XP chỉ được trao cho lần đầu tiên bạn vượt qua bài học thành công.</Alert>
         </div>
