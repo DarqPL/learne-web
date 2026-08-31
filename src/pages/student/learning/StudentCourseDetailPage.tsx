@@ -49,12 +49,16 @@ export function StudentCourseDetailPage() {
   }, [])
 
   useEffect(() => {
+    if (enrollmentRedirectTimerRef.current) {
+      clearTimeout(enrollmentRedirectTimerRef.current)
+      enrollmentRedirectTimerRef.current = null
+    }
+
     return () => {
       if (enrollmentRedirectTimerRef.current) {
         clearTimeout(enrollmentRedirectTimerRef.current)
         enrollmentRedirectTimerRef.current = null
       }
-      setRedirectingEnrollmentId(null)
     }
   }, [courseId])
 
@@ -71,6 +75,7 @@ export function StudentCourseDetailPage() {
       setCourse(null)
       setError(null)
       setInfo(null)
+      setRedirectingEnrollmentId(null)
       try {
         const response = await getStudentCourse(courseId)
         if (!cancelled) setCourse(response.data)
@@ -256,7 +261,7 @@ export function StudentCourseDetailPage() {
                             </div>
                             <div>
                               <dt className="text-xs text-gray-500">Số lựa chọn</dt>
-                              <dd className="mt-1 font-medium text-gray-800">Số lựa chọn: {question.optionCount}</dd>
+                              <dd className="mt-1 font-medium text-gray-800">{question.optionCount}</dd>
                             </div>
                           </dl>
                         </div>
