@@ -109,7 +109,7 @@ export function StudentEnrollmentProgressPage() {
   }
 
   async function handleCompleteLesson(lesson: StudentLessonProgress) {
-    if (enrollmentId === null || action !== null || lesson.status !== 'IN_PROGRESS') return
+    if (enrollmentId === null || action !== null || lesson.status === 'LOCKED' || lesson.status === 'COMPLETED') return
 
     const currentEnrollmentId = enrollmentId
     const lessonId = lesson.lessonId
@@ -120,7 +120,7 @@ export function StudentEnrollmentProgressPage() {
       const response = await completeStudentLesson(currentEnrollmentId, lessonId)
       if (!mountedRef.current || currentEnrollmentIdRef.current !== currentEnrollmentId) return
       setEnrollment(response.data)
-      setSelectedLessonId(lessonId)
+      setSelectedLessonId(getInitialSelectedLessonId(response.data) ?? lessonId)
       setInfo('Đã hoàn thành bài học.')
     } catch (err) {
       if (!mountedRef.current || currentEnrollmentIdRef.current !== currentEnrollmentId) return
@@ -276,9 +276,9 @@ export function StudentEnrollmentProgressPage() {
                       Bắt đầu học
                     </Button>
                   ) : null}
-                  {selectedLesson.status === 'IN_PROGRESS' ? (
+                  {selectedLesson.status === 'UNLOCKED' || selectedLesson.status === 'IN_PROGRESS' ? (
                     <Button variant="secondary" loading={action === 'complete'} disabled={action !== null} onClick={() => void handleCompleteLesson(selectedLesson)}>
-                      Hoàn thành bài học
+                      {selectedLesson.status === 'UNLOCKED' ? 'Đánh dấu hoàn thành' : 'Hoàn thành bài học'}
                     </Button>
                   ) : null}
                 </div>
