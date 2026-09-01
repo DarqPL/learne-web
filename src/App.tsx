@@ -11,7 +11,9 @@ import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
 import { ChangePasswordPage } from './pages/auth/ChangePasswordPage'
 import { StudentDashboardPage } from './pages/student/StudentDashboardPage'
 import { TeacherDashboardPage } from './pages/teacher/TeacherDashboardPage'
+import { TeacherCourseBuilderPage } from './pages/teacher/content/TeacherCourseBuilderPage'
 import { TeacherContentPage } from './pages/teacher/content/TeacherContentPage'
+import { TeacherLessonWorkspacePage } from './pages/teacher/content/TeacherLessonWorkspacePage'
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
 import { CreateTeacherPage } from './pages/admin/CreateTeacherPage'
 import { AdminTeacherListPage } from './pages/admin/AdminTeacherListPage'
@@ -61,6 +63,8 @@ export default function App() {
             <Route element={<TeacherLayout />}>
               <Route path="/teacher" element={<TeacherDashboardPage />} />
               <Route path="/teacher/content" element={<TeacherContentPage />} />
+              <Route path="/teacher/content/courses/:courseId" element={<TeacherCourseBuilderPage />} />
+              <Route path="/teacher/content/courses/:courseId/lessons/:lessonId" element={<TeacherLessonWorkspacePage />} />
               <Route path="/teacher/profile" element={<TeacherProfilePage />} />
             </Route>
           </Route>

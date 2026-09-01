@@ -18,3 +18,11 @@ export function countQuestions(course: TeacherCourse) {
 export function canSubmitCourse(course: TeacherCourse) {
   return canEditContent(course.status) && course.topics.length > 0 && countLessons(course) > 0 && countQuestions(course) > 0
 }
+
+export function findTeacherCourse(courses: TeacherCourse[], courseId: number | null) {
+  return courses.find((course) => course.id === courseId) ?? null
+}
+
+export function findTeacherLesson(course: TeacherCourse, lessonId: number) {
+  return course.topics.flatMap((topic) => topic.lessons).find((lesson) => lesson.id === lessonId) ?? null
+}
