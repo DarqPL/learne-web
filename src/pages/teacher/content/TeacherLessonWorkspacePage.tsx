@@ -31,14 +31,6 @@ function findTeacherTopic(course: TeacherCourse, lessonId: number) {
   return course.topics.find((topic) => topic.lessons.some((lesson) => lesson.id === lessonId)) ?? null
 }
 
-function getQuestionRejectionReason(question: TeacherQuestion) {
-  if ('rejectionReason' in question && typeof question.rejectionReason === 'string') {
-    return question.rejectionReason
-  }
-
-  return null
-}
-
 function LessonEditForm({ lesson, action, onSubmit }: { lesson: TeacherLesson; action: string | null; onSubmit: (payload: TeacherLessonRequest) => void }) {
   const initialValue = useMemo(() => getLessonInitialValue(lesson), [lesson])
 
@@ -330,10 +322,6 @@ export function TeacherLessonWorkspacePage() {
                         ) : null}
                       </div>
                     </div>
-
-                    {getQuestionRejectionReason(question) ? (
-                      <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">Lý do từ chối: {getQuestionRejectionReason(question)}</div>
-                    ) : null}
 
                     {editable && editingQuestionId === question.id ? (
                       <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
