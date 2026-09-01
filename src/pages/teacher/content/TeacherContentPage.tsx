@@ -51,10 +51,15 @@ export function TeacherContentPage() {
     setError(null)
     setInfo(null)
     try {
-      await createTeacherCourse(payload)
-      await refreshCourses()
+      const response = await createTeacherCourse(payload)
+      setCourses((current) => (current ? [response.data, ...current.filter((course) => course.id !== response.data.id)] : [response.data]))
       setFormResetVersion((version) => version + 1)
-      setInfo('Đã tạo khóa học. Mở builder để tiếp tục xây dựng nội dung.')
+      try {
+        await refreshCourses()
+        setInfo('Đã tạo khóa học. Mở builder để tiếp tục xây dựng nội dung.')
+      } catch {
+        setInfo('Đã tạo khóa học. Tải lại danh sách chưa thành công, vui lòng làm mới trang nếu thiếu dữ liệu.')
+      }
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể tạo khóa học.'))
     } finally {
