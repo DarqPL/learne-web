@@ -382,3 +382,98 @@ export interface StudentEnrollmentProgress {
   course: StudentProgressCourse
   topics: StudentProgressTopic[]
 }
+
+export interface StudentQuizOption {
+  id: number
+  optionText: string
+  orderIndex: number
+}
+
+export interface StudentQuizQuestion {
+  id: number
+  type: QuestionType
+  questionText: string
+  knowledgePoint: string | null
+  difficulty: string | null
+  xpReward: number
+  orderIndex: number
+  targetText: string | null
+  options: StudentQuizOption[]
+}
+
+export interface StudentQuiz {
+  enrollmentId: number
+  lessonId: number
+  lessonTitle: string
+  lessonContent: string | null
+  passPercent: number
+  bestScorePercent: number | null
+  alreadyPassed: boolean
+  questions: StudentQuizQuestion[]
+}
+
+export interface SubmitQuizAnswerRequest {
+  questionId: number
+  answerText?: string | null
+  selectedOptionId?: number | null
+}
+
+export interface SubmitQuizRequest {
+  answers: SubmitQuizAnswerRequest[]
+}
+
+export interface StudentQuizProgressResult {
+  lessonStatus: LessonProgressStatus
+  enrollmentProgressPercent: number
+  unlockedNextLessonId: number | null
+}
+
+export interface SubmitQuizResponse {
+  attemptId: number
+  enrollmentId: number
+  lessonId: number
+  scorePercent: number
+  passed: boolean
+  earnedXp: number
+  xpAwarded: boolean
+  progress: StudentQuizProgressResult
+  stats: StudentStats
+  answers: StudentQuizAnswerResult[]
+}
+
+export interface StudentQuizAnswerResult {
+  questionId: number
+  type: QuestionType
+  questionText: string
+  answerText: string | null
+  selectedOptionId: number | null
+  selectedOptionText: string | null
+  correct: boolean
+  scorePercent: number
+  earnedXp: number
+  gradingMethod: string
+  feedback: string | null
+  correctAnswer: string | null
+  correctOptionId: number | null
+  correctOptionText: string | null
+  explanation: string | null
+}
+
+export interface StudentQuizAttemptResult {
+  attemptId: number
+  enrollmentId: number
+  lessonId: number
+  scorePercent: number
+  passed: boolean
+  earnedXp: number
+  progress: StudentQuizProgressResult
+  stats: StudentStats
+  answers: StudentQuizAnswerResult[]
+}
+
+export interface StudentStats {
+  totalXp: number
+  currentStreakDays: number
+  longestStreakDays: number
+  lastActivityDate: string | null
+}

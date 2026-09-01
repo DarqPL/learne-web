@@ -1,5 +1,15 @@
 import { http } from './client'
-import type { StudentCourseDetail, StudentCourseSummary, StudentEnrollment, StudentEnrollmentProgress } from './types'
+import type {
+  StudentCourseDetail,
+  StudentCourseSummary,
+  StudentEnrollment,
+  StudentEnrollmentProgress,
+  StudentQuiz,
+  StudentQuizAttemptResult,
+  StudentStats,
+  SubmitQuizRequest,
+  SubmitQuizResponse,
+} from './types'
 
 const base = '/api/student'
 
@@ -38,4 +48,20 @@ export function startStudentLesson(enrollmentId: number, lessonId: number) {
 
 export function completeStudentLesson(enrollmentId: number, lessonId: number) {
   return http.post<StudentEnrollmentProgress>(`${base}/enrollments/${enrollmentId}/lessons/${lessonId}/complete`, {})
+}
+
+export function getStudentLessonQuiz(enrollmentId: number, lessonId: number) {
+  return http.get<StudentQuiz>(`${base}/enrollments/${enrollmentId}/lessons/${lessonId}/quiz`)
+}
+
+export function submitStudentLessonQuiz(enrollmentId: number, lessonId: number, request: SubmitQuizRequest) {
+  return http.post<SubmitQuizResponse>(`${base}/enrollments/${enrollmentId}/lessons/${lessonId}/quiz/submit`, request)
+}
+
+export function getStudentQuizAttempt(attemptId: number) {
+  return http.get<StudentQuizAttemptResult>(`${base}/quiz-attempts/${attemptId}`)
+}
+
+export function getStudentStats() {
+  return http.get<StudentStats>(`${base}/stats`)
 }
