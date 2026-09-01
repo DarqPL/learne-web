@@ -19,9 +19,7 @@ import {
 import type {
   TeacherCourse,
   TeacherCourseRequest,
-  TeacherLesson,
   TeacherLessonRequest,
-  TeacherQuestion,
   TeacherQuestionRequest,
   TeacherTopicRequest,
 } from '../../../lib/api/types'
@@ -31,74 +29,19 @@ import { Spinner } from '../../../components/ui/Spinner'
 import { CourseForm } from './CourseForm'
 import { LessonForm } from './LessonForm'
 import { QuestionForm } from './QuestionForm'
+import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
 import { TopicForm } from './TopicForm'
+import { courseTypeLabels, questionTypeLabels, skillTypeLabels } from './contentLabels'
+import { canEditContent, canSubmitCourse, countLessons, countQuestions, findTeacherCourse } from './contentUtils'
 import {
-  contentStatusLabels,
-  contentStatusStyles,
-  courseTypeLabels,
-  questionTypeLabels,
-  skillTypeLabels,
-} from './contentLabels'
-import { canEditContent, canSubmitCourse, countLessons, countQuestions } from './contentUtils'
+  getCourseInitialValue,
+  getLessonInitialValue,
+  getQuestionInitialValue,
+  getTopicInitialValue,
+} from './teacherContentMappers'
 
 const cardClassName = 'rounded-2xl border border-gray-200 bg-white p-5 shadow-sm'
 const mutedCardClassName = 'rounded-xl border border-gray-200 bg-gray-50 p-4'
-
-function getCourseInitialValue(course: TeacherCourse): TeacherCourseRequest {
-  return {
-    name: course.name,
-    description: course.description ?? '',
-    type: course.type,
-    level: course.level,
-    orderIndex: course.orderIndex,
-  }
-}
-
-function getTopicInitialValue(topic: TeacherCourse['topics'][number]): TeacherTopicRequest {
-  return {
-    name: topic.name,
-    description: topic.description ?? '',
-    orderIndex: topic.orderIndex,
-  }
-}
-
-function getLessonInitialValue(lesson: TeacherLesson): TeacherLessonRequest {
-  return {
-    title: lesson.title,
-    description: lesson.description ?? '',
-    content: lesson.content ?? '',
-    skillType: lesson.skillType,
-    orderIndex: lesson.orderIndex,
-    xpReward: lesson.xpReward,
-    placementTest: lesson.placementTest,
-  }
-}
-
-function getQuestionInitialValue(question: TeacherQuestion): TeacherQuestionRequest {
-  return {
-    type: question.type,
-    questionText: question.questionText,
-    explanation: question.explanation ?? '',
-    correctAnswer: question.correctAnswer ?? '',
-    knowledgePoint: question.knowledgePoint ?? '',
-    orderIndex: question.orderIndex,
-    difficulty: question.difficulty ?? '',
-    xpReward: question.xpReward,
-    options: question.options.map((option) => ({
-      optionText: option.optionText,
-      correct: option.correct,
-      orderIndex: option.orderIndex,
-    })),
-  }
-}
-
-function StatusBadge({ status }: { status: TeacherCourse['status'] }) {
-  return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${contentStatusStyles[status]}`}>
-      {contentStatusLabels[status]}
-    </span>
-  )
-}
 
 export function TeacherContentPage() {
   const [courses, setCourses] = useState<TeacherCourse[] | null>(null)
@@ -108,7 +51,7 @@ export function TeacherContentPage() {
   const [action, setAction] = useState<string | null>(null)
   const [formResetVersion, setFormResetVersion] = useState(0)
 
-  const selectedCourse = courses?.find((course) => course.id === selectedCourseId) ?? null
+  const selectedCourse = courses ? findTeacherCourse(courses, selectedCourseId) : null
   const selectedCourseEditable = selectedCourse ? canEditContent(selectedCourse.status) : false
 
   useEffect(() => {
@@ -393,7 +336,7 @@ export function TeacherContentPage() {
                           {course.level} · {courseTypeLabels[course.type]}
                         </p>
                       </div>
-                      <StatusBadge status={course.status} />
+                      <TeacherContentStatusBadge status={course.status} />
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2 text-xs text-gray-600">
                       <span>{course.topics.length} chủ đề</span>
@@ -422,7 +365,7 @@ export function TeacherContentPage() {
                         {countLessons(selectedCourse)} bài học · {countQuestions(selectedCourse)} câu hỏi
                       </p>
                     </div>
-                    <StatusBadge status={selectedCourse.status} />
+                    <TeacherContentStatusBadge status={selectedCourse.status} />
                   </div>
 
                   {selectedCourse.rejectionReason ? (
@@ -543,7 +486,7 @@ export function TeacherContentPage() {
                                     {skillTypeLabels[lesson.skillType]} · {lesson.questions.length} câu hỏi
                                   </p>
                                 </div>
-                                <StatusBadge status={lesson.status} />
+                                <TeacherContentStatusBadge status={lesson.status} />
                               </div>
 
                               {lesson.rejectionReason ? (
@@ -597,7 +540,7 @@ export function TeacherContentPage() {
                                         <p className="mt-1 font-medium text-gray-900">{question.questionText}</p>
                                         <p className="mt-1 text-sm text-gray-600">{questionTypeLabels[question.type]}</p>
                                       </div>
-                                      <StatusBadge status={question.status} />
+                                      <TeacherContentStatusBadge status={question.status} />
                                     </div>
 
                                     {selectedCourseEditable ? (
