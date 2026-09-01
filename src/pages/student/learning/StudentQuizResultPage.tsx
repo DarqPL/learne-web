@@ -119,7 +119,7 @@ export function StudentQuizResultPage() {
             </div>
 
             <div className="flex shrink-0 flex-col gap-2 sm:flex-row lg:flex-col">
-              <Button variant="secondary" onClick={() => navigate(`/student/enrollments/${result.enrollmentId}`)}>
+              <Button variant="secondary" onClick={() => navigate(`/student/enrollments/${result.enrollmentId}/lessons/${result.lessonId}`)}>
                 Quay lại bài học
               </Button>
               <Button onClick={() => navigate(`/student/enrollments/${result.enrollmentId}/lessons/${result.lessonId}/quiz`)}>Làm lại quiz</Button>
