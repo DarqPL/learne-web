@@ -23,6 +23,7 @@ import { StudentCourseListPage } from './pages/student/learning/StudentCourseLis
 import { StudentCourseDetailPage } from './pages/student/learning/StudentCourseDetailPage'
 import { StudentEnrollmentsPage } from './pages/student/learning/StudentEnrollmentsPage'
 import { StudentEnrollmentProgressPage } from './pages/student/learning/StudentEnrollmentProgressPage'
+import { StudentLessonDetailPage } from './pages/student/learning/StudentLessonDetailPage'
 import { StudentLessonQuizPage } from './pages/student/learning/StudentLessonQuizPage'
 import { StudentQuizResultPage } from './pages/student/learning/StudentQuizResultPage'
 import { NotFoundPage } from './pages/NotFoundPage'
@@ -51,6 +52,7 @@ export default function App() {
               <Route path="/student/courses/:id" element={<StudentCourseDetailPage />} />
               <Route path="/student/enrollments" element={<StudentEnrollmentsPage />} />
               <Route path="/student/enrollments/:id" element={<StudentEnrollmentProgressPage />} />
+              <Route path="/student/enrollments/:enrollmentId/lessons/:lessonId" element={<StudentLessonDetailPage />} />
               <Route path="/student/enrollments/:enrollmentId/lessons/:lessonId/quiz" element={<StudentLessonQuizPage />} />
               <Route path="/student/quiz-attempts/:attemptId" element={<StudentQuizResultPage />} />
             </Route>

@@ -193,7 +193,7 @@ export function StudentLessonQuizPage() {
             </div>
           </div>
 
-          <Button variant="secondary" onClick={() => navigate(`/student/enrollments/${quiz.enrollmentId}`)}>
+          <Button variant="secondary" onClick={() => navigate(`/student/enrollments/${quiz.enrollmentId}/lessons/${quiz.lessonId}`)}>
             Quay lại bài học
           </Button>
         </div>
