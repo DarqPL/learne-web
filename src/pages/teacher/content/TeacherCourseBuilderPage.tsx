@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Alert } from '../../../components/ui/Alert'
 import { Button } from '../../../components/ui/Button'
@@ -32,6 +32,64 @@ function parsePositiveInteger(value: string | undefined) {
   return Number.isInteger(parsed) && parsed > 0 ? parsed : null
 }
 
+function CourseEditForm({ course, action, onSubmit }: { course: TeacherCourse; action: string | null; onSubmit: (payload: TeacherCourseRequest) => void }) {
+  const initialValue = useMemo(() => getCourseInitialValue(course), [course])
+
+  return (
+    <CourseForm
+      initialValue={initialValue}
+      loading={action === 'update-course'}
+      disabled={action !== null && action !== 'update-course'}
+      submitLabel="Lưu khóa học"
+      onSubmit={onSubmit}
+    />
+  )
+}
+
+function TopicEditForm({
+  topic,
+  action,
+  onSubmit,
+}: {
+  topic: TeacherTopic
+  action: string | null
+  onSubmit: (topic: TeacherTopic, payload: TeacherTopicRequest) => void
+}) {
+  const initialValue = useMemo(() => getTopicInitialValue(topic), [topic])
+
+  return (
+    <TopicForm
+      initialValue={initialValue}
+      loading={action === `update-topic-${topic.id}`}
+      disabled={action !== null && action !== `update-topic-${topic.id}`}
+      submitLabel="Lưu chủ đề"
+      onSubmit={(payload) => onSubmit(topic, payload)}
+    />
+  )
+}
+
+function LessonEditForm({
+  lesson,
+  action,
+  onSubmit,
+}: {
+  lesson: TeacherLesson
+  action: string | null
+  onSubmit: (lesson: TeacherLesson, payload: TeacherLessonRequest) => void
+}) {
+  const initialValue = useMemo(() => getLessonInitialValue(lesson), [lesson])
+
+  return (
+    <LessonForm
+      initialValue={initialValue}
+      loading={action === `update-lesson-${lesson.id}`}
+      disabled={action !== null && action !== `update-lesson-${lesson.id}`}
+      submitLabel="Lưu bài học"
+      onSubmit={(payload) => onSubmit(lesson, payload)}
+    />
+  )
+}
+
 export function TeacherCourseBuilderPage() {
   const navigate = useNavigate()
   const { courseId } = useParams()
@@ -43,10 +101,15 @@ export function TeacherCourseBuilderPage() {
   const [formResetVersion, setFormResetVersion] = useState(0)
 
   useEffect(() => {
-    if (parsedCourseId === null) return
-
     let cancelled = false
     void (async () => {
+      await Promise.resolve()
+
+      if (cancelled) return
+
+      setCourse(null)
+      if (parsedCourseId === null) return
+
       try {
         const response = await getTeacherCourse(parsedCourseId)
         if (!cancelled) {
@@ -54,7 +117,10 @@ export function TeacherCourseBuilderPage() {
           setError(null)
         }
       } catch (err) {
-        if (!cancelled) setError(getApiErrorMessage(err, 'Không thể tải khóa học.'))
+        if (!cancelled) {
+          setCourse(null)
+          setError(getApiErrorMessage(err, 'Không thể tải khóa học.'))
+        }
       }
     })()
     return () => {
@@ -66,6 +132,33 @@ export function TeacherCourseBuilderPage() {
     if (parsedCourseId === null) return
     const response = await getTeacherCourse(parsedCourseId)
     setCourse(response.data)
+  }
+
+  const refreshCourseAfterSuccess = async (message: string) => {
+    try {
+      await refreshCourse()
+      setInfo(message)
+    } catch {
+      setInfo(`${message} Tải lại dữ liệu chưa thành công, vui lòng làm mới trang nếu cần đồng bộ thêm.`)
+    }
+  }
+
+  const updateTopicInCourse = (topic: TeacherTopic) => {
+    setCourse((current) => (current ? { ...current, topics: current.topics.map((item) => (item.id === topic.id ? topic : item)) } : current))
+  }
+
+  const updateLessonInCourse = (lesson: TeacherLesson) => {
+    setCourse((current) =>
+      current
+        ? {
+            ...current,
+            topics: current.topics.map((topic) => ({
+              ...topic,
+              lessons: topic.lessons.map((item) => (item.id === lesson.id ? lesson : item)),
+            })),
+          }
+        : current,
+    )
   }
 
   const handleUpdateCourse = async (payload: TeacherCourseRequest) => {
@@ -120,10 +213,10 @@ export function TeacherCourseBuilderPage() {
     setError(null)
     setInfo(null)
     try {
-      await createTeacherTopic(course.id, payload)
-      await refreshCourse()
+      const response = await createTeacherTopic(course.id, payload)
+      setCourse((current) => (current ? { ...current, topics: [...current.topics, response.data] } : current))
       setFormResetVersion((version) => version + 1)
-      setInfo('Đã tạo chủ đề.')
+      await refreshCourseAfterSuccess('Đã tạo chủ đề.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể tạo chủ đề.'))
     } finally {
@@ -136,9 +229,9 @@ export function TeacherCourseBuilderPage() {
     setError(null)
     setInfo(null)
     try {
-      await updateTeacherTopic(topic.id, payload)
-      await refreshCourse()
-      setInfo('Đã cập nhật chủ đề.')
+      const response = await updateTeacherTopic(topic.id, payload)
+      updateTopicInCourse(response.data)
+      await refreshCourseAfterSuccess('Đã cập nhật chủ đề.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể cập nhật chủ đề.'))
     } finally {
@@ -153,8 +246,8 @@ export function TeacherCourseBuilderPage() {
     setInfo(null)
     try {
       await deleteTeacherTopic(topic.id)
-      await refreshCourse()
-      setInfo('Đã xóa chủ đề.')
+      setCourse((current) => (current ? { ...current, topics: current.topics.filter((item) => item.id !== topic.id) } : current))
+      await refreshCourseAfterSuccess('Đã xóa chủ đề.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể xóa chủ đề.'))
     } finally {
@@ -167,10 +260,17 @@ export function TeacherCourseBuilderPage() {
     setError(null)
     setInfo(null)
     try {
-      await createTeacherLesson(topic.id, payload)
-      await refreshCourse()
+      const response = await createTeacherLesson(topic.id, payload)
+      setCourse((current) =>
+        current
+          ? {
+              ...current,
+              topics: current.topics.map((item) => (item.id === topic.id ? { ...item, lessons: [...item.lessons, response.data] } : item)),
+            }
+          : current,
+      )
       setFormResetVersion((version) => version + 1)
-      setInfo('Đã tạo bài học.')
+      await refreshCourseAfterSuccess('Đã tạo bài học.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể tạo bài học.'))
     } finally {
@@ -183,9 +283,9 @@ export function TeacherCourseBuilderPage() {
     setError(null)
     setInfo(null)
     try {
-      await updateTeacherLesson(lesson.id, payload)
-      await refreshCourse()
-      setInfo('Đã cập nhật bài học.')
+      const response = await updateTeacherLesson(lesson.id, payload)
+      updateLessonInCourse(response.data)
+      await refreshCourseAfterSuccess('Đã cập nhật bài học.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể cập nhật bài học.'))
     } finally {
@@ -200,8 +300,15 @@ export function TeacherCourseBuilderPage() {
     setInfo(null)
     try {
       await deleteTeacherLesson(lesson.id)
-      await refreshCourse()
-      setInfo('Đã xóa bài học.')
+      setCourse((current) =>
+        current
+          ? {
+              ...current,
+              topics: current.topics.map((topic) => ({ ...topic, lessons: topic.lessons.filter((item) => item.id !== lesson.id) })),
+            }
+          : current,
+      )
+      await refreshCourseAfterSuccess('Đã xóa bài học.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể xóa bài học.'))
     } finally {
@@ -209,8 +316,9 @@ export function TeacherCourseBuilderPage() {
     }
   }
 
-  const editable = course ? canEditContent(course.status) : false
-  const canSubmit = course ? canSubmitCourse(course) : false
+  const currentCourse = parsedCourseId !== null && course?.id === parsedCourseId ? course : null
+  const editable = currentCourse ? canEditContent(currentCourse.status) : false
+  const canSubmit = currentCourse ? canSubmitCourse(currentCourse) : false
   const displayError = parsedCourseId === null ? 'Không tìm thấy khóa học.' : error
 
   return (
@@ -222,27 +330,27 @@ export function TeacherCourseBuilderPage() {
       {displayError ? <Alert>{displayError}</Alert> : null}
       {info ? <Alert variant="success">{info}</Alert> : null}
 
-      {parsedCourseId !== null && course === null && !displayError ? (
+      {parsedCourseId !== null && currentCourse === null && !displayError ? (
         <div className="flex justify-center py-16">
           <Spinner />
         </div>
       ) : null}
 
-      {course ? (
+      {currentCourse ? (
         <>
           <header className={cardClassName}>
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{course.name}</h1>
-                <p className="mt-2 text-gray-600">{course.description || 'Chưa có mô tả khóa học.'}</p>
+                <h1 className="text-2xl font-bold text-gray-900">{currentCourse.name}</h1>
+                <p className="mt-2 text-gray-600">{currentCourse.description || 'Chưa có mô tả khóa học.'}</p>
                 <p className="mt-3 text-sm text-gray-600">
-                  {course.level} · {courseTypeLabels[course.type]} · {course.topics.length} chủ đề · {countLessons(course)} bài học · {countQuestions(course)} câu hỏi
+                  {currentCourse.level} · {courseTypeLabels[currentCourse.type]} · {currentCourse.topics.length} chủ đề · {countLessons(currentCourse)} bài học · {countQuestions(currentCourse)} câu hỏi
                 </p>
               </div>
-              <TeacherContentStatusBadge status={course.status} />
+              <TeacherContentStatusBadge status={currentCourse.status} />
             </div>
-            {course.rejectionReason ? (
-              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">Lý do từ chối: {course.rejectionReason}</div>
+            {currentCourse.rejectionReason ? (
+              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">Lý do từ chối: {currentCourse.rejectionReason}</div>
             ) : null}
           </header>
 
@@ -264,13 +372,7 @@ export function TeacherCourseBuilderPage() {
               </div>
               {!canSubmit ? <Alert variant="info">Cần có ít nhất 1 chủ đề, 1 bài học và 1 câu hỏi để gửi duyệt.</Alert> : null}
               <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
-                <CourseForm
-                  initialValue={getCourseInitialValue(course)}
-                  loading={action === 'update-course'}
-                  disabled={action !== null && action !== 'update-course'}
-                  submitLabel="Lưu khóa học"
-                  onSubmit={handleUpdateCourse}
-                />
+                <CourseEditForm course={currentCourse} action={action} onSubmit={handleUpdateCourse} />
               </div>
             </section>
           ) : (
@@ -299,13 +401,13 @@ export function TeacherCourseBuilderPage() {
               </div>
             ) : null}
 
-            {course.topics.length === 0 ? (
+            {currentCourse.topics.length === 0 ? (
               <div className={cardClassName}>
                 <p className="text-gray-600">Chưa có chủ đề nào. Thêm chủ đề đầu tiên để bắt đầu xây dựng cấu trúc khóa học.</p>
               </div>
             ) : (
               <div className="space-y-4">
-                {course.topics.map((topic) => (
+                {currentCourse.topics.map((topic) => (
                   <article key={topic.id} className={cardClassName}>
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
@@ -323,13 +425,7 @@ export function TeacherCourseBuilderPage() {
                       <div className="mt-4 grid gap-4 lg:grid-cols-2">
                         <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                           <h4 className="mb-3 font-medium text-gray-900">Chỉnh sửa chủ đề</h4>
-                          <TopicForm
-                            initialValue={getTopicInitialValue(topic)}
-                            loading={action === `update-topic-${topic.id}`}
-                            disabled={action !== null && action !== `update-topic-${topic.id}`}
-                            submitLabel="Lưu chủ đề"
-                            onSubmit={(payload) => handleUpdateTopic(topic, payload)}
-                          />
+                          <TopicEditForm topic={topic} action={action} onSubmit={handleUpdateTopic} />
                         </div>
                         <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                           <h4 className="mb-3 font-medium text-gray-900">Thêm bài học</h4>
@@ -361,7 +457,7 @@ export function TeacherCourseBuilderPage() {
                                 </div>
                                 <div className="flex flex-wrap items-center gap-2">
                                   <TeacherContentStatusBadge status={lesson.status} />
-                                  <Button variant="secondary" onClick={() => navigate(`/teacher/content/courses/${course.id}/lessons/${lesson.id}`)}>
+                                  <Button variant="secondary" onClick={() => navigate(`/teacher/content/courses/${currentCourse.id}/lessons/${lesson.id}`)}>
                                     Mở bài học
                                   </Button>
                                 </div>
@@ -384,13 +480,7 @@ export function TeacherCourseBuilderPage() {
                                       Xóa bài học
                                     </Button>
                                   </div>
-                                  <LessonForm
-                                    initialValue={getLessonInitialValue(lesson)}
-                                    loading={action === `update-lesson-${lesson.id}`}
-                                    disabled={action !== null && action !== `update-lesson-${lesson.id}`}
-                                    submitLabel="Lưu bài học"
-                                    onSubmit={(payload) => handleUpdateLesson(lesson, payload)}
-                                  />
+                                  <LessonEditForm lesson={lesson} action={action} onSubmit={handleUpdateLesson} />
                                 </div>
                               ) : null}
                             </div>
