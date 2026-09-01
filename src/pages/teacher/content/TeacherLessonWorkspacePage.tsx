@@ -67,6 +67,48 @@ function QuestionEditForm({
   )
 }
 
+function ReadOnlyQuestionDetails({ question }: { question: TeacherQuestion }) {
+  const correctOption = question.options.find((option) => option.correct)
+
+  return (
+    <div className="mt-4 space-y-3 rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm">
+      {question.options.length > 0 ? (
+        <div>
+          <p className="font-medium text-gray-700">Lựa chọn</p>
+          <div className="mt-2 space-y-2">
+            {question.options.map((option) => (
+              <p key={option.id} className={option.correct ? 'rounded-lg bg-green-50 px-3 py-2 font-medium text-green-700' : 'rounded-lg bg-white px-3 py-2 text-gray-600'}>
+                {option.optionText}{option.correct ? ' (đáp án đúng)' : ''}
+              </p>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {question.correctAnswer || correctOption ? (
+        <div>
+          <p className="font-medium text-gray-700">Đáp án đúng</p>
+          <p className="mt-1 whitespace-pre-wrap text-gray-600">{question.correctAnswer || correctOption?.optionText}</p>
+        </div>
+      ) : null}
+
+      {question.explanation ? (
+        <div>
+          <p className="font-medium text-gray-700">Giải thích</p>
+          <p className="mt-1 whitespace-pre-wrap text-gray-600">{question.explanation}</p>
+        </div>
+      ) : null}
+
+      {question.knowledgePoint ? (
+        <div>
+          <p className="font-medium text-gray-700">Kiến thức liên quan</p>
+          <p className="mt-1 whitespace-pre-wrap text-gray-600">{question.knowledgePoint}</p>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 export function TeacherLessonWorkspacePage() {
   const navigate = useNavigate()
   const { courseId, lessonId } = useParams()
@@ -275,7 +317,7 @@ export function TeacherLessonWorkspacePage() {
               <p className="mt-1 text-sm text-gray-600">Xây dựng và chỉnh sửa ngân hàng câu hỏi cho bài học này.</p>
             </div>
 
-            {editable ? (
+            {editable && editingQuestionId === null ? (
               <div className={cardClassName}>
                 <h3 className="mb-4 font-semibold text-gray-900">Thêm câu hỏi</h3>
                 <QuestionForm
@@ -334,6 +376,8 @@ export function TeacherLessonWorkspacePage() {
                         <QuestionEditForm question={question} action={action} onSubmit={handleUpdateQuestion} />
                       </div>
                     ) : null}
+
+                    {!editable ? <ReadOnlyQuestionDetails question={question} /> : null}
                   </article>
                 ))}
               </div>
