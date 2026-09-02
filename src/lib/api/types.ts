@@ -390,7 +390,7 @@ export interface GenerateLearningPathRequest {
 
 export interface StudentLearningPathItem {
   id: number
-  enrollmentId: number
+  enrollmentId: number | null
   lessonId: number
   lessonTitle: string
   courseId: number
