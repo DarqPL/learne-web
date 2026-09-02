@@ -1,9 +1,12 @@
 import { http } from './client'
 import type {
+  GenerateLearningPathRequest,
+  NextLessonRecommendation,
   StudentCourseDetail,
   StudentCourseSummary,
   StudentEnrollment,
   StudentEnrollmentProgress,
+  StudentLearningPath,
   StudentQuiz,
   StudentQuizAttemptResult,
   StudentStats,
@@ -64,4 +67,16 @@ export function getStudentQuizAttempt(attemptId: number) {
 
 export function getStudentStats() {
   return http.get<StudentStats>(`${base}/stats`)
+}
+
+export function generateStudentLearningPath(request: GenerateLearningPathRequest = { maxItems: 8 }) {
+  return http.post<StudentLearningPath>(`${base}/learning-path/generate`, request)
+}
+
+export function getCurrentStudentLearningPath() {
+  return http.get<StudentLearningPath>(`${base}/learning-path/current`)
+}
+
+export function getNextLessonRecommendation() {
+  return http.get<NextLessonRecommendation>(`${base}/recommendations/next-lesson`)
 }
