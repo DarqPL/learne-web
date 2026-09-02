@@ -24,6 +24,7 @@ import { TeacherDetailPage } from './pages/student/TeacherDetailPage'
 import { StudentCourseListPage } from './pages/student/learning/StudentCourseListPage'
 import { StudentCourseDetailPage } from './pages/student/learning/StudentCourseDetailPage'
 import { StudentEnrollmentsPage } from './pages/student/learning/StudentEnrollmentsPage'
+import { StudentLearningPathPage } from './pages/student/learning/StudentLearningPathPage'
 import { StudentEnrollmentProgressPage } from './pages/student/learning/StudentEnrollmentProgressPage'
 import { StudentLessonDetailPage } from './pages/student/learning/StudentLessonDetailPage'
 import { StudentLessonQuizPage } from './pages/student/learning/StudentLessonQuizPage'
@@ -48,6 +49,7 @@ export default function App() {
           <Route element={<RequireRole role="STUDENT" />}>
             <Route element={<StudentLayout />}>
               <Route path="/student" element={<StudentDashboardPage />} />
+              <Route path="/student/learning-path" element={<StudentLearningPathPage />} />
               <Route path="/student/teachers" element={<TeacherListPage />} />
               <Route path="/student/teachers/:id" element={<TeacherDetailPage />} />
               <Route path="/student/courses" element={<StudentCourseListPage />} />
