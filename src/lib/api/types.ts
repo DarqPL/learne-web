@@ -383,6 +383,47 @@ export interface StudentEnrollmentProgress {
   topics: StudentProgressTopic[]
 }
 
+export interface GenerateLearningPathRequest {
+  teacherId?: number
+  maxItems?: number
+}
+
+export interface StudentLearningPathItem {
+  id: number
+  enrollmentId: number | null
+  lessonId: number
+  lessonTitle: string
+  courseId: number
+  courseTitle: string
+  teacherId: number
+  teacherName: string
+  sequenceOrder: number
+  reason: string
+  score: number
+  completed: boolean
+}
+
+export interface StudentLearningPath {
+  id: number
+  status: string
+  generatedAt: string
+  source: string
+  weaknesses: string[]
+  items: StudentLearningPathItem[]
+}
+
+export interface NextLessonRecommendation {
+  enrollmentId: number
+  lessonId: number
+  lessonTitle: string
+  courseId: number
+  courseTitle: string
+  teacherId: number
+  teacherName: string
+  reason: string
+  score: number
+}
+
 export interface StudentQuizOption {
   id: number
   optionText: string
