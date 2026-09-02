@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import axios from 'axios'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { generateStudentLearningPath, getCurrentStudentLearningPath } from '../../../lib/api/studentLearningApi'
@@ -14,7 +15,12 @@ function formatScore(value: number) {
   return Math.min(100, Math.max(0, Math.round(percent)))
 }
 
+function isCurrentPathMissingError(error: unknown) {
+  return axios.isAxiosError(error) && error.response?.status === 404
+}
+
 export function StudentLearningPathPage() {
+  const mountedRef = useRef(false)
   const [path, setPath] = useState<StudentLearningPath | null>(null)
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
@@ -23,6 +29,7 @@ export function StudentLearningPathPage() {
 
   useEffect(() => {
     let cancelled = false
+    mountedRef.current = true
 
     void (async () => {
       setLoading(true)
@@ -32,10 +39,14 @@ export function StudentLearningPathPage() {
         const response = await getCurrentStudentLearningPath()
         if (cancelled) return
         setPath(response.data)
-      } catch {
+      } catch (err) {
         if (cancelled) return
         setPath(null)
-        setInfo('Bạn chưa có lộ trình học AI. Tạo lộ trình để hệ thống đề xuất bài học phù hợp với điểm yếu hiện tại.')
+        if (isCurrentPathMissingError(err)) {
+          setInfo('Bạn chưa có lộ trình học AI. Tạo lộ trình để hệ thống đề xuất bài học phù hợp với điểm yếu hiện tại.')
+        } else {
+          setError(getApiErrorMessage(err, 'Không thể tải lộ trình học AI.'))
+        }
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -43,6 +54,7 @@ export function StudentLearningPathPage() {
 
     return () => {
       cancelled = true
+      mountedRef.current = false
     }
   }, [])
 
@@ -54,12 +66,14 @@ export function StudentLearningPathPage() {
     setInfo(null)
     try {
       const response = await generateStudentLearningPath({ maxItems: 8 })
+      if (!mountedRef.current) return
       setPath(response.data)
       setInfo('Lộ trình học AI đã được cập nhật.')
     } catch (err) {
+      if (!mountedRef.current) return
       setError(getApiErrorMessage(err, 'Không thể tạo lộ trình học AI. Hãy thử lại sau.'))
     } finally {
-      setGenerating(false)
+      if (mountedRef.current) setGenerating(false)
     }
   }
 
@@ -169,7 +183,11 @@ export function StudentLearningPathPage() {
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">#{item.sequenceOrder}</span>
-                            {item.completed ? <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700">Đã hoàn thành</span> : null}
+                            {item.completed ? (
+                              <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700">Đã hoàn thành</span>
+                            ) : (
+                              <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">Chưa hoàn thành</span>
+                            )}
                           </div>
                           <h3 className="mt-3 text-lg font-semibold text-gray-900">{item.lessonTitle}</h3>
                           <p className="mt-1 text-sm text-gray-600">{item.courseTitle}</p>
