@@ -424,10 +424,74 @@ export interface NextLessonRecommendation {
   score: number
 }
 
+export interface PlacementStatus {
+  placementCompleted: boolean
+  activeAttemptId: number | null
+  skipped: boolean
+  canGenerateRecommendations: boolean
+  reason: string | null
+}
+
 export interface StudentQuizOption {
   id: number
   optionText: string
   orderIndex: number
+}
+
+export interface PlacementAttempt {
+  id: number
+  status: string
+  startedAt: string
+  expiresAt: string
+  remainingSeconds: number
+  durationSeconds: number
+  questions: PlacementQuestion[]
+}
+
+export interface PlacementQuestion {
+  id: number
+  type: string
+  questionText: string
+  knowledgePoint: string | null
+  skill: string
+  sequenceOrder: number
+  options: StudentQuizOption[]
+}
+
+export interface SubmitPlacementRequest {
+  answers: SubmitPlacementAnswer[]
+}
+
+export interface SubmitPlacementAnswer {
+  questionId: number
+  answerText?: string
+  selectedOptionId?: number
+  selectedOptionIds?: number[]
+}
+
+export interface CourseRecommendationPath {
+  id: number
+  status: string
+  generatedAt: string
+  source: string
+  weaknesses: string[]
+  items: CourseRecommendationItem[]
+}
+
+export interface CourseRecommendationItem {
+  id: number
+  courseId: number
+  courseTitle: string
+  description: string | null
+  type: string
+  level: string
+  teacherId: number
+  teacherName: string
+  enrolled: boolean
+  enrollmentStatus: string | null
+  sequenceOrder: number
+  reason: string
+  score: number
 }
 
 export interface StudentQuizQuestion {
