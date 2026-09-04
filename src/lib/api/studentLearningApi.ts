@@ -1,7 +1,10 @@
 import { http } from './client'
 import type {
+  CourseRecommendationPath,
   GenerateLearningPathRequest,
   NextLessonRecommendation,
+  PlacementAttempt,
+  PlacementStatus,
   StudentCourseDetail,
   StudentCourseSummary,
   StudentEnrollment,
@@ -10,6 +13,7 @@ import type {
   StudentQuiz,
   StudentQuizAttemptResult,
   StudentStats,
+  SubmitPlacementRequest,
   SubmitQuizRequest,
   SubmitQuizResponse,
 } from './types'
@@ -79,4 +83,32 @@ export function getCurrentStudentLearningPath() {
 
 export function getNextLessonRecommendation() {
   return http.get<NextLessonRecommendation>(`${base}/recommendations/next-lesson`)
+}
+
+export function getPlacementStatus() {
+  return http.get<PlacementStatus>(`${base}/placement/status`)
+}
+
+export function skipPlacement() {
+  return http.post<PlacementStatus>(`${base}/placement/skip`, {})
+}
+
+export function startPlacement() {
+  return http.post<PlacementAttempt>(`${base}/placement/start`, {})
+}
+
+export function getPlacementAttempt(attemptId: number) {
+  return http.get<PlacementAttempt>(`${base}/placement/attempts/${attemptId}`)
+}
+
+export function submitPlacementAttempt(attemptId: number, request: SubmitPlacementRequest) {
+  return http.post(`${base}/placement/attempts/${attemptId}/submit`, request)
+}
+
+export function generateCourseRecommendations(request = { maxItems: 8 }) {
+  return http.post<CourseRecommendationPath>(`${base}/course-recommendations/generate`, request)
+}
+
+export function getCurrentCourseRecommendations() {
+  return http.get<CourseRecommendationPath>(`${base}/course-recommendations/current`)
 }

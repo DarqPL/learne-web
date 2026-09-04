@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom'
 
 const tabs = [
   { label: 'Tổng quan', to: '/student', end: true },
-  { label: 'Lộ trình AI', to: '/student/learning-path', end: false },
+  { label: 'AI đề xuất khóa học', to: '/student/course-recommendations', end: false },
   { label: 'Khóa học', to: '/student/courses', end: false },
   { label: 'Khóa đã đăng ký', to: '/student/enrollments', end: false },
   { label: 'Giảng viên', to: '/student/teachers', end: false },
