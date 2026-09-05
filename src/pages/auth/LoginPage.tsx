@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { ArrowRight, BrainCircuit, CheckCircle2, Sparkles } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Sparkles } from 'lucide-react'
 import { login } from '../../lib/api/authApi'
 import { getApiErrorMessage } from '../../lib/api/client'
 import { useAuth } from '../../lib/auth/auth-context'
@@ -64,27 +64,6 @@ export function LoginPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_18%,_rgba(129,140,248,0.45),_transparent_30%),radial-gradient(circle_at_78%_10%,_rgba(168,85,247,0.34),_transparent_28%),linear-gradient(145deg,_#020617_0%,_#1e1b4b_58%,_#312e81_100%)]" />
         <div className="absolute left-10 top-28 h-[28rem] w-[28rem] rounded-full border border-white/10" />
         <div className="absolute left-24 top-[10.5rem] h-[20rem] w-[20rem] rounded-full border border-indigo-300/20" />
-        <div className="absolute bottom-10 right-10 w-72 rounded-3xl border border-white/10 bg-white/10 p-5 shadow-2xl backdrop-blur">
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-indigo-400/20 p-3">
-              <BrainCircuit className="h-6 w-6 text-indigo-100" />
-            </div>
-            <div>
-              <p className="text-sm text-indigo-100">AI Learning Agent</p>
-              <p className="text-lg font-semibold">Đề xuất bài học tiếp theo</p>
-            </div>
-          </div>
-          <div className="mt-5 space-y-3 text-sm text-indigo-50/90">
-            <div className="flex items-center justify-between rounded-2xl bg-white/10 px-4 py-3">
-              <span>Grammar focus</span>
-              <span className="font-semibold">92%</span>
-            </div>
-            <div className="flex items-center justify-between rounded-2xl bg-white/10 px-4 py-3">
-              <span>Vocabulary gap</span>
-              <span className="font-semibold">A2</span>
-            </div>
-          </div>
-        </div>
         <div className="relative z-10 flex h-full flex-col justify-between">
           <div>
             <Badge className="border-white/15 bg-white/10 text-indigo-50 hover:bg-white/10">
