@@ -1,18 +1,21 @@
 import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { ArrowLeft, MailCheck } from 'lucide-react'
 import { requestPasswordReset } from '../../lib/api/authApi'
 import { getApiErrorMessage } from '../../lib/api/client'
-import { Alert } from '../../components/ui/Alert'
-import { Button } from '../../components/ui/Button'
-import { Card } from '../../components/ui/Card'
 import { Field } from '../../components/ui/Field'
 import { Input } from '../../components/ui/Input'
+import { Alert, AlertDescription } from '../../components/shadcn/ui/alert'
+import { Badge } from '../../components/shadcn/ui/badge'
+import { Button } from '../../components/shadcn/ui/button'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/shadcn/ui/card'
+import { Separator } from '../../components/shadcn/ui/separator'
 import { validateForm } from '../../lib/validation/validateForm'
 import { email as emailValidator, required } from '../../lib/validation/validators'
 
 export function ForgotPasswordPage() {
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
-  const [info, setInfo] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
@@ -29,7 +32,12 @@ export function ForgotPasswordPage() {
     setSubmitting(true)
     try {
       await requestPasswordReset({ email })
-      setInfo('Nếu email tồn tại, chúng tôi đã gửi mã đặt lại mật khẩu. Vui lòng kiểm tra hộp thư của bạn.')
+      navigate('/reset-password', {
+        state: {
+          email,
+          message: 'Nếu email tồn tại, mã đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư và nhập mã bên dưới.',
+        },
+      })
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể gửi yêu cầu đặt lại mật khẩu.'))
     } finally {
@@ -38,41 +46,54 @@ export function ForgotPasswordPage() {
   }
 
   return (
-    <Card>
-      <h1 className="mb-6 text-center text-2xl font-bold text-gray-900">Quên mật khẩu</h1>
-      {info ? (
-        <div className="mb-4">
-          <Alert variant="success">{info}</Alert>
-        </div>
-      ) : null}
-      {error ? (
-        <div className="mb-4">
-          <Alert>{error}</Alert>
-        </div>
-      ) : null}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Email" error={fieldErrors.email}>
-          <Input
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-            autoComplete="email"
-            placeholder="ban@example.com"
-          />
-        </Field>
-        <Button type="submit" loading={submitting} className="w-full">
-          Gửi yêu cầu
-        </Button>
-      </form>
-      <div className="mt-4 flex items-center justify-between text-sm">
-        <Link to="/login" className="text-indigo-600 hover:underline">
-          Quay lại đăng nhập
-        </Link>
-        <Link to="/reset-password" className="text-indigo-600 hover:underline">
-          Đã có mã? Đặt lại mật khẩu
-        </Link>
-      </div>
-    </Card>
+    <main className="mx-auto w-full max-w-md">
+      <Card className="border-white/70 bg-white/90 shadow-2xl shadow-indigo-200/40 backdrop-blur">
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+            <MailCheck className="h-7 w-7" />
+          </div>
+          <Badge variant="outline" className="mx-auto border-indigo-200 bg-indigo-50 text-indigo-700">
+            Khôi phục quyền truy cập
+          </Badge>
+          <CardTitle className="text-2xl font-bold text-gray-950">Quên mật khẩu</CardTitle>
+          <CardDescription>Nhập email tài khoản để nhận mã đặt lại mật khẩu.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {error ? (
+            <Alert variant="destructive" className="mb-4 border-red-200 bg-red-50">
+              <AlertDescription className="text-red-700">{error}</AlertDescription>
+            </Alert>
+          ) : null}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <Field label="Email" error={fieldErrors.email}>
+              <Input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+                autoComplete="email"
+                placeholder="ban@example.com"
+                className="h-11 rounded-xl bg-white/90"
+              />
+            </Field>
+            <Button type="submit" loading={submitting} className="h-11 w-full rounded-xl">
+              Gửi mã đặt lại mật khẩu
+            </Button>
+          </form>
+        </CardContent>
+        <CardFooter className="flex-col gap-4">
+          <Separator />
+          <div className="flex w-full items-center justify-between text-sm">
+            <Link to="/login" className="inline-flex items-center gap-1 font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
+              <ArrowLeft className="h-4 w-4" />
+              Đăng nhập
+            </Link>
+            <Link to="/reset-password" className="font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
+              Đã có mã?
+            </Link>
+          </div>
+        </CardFooter>
+      </Card>
+    </main>
   )
 }
