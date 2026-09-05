@@ -90,10 +90,10 @@ export function LoginPage() {
         <Card className="border-0 bg-transparent py-0 shadow-none">
           <CardHeader className="px-0 pb-6">
             <Badge variant="outline" className="mb-2 w-fit border-indigo-200 bg-indigo-50 text-indigo-700">
-              Đăng nhập học viên, giáo viên, quản trị
+              Không gian học tập cá nhân hóa
             </Badge>
             <CardTitle className="text-3xl font-bold tracking-tight text-gray-950">Chào mừng trở lại</CardTitle>
-            <CardDescription className="text-base text-gray-600">Tiếp tục lộ trình học và quản lý nội dung trên LearnE.</CardDescription>
+            <CardDescription className="text-base text-gray-600">Mỗi lần đăng nhập là một bước gần hơn tới cách học phù hợp với bạn.</CardDescription>
           </CardHeader>
           <CardContent className="px-0">
             {message ? (
