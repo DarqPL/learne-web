@@ -190,6 +190,7 @@ export function StudentGrammarCheckHistoryPage() {
     detailRequestIdRef.current = requestId
 
     setSelectedCheckId(id)
+    setDetail(null)
     setDetailLoading(true)
     setDetailError(null)
 
@@ -217,6 +218,7 @@ export function StudentGrammarCheckHistoryPage() {
     listRequestIdRef.current = requestId
 
     async function loadHistoryPage() {
+      setHistoryPage(null)
       setHistoryLoading(true)
       setHistoryError(null)
 
@@ -299,6 +301,7 @@ export function StudentGrammarCheckHistoryPage() {
                     key={item.id}
                     className={`w-full rounded-xl border p-3 text-left transition-colors hover:border-indigo-200 hover:bg-indigo-50/50 ${selectedCheckId === item.id ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200 bg-white'}`}
                     type="button"
+                    aria-pressed={selectedCheckId === item.id}
                     onClick={() => void loadDetail(item.id)}
                   >
                     <div className="flex items-center justify-between gap-3">
