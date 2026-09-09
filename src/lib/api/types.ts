@@ -18,6 +18,57 @@ export interface ApiMessageResponse {
   message: string
 }
 
+export type GrammarCheckStatus = 'PENDING' | 'SUCCEEDED' | 'FAILED'
+
+export type GrammarCheckErrorType = 'GRAMMAR' | 'SPELLING' | 'PUNCTUATION' | 'WORD_CHOICE' | 'STYLE' | 'OTHER'
+
+export interface SubmitGrammarCheckRequest {
+  inputText: string
+}
+
+export interface GrammarCheckErrorItem {
+  id: number
+  sequenceOrder: number
+  errorText: string
+  errorType: GrammarCheckErrorType
+  suggestion: string
+  explanation: string
+  startPos: number
+  endPos: number
+}
+
+export interface GrammarCheckResult {
+  id: number
+  status: GrammarCheckStatus
+  inputText: string
+  courseId: number | null
+  lessonId: number | null
+  questionId: number | null
+  enrollmentId: number | null
+  failureMessage: string | null
+  createdAt: string
+  completedAt: string | null
+  errors: GrammarCheckErrorItem[]
+}
+
+export interface GrammarCheckListItem {
+  id: number
+  status: GrammarCheckStatus
+  inputPreview: string
+  errorCount: number
+  failureMessage: string | null
+  createdAt: string
+  completedAt: string | null
+}
+
+export interface GrammarCheckPage {
+  content: GrammarCheckListItem[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
+
 export interface TeacherProfile {
   teacherId: number
   fullName: string
