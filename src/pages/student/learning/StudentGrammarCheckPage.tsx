@@ -114,6 +114,8 @@ function getStatusBadgeClassName(status: GrammarCheckStatus) {
 
 export function StudentGrammarCheckPage() {
   const mountedRef = useRef(false)
+  const detailRequestIdRef = useRef(0)
+  const historyRequestIdRef = useRef(0)
   const [inputText, setInputText] = useState('')
   const [fieldError, setFieldError] = useState<string | undefined>()
   const [submitting, setSubmitting] = useState(false)
@@ -124,24 +126,27 @@ export function StudentGrammarCheckPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [historyError, setHistoryError] = useState<string | null>(null)
 
-  async function refreshHistory() {
+  async function loadHistory() {
+    const requestId = historyRequestIdRef.current + 1
+    historyRequestIdRef.current = requestId
+
     setHistoryLoading(true)
     setHistoryError(null)
 
     try {
       const response = await listGrammarChecks({ page: 0, size: 10 })
-      if (!mountedRef.current) return
+      if (!mountedRef.current || historyRequestIdRef.current !== requestId) return
       setHistory(response.data.content)
     } catch (error) {
-      if (mountedRef.current) setHistoryError(getApiErrorMessage(error, 'Không thể tải lịch sử kiểm tra.'))
+      if (mountedRef.current && historyRequestIdRef.current === requestId) setHistoryError(getApiErrorMessage(error, 'Không thể tải lịch sử kiểm tra.'))
     } finally {
-      if (mountedRef.current) setHistoryLoading(false)
+      if (mountedRef.current && historyRequestIdRef.current === requestId) setHistoryLoading(false)
     }
   }
 
   useEffect(() => {
     mountedRef.current = true
-    const historyTimer = window.setTimeout(() => void refreshHistory(), 0)
+    const historyTimer = window.setTimeout(() => void loadHistory(), 0)
 
     return () => {
       window.clearTimeout(historyTimer)
@@ -171,7 +176,7 @@ export function StudentGrammarCheckPage() {
       if (!mountedRef.current) return
       setResult(response.data)
       setSelectedCheckId(response.data.id)
-      await refreshHistory()
+      await loadHistory()
     } catch (error) {
       if (mountedRef.current) setErrorMessage(buildSubmitErrorMessage(error))
     } finally {
@@ -180,15 +185,18 @@ export function StudentGrammarCheckPage() {
   }
 
   async function handleSelectHistoryItem(id: number) {
+    const requestId = detailRequestIdRef.current + 1
+    detailRequestIdRef.current = requestId
+
     setSelectedCheckId(id)
     setErrorMessage(null)
 
     try {
       const response = await getGrammarCheck(id)
-      if (!mountedRef.current) return
+      if (!mountedRef.current || detailRequestIdRef.current !== requestId) return
       setResult(response.data)
     } catch (error) {
-      if (mountedRef.current) setErrorMessage(getApiErrorMessage(error, 'Không thể tải kết quả kiểm tra.'))
+      if (mountedRef.current && detailRequestIdRef.current === requestId) setErrorMessage(getApiErrorMessage(error, 'Không thể tải kết quả kiểm tra.'))
     }
   }
 
@@ -268,6 +276,11 @@ export function StudentGrammarCheckPage() {
                 <Alert variant="destructive">
                   <AlertDescription>{result.failureMessage || 'AI chưa thể hoàn tất kiểm tra này. Hãy thử gửi lại đoạn văn.'}</AlertDescription>
                 </Alert>
+              ) : result.status === 'PENDING' ? (
+                <div className="flex items-center gap-3 rounded-xl border border-amber-100 bg-amber-50 p-5 text-sm font-medium text-amber-800">
+                  <Spinner />
+                  <span>Lần kiểm tra này đang được xử lý. Vui lòng thử mở lại sau ít phút.</span>
+                </div>
               ) : result.errors.length === 0 ? (
                 <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-5 text-sm font-medium text-emerald-800">Không phát hiện lỗi rõ ràng trong đoạn văn này.</div>
               ) : (
