@@ -22,8 +22,16 @@ export type GrammarCheckStatus = 'PENDING' | 'SUCCEEDED' | 'FAILED'
 
 export type GrammarCheckErrorType = 'GRAMMAR' | 'SPELLING' | 'PUNCTUATION' | 'WORD_CHOICE' | 'STYLE' | 'OTHER'
 
+export interface GrammarCheckContextRequest {
+  courseId?: number | null
+  lessonId?: number | null
+  questionId?: number | null
+  enrollmentId?: number | null
+}
+
 export interface SubmitGrammarCheckRequest {
   inputText: string
+  context?: GrammarCheckContextRequest | null
 }
 
 export interface GrammarCheckErrorItem {
