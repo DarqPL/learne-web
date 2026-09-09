@@ -292,7 +292,7 @@ export function StudentGrammarCheckHistoryPage() {
               <div className="flex justify-center py-10">
                 <Loader2 className="h-5 w-5 animate-spin text-indigo-600" />
               </div>
-            ) : historyItems.length === 0 ? (
+            ) : !historyError && historyItems.length === 0 ? (
               <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 text-sm leading-6 text-gray-600">Chưa có lịch sử kiểm tra.</p>
             ) : (
               <div className="space-y-2">

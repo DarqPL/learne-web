@@ -309,7 +309,7 @@ export function StudentGrammarCheckPage() {
                   <Textarea
                     className="min-h-48 resize-y border-slate-200 bg-slate-50/70 text-base leading-7 focus-visible:bg-white"
                     disabled={submitting}
-                    maxLength={MAX_INPUT_LENGTH + 200}
+                    maxLength={MAX_INPUT_LENGTH}
                     placeholder="Ví dụ: I want order pizza yesterday."
                     value={inputText}
                     onChange={(event) => {
@@ -425,17 +425,20 @@ export function StudentGrammarCheckPage() {
                 <div className="flex justify-center py-8">
                   <Loader2 className="h-5 w-5 animate-spin text-indigo-600" />
                 </div>
-              ) : history.length === 0 ? (
+              ) : !historyError && history.length === 0 ? (
                 <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 text-sm leading-6 text-gray-600">Chưa có lịch sử kiểm tra. Kết quả mới sẽ xuất hiện tại đây.</p>
               ) : (
                 <div className="space-y-2">
                   {history.map((item) => (
                     <button
                       key={item.id}
-                      className={`w-full rounded-xl border p-3 text-left transition-colors hover:border-indigo-200 hover:bg-indigo-50/50 ${
+                      className={`w-full rounded-xl border p-3 text-left transition-colors hover:border-indigo-200 hover:bg-indigo-50/50 disabled:pointer-events-none disabled:opacity-60 ${
                         selectedCheckId === item.id ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200 bg-white'
                       }`}
                       type="button"
+                      aria-pressed={selectedCheckId === item.id}
+                      aria-busy={submitting}
+                      disabled={submitting}
                       onClick={() => void handleSelectHistoryItem(item.id)}
                     >
                       <div className="flex items-center justify-between gap-3">

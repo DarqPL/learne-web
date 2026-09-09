@@ -45,14 +45,8 @@ function Button({
   if (asChild) {
     return (
       <Comp data-slot="button" className={cn(buttonVariants({ variant, size, className }))} disabled={disabled || loading} {...props}>
-        {loading ? (
-          <>
-            <Loader2 className="animate-spin" />
-            <Slottable>{children}</Slottable>
-          </>
-        ) : (
-          children
-        )}
+        {loading ? <Loader2 className="animate-spin" /> : null}
+        <Slottable>{children}</Slottable>
       </Comp>
     )
   }
