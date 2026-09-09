@@ -114,7 +114,7 @@ function getStatusBadgeClassName(status: GrammarCheckStatus) {
 
 export function StudentGrammarCheckPage() {
   const mountedRef = useRef(false)
-  const detailRequestIdRef = useRef(0)
+  const resultRequestIdRef = useRef(0)
   const historyRequestIdRef = useRef(0)
   const [inputText, setInputText] = useState('')
   const [fieldError, setFieldError] = useState<string | undefined>()
@@ -167,36 +167,39 @@ export function StudentGrammarCheckPage() {
       return
     }
 
+    const requestId = resultRequestIdRef.current + 1
+    resultRequestIdRef.current = requestId
+
     setSubmitting(true)
     setFieldError(undefined)
     setErrorMessage(null)
 
     try {
       const response = await submitGrammarCheck({ inputText: trimmed })
-      if (!mountedRef.current) return
+      if (!mountedRef.current || resultRequestIdRef.current !== requestId) return
       setResult(response.data)
       setSelectedCheckId(response.data.id)
       await loadHistory()
     } catch (error) {
-      if (mountedRef.current) setErrorMessage(buildSubmitErrorMessage(error))
+      if (mountedRef.current && resultRequestIdRef.current === requestId) setErrorMessage(buildSubmitErrorMessage(error))
     } finally {
       if (mountedRef.current) setSubmitting(false)
     }
   }
 
   async function handleSelectHistoryItem(id: number) {
-    const requestId = detailRequestIdRef.current + 1
-    detailRequestIdRef.current = requestId
+    const requestId = resultRequestIdRef.current + 1
+    resultRequestIdRef.current = requestId
 
     setSelectedCheckId(id)
     setErrorMessage(null)
 
     try {
       const response = await getGrammarCheck(id)
-      if (!mountedRef.current || detailRequestIdRef.current !== requestId) return
+      if (!mountedRef.current || resultRequestIdRef.current !== requestId) return
       setResult(response.data)
     } catch (error) {
-      if (mountedRef.current && detailRequestIdRef.current === requestId) setErrorMessage(getApiErrorMessage(error, 'Không thể tải kết quả kiểm tra.'))
+      if (mountedRef.current && resultRequestIdRef.current === requestId) setErrorMessage(getApiErrorMessage(error, 'Không thể tải kết quả kiểm tra.'))
     }
   }
 
