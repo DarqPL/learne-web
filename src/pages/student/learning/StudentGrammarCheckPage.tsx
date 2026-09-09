@@ -181,7 +181,23 @@ export function StudentGrammarCheckPage() {
       setSelectedCheckId(response.data.id)
       await loadHistory()
     } catch (error) {
+      const checkId = getFailureCheckId(error)
+
       if (mountedRef.current && resultRequestIdRef.current === requestId) setErrorMessage(buildSubmitErrorMessage(error))
+
+      if (checkId !== null) {
+        try {
+          const response = await getGrammarCheck(checkId)
+          if (mountedRef.current && resultRequestIdRef.current === requestId) {
+            setResult(response.data)
+            setSelectedCheckId(checkId)
+          }
+        } catch {
+          // Keep the submit error visible if the persisted failed result cannot be loaded.
+        }
+
+        await loadHistory()
+      }
     } finally {
       if (mountedRef.current) setSubmitting(false)
     }
