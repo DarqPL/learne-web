@@ -4,6 +4,7 @@ const tabs = [
   { label: 'Tổng quan', to: '/student', end: true },
   { label: 'AI đề xuất khóa học', to: '/student/course-recommendations', end: false },
   { label: 'Kiểm tra ngữ pháp AI', to: '/student/grammar-check', end: false },
+  { label: 'AI Tutor', to: '/student/ai-tutor', end: false },
   { label: 'Khóa học', to: '/student/courses', end: false },
   { label: 'Khóa đã đăng ký', to: '/student/enrollments', end: false },
   { label: 'Giảng viên', to: '/student/teachers', end: false },

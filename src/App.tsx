@@ -29,6 +29,7 @@ import { StudentPlacementTestPage } from './pages/student/learning/StudentPlacem
 import { StudentCourseRecommendationsPage } from './pages/student/learning/StudentCourseRecommendationsPage'
 import { StudentGrammarCheckPage } from './pages/student/learning/StudentGrammarCheckPage'
 import { StudentGrammarCheckHistoryPage } from './pages/student/learning/StudentGrammarCheckHistoryPage'
+import { StudentAiTutorPage } from './pages/student/learning/StudentAiTutorPage'
 import { StudentEnrollmentProgressPage } from './pages/student/learning/StudentEnrollmentProgressPage'
 import { StudentLessonDetailPage } from './pages/student/learning/StudentLessonDetailPage'
 import { StudentLessonQuizPage } from './pages/student/learning/StudentLessonQuizPage'
@@ -58,6 +59,7 @@ export default function App() {
               <Route path="/student/course-recommendations" element={<StudentCourseRecommendationsPage />} />
               <Route path="/student/grammar-check" element={<StudentGrammarCheckPage />} />
               <Route path="/student/grammar-check/history" element={<StudentGrammarCheckHistoryPage />} />
+              <Route path="/student/ai-tutor" element={<StudentAiTutorPage />} />
               <Route path="/student/teachers" element={<TeacherListPage />} />
               <Route path="/student/teachers/:id" element={<TeacherDetailPage />} />
               <Route path="/student/courses" element={<StudentCourseListPage />} />
