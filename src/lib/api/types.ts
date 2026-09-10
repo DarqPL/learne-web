@@ -77,6 +77,77 @@ export interface GrammarCheckPage {
   totalPages: number
 }
 
+export type AiTutorPracticeType = 'FREE_CHAT' | 'ROLEPLAY' | 'WRITING_PRACTICE'
+
+export type AiConversationStatus = 'ACTIVE' | 'ARCHIVED'
+
+export type AiTutorFeedbackType = 'GRAMMAR' | 'VOCABULARY' | 'WORD_CHOICE' | 'STYLE' | 'OTHER'
+
+export interface AiTutorFeedback {
+  id: number
+  errorType: AiTutorFeedbackType
+  originalText: string
+  correctedText: string
+  explanation: string
+}
+
+export interface AiTutorMessage {
+  id: number
+  senderType: 'USER' | 'AI'
+  message: string
+  createdAt: string
+  feedback: AiTutorFeedback | null
+}
+
+export interface AiConversationSummary {
+  id: number
+  title: string
+  practiceType: AiTutorPracticeType
+  status: AiConversationStatus
+  messagePreview: string | null
+  lastMessageAt: string
+  cleanupWarnAt: string
+  archiveAfter: string
+  cleanupWarning: boolean
+}
+
+export interface AiConversationDetail {
+  id: number
+  title: string
+  practiceType: AiTutorPracticeType
+  status: AiConversationStatus
+  startedAt: string
+  lastMessageAt: string
+  cleanupWarnAt: string
+  archiveAfter: string
+  deleteAfter: string | null
+  cleanupWarning: boolean
+  messages: AiTutorMessage[]
+}
+
+export interface AiConversationPage {
+  content: AiConversationSummary[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
+
+export interface CreateAiConversationRequest {
+  title: string
+  practiceType: AiTutorPracticeType
+}
+
+export interface SendAiTutorMessageRequest {
+  message: string
+}
+
+export interface SendAiTutorMessageResponse {
+  userMessage: AiTutorMessage
+  aiMessage: AiTutorMessage
+  conversation: AiConversationSummary
+}
+
 export interface TeacherProfile {
   teacherId: number
   fullName: string
