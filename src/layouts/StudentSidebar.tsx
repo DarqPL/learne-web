@@ -6,7 +6,7 @@ type StudentNavItem = {
   label: string
   to: string
   end: boolean
-  icon: ComponentType<{ className?: string }>
+  icon: ComponentType<{ className?: string; 'aria-hidden'?: 'true' }>
   description: string
 }
 
@@ -47,7 +47,7 @@ export function StudentSidebar() {
                       isActive ? 'bg-white/20 text-white' : 'bg-indigo-50 text-indigo-600 group-hover:bg-white'
                     }`}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-5 w-5" aria-hidden="true" />
                   </span>
                   <span className="grid gap-0.5">
                     <span className="whitespace-nowrap leading-5">{tab.label}</span>
