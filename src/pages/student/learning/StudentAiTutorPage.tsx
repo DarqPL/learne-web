@@ -18,6 +18,7 @@ import { Alert, AlertDescription } from '../../../components/shadcn/ui/alert'
 import { Badge } from '../../../components/shadcn/ui/badge'
 import { Button } from '../../../components/shadcn/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/shadcn/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/shadcn/ui/dialog'
 import { Skeleton } from '../../../components/shadcn/ui/skeleton'
 import { Field } from '../../../components/ui/Field'
 import { Textarea } from '../../../components/ui/Textarea'
@@ -230,6 +231,7 @@ export function StudentAiTutorPage() {
     try {
       const response = await createAiConversation({ title: trimmedTitle, practiceType })
       if (!mountedRef.current || createRequestIdRef.current !== requestId) return
+      detailRequestIdRef.current += 1
       setCreateOpen(false)
       setSelectedConversation(buildEmptyDetail(response.data))
       setDetailError(null)
@@ -277,6 +279,7 @@ export function StudentAiTutorPage() {
     try {
       const response = await sendAiTutorMessage(conversationId, { message: trimmedMessage })
       if (!mountedRef.current || sendRequestIdRef.current !== requestId) return
+      detailRequestIdRef.current += 1
       setSelectedConversation((current) => {
         if (!current || current.id !== conversationId) return current
         return {
@@ -314,11 +317,12 @@ export function StudentAiTutorPage() {
     try {
       await archiveAiConversation(conversationId)
       if (!mountedRef.current || archiveRequestIdRef.current !== requestId) return
+      detailRequestIdRef.current += 1
       setSelectedConversation(null)
       const remainingConversations = await loadConversations()
       if (!mountedRef.current || archiveRequestIdRef.current !== requestId) return
       const firstRemaining = remainingConversations.find((conversation) => conversation.id !== conversationId) ?? remainingConversations[0]
-      if (firstRemaining) {
+      if (firstRemaining && archiveRequestIdRef.current === requestId) {
         setSelectedConversation(buildEmptyDetail(firstRemaining))
         await loadConversationDetail(firstRemaining.id)
       }
@@ -612,89 +616,81 @@ export function StudentAiTutorPage() {
         </Card>
       </div>
 
-      {createOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4" role="presentation" onMouseDown={closeCreateDialog}>
-          <Card
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="ai-tutor-create-title"
-            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto border-indigo-100 py-0 shadow-2xl"
-            onMouseDown={(event) => event.stopPropagation()}
-          >
-            <CardHeader className="border-b bg-gradient-to-br from-indigo-50 to-amber-50 px-5 py-5">
-              <CardTitle id="ai-tutor-create-title" className="flex items-center gap-2 text-xl text-slate-950">
-                <Plus className="size-5 text-indigo-600" />
-                Tạo hội thoại mới
-              </CardTitle>
-              <CardDescription>Chọn mục tiêu luyện tập để AI Tutor phản hồi đúng ngữ cảnh.</CardDescription>
-            </CardHeader>
-            <CardContent className="px-5 py-5">
-              <form onSubmit={handleCreateConversation} className="space-y-5">
-                {createError ? (
-                  <Alert variant="destructive" className="border-red-200 bg-red-50">
-                    <AlertCircle className="size-4" />
-                    <AlertDescription>{createError}</AlertDescription>
-                  </Alert>
-                ) : null}
-                <Field label="Tiêu đề hội thoại" error={conversationTitleError}>
-                  <input
-                    value={conversationTitle}
-                    maxLength={MAX_TITLE_LENGTH}
-                    disabled={creating}
-                    onChange={(event) => setConversationTitle(event.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
-                    placeholder="Ví dụ: Luyện gọi món ở nhà hàng"
-                  />
-                </Field>
-                <p className="text-xs text-slate-500">{conversationTitle.length}/{MAX_TITLE_LENGTH} ký tự</p>
+      <Dialog open={createOpen} onOpenChange={(open) => (open ? openCreateDialog() : closeCreateDialog())}>
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-indigo-100 p-0 shadow-2xl" showCloseButton={!creating}>
+          <DialogHeader className="border-b bg-gradient-to-br from-indigo-50 to-amber-50 px-5 py-5">
+            <DialogTitle className="flex items-center gap-2 text-xl text-slate-950">
+              <Plus className="size-5 text-indigo-600" />
+              Tạo hội thoại mới
+            </DialogTitle>
+            <DialogDescription>Chọn mục tiêu luyện tập để AI Tutor phản hồi đúng ngữ cảnh.</DialogDescription>
+          </DialogHeader>
+          <div className="px-5 py-5">
+            <form onSubmit={handleCreateConversation} className="space-y-5">
+              {createError ? (
+                <Alert variant="destructive" className="border-red-200 bg-red-50">
+                  <AlertCircle className="size-4" />
+                  <AlertDescription>{createError}</AlertDescription>
+                </Alert>
+              ) : null}
+              <Field label="Tiêu đề hội thoại" error={conversationTitleError}>
+                <input
+                  value={conversationTitle}
+                  maxLength={MAX_TITLE_LENGTH}
+                  disabled={creating}
+                  onChange={(event) => setConversationTitle(event.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+                  placeholder="Ví dụ: Luyện gọi món ở nhà hàng"
+                />
+              </Field>
+              <p className="text-xs text-slate-500">{conversationTitle.length}/{MAX_TITLE_LENGTH} ký tự</p>
 
-                <fieldset className="space-y-3">
-                  <legend className="text-sm font-medium text-slate-700">Chế độ luyện tập</legend>
-                  <div className="grid gap-3 md:grid-cols-3">
-                    {practiceTypeOptions.map((option) => {
-                      const selected = practiceType === option.type
-                      return (
-                        <label
-                          key={option.type}
-                          className={`cursor-pointer rounded-2xl border p-4 transition ${
-                            selected ? 'border-indigo-300 bg-indigo-50 shadow-sm shadow-indigo-100' : 'border-slate-200 bg-white hover:border-indigo-200'
-                          } ${creating ? 'cursor-not-allowed opacity-60' : ''}`}
-                        >
-                          <input
-                            type="radio"
-                            name="practiceType"
-                            value={option.type}
-                            checked={selected}
-                            disabled={creating}
-                            onChange={() => setPracticeType(option.type)}
-                            className="sr-only"
-                          />
-                          <span className="mb-3 flex size-10 items-center justify-center rounded-2xl bg-white text-indigo-600 ring-1 ring-indigo-100">
-                            <PracticeIcon type={option.type} className="size-5" />
-                          </span>
-                          <span className="block font-medium text-slate-950">{option.label}</span>
-                          <span className="mt-2 block text-xs leading-5 text-slate-600">{option.description}</span>
-                          {selected ? <span className="mt-3 inline-flex text-xs font-medium text-indigo-700">Đang chọn</span> : null}
-                        </label>
-                      )
-                    })}
-                  </div>
-                </fieldset>
-
-                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                  <Button type="button" variant="outline" disabled={creating} onClick={closeCreateDialog}>
-                    Hủy
-                  </Button>
-                  <Button type="submit" loading={creating} className="bg-indigo-600 text-white hover:bg-indigo-700">
-                    <Plus className="size-4" />
-                    Tạo hội thoại mới
-                  </Button>
+              <fieldset className="space-y-3">
+                <legend className="text-sm font-medium text-slate-700">Chế độ luyện tập</legend>
+                <div className="grid gap-3 md:grid-cols-3">
+                  {practiceTypeOptions.map((option) => {
+                    const selected = practiceType === option.type
+                    return (
+                      <label
+                        key={option.type}
+                        className={`cursor-pointer rounded-2xl border p-4 transition ${
+                          selected ? 'border-indigo-300 bg-indigo-50 shadow-sm shadow-indigo-100' : 'border-slate-200 bg-white hover:border-indigo-200'
+                        } ${creating ? 'cursor-not-allowed opacity-60' : ''}`}
+                      >
+                        <input
+                          type="radio"
+                          name="practiceType"
+                          value={option.type}
+                          checked={selected}
+                          disabled={creating}
+                          onChange={() => setPracticeType(option.type)}
+                          className="sr-only"
+                        />
+                        <span className="mb-3 flex size-10 items-center justify-center rounded-2xl bg-white text-indigo-600 ring-1 ring-indigo-100">
+                          <PracticeIcon type={option.type} className="size-5" />
+                        </span>
+                        <span className="block font-medium text-slate-950">{option.label}</span>
+                        <span className="mt-2 block text-xs leading-5 text-slate-600">{option.description}</span>
+                        {selected ? <span className="mt-3 inline-flex text-xs font-medium text-indigo-700">Đang chọn</span> : null}
+                      </label>
+                    )
+                  })}
                 </div>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      ) : null}
+              </fieldset>
+
+              <DialogFooter className="gap-3">
+                <Button type="button" variant="outline" disabled={creating} onClick={closeCreateDialog}>
+                  Hủy
+                </Button>
+                <Button type="submit" loading={creating} className="bg-indigo-600 text-white hover:bg-indigo-700">
+                  <Plus className="size-4" />
+                  Tạo hội thoại mới
+                </Button>
+              </DialogFooter>
+            </form>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
