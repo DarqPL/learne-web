@@ -1,12 +1,26 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import {
+  ArrowRight,
+  BookOpen,
+  CalendarDays,
+  CheckCircle2,
+  FileQuestion,
+  GraduationCap,
+  Layers3,
+  Loader2,
+  PlayCircle,
+  Target,
+  type LucideIcon,
+} from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { enrollStudentCourse, getStudentCourse } from '../../../lib/api/studentLearningApi'
 import type { StudentCourseDetail } from '../../../lib/api/types'
-import { Alert } from '../../../components/ui/Alert'
+import { Alert, AlertDescription, AlertTitle } from '../../../components/shadcn/ui/alert'
 import { Avatar } from '../../../components/ui/Avatar'
-import { Button } from '../../../components/ui/Button'
-import { Spinner } from '../../../components/ui/Spinner'
+import { Badge } from '../../../components/shadcn/ui/badge'
+import { Button } from '../../../components/shadcn/ui/button'
+import { Card, CardContent } from '../../../components/shadcn/ui/card'
 import { studentCourseTypeLabels, studentQuestionTypeLabels, studentSkillTypeLabels } from './studentLearningLabels'
 import { countStudentLessons, countStudentQuestions, formatStudentLearningDate } from './studentLearningUtils'
 
@@ -117,25 +131,39 @@ export function StudentCourseDetailPage() {
 
   if (courseId === null) {
     return (
-      <div role="alert">
-        <Alert>Không tìm thấy khóa học.</Alert>
-      </div>
+      <Card className="border-dashed border-gray-200 bg-white">
+        <CardContent>
+          <Alert variant="destructive">
+            <FileQuestion aria-hidden="true" />
+            <AlertTitle>Không tìm thấy khóa học.</AlertTitle>
+          </Alert>
+        </CardContent>
+      </Card>
     )
   }
 
   if (error && !course) {
     return (
-      <div role="alert">
-        <Alert>{error}</Alert>
-      </div>
+      <Card className="border-red-100 bg-red-50/40">
+        <CardContent>
+          <Alert variant="destructive" className="border-red-200 bg-white">
+            <FileQuestion aria-hidden="true" />
+            <AlertTitle>Không thể tải khóa học</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
     )
   }
 
   if (!course) {
     return (
-      <div className="flex justify-center py-16">
-        <Spinner />
-      </div>
+      <Card className="border-indigo-100 bg-gradient-to-br from-white to-indigo-50/70">
+        <CardContent className="flex items-center gap-3 py-8 text-sm font-medium text-gray-700">
+          <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin text-indigo-600" />
+          Đang tải thông tin khóa học...
+        </CardContent>
+      </Card>
     )
   }
 
@@ -144,136 +172,193 @@ export function StudentCourseDetailPage() {
   const enrollmentActionPending = enrollingCourseId === course.id || redirectingEnrollmentId === course.id
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="space-y-6 overflow-hidden">
+      <section className="overflow-hidden rounded-3xl border border-indigo-100 bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.16),_transparent_32%),linear-gradient(135deg,_#ffffff_0%,_#eef6ff_52%,_#f7f3ff_100%)] p-5 shadow-sm sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
+          <div className="min-w-0 max-w-3xl">
+            <div className="mb-5 flex flex-wrap items-center gap-2">
+              <Badge variant="outline" className="border-indigo-200 bg-white/85 text-indigo-700 shadow-sm">
+                <GraduationCap aria-hidden="true" />
                 {studentCourseTypeLabels[course.type]}
-              </span>
-              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">Trình độ {course.level}</span>
+              </Badge>
+              <Badge variant="outline" className="border-sky-200 bg-white/85 text-sky-700 shadow-sm">
+                <Target aria-hidden="true" />
+                Trình độ {course.level}
+              </Badge>
               {course.enrolled ? (
-                <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">Đã đăng ký</span>
+                <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700 shadow-sm">
+                  <CheckCircle2 aria-hidden="true" />
+                  Đã đăng ký
+                </Badge>
               ) : null}
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">{course.name}</h1>
-            <div className="mt-5 flex items-center gap-3">
-              <Avatar name={course.teacherName} url={course.teacherAvatarUrl ?? undefined} size="sm" />
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-gray-900">{course.teacherName}</p>
-                <p className="truncate text-xs text-gray-500">{course.teacherEmail}</p>
-              </div>
-            </div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-indigo-600">Course Story</p>
+            <h1 className="mt-3 text-3xl font-bold tracking-tight text-gray-950 sm:text-5xl">{course.name}</h1>
+            {course.description ? <p className="mt-5 max-w-2xl whitespace-pre-wrap text-base leading-7 text-gray-600 sm:text-lg">{course.description}</p> : null}
+
+            <Card className="mt-6 max-w-xl border-white/80 bg-white/80 py-4 shadow-sm backdrop-blur">
+              <CardContent className="flex items-center gap-3 px-4">
+                <Avatar name={course.teacherName} url={course.teacherAvatarUrl ?? undefined} size="sm" />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-gray-950">{course.teacherName}</p>
+                  <p className="truncate text-xs text-gray-500">{course.teacherEmail}</p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
-          <div className="flex shrink-0 flex-col gap-3 sm:flex-row lg:flex-col">
+          <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:flex-row lg:flex-col">
             {course.enrolled && course.activeEnrollmentId ? (
-              <Button onClick={() => navigate(`/student/enrollments/${course.activeEnrollmentId}`)}>Tiếp tục học</Button>
+              <Button className="w-full sm:w-auto" size="lg" onClick={() => navigate(`/student/enrollments/${course.activeEnrollmentId}`)}>
+                Tiếp tục học
+                <ArrowRight aria-hidden="true" />
+              </Button>
             ) : null}
             {!course.enrolled ? (
-              <Button loading={enrollmentActionPending} onClick={handleEnroll}>
+              <Button className="w-full sm:w-auto" size="lg" loading={enrollmentActionPending} onClick={handleEnroll}>
                 Đăng ký khóa học
               </Button>
             ) : null}
           </div>
         </div>
 
-        {course.description ? <p className="mt-6 whitespace-pre-wrap text-sm leading-6 text-gray-700">{course.description}</p> : null}
-
-        <dl className="mt-6 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-          <div className="rounded-xl bg-gray-50 p-3">
-            <dt className="text-xs text-gray-500">Ngày xuất bản</dt>
-            <dd className="mt-1 font-semibold text-gray-900">{formatStudentLearningDate(course.publishedAt)}</dd>
-          </div>
-          <div className="rounded-xl bg-gray-50 p-3">
-            <dt className="text-xs text-gray-500">Chủ đề</dt>
-            <dd className="mt-1 font-semibold text-gray-900">{course.topics.length}</dd>
-          </div>
-          <div className="rounded-xl bg-gray-50 p-3">
-            <dt className="text-xs text-gray-500">Bài học</dt>
-            <dd className="mt-1 font-semibold text-gray-900">{lessonCount}</dd>
-          </div>
-          <div className="rounded-xl bg-gray-50 p-3">
-            <dt className="text-xs text-gray-500">Câu hỏi</dt>
-            <dd className="mt-1 font-semibold text-gray-900">{questionCount}</dd>
-          </div>
+        <dl className="mt-7 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+          <StoryStat icon={CalendarDays} label="Ngày xuất bản" value={formatStudentLearningDate(course.publishedAt)} />
+          <StoryStat icon={Layers3} label="Chủ đề" value={course.topics.length} />
+          <StoryStat icon={BookOpen} label="Bài học" value={lessonCount} />
+          <StoryStat icon={FileQuestion} label="Câu hỏi" value={questionCount} />
         </dl>
       </section>
 
       {error ? (
-        <div role="alert">
-          <Alert>{error}</Alert>
-        </div>
+        <Alert variant="destructive" className="border-red-200 bg-red-50">
+          <FileQuestion aria-hidden="true" />
+          <AlertTitle>Không thể đăng ký khóa học</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       ) : null}
       {info ? (
-        <div role="alert">
-          <Alert variant="success">{info}</Alert>
-        </div>
+        <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800">
+          <CheckCircle2 aria-hidden="true" />
+          <AlertTitle>Đã đăng ký</AlertTitle>
+          <AlertDescription className="text-emerald-700">{info}</AlertDescription>
+        </Alert>
       ) : null}
 
-      <div className="space-y-6">
-        {course.topics.map((topic) => (
-          <section key={topic.id} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Chủ đề</p>
-            <h2 className="mt-2 text-xl font-semibold text-gray-900">{topic.name}</h2>
-            {topic.description ? <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-700">{topic.description}</p> : null}
+      <section className="space-y-5">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <Badge variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700">
+              <PlayCircle aria-hidden="true" />
+              Course Story
+            </Badge>
+            <h2 className="mt-3 text-2xl font-bold tracking-tight text-gray-950 sm:text-3xl">Lộ trình nội dung khóa học</h2>
+          </div>
+          <p className="max-w-md text-sm leading-6 text-gray-500">Đi qua từng chủ đề như một bản đồ học tập: mở ngữ cảnh, luyện kỹ năng, rồi kiểm tra bằng câu hỏi ngắn.</p>
+        </div>
 
-            <div className="mt-5 space-y-4">
-              {topic.lessons.map((lesson) => (
-                <article key={lesson.id} className="rounded-2xl border border-gray-100 bg-gray-50 p-5">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Bài học</p>
-                      <h3 className="mt-1 text-lg font-semibold text-gray-900">{lesson.title}</h3>
+        <div className="space-y-5">
+          {course.topics.map((topic) => (
+          <Card key={topic.id} className="overflow-hidden border-gray-200 bg-white py-0 shadow-sm">
+            <CardContent className="p-0">
+              <div className="border-b border-gray-100 bg-gray-50/70 p-5 sm:p-6">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="secondary" className="bg-white text-gray-700">
+                    Chặng {topic.orderIndex}
+                  </Badge>
+                  <Badge variant="outline" className="border-indigo-200 text-indigo-700">
+                    Chủ đề
+                  </Badge>
+                </div>
+                <h3 className="mt-3 text-xl font-semibold tracking-tight text-gray-950">{topic.name}</h3>
+                {topic.description ? <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-600">{topic.description}</p> : null}
+              </div>
+
+              <div className="space-y-4 p-5 sm:p-6">
+                {topic.lessons.map((lesson) => (
+                <article key={lesson.id} className="relative rounded-2xl border border-gray-200 bg-white p-4 shadow-xs sm:p-5">
+                  <div className="absolute left-5 top-5 hidden h-[calc(100%-2.5rem)] w-px bg-indigo-100 sm:block" aria-hidden="true" />
+                  <div className="relative flex flex-col gap-4 sm:pl-8">
+                    <span className="absolute -left-10 top-1 hidden h-5 w-5 rounded-full border-4 border-white bg-indigo-500 shadow-sm sm:block" aria-hidden="true" />
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">Bài học {lesson.orderIndex}</p>
+                        <h4 className="mt-1 text-lg font-semibold text-gray-950">{lesson.title}</h4>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Badge variant="outline" className="border-sky-200 bg-sky-50 text-sky-700">
+                          {studentSkillTypeLabels[lesson.skillType]}
+                        </Badge>
+                        <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+                          {lesson.xpReward} XP
+                        </Badge>
+                        <Badge variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700">
+                          {lesson.questionCount} câu hỏi
+                        </Badge>
+                      </div>
                     </div>
-                    <div className="flex flex-wrap gap-2 text-xs font-semibold">
-                      <span className="rounded-full bg-white px-3 py-1 text-gray-700">{studentSkillTypeLabels[lesson.skillType]}</span>
-                      <span className="rounded-full bg-amber-100 px-3 py-1 text-amber-700">{lesson.xpReward} XP</span>
-                      <span className="rounded-full bg-indigo-100 px-3 py-1 text-indigo-700">{lesson.questionCount} câu hỏi</span>
+
+                    {lesson.description ? <p className="whitespace-pre-wrap text-sm leading-6 text-gray-600">{lesson.description}</p> : null}
+                    <div className="rounded-xl border border-dashed border-indigo-200 bg-indigo-50/50 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">Nội dung xem trước</p>
+                      <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-700">{getContentPreview(lesson.content)}</p>
                     </div>
+
+                    {lesson.questions.length > 0 ? (
+                      <div className="grid gap-3 lg:grid-cols-2">
+                        {lesson.questions.map((question) => (
+                          <Card key={question.id} className="gap-3 border-gray-100 bg-gray-50/70 py-4 shadow-none">
+                            <CardContent className="space-y-3 px-4">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Badge variant="secondary" className="bg-white text-gray-700">
+                                  <FileQuestion aria-hidden="true" />
+                                  {studentQuestionTypeLabels[question.type]}
+                                </Badge>
+                                <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+                                  {question.xpReward} XP
+                                </Badge>
+                              </div>
+                              <p className="line-clamp-3 text-sm font-medium leading-6 text-gray-950">{question.questionText}</p>
+                              <dl className="grid gap-2 text-xs text-gray-600 sm:grid-cols-3">
+                                <div>
+                                  <dt className="text-gray-500">Điểm kiến thức</dt>
+                                  <dd className="mt-1 font-semibold text-gray-800">{question.knowledgePoint ?? 'Chưa có'}</dd>
+                                </div>
+                                <div>
+                                  <dt className="text-gray-500">Độ khó</dt>
+                                  <dd className="mt-1 font-semibold text-gray-800">{question.difficulty ?? 'Chưa có'}</dd>
+                                </div>
+                                <div>
+                                  <dt className="text-gray-500">Số lựa chọn</dt>
+                                  <dd className="mt-1 font-semibold text-gray-800">{question.optionCount}</dd>
+                                </div>
+                              </dl>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
-
-                  {lesson.description ? <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-gray-700">{lesson.description}</p> : null}
-                  <p className="mt-3 whitespace-pre-wrap rounded-xl bg-white p-4 text-sm leading-6 text-gray-700">
-                    {getContentPreview(lesson.content)}
-                  </p>
-
-                  {lesson.questions.length > 0 ? (
-                    <div className="mt-4 space-y-3">
-                      {lesson.questions.map((question) => (
-                        <div key={question.id} className="rounded-xl border border-gray-200 bg-white p-4">
-                          <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-                            <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-700">
-                              {studentQuestionTypeLabels[question.type]}
-                            </span>
-                            <span className="rounded-full bg-amber-100 px-3 py-1 text-amber-700">{question.xpReward} XP</span>
-                          </div>
-                          <p className="mt-3 text-sm font-medium text-gray-900">{question.questionText}</p>
-                          <dl className="mt-3 grid gap-2 text-sm text-gray-600 sm:grid-cols-3">
-                            <div>
-                              <dt className="text-xs text-gray-500">Điểm kiến thức</dt>
-                              <dd className="mt-1 font-medium text-gray-800">{question.knowledgePoint ?? 'Chưa có'}</dd>
-                            </div>
-                            <div>
-                              <dt className="text-xs text-gray-500">Độ khó</dt>
-                              <dd className="mt-1 font-medium text-gray-800">{question.difficulty ?? 'Chưa có'}</dd>
-                            </div>
-                            <div>
-                              <dt className="text-xs text-gray-500">Số lựa chọn</dt>
-                              <dd className="mt-1 font-medium text-gray-800">{question.optionCount}</dd>
-                            </div>
-                          </dl>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
                 </article>
               ))}
-            </div>
-          </section>
-        ))}
-      </div>
+              </div>
+            </CardContent>
+          </Card>
+          ))}
+        </div>
+      </section>
+    </div>
+  )
+}
+
+function StoryStat({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string | number }) {
+  return (
+    <div className="rounded-2xl border border-white/80 bg-white/75 p-4 shadow-sm backdrop-blur">
+      <dt className="flex items-center gap-2 text-xs font-medium text-gray-500">
+        <Icon aria-hidden="true" className="h-4 w-4 text-indigo-500" />
+        {label}
+      </dt>
+      <dd className="mt-2 text-lg font-bold text-gray-950">{value}</dd>
     </div>
   )
 }
