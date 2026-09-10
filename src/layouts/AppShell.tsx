@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth/auth-context'
-import { navItemsFor } from '../lib/auth/routes'
+import { homePathFor, navItemsFor } from '../lib/auth/routes'
 import { logout } from '../lib/api/authApi'
 import type { UserRole } from '../lib/api/types'
 
@@ -36,7 +36,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="border-b border-gray-200 bg-white">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <div className="flex items-center gap-6">
-            <span className="text-xl font-bold text-indigo-600">LearnE</span>
+            <Link to={homePathFor(user.role)} className="text-xl font-bold text-indigo-600">
+              LearnE
+            </Link>
             <nav className="flex gap-1">
               {items.map((item) => (
                 <NavLink

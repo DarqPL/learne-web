@@ -1,194 +1,464 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Alert } from '../../components/ui/Alert'
-import { Button } from '../../components/ui/Button'
-import { Spinner } from '../../components/ui/Spinner'
-import { getApiErrorMessage } from '../../lib/api/client'
-import { getCurrentCourseRecommendations, getPlacementStatus, skipPlacement } from '../../lib/api/studentLearningApi'
-import type { CourseRecommendationPath, PlacementStatus } from '../../lib/api/types'
-import { useAuth } from '../../lib/auth/auth-context'
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  ArrowRight,
+  Bot,
+  BookOpen,
+  CheckCircle2,
+  ClipboardCheck,
+  FileCheck2,
+  GraduationCap,
+  Loader2,
+  Map as MapIcon,
+  PlayCircle,
+  Sparkles,
+  Target,
+} from "lucide-react";
+import { Alert, AlertDescription } from "../../components/shadcn/ui/alert";
+import { Badge } from "../../components/shadcn/ui/badge";
+import { Button } from "../../components/shadcn/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../components/shadcn/ui/card";
+import { getApiErrorMessage } from "../../lib/api/client";
+import {
+  getCurrentCourseRecommendations,
+  getPlacementStatus,
+  skipPlacement,
+} from "../../lib/api/studentLearningApi";
+import type {
+  CourseRecommendationPath,
+  PlacementStatus,
+} from "../../lib/api/types";
+import { useAuth } from "../../lib/auth/auth-context";
+
+const quickActions = [
+  {
+    title: "Khám phá khóa học",
+    description:
+      "Tìm khóa học đã duyệt theo trình độ và kỹ năng cần cải thiện.",
+    to: "/student/courses",
+    phase: "Phase 6",
+    icon: BookOpen,
+    className: "border-sky-100 bg-sky-50 text-sky-700",
+  },
+  {
+    title: "Khóa đã đăng ký",
+    description: "Tiếp tục bài học, theo dõi lesson và tiến độ hoàn thành.",
+    to: "/student/enrollments",
+    phase: "Phase 6-7",
+    icon: GraduationCap,
+    className: "border-emerald-100 bg-emerald-50 text-emerald-700",
+  },
+  {
+    title: "Lộ trình học",
+    description: "Xem hành trình học cá nhân và các bước nên ưu tiên.",
+    to: "/student/learning-path",
+    phase: "Phase 7",
+    icon: MapIcon,
+    className: "border-violet-100 bg-violet-50 text-violet-700",
+  },
+  {
+    title: "AI đề xuất khóa học",
+    description: "Dùng kết quả đầu vào để đề xuất khóa học phù hợp.",
+    to: "/student/course-recommendations",
+    phase: "Phase 8",
+    icon: Sparkles,
+    className: "border-indigo-100 bg-indigo-50 text-indigo-700",
+  },
+  {
+    title: "Kiểm tra ngữ pháp AI",
+    description: "Dán đoạn văn tiếng Anh để AI highlight lỗi và gợi ý sửa.",
+    to: "/student/grammar-check",
+    phase: "Phase 9",
+    icon: FileCheck2,
+    className: "border-amber-100 bg-amber-50 text-amber-700",
+  },
+  {
+    title: "AI Tutor",
+    description: "Luyện hội thoại, roleplay và writing cùng gia sư AI.",
+    to: "/student/ai-tutor",
+    phase: "Phase 9",
+    icon: Bot,
+    className: "border-fuchsia-100 bg-fuchsia-50 text-fuchsia-700",
+  },
+];
+
+const learningFlow = [
+  { label: "Chọn khóa học", description: "Tìm khóa phù hợp", icon: BookOpen },
+  {
+    label: "Làm bài học / quiz",
+    description: "Tích lũy tiến độ",
+    icon: ClipboardCheck,
+  },
+  {
+    label: "Nhận đề xuất AI",
+    description: "Cá nhân hóa hướng học",
+    icon: Sparkles,
+  },
+  { label: "Luyện với AI Tutor", description: "Thực hành mỗi ngày", icon: Bot },
+];
 
 export function StudentDashboardPage() {
-  const { user } = useAuth()
-  const mountedRef = useRef(false)
-  const [placementStatus, setPlacementStatus] = useState<PlacementStatus | null>(null)
-  const [recommendations, setRecommendations] = useState<CourseRecommendationPath | null>(null)
-  const [loadingAiCard, setLoadingAiCard] = useState(true)
-  const [skipping, setSkipping] = useState(false)
-  const [cardError, setCardError] = useState<string | null>(null)
+  const { user } = useAuth();
+  const mountedRef = useRef(false);
+  const [placementStatus, setPlacementStatus] =
+    useState<PlacementStatus | null>(null);
+  const [recommendations, setRecommendations] =
+    useState<CourseRecommendationPath | null>(null);
+  const [loadingAiCard, setLoadingAiCard] = useState(true);
+  const [skipping, setSkipping] = useState(false);
+  const [cardError, setCardError] = useState<string | null>(null);
 
   useEffect(() => {
-    mountedRef.current = true
-    void Promise.allSettled([getPlacementStatus(), getCurrentCourseRecommendations()])
+    mountedRef.current = true;
+    void Promise.allSettled([
+      getPlacementStatus(),
+      getCurrentCourseRecommendations(),
+    ])
       .then(([statusResult, recommendationsResult]) => {
-        if (!mountedRef.current) return
+        if (!mountedRef.current) return;
 
-        if (statusResult.status === 'fulfilled') {
-          setPlacementStatus(statusResult.value.data)
+        if (statusResult.status === "fulfilled") {
+          setPlacementStatus(statusResult.value.data);
         } else {
-          setPlacementStatus(null)
+          setPlacementStatus(null);
         }
 
-        setRecommendations(recommendationsResult.status === 'fulfilled' ? recommendationsResult.value.data : null)
+        setRecommendations(
+          recommendationsResult.status === "fulfilled"
+            ? recommendationsResult.value.data
+            : null,
+        );
       })
       .finally(() => {
-        if (mountedRef.current) setLoadingAiCard(false)
-      })
+        if (mountedRef.current) setLoadingAiCard(false);
+      });
 
     return () => {
-      mountedRef.current = false
-    }
-  }, [])
+      mountedRef.current = false;
+    };
+  }, []);
 
   async function handleSkipPlacement() {
-    if (skipping) return
+    if (skipping) return;
 
-    setSkipping(true)
-    setCardError(null)
+    setSkipping(true);
+    setCardError(null);
     try {
-      const response = await skipPlacement()
-      if (!mountedRef.current) return
-      setPlacementStatus(response.data)
+      const response = await skipPlacement();
+      if (!mountedRef.current) return;
+      setPlacementStatus(response.data);
     } catch (err) {
-      if (!mountedRef.current) return
-      setCardError(getApiErrorMessage(err, 'Không thể bỏ qua bài kiểm tra đầu vào. Vui lòng thử lại sau.'))
+      if (!mountedRef.current) return;
+      setCardError(
+        getApiErrorMessage(
+          err,
+          "Không thể bỏ qua bài kiểm tra đầu vào. Vui lòng thử lại sau.",
+        ),
+      );
     } finally {
-      if (mountedRef.current) setSkipping(false)
+      if (mountedRef.current) setSkipping(false);
     }
   }
 
-  const recommendationCount = recommendations?.items.length ?? 0
-  const shouldTakePlacement = placementStatus === null || (!placementStatus.placementCompleted && !placementStatus.skipped)
+  const recommendationCount = recommendations?.items.length ?? 0;
+  const shouldTakePlacement =
+    placementStatus === null ||
+    (!placementStatus.placementCompleted && !placementStatus.skipped);
 
   return (
-    <div className="space-y-6">
-      <h1 className="mb-2 text-2xl font-bold text-gray-900">Dashboard Học viên</h1>
-      <p className="text-gray-600">
-        Chào mừng {user?.fullName}! Khám phá khóa học đã được duyệt và tiếp tục tiến độ học tập của bạn.
-      </p>
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        <Link className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-colors hover:border-indigo-200" to="/student/courses">
-          <h2 className="font-semibold text-gray-900">Khám phá khóa học</h2>
-          <p className="mt-2 text-sm text-gray-600">Xem các khóa học đã được duyệt và đăng ký học.</p>
-        </Link>
-        <Link className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-colors hover:border-indigo-200" to="/student/enrollments">
-          <h2 className="font-semibold text-gray-900">Khóa đã đăng ký</h2>
-          <p className="mt-2 text-sm text-gray-600">Theo dõi tiến độ và tiếp tục bài học đang học.</p>
-        </Link>
-      </div>
-
-      <section className="overflow-hidden rounded-2xl border border-indigo-100 bg-white shadow-sm">
-        <div className="bg-gradient-to-br from-indigo-50 via-white to-violet-50 p-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+    <div className="space-y-6 overflow-hidden">
+      <section className="overflow-hidden rounded-[2rem] border border-indigo-100 bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 text-white shadow-xl shadow-indigo-200">
+        <div className="relative p-6 sm:p-8">
+          <div className="relative max-w-3xl space-y-5">
+            <Badge className="border-white/20 bg-white/15 text-white hover:bg-white/15">
+              <GraduationCap className="size-3.5" aria-hidden="true" /> AI
+              Learning Hub
+            </Badge>
             <div>
-              <span className="inline-flex rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-indigo-700">
-                AI đề xuất
-              </span>
-              <h2 className="mt-3 text-xl font-semibold text-gray-900">Khóa học phù hợp với bạn</h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
-                Làm bài kiểm tra đầu vào để AI hiểu trình độ và đề xuất khóa học nên bắt đầu trước.
+              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                Chào mừng trở lại, {user?.fullName ?? "học viên"}
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-indigo-50 sm:text-base">
+                Trung tâm học tập cá nhân giúp bạn khám phá khóa học, theo dõi
+                tiến độ và luyện tiếng Anh cùng các công cụ AI của LearnE.
               </p>
             </div>
-            <Link
-              to="/student/course-recommendations"
-              className="inline-flex items-center justify-center rounded-lg border border-indigo-200 bg-white px-4 py-2 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-            >
-              AI đề xuất khóa học
-            </Link>
-          </div>
-
-          {cardError ? (
-            <div className="mt-5" role="alert">
-              <Alert>{cardError}</Alert>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button
+                asChild
+                className="bg-white text-indigo-700 hover:bg-indigo-50"
+              >
+                <Link to="/student/enrollments">
+                  <PlayCircle className="size-4" aria-hidden="true" /> Tiếp tục
+                  học
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+              >
+                <Link to="/student/ai-tutor">
+                  <Bot className="size-4" aria-hidden="true" /> Mở AI Tutor
+                </Link>
+              </Button>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        className="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+        aria-label="Lối tắt học tập"
+      >
+        {quickActions.map((action) => {
+          const Icon = action.icon;
+
+          return (
+            <Link
+              key={action.to}
+              to={action.to}
+              className="group rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            >
+              <Card className="h-full border-slate-200 bg-white transition-all group-hover:-translate-y-0.5 group-hover:border-indigo-200 group-hover:shadow-lg group-hover:shadow-indigo-100">
+                <CardHeader className="space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <span
+                      className={`flex size-12 shrink-0 items-center justify-center rounded-2xl border ${action.className}`}
+                    >
+                      <Icon className="size-6" aria-hidden="true" />
+                    </span>
+                    <Badge
+                      variant="outline"
+                      className="border-slate-200 text-slate-500"
+                    >
+                      {action.phase}
+                    </Badge>
+                  </div>
+                  <div>
+                    <CardTitle className="flex items-center justify-between gap-3 text-lg leading-6 text-slate-950">
+                      <span>{action.title}</span>
+                      <ArrowRight
+                        className="size-4 shrink-0 text-slate-400 transition-transform group-hover:translate-x-1 group-hover:text-indigo-600"
+                        aria-hidden="true"
+                      />
+                    </CardTitle>
+                    <CardDescription className="mt-2 leading-6">
+                      {action.description}
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+              </Card>
+            </Link>
+          );
+        })}
+      </section>
+
+      <section
+        className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
+        aria-label="Luồng học tập"
+      >
+        <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-950">
+              Hành trình học trên LearnE
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Các phase chính được gom thành một luồng học rõ ràng cho học viên.
+            </p>
+          </div>
+          <Badge
+            variant="outline"
+            className="border-indigo-200 bg-indigo-50 text-indigo-700"
+          >
+            Phase 6-9
+          </Badge>
+        </div>
+        <div className="grid gap-3 md:grid-cols-4">
+          {learningFlow.map((step, index) => {
+            const Icon = step.icon;
+
+            return (
+              <div
+                key={step.label}
+                className="relative rounded-2xl border border-slate-100 bg-slate-50 p-4"
+              >
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <span className="flex size-10 items-center justify-center rounded-2xl bg-white text-indigo-600 shadow-sm">
+                    <Icon className="size-5" aria-hidden="true" />
+                  </span>
+                  <span className="text-xs font-semibold text-slate-400">
+                    0{index + 1}
+                  </span>
+                </div>
+                <h3 className="font-semibold text-slate-950">{step.label}</h3>
+                <p className="mt-1 text-sm text-slate-600">
+                  {step.description}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-3xl border border-indigo-100 bg-white shadow-sm">
+        <div className="border-b border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-violet-50 p-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <Badge className="border-indigo-100 bg-indigo-100 text-indigo-700 hover:bg-indigo-100">
+                <Sparkles className="size-3.5" aria-hidden="true" /> AI đề xuất
+              </Badge>
+              <h2 className="mt-3 text-xl font-semibold text-slate-950">
+                Khóa học phù hợp với bạn
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                Bài kiểm tra đầu vào và lịch sử học giúp AI xác định điểm cần
+                cải thiện, sau đó đề xuất khóa học nên bắt đầu trước.
+              </p>
+            </div>
+            <Button
+              asChild
+              variant="outline"
+              className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:text-indigo-700"
+            >
+              <Link to="/student/course-recommendations">
+                Xem AI đề xuất{" "}
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        <CardContent className="p-6">
+          {cardError ? (
+            <Alert variant="destructive" className="mb-5">
+              <AlertDescription>{cardError}</AlertDescription>
+            </Alert>
           ) : null}
 
           {loadingAiCard ? (
-            <div className="mt-6 flex items-center gap-2 rounded-xl border border-indigo-100 bg-white p-4 text-sm text-indigo-700">
-              <Spinner />
+            <div className="flex items-center gap-3 rounded-2xl border border-indigo-100 bg-indigo-50 p-5 text-sm text-indigo-700">
+              <Loader2 className="size-4 animate-spin" aria-hidden="true" />{" "}
               Đang kiểm tra dữ liệu cá nhân hóa...
             </div>
           ) : shouldTakePlacement ? (
-            <div className="mt-6 rounded-2xl border border-dashed border-indigo-200 bg-white p-6 shadow-sm">
-              <h3 className="text-base font-semibold text-gray-900">Bắt đầu bằng bài kiểm tra đầu vào</h3>
-              <p className="mt-2 text-sm leading-6 text-gray-600">
-                Hoàn thành 20 câu hỏi để AI xác định điểm mạnh, điểm yếu và đề xuất khóa học phù hợp nhất với trình độ hiện tại.
-              </p>
-              {placementStatus?.reason ? <p className="mt-2 text-xs font-medium text-indigo-700">{placementStatus.reason}</p> : null}
-              <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                <Link
-                  to="/student/placement-test"
-                  className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-                >
-                  Làm bài kiểm tra đầu vào
-                </Link>
-                <Button variant="secondary" loading={skipping} disabled={skipping} onClick={() => void handleSkipPlacement()}>
-                  Bỏ qua
-                </Button>
+            <div className="rounded-3xl border border-dashed border-indigo-200 bg-indigo-50/50 p-6">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                <div className="max-w-2xl">
+                  <div className="mb-3 flex size-12 items-center justify-center rounded-2xl bg-white text-indigo-600 shadow-sm">
+                    <Target className="size-6" aria-hidden="true" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-950">
+                    Bắt đầu bằng bài kiểm tra đầu vào
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Hoàn thành 20 câu hỏi để AI hiểu trình độ hiện tại, điểm
+                    mạnh và điểm cần cải thiện trước khi đề xuất khóa học.
+                  </p>
+                  {placementStatus?.reason ? (
+                    <p className="mt-3 text-xs font-medium text-indigo-700">
+                      {placementStatus.reason}
+                    </p>
+                  ) : null}
+                </div>
+                <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+                  <Button
+                    asChild
+                    className="bg-indigo-600 text-white hover:bg-indigo-700"
+                  >
+                    <Link to="/student/placement-test">
+                      Làm bài kiểm tra đầu vào
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    loading={skipping}
+                    disabled={skipping}
+                    onClick={() => void handleSkipPlacement()}
+                  >
+                    Bỏ qua
+                  </Button>
+                </div>
               </div>
             </div>
           ) : recommendationCount > 0 ? (
-            <article className="mt-6 rounded-2xl border border-white bg-white p-5 shadow-sm">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-violet-100 px-2.5 py-1 text-xs font-semibold text-violet-700">AI match</span>
-                    <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">{recommendationCount} khóa học</span>
-                  </div>
-                  <h3 className="mt-3 text-lg font-semibold text-gray-900">Khóa học AI đề xuất đã sẵn sàng</h3>
-                  <p className="mt-1 text-sm text-gray-600">Xem danh sách khóa học được xếp theo mức phù hợp với điểm yếu của bạn.</p>
+            <div className="rounded-3xl border border-violet-100 bg-violet-50/60 p-6">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                <div className="max-w-2xl">
+                  <Badge
+                    variant="outline"
+                    className="border-violet-200 bg-white text-violet-700"
+                  >
+                    <CheckCircle2 className="size-3.5" aria-hidden="true" /> AI
+                    match sẵn sàng
+                  </Badge>
+                  <h3 className="mt-3 text-lg font-semibold text-slate-950">
+                    Khóa học AI đề xuất đã sẵn sàng
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    {recommendations?.weaknesses.length
+                      ? `AI phát hiện bạn nên tập trung: ${recommendations.weaknesses.join(", ")}.`
+                      : "AI đã phân tích dữ liệu hiện có để đề xuất khóa học phù hợp."}
+                  </p>
                 </div>
-                <div className="shrink-0 rounded-xl bg-violet-50 px-4 py-3 text-center">
+                <div className="rounded-2xl bg-white px-5 py-4 text-center shadow-sm">
                   <p className="text-xs font-medium text-violet-600">Đề xuất</p>
-                  <p className="text-2xl font-bold text-violet-800">{recommendationCount}</p>
+                  <p className="text-3xl font-bold text-violet-800">
+                    {recommendationCount}
+                  </p>
+                  <p className="text-xs text-slate-500">khóa học</p>
                 </div>
               </div>
-
-              <p className="mt-4 rounded-xl bg-gray-50 p-3 text-sm leading-6 text-gray-700">
-                {recommendations?.weaknesses.length
-                  ? `AI phát hiện bạn nên tập trung: ${recommendations.weaknesses.join(', ')}.`
-                  : 'AI đã phân tích dữ liệu hiện có để đề xuất khóa học phù hợp.'}
-              </p>
-
               <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                <Link
-                  to="/student/course-recommendations"
-                  className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                <Button
+                  asChild
+                  className="bg-indigo-600 text-white hover:bg-indigo-700"
                 >
-                  Xem khóa học AI đề xuất
-                </Link>
-                <Link
-                  to="/student/courses"
-                  className="inline-flex items-center justify-center rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-800 transition-colors hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-                >
-                  Khám phá khóa học
-                </Link>
+                  <Link to="/student/course-recommendations">
+                    Xem khóa học AI đề xuất
+                  </Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link to="/student/courses">Khám phá khóa học</Link>
+                </Button>
               </div>
-            </article>
+            </div>
           ) : (
-            <div className="mt-6 rounded-2xl border border-dashed border-indigo-200 bg-white p-6 shadow-sm">
-              <h3 className="text-base font-semibold text-gray-900">Chưa có khóa học AI đề xuất</h3>
-              <p className="mt-2 text-sm leading-6 text-gray-600">
-                Bạn có thể xem trang đề xuất để tạo danh sách khóa học cá nhân hóa, hoặc khám phá toàn bộ khóa học đã duyệt.
+            <div className="rounded-3xl border border-dashed border-indigo-200 bg-slate-50 p-6">
+              <Sparkles
+                className="mb-3 size-8 text-indigo-500"
+                aria-hidden="true"
+              />
+              <h3 className="text-lg font-semibold text-slate-950">
+                Chưa có khóa học AI đề xuất
+              </h3>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                Bạn có thể mở trang đề xuất để tạo danh sách khóa học cá nhân
+                hóa, hoặc khám phá toàn bộ khóa học đã duyệt.
               </p>
               <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                <Link
-                  to="/student/course-recommendations"
-                  className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                <Button
+                  asChild
+                  className="bg-indigo-600 text-white hover:bg-indigo-700"
                 >
-                  Xem khóa học AI đề xuất
-                </Link>
-                <Link
-                  to="/student/courses"
-                  className="inline-flex items-center justify-center rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-800 transition-colors hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-                >
-                  Khám phá khóa học
-                </Link>
+                  <Link to="/student/course-recommendations">
+                    Xem AI đề xuất
+                  </Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link to="/student/courses">Khám phá khóa học</Link>
+                </Button>
               </div>
             </div>
           )}
-        </div>
+        </CardContent>
       </section>
     </div>
-  )
+  );
 }

@@ -22,6 +22,7 @@ export function navItemsFor(role: UserRole): NavItem[] {
     case 'STUDENT':
       return [
         { label: 'Trang chủ', to: '/student', end: true },
+        { label: 'Khóa học', to: '/student/courses' },
         { label: 'Giảng viên', to: '/student/teachers' },
       ]
     case 'TEACHER':
