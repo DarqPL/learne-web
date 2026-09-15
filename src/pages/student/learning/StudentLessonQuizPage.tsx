@@ -6,6 +6,7 @@ import type { StudentQuiz, StudentQuizQuestion } from '../../../lib/api/types'
 import { Alert } from '../../../components/ui/Alert'
 import { Button } from '../../../components/ui/Button'
 import { Spinner } from '../../../components/ui/Spinner'
+import { LessonAudioPlayer } from './LessonAudioPlayer'
 import { studentQuestionTypeLabels } from './studentLearningLabels'
 import {
   buildSubmitAnswers,
@@ -228,6 +229,8 @@ export function StudentLessonQuizPage() {
           <Alert variant="info">Quiz này chưa có câu hỏi tính điểm.</Alert>
         </div>
       ) : null}
+
+      <LessonAudioPlayer audioUrl={quiz.audioUrl} title="Audio cho bài kiểm tra nghe" />
 
       {questionCount === 0 || currentQuestion === null ? (
         <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">

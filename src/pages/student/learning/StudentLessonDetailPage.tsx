@@ -6,6 +6,7 @@ import type { StudentEnrollmentProgress, StudentLessonProgress } from '../../../
 import { Alert } from '../../../components/ui/Alert'
 import { Button } from '../../../components/ui/Button'
 import { Spinner } from '../../../components/ui/Spinner'
+import { LessonAudioPlayer } from './LessonAudioPlayer'
 import { lessonProgressStatusLabels, lessonProgressStatusStyles, studentCourseTypeLabels, studentSkillTypeLabels } from './studentLearningLabels'
 import { flattenProgressLessons, formatStudentLearningDate } from './studentLearningUtils'
 
@@ -208,19 +209,22 @@ export function StudentLessonDetailPage() {
           <p className="text-sm leading-6 text-gray-700">Bài học này chưa được mở khóa. Hãy hoàn thành bài trước đó để tiếp tục.</p>
         </section>
       ) : (
-        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Nội dung bài học</p>
-          <div className="mt-4 rounded-2xl bg-gray-50 p-5">
-            <p className="whitespace-pre-wrap text-sm leading-7 text-gray-700">{content || 'Bài học chưa có nội dung.'}</p>
-          </div>
-          <div className="mt-6 rounded-2xl border border-indigo-100 bg-indigo-50 p-5">
-            <p className="text-sm font-semibold text-indigo-900">Sẵn sàng kiểm tra mức hiểu bài?</p>
-            <p className="mt-2 text-sm leading-6 text-indigo-800">Làm quiz để hệ thống chấm điểm, cập nhật tiến độ, XP và streak của bạn.</p>
-            <Button className="mt-4" onClick={() => navigate(`/student/enrollments/${enrollment.enrollmentId}/lessons/${lesson.lessonId}/quiz`)}>
-              {lesson.status === 'COMPLETED' ? 'Làm lại quiz' : 'Bắt đầu làm quiz'}
-            </Button>
-          </div>
-        </section>
+        <>
+          {lesson.skillType === 'LISTENING' ? <LessonAudioPlayer audioUrl={lesson.audioUrl} /> : null}
+          <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Nội dung bài học</p>
+            <div className="mt-4 rounded-2xl bg-gray-50 p-5">
+              <p className="whitespace-pre-wrap text-sm leading-7 text-gray-700">{content || 'Bài học chưa có nội dung.'}</p>
+            </div>
+            <div className="mt-6 rounded-2xl border border-indigo-100 bg-indigo-50 p-5">
+              <p className="text-sm font-semibold text-indigo-900">Sẵn sàng kiểm tra mức hiểu bài?</p>
+              <p className="mt-2 text-sm leading-6 text-indigo-800">Làm quiz để hệ thống chấm điểm, cập nhật tiến độ, XP và streak của bạn.</p>
+              <Button className="mt-4" onClick={() => navigate(`/student/enrollments/${enrollment.enrollmentId}/lessons/${lesson.lessonId}/quiz`)}>
+                {lesson.status === 'COMPLETED' ? 'Làm lại quiz' : 'Bắt đầu làm quiz'}
+              </Button>
+            </div>
+          </section>
+        </>
       )}
     </div>
   )

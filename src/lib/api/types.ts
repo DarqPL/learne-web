@@ -351,6 +351,8 @@ export interface AdminReviewLesson {
   title: string
   description: string | null
   content: string | null
+  audioUrl: string | null
+  audioPublicId: string | null
   skillType: SkillType
   orderIndex: number
   xpReward: number
@@ -430,6 +432,8 @@ export interface StudentLesson {
   title: string
   description: string | null
   content: string | null
+  audioUrl: string | null
+  audioPublicId: string | null
   skillType: SkillType
   orderIndex: number
   xpReward: number
@@ -488,6 +492,8 @@ export interface StudentLessonProgress {
   lessonId: number
   title: string
   content: string | null
+  audioUrl: string | null
+  audioPublicId: string | null
   skillType: SkillType
   orderIndex: number
   status: LessonProgressStatus
@@ -641,6 +647,8 @@ export interface StudentQuiz {
   lessonId: number
   lessonTitle: string
   lessonContent: string | null
+  audioUrl: string | null
+  audioPublicId: string | null
   passPercent: number
   bestScorePercent: number | null
   alreadyPassed: boolean
