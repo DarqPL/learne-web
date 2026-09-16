@@ -19,7 +19,12 @@ const practiceTypeLabels: Record<AiTutorPracticeType, string> = {
   WRITING_PRACTICE: 'Luyện viết',
 }
 
-const formatDate = (value: string) => new Intl.DateTimeFormat('vi-VN').format(new Date(value))
+const formatDate = (value: string | null | undefined) => {
+  if (!value) return 'Chưa có dữ liệu'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'Chưa có dữ liệu'
+  return new Intl.DateTimeFormat('vi-VN').format(date)
+}
 
 export function AdminStudentDetailPage() {
   const { id } = useParams()

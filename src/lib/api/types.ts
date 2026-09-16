@@ -822,25 +822,25 @@ export interface AdminStudentDetail {
     courseName: string
     status: EnrollmentStatus
     progressPercent: number
-    enrolledAt: string
+    enrolledAt: string | null
   }>
   recentQuizAttempts: Array<{
     attemptId: number
     lessonTitle: string
     scorePercent: number
     passed: boolean
-    submittedAt: string
+    submittedAt: string | null
   }>
   recentGrammarChecks: Array<{
     id: number
     originalText: string
     correctedText: string | null
-    createdAt: string
+    createdAt: string | null
   }>
   recentAiConversations: Array<{
     id: number
     title: string
     practiceType: AiTutorPracticeType
-    updatedAt: string
+    updatedAt: string | null
   }>
 }
