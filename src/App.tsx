@@ -15,6 +15,8 @@ import { TeacherCourseBuilderPage } from './pages/teacher/content/TeacherCourseB
 import { TeacherContentPage } from './pages/teacher/content/TeacherContentPage'
 import { TeacherLessonWorkspacePage } from './pages/teacher/content/TeacherLessonWorkspacePage'
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
+import { AdminStudentDetailPage } from './pages/admin/AdminStudentDetailPage'
+import { AdminStudentListPage } from './pages/admin/AdminStudentListPage'
 import { CreateTeacherPage } from './pages/admin/CreateTeacherPage'
 import { AdminTeacherListPage } from './pages/admin/AdminTeacherListPage'
 import { AdminContentReviewPage } from './pages/admin/review/AdminContentReviewPage'
@@ -83,6 +85,8 @@ export default function App() {
           <Route element={<RequireRole role="ADMIN" />}>
             <Route element={<AdminLayout />}>
               <Route path="/admin" element={<AdminDashboardPage />} />
+              <Route path="/admin/students" element={<AdminStudentListPage />} />
+              <Route path="/admin/students/:id" element={<AdminStudentDetailPage />} />
               <Route path="/admin/teachers/new" element={<CreateTeacherPage />} />
               <Route path="/admin/teachers" element={<AdminTeacherListPage />} />
               <Route path="/admin/reviews" element={<AdminContentReviewPage />} />

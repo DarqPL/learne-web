@@ -720,3 +720,127 @@ export interface StudentStats {
   longestStreakDays: number
   lastActivityDate: string | null
 }
+
+export interface StatusCount {
+  status: string
+  count: number
+}
+
+export interface LeaderboardStudent {
+  userId: number
+  fullName: string
+  totalXp: number
+  currentStreakDays: number
+  longestStreakDays: number
+  lastActivityDate: string | null
+}
+
+export interface StudentEnrollmentSummary {
+  totalEnrollments: number
+  activeEnrollments: number
+  completedLessons: number
+}
+
+export interface StudentActiveCourse {
+  enrollmentId: number
+  courseId: number
+  courseName: string
+  teacherName: string
+  status: string
+  progressPercent: number
+  enrolledAt: string
+}
+
+export interface StudentRecentActivity {
+  id: number
+  activityType: string
+  title: string
+  happenedAt: string
+}
+
+export interface StudentDashboard {
+  stats: StudentStats
+  enrollmentSummary: StudentEnrollmentSummary
+  activeCourses: StudentActiveCourse[]
+  recentActivity: StudentRecentActivity[]
+  leaderboard: LeaderboardStudent[]
+}
+
+export interface TeacherDashboard {
+  overview: {
+    totalCourses: number
+    enrolledStudents: number
+    totalLessons: number
+    totalQuestions: number
+  }
+  courseStatusCounts: StatusCount[]
+  recentCourses: Array<{
+    id: number
+    name: string
+    status: string
+    updatedAt: string
+  }>
+}
+
+export interface AdminDashboard {
+  overview: {
+    totalStudents: number
+    lockedStudents: number
+    totalTeachers: number
+    lockedTeachers: number
+    totalCourses: number
+    totalEnrollments: number
+  }
+  courseStatusCounts: StatusCount[]
+  leaderboard: LeaderboardStudent[]
+}
+
+export interface AdminStudentSummary {
+  userId: number
+  fullName: string
+  email: string
+  locked: boolean
+  mustChangePassword: boolean
+  totalXp: number
+  currentStreakDays: number
+  longestStreakDays: number
+  lastActivityDate: string | null
+  enrollmentCount: number
+  completedLessonCount: number
+}
+
+export interface AdminStudentDetail {
+  userId: number
+  fullName: string
+  email: string
+  locked: boolean
+  mustChangePassword: boolean
+  stats: StudentStats
+  enrollments: Array<{
+    enrollmentId: number
+    courseId: number
+    courseName: string
+    status: EnrollmentStatus
+    progressPercent: number
+    enrolledAt: string | null
+  }>
+  recentQuizAttempts: Array<{
+    attemptId: number
+    lessonTitle: string
+    scorePercent: number
+    passed: boolean
+    submittedAt: string | null
+  }>
+  recentGrammarChecks: Array<{
+    id: number
+    originalText: string
+    correctedText: string | null
+    createdAt: string | null
+  }>
+  recentAiConversations: Array<{
+    id: number
+    title: string
+    practiceType: AiTutorPracticeType
+    updatedAt: string | null
+  }>
+}
