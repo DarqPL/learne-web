@@ -1,5 +1,9 @@
 import { http } from './client'
-import type { TeacherProfile, TeacherProfileSummary, UpdateTeacherProfileRequest } from './types'
+import type { TeacherDashboard, TeacherProfile, TeacherProfileSummary, UpdateTeacherProfileRequest } from './types'
+
+export function getTeacherDashboard() {
+  return http.get<TeacherDashboard>('/api/teacher/dashboard')
+}
 
 export function getTeacherProfile() {
   return http.get<TeacherProfile>('/api/teacher/profile')

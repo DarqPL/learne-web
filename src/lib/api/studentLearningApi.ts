@@ -10,6 +10,7 @@ import type {
   StudentEnrollment,
   StudentEnrollmentProgress,
   StudentLearningPath,
+  StudentDashboard,
   StudentQuiz,
   StudentQuizAttemptResult,
   StudentStats,
@@ -71,6 +72,10 @@ export function getStudentQuizAttempt(attemptId: number) {
 
 export function getStudentStats() {
   return http.get<StudentStats>(`${base}/stats`)
+}
+
+export function getStudentDashboard() {
+  return http.get<StudentDashboard>(`${base}/dashboard`)
 }
 
 export function generateStudentLearningPath(request: GenerateLearningPathRequest = { maxItems: 8 }) {
