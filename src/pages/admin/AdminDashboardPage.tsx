@@ -148,11 +148,11 @@ export function AdminDashboardPage() {
                   <span className="text-sm font-bold text-gray-900">{formatNumber(item.count)}</span>
                 </div>
               ))
-            ) : (
+            ) : dashboard ? (
               <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
                 Chưa có dữ liệu trạng thái khóa học.
               </p>
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -180,11 +180,11 @@ export function AdminDashboardPage() {
                   </div>
                 </div>
               ))
-            ) : (
+            ) : dashboard ? (
               <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-5 text-sm text-gray-600">
                 Chưa có dữ liệu xếp hạng học viên.
               </p>
-            )}
+            ) : null}
           </div>
         </div>
       </section>

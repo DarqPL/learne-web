@@ -134,11 +134,11 @@ export function TeacherDashboardPage() {
                   <span className="text-sm font-bold text-gray-900">{formatNumber(item.count)}</span>
                 </div>
               ))
-            ) : (
+            ) : dashboard ? (
               <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
                 Chưa có khóa học nào để thống kê.
               </p>
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -159,11 +159,11 @@ export function TeacherDashboardPage() {
                   </div>
                 </div>
               ))
-            ) : (
+            ) : dashboard ? (
               <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-5 text-sm text-gray-600">
                 Chưa có khóa học gần đây. Hãy tạo khóa học đầu tiên trong mục Nội dung học tập.
               </p>
-            )}
+            ) : null}
           </div>
         </div>
       </section>
