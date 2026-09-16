@@ -834,7 +834,7 @@ export interface AdminStudentDetail {
   recentGrammarChecks: Array<{
     id: number
     originalText: string
-    correctedText: string
+    correctedText: string | null
     createdAt: string
   }>
   recentAiConversations: Array<{
