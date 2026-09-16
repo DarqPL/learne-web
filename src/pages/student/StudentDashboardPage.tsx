@@ -13,6 +13,8 @@ import {
   PlayCircle,
   Sparkles,
   Target,
+  Trophy,
+  Zap,
 } from "lucide-react";
 import { Alert, AlertDescription } from "../../components/shadcn/ui/alert";
 import { Badge } from "../../components/shadcn/ui/badge";
@@ -26,6 +28,7 @@ import {
 } from "../../components/shadcn/ui/card";
 import { getApiErrorMessage } from "../../lib/api/client";
 import {
+  getStudentDashboard,
   getCurrentCourseRecommendations,
   getPlacementStatus,
   skipPlacement,
@@ -33,6 +36,7 @@ import {
 import type {
   CourseRecommendationPath,
   PlacementStatus,
+  StudentDashboard,
 } from "../../lib/api/types";
 import { useAuth } from "../../lib/auth/auth-context";
 
@@ -103,6 +107,10 @@ const learningFlow = [
   { label: "Luyện với AI Tutor", description: "Thực hành mỗi ngày", icon: Bot },
 ];
 
+function formatNumber(value: number) {
+  return new Intl.NumberFormat("vi-VN").format(value);
+}
+
 export function StudentDashboardPage() {
   const { user } = useAuth();
   const mountedRef = useRef(false);
@@ -111,11 +119,30 @@ export function StudentDashboardPage() {
   const [recommendations, setRecommendations] =
     useState<CourseRecommendationPath | null>(null);
   const [loadingAiCard, setLoadingAiCard] = useState(true);
+  const [dashboard, setDashboard] = useState<StudentDashboard | null>(null);
+  const [loadingDashboard, setLoadingDashboard] = useState(true);
+  const [dashboardError, setDashboardError] = useState<string | null>(null);
   const [skipping, setSkipping] = useState(false);
   const [cardError, setCardError] = useState<string | null>(null);
 
   useEffect(() => {
     mountedRef.current = true;
+    void getStudentDashboard()
+      .then((response) => {
+        if (!mountedRef.current) return;
+        setDashboard(response.data);
+        setDashboardError(null);
+      })
+      .catch((err) => {
+        if (!mountedRef.current) return;
+        setDashboardError(
+          getApiErrorMessage(err, "Không thể tải dashboard học viên."),
+        );
+      })
+      .finally(() => {
+        if (mountedRef.current) setLoadingDashboard(false);
+      });
+
     void Promise.allSettled([
       getPlacementStatus(),
       getCurrentCourseRecommendations(),
@@ -170,6 +197,42 @@ export function StudentDashboardPage() {
   const shouldTakePlacement =
     placementStatus === null ||
     (!placementStatus.placementCompleted && !placementStatus.skipped);
+  const stats = dashboard?.stats;
+  const enrollmentSummary = dashboard?.enrollmentSummary;
+  const studentStats = [
+    {
+      label: "Tổng XP",
+      value: stats ? formatNumber(stats.totalXp) : "--",
+      description: "Điểm kinh nghiệm đã tích lũy",
+      icon: Zap,
+      className: "border-amber-100 bg-amber-50 text-amber-700",
+    },
+    {
+      label: "Streak hiện tại",
+      value: stats ? `${formatNumber(stats.currentStreakDays)} ngày` : "--",
+      description: "Số ngày học liên tiếp",
+      icon: Sparkles,
+      className: "border-orange-100 bg-orange-50 text-orange-700",
+    },
+    {
+      label: "Streak dài nhất",
+      value: stats ? `${formatNumber(stats.longestStreakDays)} ngày` : "--",
+      description: "Kỷ lục duy trì thói quen",
+      icon: Trophy,
+      className: "border-violet-100 bg-violet-50 text-violet-700",
+    },
+    {
+      label: "Bài học hoàn thành",
+      value: enrollmentSummary
+        ? formatNumber(enrollmentSummary.completedLessons)
+        : "--",
+      description: enrollmentSummary
+        ? `${formatNumber(enrollmentSummary.activeEnrollments)} khóa đang học / ${formatNumber(enrollmentSummary.totalEnrollments)} khóa đã đăng ký`
+        : "Theo dõi tiến độ học tập",
+      icon: CheckCircle2,
+      className: "border-emerald-100 bg-emerald-50 text-emerald-700",
+    },
+  ];
 
   return (
     <div className="space-y-6 overflow-hidden">
@@ -210,6 +273,133 @@ export function StudentDashboardPage() {
               </Button>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="space-y-4" aria-label="Tổng quan học tập">
+        {dashboardError ? (
+          <Alert variant="destructive">
+            <AlertDescription>{dashboardError}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {studentStats.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <Card key={item.label} className="border-slate-200 bg-white">
+                <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0 pb-2">
+                  <div>
+                    <CardDescription>{item.label}</CardDescription>
+                    <CardTitle className="mt-2 text-2xl text-slate-950">
+                      {loadingDashboard ? "..." : item.value}
+                    </CardTitle>
+                  </div>
+                  <span
+                    className={`flex size-11 shrink-0 items-center justify-center rounded-2xl border ${item.className}`}
+                  >
+                    <Icon className="size-5" aria-hidden="true" />
+                  </span>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-slate-600">{item.description}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-[1fr_1.2fr]">
+          <Card className="border-slate-200 bg-white">
+            <CardHeader>
+              <CardTitle className="text-lg text-slate-950">
+                Tiến độ đăng ký
+              </CardTitle>
+              <CardDescription>
+                Ngữ cảnh học tập từ các khóa đã tham gia.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <p className="text-xs font-medium text-slate-500">Tổng đăng ký</p>
+                <p className="mt-2 text-2xl font-bold text-slate-950">
+                  {enrollmentSummary
+                    ? formatNumber(enrollmentSummary.totalEnrollments)
+                    : "--"}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-indigo-50 p-4">
+                <p className="text-xs font-medium text-indigo-600">Đang học</p>
+                <p className="mt-2 text-2xl font-bold text-indigo-800">
+                  {enrollmentSummary
+                    ? formatNumber(enrollmentSummary.activeEnrollments)
+                    : "--"}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-emerald-50 p-4">
+                <p className="text-xs font-medium text-emerald-600">Đã hoàn thành</p>
+                <p className="mt-2 text-2xl font-bold text-emerald-800">
+                  {enrollmentSummary
+                    ? formatNumber(enrollmentSummary.completedLessons)
+                    : "--"}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-slate-200 bg-white">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg text-slate-950">
+                <Trophy className="size-5 text-amber-500" aria-hidden="true" />
+                Bảng xếp hạng học viên
+              </CardTitle>
+              <CardDescription>Top học viên theo XP và streak.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loadingDashboard ? (
+                <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                  Đang tải bảng xếp hạng...
+                </div>
+              ) : dashboard?.leaderboard.length ? (
+                <div className="space-y-3">
+                  {dashboard.leaderboard.map((student, index) => (
+                    <div
+                      key={student.userId}
+                      className="flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4"
+                    >
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-indigo-700 shadow-sm">
+                          {index + 1}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-slate-950">
+                            {student.fullName}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            Streak {formatNumber(student.currentStreakDays)} ngày
+                          </p>
+                        </div>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className="font-bold text-amber-600">
+                          {formatNumber(student.totalXp)} XP
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          Kỷ lục {formatNumber(student.longestStreakDays)} ngày
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 text-sm text-slate-600">
+                  Chưa có dữ liệu xếp hạng
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </section>
 
