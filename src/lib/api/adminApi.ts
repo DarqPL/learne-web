@@ -24,3 +24,6 @@ export function adminLockTeacher(userId: number) {
 export function adminUnlockTeacher(userId: number) {
   return http.post<ApiMessageResponse>(`/api/admin/users/${userId}/unlock`)
 }
+
+export const adminLockUser = adminLockTeacher
+export const adminUnlockUser = adminUnlockTeacher
