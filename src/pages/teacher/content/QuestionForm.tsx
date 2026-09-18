@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Button } from '../../../components/ui/Button'
 import type { TeacherQuestionOptionRequest, TeacherQuestionRequest } from '../../../lib/api/types'
 import { questionTypeLabels, questionTypes } from './contentLabels'
@@ -91,22 +91,34 @@ function getNextOptionOrderIndex(options: QuestionOptionForm[]) {
 
 export function QuestionForm({ initialValue, loading = false, disabled = false, submitLabel, onSubmit }: QuestionFormProps) {
   const initialForm = initialValue ?? defaultQuestion
-  const [previousInitialValue, setPreviousInitialValue] = useState(initialValue)
+  const previousInitialValue = useRef(initialValue)
   const [form, setForm] = useState<QuestionFormState>(toFormState(initialForm))
   const [orderIndexInput, setOrderIndexInput] = useState(String(initialForm.orderIndex))
   const [xpRewardInput, setXpRewardInput] = useState(String(initialForm.xpReward))
   const [trueFalseAnswer, setTrueFalseAnswer] = useState(getTrueFalseAnswer(initialForm))
   const [validationMessages, setValidationMessages] = useState<string[]>([])
 
-  if (initialValue !== previousInitialValue) {
+  useEffect(() => {
+    if (initialValue === previousInitialValue.current) return
+
+    previousInitialValue.current = initialValue
+
     const nextForm = initialValue ?? defaultQuestion
-    setPreviousInitialValue(initialValue)
-    setForm(toFormState(nextForm))
-    setOrderIndexInput(String(nextForm.orderIndex))
-    setXpRewardInput(String(nextForm.xpReward))
-    setTrueFalseAnswer(getTrueFalseAnswer(nextForm))
-    setValidationMessages([])
-  }
+    let cancelled = false
+
+    queueMicrotask(() => {
+      if (cancelled) return
+      setForm(toFormState(nextForm))
+      setOrderIndexInput(String(nextForm.orderIndex))
+      setXpRewardInput(String(nextForm.xpReward))
+      setTrueFalseAnswer(getTrueFalseAnswer(nextForm))
+      setValidationMessages([])
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [initialValue])
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()

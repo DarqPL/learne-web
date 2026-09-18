@@ -28,6 +28,16 @@ function isPublicPath(url: string): boolean {
   return PUBLIC_PATHS.has(url.split('?')[0])
 }
 
+function buildRetryHeaders(headers: AxiosRequestConfig['headers'], accessToken: string): AxiosRequestConfig['headers'] {
+  const toJSON = (headers as { toJSON?: () => Record<string, unknown> } | undefined)?.toJSON
+  const existingHeaders = typeof toJSON === 'function' ? toJSON.call(headers) : { ...(headers ?? {}) }
+
+  return {
+    ...existingHeaders,
+    Authorization: `Bearer ${accessToken}`,
+  } as AxiosRequestConfig['headers']
+}
+
 let refreshPromise: Promise<AuthTokenResponse> | null = null
 let unauthorizedHandler: (() => void) | null = null
 
@@ -80,10 +90,7 @@ http.interceptors.response.use(
       const retryConfig = {
         ...config,
         _retried: true,
-        headers: {
-          ...config.headers.toJSON(),
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: buildRetryHeaders(config.headers, accessToken),
       } as RetriableConfig
       return http.request(retryConfig)
     } catch (refreshError) {
