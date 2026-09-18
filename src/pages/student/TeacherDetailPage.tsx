@@ -14,7 +14,7 @@ export function TeacherDetailPage() {
   const [profile, setProfile] = useState<TeacherProfile | null>(null)
   const [error, setError] = useState<string | null>(null)
   const teacherId = Number(id)
-  const hasInvalidId = !Number.isInteger(teacherId)
+  const hasInvalidId = !Number.isInteger(teacherId) || teacherId <= 0
 
   useEffect(() => {
     if (hasInvalidId) return

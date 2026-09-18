@@ -1,11 +1,12 @@
 import { useState, type InputHTMLAttributes } from 'react'
+import { cn } from '../../lib/utils'
 import { Input } from './Input'
 
-export function PasswordInput(props: InputHTMLAttributes<HTMLInputElement>) {
+export function PasswordInput({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
   const [show, setShow] = useState(false)
   return (
     <div className="relative">
-      <Input {...props} type={show ? 'text' : 'password'} className="pr-14" />
+      <Input {...props} type={show ? 'text' : 'password'} className={cn(className, 'pr-14')} />
       <button
         type="button"
         onClick={() => setShow((value) => !value)}
