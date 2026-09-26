@@ -7,6 +7,7 @@ import { Alert } from '../../../components/ui/Alert'
 import { Button } from '../../../components/ui/Button'
 import { Spinner } from '../../../components/ui/Spinner'
 import { CourseForm } from './CourseForm'
+import { CourseImportExportPanel } from './CourseImportExportPanel'
 import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
 import { courseTypeLabels } from './contentLabels'
 import { countLessons, countQuestions } from './contentUtils'
@@ -67,6 +68,15 @@ export function TeacherContentPage() {
     }
   }
 
+  const handleImportCourse = async () => {
+    try {
+      await refreshCourses()
+      setInfo('Đã import khóa học. Danh sách khóa học đã được cập nhật.')
+    } catch {
+      setInfo('Đã import khóa học. Tải lại danh sách chưa thành công, vui lòng làm mới trang nếu thiếu dữ liệu.')
+    }
+  }
+
   return (
     <div className="space-y-6">
       <header>
@@ -85,6 +95,8 @@ export function TeacherContentPage() {
         </div>
       ) : (
         <div className="space-y-6">
+          <CourseImportExportPanel onImported={handleImportCourse} />
+
           <section className={cardClassName}>
             <div className="mb-4">
               <h2 className="text-lg font-semibold text-gray-900">Tạo khóa học</h2>
