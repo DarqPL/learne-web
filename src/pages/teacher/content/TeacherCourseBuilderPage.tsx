@@ -16,7 +16,8 @@ import {
   updateTeacherLesson,
   updateTeacherTopic,
 } from '../../../lib/api/teacherContentApi'
-import type { TeacherCourse, TeacherCourseRequest, TeacherLesson, TeacherLessonRequest, TeacherTopic, TeacherTopicRequest } from '../../../lib/api/types'
+import type { CourseImportResponse, TeacherCourse, TeacherCourseRequest, TeacherLesson, TeacherLessonRequest, TeacherTopic, TeacherTopicRequest } from '../../../lib/api/types'
+import { CourseImportExportPanel } from './CourseImportExportPanel'
 import { CourseForm } from './CourseForm'
 import { LessonForm } from './LessonForm'
 import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
@@ -321,6 +322,16 @@ export function TeacherCourseBuilderPage() {
   const canSubmit = currentCourse ? canSubmitCourse(currentCourse) : false
   const displayError = parsedCourseId === null ? 'Không tìm thấy khóa học.' : error
 
+  const handleImportCourse = async (response: CourseImportResponse) => {
+    if (currentCourse && response.courseId === currentCourse.id) {
+      await refreshCourseAfterSuccess('Đã import khóa học. Dữ liệu khóa học đã được cập nhật.')
+      return
+    }
+
+    setInfo('Đã import một khóa học khác. Đang mở khóa học vừa import.')
+    navigate(`/teacher/content/courses/${response.courseId}`)
+  }
+
   return (
     <div className="space-y-6">
       <Button variant="secondary" onClick={() => navigate('/teacher/content')}>
@@ -347,12 +358,25 @@ export function TeacherCourseBuilderPage() {
                   {currentCourse.level} · {courseTypeLabels[currentCourse.type]} · {currentCourse.topics.length} chủ đề · {countLessons(currentCourse)} bài học · {countQuestions(currentCourse)} câu hỏi
                 </p>
               </div>
-              <TeacherContentStatusBadge status={currentCourse.status} />
+              <div className="flex flex-wrap items-center gap-2">
+                <TeacherContentStatusBadge status={currentCourse.status} />
+                {canSubmit ? (
+                  <Button loading={action === 'submit-course'} disabled={action !== null && action !== 'submit-course'} onClick={handleSubmitCourse}>
+                    Gửi duyệt
+                  </Button>
+                ) : null}
+              </div>
             </div>
             {currentCourse.rejectionReason ? (
               <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">Lý do từ chối: {currentCourse.rejectionReason}</div>
             ) : null}
           </header>
+
+          <CourseImportExportPanel
+            courseId={currentCourse.id}
+            description="Export khóa học hiện tại hoặc import ZIP để cập nhật cấu trúc nội dung."
+            onImported={handleImportCourse}
+          />
 
           {editable ? (
             <section className={cardClassName}>
@@ -361,14 +385,9 @@ export function TeacherCourseBuilderPage() {
                   <h2 className="text-lg font-semibold text-gray-900">Thông tin khóa học</h2>
                   <p className="mt-1 text-sm text-gray-600">Cập nhật thông tin khóa học trước khi gửi duyệt.</p>
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="danger" loading={action === 'delete-course'} disabled={action !== null && action !== 'delete-course'} onClick={handleDeleteCourse}>
-                    Xóa khóa học
-                  </Button>
-                  <Button loading={action === 'submit-course'} disabled={!canSubmit || (action !== null && action !== 'submit-course')} onClick={handleSubmitCourse}>
-                    Gửi duyệt
-                  </Button>
-                </div>
+                <Button variant="danger" loading={action === 'delete-course'} disabled={action !== null && action !== 'delete-course'} onClick={handleDeleteCourse}>
+                  Xóa khóa học
+                </Button>
               </div>
               {!canSubmit ? <Alert variant="info">Cần có ít nhất 1 chủ đề, 1 bài học và 1 câu hỏi để gửi duyệt.</Alert> : null}
               <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">

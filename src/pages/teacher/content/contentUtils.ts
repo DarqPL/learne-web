@@ -16,7 +16,8 @@ export function countQuestions(course: TeacherCourse) {
 }
 
 export function canSubmitCourse(course: TeacherCourse) {
-  return canEditContent(course.status) && course.topics.length > 0 && countLessons(course) > 0 && countQuestions(course) > 0
+  const hasSubmittableRevision = course.hasEditableRevision || course.latestRevisionStatus === 'DRAFT' || course.latestRevisionStatus === 'REJECTED'
+  return (canEditContent(course.status) || hasSubmittableRevision) && course.topics.length > 0 && countLessons(course) > 0 && countQuestions(course) > 0
 }
 
 export function findTeacherCourse(courses: TeacherCourse[], courseId: number | null) {

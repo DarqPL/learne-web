@@ -188,6 +188,8 @@ export interface AdminTeacher {
 
 export type ContentStatus = 'DRAFT' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'HIDDEN'
 
+export type CourseRevisionStatus = 'DRAFT' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'SUPERSEDED'
+
 export type CourseType =
   | 'COMPREHENSIVE'
   | 'GRAMMAR'
@@ -261,7 +263,23 @@ export interface TeacherCourse {
   orderIndex: number
   status: ContentStatus
   rejectionReason: string | null
+  latestRevisionId: number | null
+  latestRevisionStatus: CourseRevisionStatus | null
+  hasEditableRevision: boolean
   topics: TeacherTopic[]
+}
+
+export interface CourseImportError {
+  rowNumber: number | null
+  field: string | null
+  message: string
+}
+
+export interface CourseImportResponse {
+  courseId: number
+  revisionId: number
+  status: string
+  errors: CourseImportError[]
 }
 
 export interface TeacherCourseRequest {
