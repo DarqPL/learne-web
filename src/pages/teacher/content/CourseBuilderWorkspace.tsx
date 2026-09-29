@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Send, Trash2, TriangleAlert } from 'lucide-react'
 import {
@@ -88,7 +88,7 @@ export function CourseBuilderWorkspace({
   onDeleteQuestion,
 }: CourseBuilderWorkspaceProps) {
   const busy = action !== null
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [step, setStep] = useState<BuilderStep>(() => {
     const requested = searchParams.get('step')
     return stepDefinitions.some((item) => item.id === requested) ? (requested as BuilderStep) : 'thong-tin'
@@ -102,6 +102,38 @@ export function CourseBuilderWorkspace({
   const [questionDialog, setQuestionDialog] = useState<QuestionDialogState | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null)
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false)
+
+  const writeBuilderParams = (nextStep?: BuilderStep, nextLessonId?: number | null) => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (nextStep !== undefined && next.get('step') !== nextStep) next.set('step', nextStep)
+        if (nextLessonId !== undefined) {
+          if (nextLessonId === null) next.delete('lesson')
+          else if (next.get('lesson') !== String(nextLessonId)) next.set('lesson', String(nextLessonId))
+        }
+        return next
+      },
+      { replace: true },
+    )
+  }
+
+  useEffect(() => {
+    const requestedStep = searchParams.get('step')
+    if (
+      requestedStep !== null &&
+      requestedStep !== step &&
+      stepDefinitions.some((item) => item.id === requestedStep)
+    ) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setStep(requestedStep as BuilderStep)
+    }
+    const requestedLesson = parsePositiveInteger(searchParams.get('lesson'))
+    if (requestedLesson !== null && findLesson(course, requestedLesson) !== null) {
+      if (requestedLesson !== selectedLessonId) setSelectedLessonId(requestedLesson)
+      if (requestedLesson !== questionLessonId) setQuestionLessonId(requestedLesson)
+    }
+  }, [searchParams, course, step, selectedLessonId, questionLessonId])
 
   const issues = useMemo(() => computeReviewIssues(course), [course])
   const lessonCount = countLessons(course)
@@ -136,23 +168,41 @@ export function CourseBuilderWorkspace({
   const lessonInitialValue = useMemo(() => (selectedLesson ? getLessonInitialValue(selectedLesson) : null), [selectedLesson])
   const questionInitialValue = useMemo(() => (dialogQuestion ? getQuestionInitialValue(dialogQuestion) : null), [dialogQuestion])
 
+  const handleStepChange = (nextStep: BuilderStep) => {
+    setStep(nextStep)
+    writeBuilderParams(nextStep, undefined)
+  }
+
   const selectTopic = (topicId: number) => {
     setSelectedTopicId(topicId)
     setSelectedLessonId(null)
+    writeBuilderParams(undefined, null)
   }
 
   const selectLesson = (lessonId: number) => {
     setSelectedTopicId(findLessonTopic(course, lessonId)?.id ?? null)
     setSelectedLessonId(lessonId)
+    writeBuilderParams(undefined, lessonId)
+  }
+
+  const handleQuestionLessonChange = (lessonId: number) => {
+    setQuestionLessonId(lessonId)
+    writeBuilderParams(undefined, lessonId)
   }
 
   const jumpToIssue = (issue: ReviewIssue) => {
     setStep(issue.step)
     if (issue.lessonId !== undefined) {
-      selectLesson(issue.lessonId)
+      setSelectedTopicId(findLessonTopic(course, issue.lessonId)?.id ?? null)
+      setSelectedLessonId(issue.lessonId)
       setQuestionLessonId(issue.lessonId)
+      writeBuilderParams(issue.step, issue.lessonId)
     } else if (issue.topicId !== undefined) {
-      selectTopic(issue.topicId)
+      setSelectedTopicId(issue.topicId)
+      setSelectedLessonId(null)
+      writeBuilderParams(issue.step, null)
+    } else {
+      writeBuilderParams(issue.step, undefined)
     }
   }
 
@@ -194,7 +244,7 @@ export function CourseBuilderWorkspace({
 
   return (
     <div className="flex flex-col gap-6">
-      <BuilderStepper step={step} done={stepDone} onStepChange={setStep} />
+      <BuilderStepper step={step} done={stepDone} onStepChange={handleStepChange} />
 
       {step === 'thong-tin' ? (
         <BuilderInfoStep
@@ -209,7 +259,7 @@ export function CourseBuilderWorkspace({
           importExportPanel={importExportPanel}
           onUpdateCourse={onUpdateCourse}
           onOpenSubmit={() => setSubmitDialogOpen(true)}
-          onGoReview={() => setStep('kiem-tra')}
+          onGoReview={() => handleStepChange('kiem-tra')}
         />
       ) : null}
 
@@ -240,7 +290,7 @@ export function CourseBuilderWorkspace({
           editable={editable}
           activeLesson={activeQuestionLesson}
           previewMode={previewMode}
-          onLessonChange={(lessonId) => setQuestionLessonId(lessonId)}
+          onLessonChange={handleQuestionLessonChange}
           onTogglePreview={() => setPreviewMode((value) => !value)}
           onAddQuestion={(lessonId) => {
             setPreviewMode(false)
