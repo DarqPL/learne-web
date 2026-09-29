@@ -1,100 +1,58 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, NavLink, useNavigate, useParams } from 'react-router-dom'
-import { ChevronRight, Info, Pencil, Plus, Send, Trash2, TriangleAlert } from 'lucide-react'
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/shadcn/ui/accordion'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ChevronRight, Info, Trash2, TriangleAlert } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/shadcn/ui/alert-dialog'
 import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
 import { Badge } from '@/components/shadcn/ui/badge'
 import { Button } from '@/components/shadcn/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shadcn/ui/card'
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/shadcn/ui/dialog'
-import { Separator } from '@/components/shadcn/ui/separator'
 import { Skeleton } from '@/components/shadcn/ui/skeleton'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import {
   createTeacherLesson,
+  createTeacherQuestion,
   createTeacherTopic,
   deleteTeacherCourse,
   deleteTeacherLesson,
+  deleteTeacherQuestion,
   deleteTeacherTopic,
   getTeacherCourse,
   submitTeacherCourse,
   updateTeacherCourse,
   updateTeacherLesson,
+  updateTeacherQuestion,
   updateTeacherTopic,
 } from '../../../lib/api/teacherContentApi'
-import type { CourseImportResponse, TeacherCourse, TeacherCourseRequest, TeacherLesson, TeacherLessonRequest, TeacherTopic, TeacherTopicRequest } from '../../../lib/api/types'
+import type {
+  CourseImportResponse,
+  TeacherCourse,
+  TeacherCourseRequest,
+  TeacherLesson,
+  TeacherLessonRequest,
+  TeacherQuestion,
+  TeacherQuestionRequest,
+  TeacherTopic,
+  TeacherTopicRequest,
+} from '../../../lib/api/types'
 import { CourseImportExportPanel } from './CourseImportExportPanel'
-import { CourseForm } from './CourseForm'
-import { LessonForm } from './LessonForm'
+import { CourseBuilderWorkspace } from './CourseBuilderWorkspace'
 import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
-import { TopicForm } from './TopicForm'
-import { courseTypeLabels, skillTypeLabels } from './contentLabels'
+import { courseTypeLabels } from './contentLabels'
 import { canEditContent, canSubmitCourse, countLessons, countQuestions } from './contentUtils'
-import { getCourseInitialValue, getLessonInitialValue, getTopicInitialValue } from './teacherContentMappers'
 
 const cardSoftClassName = 'border-indigo-100 bg-white/95 shadow-sm shadow-indigo-100/60'
 
 function parsePositiveInteger(value: string | undefined) {
   const parsed = Number(value)
   return Number.isInteger(parsed) && parsed > 0 ? parsed : null
-}
-
-function CourseEditForm({ course, action, onSubmit }: { course: TeacherCourse; action: string | null; onSubmit: (payload: TeacherCourseRequest) => void }) {
-  const initialValue = useMemo(() => getCourseInitialValue(course), [course])
-
-  return (
-    <CourseForm
-      initialValue={initialValue}
-      loading={action === 'update-course'}
-      disabled={action !== null && action !== 'update-course'}
-      submitLabel="Lưu khóa học"
-      onSubmit={onSubmit}
-    />
-  )
-}
-
-function TopicEditForm({
-  topic,
-  action,
-  onSubmit,
-}: {
-  topic: TeacherTopic
-  action: string | null
-  onSubmit: (topic: TeacherTopic, payload: TeacherTopicRequest) => void
-}) {
-  const initialValue = useMemo(() => getTopicInitialValue(topic), [topic])
-
-  return (
-    <TopicForm
-      initialValue={initialValue}
-      loading={action === `update-topic-${topic.id}`}
-      disabled={action !== null && action !== `update-topic-${topic.id}`}
-      submitLabel="Lưu chủ đề"
-      onSubmit={(payload) => onSubmit(topic, payload)}
-    />
-  )
-}
-
-function LessonEditForm({
-  lesson,
-  action,
-  onSubmit,
-}: {
-  lesson: TeacherLesson
-  action: string | null
-  onSubmit: (lesson: TeacherLesson, payload: TeacherLessonRequest) => void
-}) {
-  const initialValue = useMemo(() => getLessonInitialValue(lesson), [lesson])
-
-  return (
-    <LessonForm
-      initialValue={initialValue}
-      loading={action === `update-lesson-${lesson.id}`}
-      disabled={action !== null && action !== `update-lesson-${lesson.id}`}
-      submitLabel="Lưu bài học"
-      onSubmit={(payload) => onSubmit(lesson, payload)}
-    />
-  )
 }
 
 export function TeacherCourseBuilderPage() {
@@ -106,10 +64,7 @@ export function TeacherCourseBuilderPage() {
   const [info, setInfo] = useState<string | null>(null)
   const [action, setAction] = useState<string | null>(null)
   const [formResetVersion, setFormResetVersion] = useState(0)
-  const [submitDialogOpen, setSubmitDialogOpen] = useState(false)
   const [deleteCourseDialogOpen, setDeleteCourseDialogOpen] = useState(false)
-  const [deleteTopicTarget, setDeleteTopicTarget] = useState<TeacherTopic | null>(null)
-  const [deleteLessonTarget, setDeleteLessonTarget] = useState<TeacherLesson | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -211,7 +166,6 @@ export function TeacherCourseBuilderPage() {
     try {
       const response = await submitTeacherCourse(course.id)
       setCourse(response.data)
-      setSubmitDialogOpen(false)
       setInfo('Đã gửi khóa học để duyệt.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể gửi khóa học để duyệt.'))
@@ -259,7 +213,6 @@ export function TeacherCourseBuilderPage() {
     try {
       await deleteTeacherTopic(topic.id)
       setCourse((current) => (current ? { ...current, topics: current.topics.filter((item) => item.id !== topic.id) } : current))
-      setDeleteTopicTarget(null)
       await refreshCourseAfterSuccess('Đã xóa chủ đề.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể xóa chủ đề.'))
@@ -320,10 +273,52 @@ export function TeacherCourseBuilderPage() {
             }
           : current,
       )
-      setDeleteLessonTarget(null)
       await refreshCourseAfterSuccess('Đã xóa bài học.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể xóa bài học.'))
+    } finally {
+      setAction(null)
+    }
+  }
+
+  const handleCreateQuestion = async (lessonId: number, payload: TeacherQuestionRequest) => {
+    setAction(`create-question-${lessonId}`)
+    setError(null)
+    setInfo(null)
+    try {
+      await createTeacherQuestion(lessonId, payload)
+      setFormResetVersion((version) => version + 1)
+      await refreshCourseAfterSuccess('Đã tạo câu hỏi.')
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Không thể tạo câu hỏi.'))
+    } finally {
+      setAction(null)
+    }
+  }
+
+  const handleUpdateQuestion = async (question: TeacherQuestion, payload: TeacherQuestionRequest) => {
+    setAction(`update-question-${question.id}`)
+    setError(null)
+    setInfo(null)
+    try {
+      await updateTeacherQuestion(question.id, payload)
+      await refreshCourseAfterSuccess('Đã cập nhật câu hỏi.')
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Không thể cập nhật câu hỏi.'))
+    } finally {
+      setAction(null)
+    }
+  }
+
+  const handleDeleteQuestion = async (question: TeacherQuestion) => {
+    setAction(`delete-question-${question.id}`)
+    setError(null)
+    setInfo(null)
+    try {
+      await deleteTeacherQuestion(question.id)
+      await refreshCourseAfterSuccess('Đã xóa câu hỏi.')
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Không thể xóa câu hỏi.'))
     } finally {
       setAction(null)
     }
@@ -373,39 +368,26 @@ export function TeacherCourseBuilderPage() {
       ) : null}
 
       {parsedCourseId !== null && currentCourse === null && !displayError ? (
-        <div className="grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
+        <div className="flex flex-col gap-6">
           <Card className={cardSoftClassName}>
             <CardHeader>
-              <Skeleton className="h-5 w-40" />
-              <Skeleton className="h-4 w-56" />
+              <Skeleton className="h-6 w-52" />
+              <Skeleton className="h-4 w-full" />
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-2/3" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+              <Skeleton className="h-9 w-32" />
             </CardContent>
           </Card>
-          <div className="flex min-w-0 flex-col gap-6">
-            <Card className={cardSoftClassName}>
-              <CardHeader>
-                <Skeleton className="h-6 w-52" />
-                <Skeleton className="h-4 w-full" />
-              </CardHeader>
-              <CardContent className="flex flex-col gap-3">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-5/6" />
-                <Skeleton className="h-9 w-32" />
-              </CardContent>
-            </Card>
-            <Card className={cardSoftClassName}>
-              <CardHeader>
-                <Skeleton className="h-6 w-44" />
-              </CardHeader>
-              <CardContent className="flex flex-col gap-3">
-                <Skeleton className="h-24 w-full" />
-              </CardContent>
-            </Card>
-          </div>
+          <Card className={cardSoftClassName}>
+            <CardHeader>
+              <Skeleton className="h-6 w-44" />
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              <Skeleton className="h-24 w-full" />
+            </CardContent>
+          </Card>
         </div>
       ) : null}
 
@@ -432,10 +414,6 @@ export function TeacherCourseBuilderPage() {
                 </div>
                 {editable ? (
                   <div className="flex flex-wrap items-center gap-2">
-                    <Button disabled={!canSubmit || busy} loading={action === 'submit-course'} onClick={() => setSubmitDialogOpen(true)}>
-                      <Send data-icon="inline-start" aria-hidden="true" />
-                      Gửi duyệt
-                    </Button>
                     <Button variant="destructive" disabled={busy} onClick={() => setDeleteCourseDialogOpen(true)}>
                       <Trash2 data-icon="inline-start" aria-hidden="true" />
                       Xóa khóa học
@@ -455,419 +433,69 @@ export function TeacherCourseBuilderPage() {
             ) : null}
           </Card>
 
-          <CourseImportExportPanel
-            courseId={currentCourse.id}
-            description="Export khóa học hiện tại hoặc import ZIP để cập nhật cấu trúc nội dung."
-            onImported={handleImportCourse}
+          <CourseBuilderWorkspace
+            course={currentCourse}
+            action={action}
+            editable={editable}
+            canSubmit={canSubmit}
+            formResetVersion={formResetVersion}
+            importExportPanel={
+              <CourseImportExportPanel
+                courseId={currentCourse.id}
+                description="Export khóa học hiện tại hoặc import ZIP để cập nhật cấu trúc nội dung."
+                onImported={handleImportCourse}
+              />
+            }
+            onUpdateCourse={handleUpdateCourse}
+            onSubmitCourse={handleSubmitCourse}
+            onCreateTopic={handleCreateTopic}
+            onUpdateTopic={handleUpdateTopic}
+            onDeleteTopic={handleDeleteTopic}
+            onCreateLesson={handleCreateLesson}
+            onUpdateLesson={handleUpdateLesson}
+            onDeleteLesson={handleDeleteLesson}
+            onCreateQuestion={handleCreateQuestion}
+            onUpdateQuestion={handleUpdateQuestion}
+            onDeleteQuestion={handleDeleteQuestion}
           />
 
-          {editable && !canSubmit ? (
-            <Alert className="border-sky-200 bg-sky-50/70">
-              <Info aria-hidden="true" className="text-sky-600" />
-              <AlertTitle>Chưa đủ điều kiện gửi duyệt</AlertTitle>
-              <AlertDescription>Cần có ít nhất 1 chủ đề, 1 bài học và 1 câu hỏi để gửi duyệt.</AlertDescription>
-            </Alert>
-          ) : null}
-
-          <div className="grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
-            <Card className={`${cardSoftClassName} self-start`}>
-              <CardHeader>
-                <CardTitle>Cấu trúc nội dung</CardTitle>
-                <CardDescription>Quản lý chủ đề và bài học. Mở từng bài học để xây dựng câu hỏi.</CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-4">
-                {currentCourse.topics.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Chưa có chủ đề nào. Thêm chủ đề đầu tiên để bắt đầu xây dựng cấu trúc khóa học.</p>
-                ) : (
-                  <Accordion type="multiple" defaultValue={currentCourse.topics.map((topic) => `topic-${topic.id}`)} className="flex flex-col gap-2">
-                    {currentCourse.topics.map((topic) => (
-                      <AccordionItem key={topic.id} value={`topic-${topic.id}`} className="rounded-xl border border-indigo-100 bg-indigo-50/40 px-3">
-                        <AccordionTrigger className="py-3 hover:no-underline">
-                          <span className="flex min-w-0 flex-1 items-center gap-2 text-left">
-                            <span className="min-w-0 flex-1 truncate font-medium">{topic.name}</span>
-                            <Badge variant="outline" className="shrink-0 border-violet-200 bg-violet-50 text-violet-700">
-                              {topic.lessons.length} bài
-                            </Badge>
-                          </span>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                          <div className="flex flex-col gap-2 pb-1">
-                            {topic.lessons.length === 0 ? (
-                              <p className="rounded-lg border border-dashed border-indigo-200 px-3 py-2 text-sm text-muted-foreground">
-                                Chưa có bài học nào trong chủ đề này.
-                              </p>
-                            ) : (
-                              topic.lessons.map((lesson) => (
-                                <NavLink
-                                  key={lesson.id}
-                                  to={`/teacher/content/courses/${currentCourse.id}/lessons/${lesson.id}`}
-                                  className={({ isActive }) =>
-                                    `flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors ${
-                                      isActive
-                                        ? 'border-indigo-300 bg-indigo-100/70 font-medium'
-                                        : 'border-indigo-100 bg-white/80 hover:border-indigo-200 hover:bg-indigo-50/60'
-                                    }`
-                                  }
-                                >
-                                  <span className="min-w-0 flex-1 truncate">{lesson.title}</span>
-                                  <Badge variant="outline" className="shrink-0 border-sky-200 bg-sky-50 text-sky-700">
-                                    {skillTypeLabels[lesson.skillType]}
-                                  </Badge>
-                                  <span className="shrink-0 text-xs text-muted-foreground">{lesson.questions.length} câu</span>
-                                </NavLink>
-                              ))
-                            )}
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                )}
-                {editable ? (
-                  <>
-                    <Separator className="bg-indigo-100" />
-                    <Button asChild variant="outline" className="w-full border-indigo-200">
-                      <a href="#them-chu-de">
-                        <Plus data-icon="inline-start" aria-hidden="true" />
-                        Thêm chủ đề
-                      </a>
-                    </Button>
-                  </>
-                ) : null}
-              </CardContent>
-            </Card>
-
-            <div className="flex min-w-0 flex-col gap-6">
-              {editable ? (
-                <Card className={cardSoftClassName}>
-                  <CardHeader>
-                    <CardTitle>Thông tin khóa học</CardTitle>
-                    <CardDescription>Cập nhật thông tin khóa học trước khi gửi duyệt.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
-                      <CourseEditForm course={currentCourse} action={action} onSubmit={handleUpdateCourse} />
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card className={cardSoftClassName}>
-                  <CardHeader>
-                    <CardTitle>Thông tin khóa học</CardTitle>
-                    <CardDescription>Khóa học đang ở trạng thái chỉ đọc. Bạn không thể chỉnh sửa nội dung khi khóa học đang chờ duyệt, đã duyệt hoặc đã ẩn.</CardDescription>
-                  </CardHeader>
-                </Card>
-              )}
-
-              {editable ? (
-                <Card id="them-chu-de" className={`${cardSoftClassName} scroll-mt-6`}>
-                  <CardHeader>
-                    <CardTitle>Thêm chủ đề</CardTitle>
-                    <CardDescription>Tạo chủ đề mới cho khóa học này.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
-                      <TopicForm
-                        key={`create-topic-${formResetVersion}`}
-                        loading={action === 'create-topic'}
-                        disabled={action !== null && action !== 'create-topic'}
-                        submitLabel="Tạo chủ đề"
-                        onSubmit={handleCreateTopic}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : null}
-
-              {currentCourse.topics.length === 0 ? (
-                <Card className={cardSoftClassName}>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">Chưa có chủ đề nào. Thêm chủ đề đầu tiên để bắt đầu xây dựng cấu trúc khóa học.</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                currentCourse.topics.map((topic) => (
-                  <Card key={topic.id} className={cardSoftClassName}>
-                    <CardHeader>
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <CardTitle>{topic.name}</CardTitle>
-                          <CardDescription className="mt-1">{topic.description || 'Chưa có mô tả chủ đề.'}</CardDescription>
-                        </div>
-                        {editable ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                            loading={action === `delete-topic-${topic.id}`}
-                            disabled={busy}
-                            onClick={() => setDeleteTopicTarget(topic)}
-                          >
-                            <Trash2 data-icon="inline-start" aria-hidden="true" />
-                            Xóa chủ đề
-                          </Button>
-                        ) : null}
-                      </div>
-                    </CardHeader>
-                    <CardContent className="flex flex-col gap-4">
-                      {editable ? (
-                        <div className="grid gap-4 xl:grid-cols-2">
-                          <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
-                            <h4 className="mb-3 font-medium">Chỉnh sửa chủ đề</h4>
-                            <TopicEditForm topic={topic} action={action} onSubmit={handleUpdateTopic} />
-                          </div>
-                          <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4">
-                            <h4 className="mb-3 font-medium">Thêm bài học</h4>
-                            <LessonForm
-                              key={`create-lesson-${topic.id}-${formResetVersion}`}
-                              loading={action === `create-lesson-${topic.id}`}
-                              disabled={action !== null && action !== `create-lesson-${topic.id}`}
-                              submitLabel="Tạo bài học"
-                              onSubmit={(payload) => handleCreateLesson(topic, payload)}
-                            />
-                          </div>
-                        </div>
-                      ) : null}
-
-                      <div className="flex flex-col gap-3">
-                        <h4 className="font-medium">Bài học</h4>
-                        {topic.lessons.length === 0 ? (
-                          <p className="rounded-xl border border-dashed border-indigo-200 p-4 text-sm text-muted-foreground">
-                            Chưa có bài học nào trong chủ đề này.
-                          </p>
-                        ) : (
-                          topic.lessons.map((lesson) => (
-                            <div key={lesson.id} className="rounded-xl border border-indigo-100 bg-indigo-50/40 p-4">
-                              <div className="flex flex-wrap items-start justify-between gap-3">
-                                <div className="min-w-0">
-                                  <h5 className="font-semibold">{lesson.title}</h5>
-                                  <p className="mt-1 text-sm text-muted-foreground">
-                                    {skillTypeLabels[lesson.skillType]} · {lesson.questions.length} câu hỏi
-                                  </p>
-                                </div>
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <TeacherContentStatusBadge status={lesson.status} />
-                                  <Button asChild variant="outline" size="sm">
-                                    <Link to={`/teacher/content/courses/${currentCourse.id}/lessons/${lesson.id}`}>
-                                      <Pencil data-icon="inline-start" aria-hidden="true" />
-                                      Mở bài học
-                                    </Link>
-                                  </Button>
-                                </div>
-                              </div>
-
-                              {lesson.rejectionReason ? (
-                                <Alert variant="destructive" className="mt-3">
-                                  <TriangleAlert aria-hidden="true" />
-                                  <AlertTitle>Lý do từ chối</AlertTitle>
-                                  <AlertDescription>{lesson.rejectionReason}</AlertDescription>
-                                </Alert>
-                              ) : null}
-
-                              {editable ? (
-                                <div className="mt-4 rounded-xl border border-indigo-100 bg-white/90 p-4">
-                                  <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                                    <h6 className="font-medium">Chỉnh sửa bài học</h6>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                                      loading={action === `delete-lesson-${lesson.id}`}
-                                      disabled={busy}
-                                      onClick={() => setDeleteLessonTarget(lesson)}
-                                    >
-                                      <Trash2 data-icon="inline-start" aria-hidden="true" />
-                                      Xóa bài học
-                                    </Button>
-                                  </div>
-                                  <LessonEditForm lesson={lesson} action={action} onSubmit={handleUpdateLesson} />
-                                </div>
-                              ) : null}
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
-          </div>
-
-          <Dialog
-            open={submitDialogOpen}
-            onOpenChange={(open) => {
-              if (!open && busy) return
-              setSubmitDialogOpen(open)
-            }}
-          >
-            <DialogContent className="sm:max-w-[480px]" showCloseButton={!busy}>
-              <DialogHeader>
-                <div className="flex items-start gap-3">
-                  <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600">
-                    <Send className="size-5" aria-hidden="true" />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <DialogTitle>Gửi duyệt khóa học</DialogTitle>
-                    <DialogDescription>
-                      Gửi khóa học <span className="font-semibold text-gray-900">{currentCourse.name}</span> để duyệt? Sau khi gửi, nội dung sẽ chuyển sang trạng thái chờ duyệt và chỉ đọc.
-                    </DialogDescription>
-                  </div>
-                </div>
-              </DialogHeader>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant="outline" disabled={busy}>
-                    Hủy
-                  </Button>
-                </DialogClose>
-                <Button loading={action === 'submit-course'} disabled={busy} onClick={() => void handleSubmitCourse()}>
-                  <Send data-icon="inline-start" aria-hidden="true" />
-                  Gửi duyệt
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          <Dialog
+          <AlertDialog
             open={deleteCourseDialogOpen}
             onOpenChange={(open) => {
               if (!open && busy) return
               setDeleteCourseDialogOpen(open)
             }}
           >
-            <DialogContent className="sm:max-w-[480px]" showCloseButton={!busy}>
-              <DialogHeader>
+            <AlertDialogContent>
+              <AlertDialogHeader>
                 <div className="flex items-start gap-3">
                   <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
                     <TriangleAlert className="size-5" aria-hidden="true" />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <DialogTitle>Xóa khóa học</DialogTitle>
-                    <DialogDescription>
+                    <AlertDialogTitle>Xóa khóa học</AlertDialogTitle>
+                    <AlertDialogDescription>
                       Xóa vĩnh viễn khóa học <span className="font-semibold text-gray-900">{currentCourse.name}</span> cùng toàn bộ chủ đề, bài học và câu hỏi?
                       <span className="mt-2 block rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
                         Hành động này không thể hoàn tác.
                       </span>
-                    </DialogDescription>
+                    </AlertDialogDescription>
                   </div>
                 </div>
-              </DialogHeader>
-              <DialogFooter>
-                <DialogClose asChild>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel asChild>
                   <Button variant="outline" disabled={busy}>
                     Hủy
                   </Button>
-                </DialogClose>
+                </AlertDialogCancel>
                 <Button variant="destructive" loading={action === 'delete-course'} disabled={busy} onClick={() => void handleDeleteCourse()}>
                   <Trash2 data-icon="inline-start" aria-hidden="true" />
                   Xóa khóa học
                 </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          <Dialog
-            open={deleteTopicTarget !== null}
-            onOpenChange={(open) => {
-              if (!open && busy) return
-              if (!open) setDeleteTopicTarget(null)
-            }}
-          >
-            <DialogContent className="sm:max-w-[480px]" showCloseButton={!busy}>
-              <DialogHeader>
-                <div className="flex items-start gap-3">
-                  <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
-                    <TriangleAlert className="size-5" aria-hidden="true" />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <DialogTitle>Xóa chủ đề</DialogTitle>
-                    <DialogDescription>
-                      {deleteTopicTarget ? (
-                        <>
-                          Xóa vĩnh viễn chủ đề <span className="font-semibold text-gray-900">{deleteTopicTarget.name}</span> cùng toàn bộ bài học và câu hỏi bên trong?
-                        </>
-                      ) : (
-                        'Không xác định.'
-                      )}
-                      <span className="mt-2 block rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-                        Hành động này không thể hoàn tác.
-                      </span>
-                    </DialogDescription>
-                  </div>
-                </div>
-              </DialogHeader>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant="outline" disabled={busy}>
-                    Hủy
-                  </Button>
-                </DialogClose>
-                <Button
-                  variant="destructive"
-                  loading={deleteTopicTarget !== null && action === `delete-topic-${deleteTopicTarget.id}`}
-                  disabled={busy}
-                  onClick={() => {
-                    if (deleteTopicTarget) void handleDeleteTopic(deleteTopicTarget)
-                  }}
-                >
-                  <Trash2 data-icon="inline-start" aria-hidden="true" />
-                  Xóa chủ đề
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          <Dialog
-            open={deleteLessonTarget !== null}
-            onOpenChange={(open) => {
-              if (!open && busy) return
-              if (!open) setDeleteLessonTarget(null)
-            }}
-          >
-            <DialogContent className="sm:max-w-[480px]" showCloseButton={!busy}>
-              <DialogHeader>
-                <div className="flex items-start gap-3">
-                  <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
-                    <TriangleAlert className="size-5" aria-hidden="true" />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <DialogTitle>Xóa bài học</DialogTitle>
-                    <DialogDescription>
-                      {deleteLessonTarget ? (
-                        <>
-                          Xóa vĩnh viễn bài học <span className="font-semibold text-gray-900">{deleteLessonTarget.title}</span> cùng toàn bộ câu hỏi bên trong?
-                        </>
-                      ) : (
-                        'Không xác định.'
-                      )}
-                      <span className="mt-2 block rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-                        Hành động này không thể hoàn tác.
-                      </span>
-                    </DialogDescription>
-                  </div>
-                </div>
-              </DialogHeader>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant="outline" disabled={busy}>
-                    Hủy
-                  </Button>
-                </DialogClose>
-                <Button
-                  variant="destructive"
-                  loading={deleteLessonTarget !== null && action === `delete-lesson-${deleteLessonTarget.id}`}
-                  disabled={busy}
-                  onClick={() => {
-                    if (deleteLessonTarget) void handleDeleteLesson(deleteLessonTarget)
-                  }}
-                >
-                  <Trash2 data-icon="inline-start" aria-hidden="true" />
-                  Xóa bài học
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </>
       ) : null}
     </div>

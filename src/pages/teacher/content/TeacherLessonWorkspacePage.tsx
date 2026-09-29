@@ -253,7 +253,12 @@ export function TeacherLessonWorkspacePage() {
   return (
     <div className="space-y-6">
       {currentCourse ? (
-        <Button variant="secondary" onClick={() => navigate(`/teacher/content/courses/${currentCourse.id}`)}>
+        <Button
+          variant="secondary"
+          onClick={() =>
+            navigate(lesson ? `/teacher/content/courses/${currentCourse.id}?step=cau-hoi&lesson=${lesson.id}` : `/teacher/content/courses/${currentCourse.id}`)
+          }
+        >
           Quay lại khóa học
         </Button>
       ) : null}
