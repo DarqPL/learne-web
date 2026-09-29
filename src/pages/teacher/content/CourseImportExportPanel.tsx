@@ -177,10 +177,10 @@ export function CourseImportExportPanel({
           </Alert>
         ) : null}
         {info ? (
-          <p className="rounded-xl border border-emerald-200 bg-emerald-50/70 px-3 py-2 text-sm text-emerald-800">{info}</p>
+          <p role="status" className="rounded-xl border border-emerald-200 bg-emerald-50/70 px-3 py-2 text-sm text-emerald-800">{info}</p>
         ) : null}
         {importErrors.length > 0 ? (
-          <div className="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm text-amber-800">
+          <div role="status" className="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm text-amber-800">
             <p className="font-medium">Import có cảnh báo:</p>
             <ul className="mt-2 list-disc space-y-1 pl-5">
               {importErrors.map((item, index) => (

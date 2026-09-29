@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { Plus, Save, TriangleAlert, X } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
 import { Button } from '@/components/shadcn/ui/button'
-import { Field, FieldGroup, FieldLabel } from '@/components/shadcn/ui/field'
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/shadcn/ui/field'
 import { Input } from '@/components/shadcn/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/shadcn/ui/select'
 import { Textarea } from '@/components/shadcn/ui/textarea'
@@ -48,16 +48,22 @@ function getCorrectAnswerLabel(type: TeacherQuestionRequest['type']) {
   return type === 'PRONUNCIATION' ? 'Mẫu phát âm / target text' : 'Đáp án đúng'
 }
 
-type QuestionOptionForm = Omit<TeacherQuestionOptionRequest, 'orderIndex'> & {
-  orderIndexInput: string
-}
+type QuestionOptionForm = TeacherQuestionOptionRequest
 
-type QuestionFormState = Omit<TeacherQuestionRequest, 'orderIndex' | 'xpReward' | 'options'> & {
+type QuestionFormState = Omit<TeacherQuestionRequest, 'xpReward' | 'options'> & {
   options: QuestionOptionForm[]
 }
 
+interface QuestionFieldErrors {
+  questionText?: string
+  correctAnswer?: string
+  explanation?: string
+  xpReward?: string
+  options?: string
+}
+
 function toOptionForm(option: TeacherQuestionOptionRequest): QuestionOptionForm {
-  return { optionText: option.optionText, correct: option.correct, orderIndexInput: String(option.orderIndex) }
+  return { optionText: option.optionText, correct: option.correct, orderIndex: option.orderIndex }
 }
 
 function toFormState(question: TeacherQuestionRequest): QuestionFormState {
@@ -82,24 +88,22 @@ function getNextOptionOrderIndex(options: QuestionOptionForm[]) {
   let maxOrderIndex = -1
 
   for (const option of options) {
-    const orderIndexInput = option.orderIndexInput.trim()
-
-    if (isNonNegativeIntegerInput(orderIndexInput)) {
-      maxOrderIndex = Math.max(maxOrderIndex, Number(orderIndexInput))
+    if (Number.isInteger(option.orderIndex) && option.orderIndex >= 0) {
+      maxOrderIndex = Math.max(maxOrderIndex, option.orderIndex)
     }
   }
 
-  return String(maxOrderIndex + 1)
+  return maxOrderIndex + 1
 }
 
 export function QuestionForm({ initialValue, loading = false, disabled = false, submitLabel, onSubmit }: QuestionFormProps) {
   const initialForm = initialValue ?? defaultQuestion
   const previousInitialValue = useRef(initialValue)
   const [form, setForm] = useState<QuestionFormState>(toFormState(initialForm))
-  const [orderIndexInput, setOrderIndexInput] = useState(String(initialForm.orderIndex))
   const [xpRewardInput, setXpRewardInput] = useState(String(initialForm.xpReward))
   const [trueFalseAnswer, setTrueFalseAnswer] = useState(getTrueFalseAnswer(initialForm))
   const [validationMessages, setValidationMessages] = useState<string[]>([])
+  const [fieldErrors, setFieldErrors] = useState<QuestionFieldErrors>({})
   const fieldPrefix = useId()
 
   useEffect(() => {
@@ -113,10 +117,10 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
     queueMicrotask(() => {
       if (cancelled) return
       setForm(toFormState(nextForm))
-      setOrderIndexInput(String(nextForm.orderIndex))
       setXpRewardInput(String(nextForm.xpReward))
       setTrueFalseAnswer(getTrueFalseAnswer(nextForm))
       setValidationMessages([])
+      setFieldErrors({})
     })
 
     return () => {
@@ -129,27 +133,26 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
     if (disabled) return
 
     const nextValidationMessages: string[] = []
-    const trimmedOrderIndexInput = orderIndexInput.trim()
+    const nextFieldErrors: QuestionFieldErrors = {}
     const trimmedXpRewardInput = xpRewardInput.trim()
-    const orderIndex = Number(trimmedOrderIndexInput)
     const xpReward = Number(trimmedXpRewardInput)
 
     if (!form.questionText.trim()) {
-      nextValidationMessages.push('Vui lòng nhập câu hỏi.')
-    }
-
-    if (!isNonNegativeIntegerInput(trimmedOrderIndexInput)) {
-      nextValidationMessages.push('Vui lòng nhập thứ tự hợp lệ.')
+      const message = 'Vui lòng nhập câu hỏi.'
+      nextValidationMessages.push(message)
+      nextFieldErrors.questionText = message
     }
 
     if (!isNonNegativeIntegerInput(trimmedXpRewardInput)) {
-      nextValidationMessages.push('Vui lòng nhập XP hợp lệ.')
+      const message = 'Vui lòng nhập XP hợp lệ.'
+      nextValidationMessages.push(message)
+      nextFieldErrors.xpReward = message
     }
 
     if (usesTextAnswer(form.type) && !form.correctAnswer.trim()) {
-      nextValidationMessages.push(
-        form.type === 'PRONUNCIATION' ? 'Vui lòng nhập mẫu phát âm.' : 'Vui lòng nhập đáp án đúng.',
-      )
+      const message = form.type === 'PRONUNCIATION' ? 'Vui lòng nhập mẫu phát âm.' : 'Vui lòng nhập đáp án đúng.'
+      nextValidationMessages.push(message)
+      nextFieldErrors.correctAnswer = message
     }
 
     let options: TeacherQuestionOptionRequest[] = []
@@ -161,25 +164,23 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
       const nonEmptyOptions = form.options.filter((option) => option.optionText.trim() !== '')
 
       if (nonEmptyOptions.length < 2) {
-        nextValidationMessages.push('Vui lòng nhập ít nhất 2 lựa chọn.')
+        const message = 'Vui lòng nhập ít nhất 2 lựa chọn.'
+        nextValidationMessages.push(message)
+        if (!nextFieldErrors.options) nextFieldErrors.options = message
       }
 
       const correctOptions = nonEmptyOptions.filter((option) => option.correct)
 
       if (correctOptions.length !== 1) {
-        nextValidationMessages.push('Vui lòng chọn đúng 1 lựa chọn đúng.')
-      }
-
-      const hasInvalidOptionOrderIndex = nonEmptyOptions.some((option) => !isNonNegativeIntegerInput(option.orderIndexInput))
-
-      if (hasInvalidOptionOrderIndex) {
-        nextValidationMessages.push('Vui lòng nhập thứ tự lựa chọn hợp lệ.')
+        const message = 'Vui lòng chọn đúng 1 lựa chọn đúng.'
+        nextValidationMessages.push(message)
+        if (!nextFieldErrors.options) nextFieldErrors.options = message
       }
 
       options = nonEmptyOptions.map((option) => ({
         optionText: option.optionText.trim(),
         correct: option.correct,
-        orderIndex: Number(option.orderIndexInput.trim()),
+        orderIndex: option.orderIndex,
       }))
     } else if (form.type === 'TRUE_FALSE') {
       correctAnswer = trueFalseAnswer
@@ -191,12 +192,25 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
 
     if (nextValidationMessages.length > 0) {
       setValidationMessages(nextValidationMessages)
+      setFieldErrors(nextFieldErrors)
       return
     }
 
     setValidationMessages([])
-    onSubmit({ ...form, correctAnswer, orderIndex, xpReward, options })
+    setFieldErrors({})
+    onSubmit({ ...form, correctAnswer, orderIndex: form.orderIndex, xpReward, options })
   }
+
+  const questionTextError = fieldErrors.questionText
+  const correctAnswerError = fieldErrors.correctAnswer
+  const explanationError = fieldErrors.explanation
+  const xpRewardError = fieldErrors.xpReward
+  const optionsError = fieldErrors.options
+  const questionTextErrorId = `${fieldPrefix}-question-text-error`
+  const correctAnswerErrorId = `${fieldPrefix}-correct-answer-error`
+  const explanationErrorId = `${fieldPrefix}-explanation-error`
+  const xpRewardErrorId = `${fieldPrefix}-xp-error`
+  const optionsErrorId = `${fieldPrefix}-options-error`
 
   return (
     <form aria-describedby={validationMessages.length > 0 ? validationId : undefined} onSubmit={handleSubmit}>
@@ -228,33 +242,45 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
           </Select>
         </Field>
 
-        <Field>
+        <Field data-invalid={questionTextError ? true : undefined}>
           <FieldLabel htmlFor={`${fieldPrefix}-question-text`}>Câu hỏi</FieldLabel>
           <Textarea
             id={`${fieldPrefix}-question-text`}
             value={form.questionText}
+            disabled={disabled}
+            aria-invalid={questionTextError ? true : undefined}
+            aria-describedby={questionTextError ? questionTextErrorId : undefined}
             onChange={(event) => setForm((current) => ({ ...current, questionText: event.target.value }))}
           />
+          {questionTextError ? <FieldError id={questionTextErrorId}>{questionTextError}</FieldError> : null}
         </Field>
 
         {usesTextAnswer(form.type) ? (
-          <Field>
+          <Field data-invalid={correctAnswerError ? true : undefined}>
             <FieldLabel htmlFor={`${fieldPrefix}-correct-answer`}>{getCorrectAnswerLabel(form.type)}</FieldLabel>
             <Input
               id={`${fieldPrefix}-correct-answer`}
               value={form.correctAnswer}
+              disabled={disabled}
+              aria-invalid={correctAnswerError ? true : undefined}
+              aria-describedby={correctAnswerError ? correctAnswerErrorId : undefined}
               onChange={(event) => setForm((current) => ({ ...current, correctAnswer: event.target.value }))}
             />
+            {correctAnswerError ? <FieldError id={correctAnswerErrorId}>{correctAnswerError}</FieldError> : null}
           </Field>
         ) : null}
 
-        <Field>
+        <Field data-invalid={explanationError ? true : undefined}>
           <FieldLabel htmlFor={`${fieldPrefix}-explanation`}>Giải thích</FieldLabel>
           <Textarea
             id={`${fieldPrefix}-explanation`}
             value={form.explanation}
+            disabled={disabled}
+            aria-invalid={explanationError ? true : undefined}
+            aria-describedby={explanationError ? explanationErrorId : undefined}
             onChange={(event) => setForm((current) => ({ ...current, explanation: event.target.value }))}
           />
+          {explanationError ? <FieldError id={explanationErrorId}>{explanationError}</FieldError> : null}
         </Field>
 
         <div className="grid gap-3 rounded-xl border border-indigo-100 bg-indigo-50/50 p-3 sm:grid-cols-3">
@@ -264,6 +290,7 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
               id={`${fieldPrefix}-knowledge-point`}
               className="bg-white"
               value={form.knowledgePoint}
+              disabled={disabled}
               onChange={(event) => setForm((current) => ({ ...current, knowledgePoint: event.target.value }))}
             />
           </Field>
@@ -284,15 +311,19 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
             </Select>
           </Field>
 
-          <Field>
+          <Field data-invalid={xpRewardError ? true : undefined}>
             <FieldLabel htmlFor={`${fieldPrefix}-xp`}>XP</FieldLabel>
             <Input
               id={`${fieldPrefix}-xp`}
               className="bg-white"
               type="number"
               value={xpRewardInput}
+              disabled={disabled}
+              aria-invalid={xpRewardError ? true : undefined}
+              aria-describedby={xpRewardError ? xpRewardErrorId : undefined}
               onChange={(event) => setXpRewardInput(event.target.value)}
             />
+            {xpRewardError ? <FieldError id={xpRewardErrorId}>{xpRewardError}</FieldError> : null}
           </Field>
         </div>
 
@@ -325,6 +356,7 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
                   aria-label={`Nội dung lựa chọn ${optionIndex + 1}`}
                   className="min-w-0 flex-1 border-indigo-100 py-1.5"
                   value={option.optionText}
+                  disabled={disabled}
                   placeholder={`Lựa chọn ${optionIndex + 1}`}
                   onChange={(event) =>
                     setForm((current) => ({
@@ -360,7 +392,7 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
                 onClick={() =>
                   setForm((current) => ({
                     ...current,
-                    options: [...current.options, { optionText: '', correct: false, orderIndexInput: getNextOptionOrderIndex(current.options) }],
+                    options: [...current.options, { optionText: '', correct: false, orderIndex: getNextOptionOrderIndex(current.options) }],
                   }))
                 }
               >
@@ -368,6 +400,7 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
                 Thêm lựa chọn
               </Button>
             </div>
+            {optionsError ? <FieldError id={optionsErrorId}>{optionsError}</FieldError> : null}
           </div>
         ) : null}
 

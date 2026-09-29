@@ -94,6 +94,7 @@ export function TeacherProfilePage() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
+    if (submitting) return
     const errors = validateForm(
       { bio, expertise, yearsOfExperience },
       {
@@ -240,6 +241,7 @@ export function TeacherProfilePage() {
                   <Textarea
                     id="teacher-profile-bio"
                     value={bio}
+                    disabled={submitting}
                     aria-invalid={fieldErrors.bio ? true : undefined}
                     onChange={(event) => setBio(event.target.value)}
                     maxLength={2000}
@@ -253,6 +255,7 @@ export function TeacherProfilePage() {
                   <Input
                     id="teacher-profile-expertise"
                     value={expertise}
+                    disabled={submitting}
                     aria-invalid={fieldErrors.expertise ? true : undefined}
                     onChange={(event) => setExpertise(event.target.value)}
                     maxLength={255}
@@ -269,6 +272,7 @@ export function TeacherProfilePage() {
                     min={0}
                     max={80}
                     value={yearsOfExperience}
+                    disabled={submitting}
                     aria-invalid={fieldErrors.yearsOfExperience ? true : undefined}
                     onChange={(event) => setYearsOfExperience(event.target.value)}
                     required
@@ -298,7 +302,7 @@ export function TeacherProfilePage() {
     <div className="mx-auto max-w-2xl">
       <h1 className="mb-6 text-2xl font-bold text-indigo-950">Hồ sơ giảng viên</h1>
       {success ? (
-        <p className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50/70 px-3 py-2 text-sm text-emerald-800">{success}</p>
+        <p role="status" className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50/70 px-3 py-2 text-sm text-emerald-800">{success}</p>
       ) : null}
       {error ? (
         <div className="mb-4">
@@ -347,7 +351,7 @@ export function TeacherProfilePage() {
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium whitespace-nowrap text-white transition-colors hover:bg-indigo-500">
+              <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium whitespace-nowrap text-white transition-colors hover:bg-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
                 {mediaAction === 'avatar' ? <Spinner className="text-white" /> : <Camera data-icon="inline-start" aria-hidden="true" />}
                 {mediaAction === 'avatar' ? 'Đang tải...' : 'Đổi ảnh'}
                 <input type="file" accept="image/*" className="sr-only" disabled={mediaAction !== null} onChange={handleAvatarUpload} />
@@ -372,7 +376,7 @@ export function TeacherProfilePage() {
             <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
               <h3 className="text-sm font-semibold text-indigo-950">Video giới thiệu</h3>
               <div className="flex flex-wrap gap-2">
-                <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-indigo-200 bg-white px-3 py-1.5 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-50">
+                <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-indigo-200 bg-white px-3 py-1.5 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-50 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
                   <Video data-icon="inline-start" aria-hidden="true" />
                   {mediaAction === 'video' ? 'Đang tải...' : profile.introductionVideoUrl ? 'Đổi video' : 'Tải video'}
                   <input type="file" accept="video/*" className="sr-only" disabled={mediaAction !== null} onChange={handleVideoUpload} />

@@ -1,6 +1,5 @@
 import { useId, useState, type FormEvent } from 'react'
-import { Save, TriangleAlert } from 'lucide-react'
-import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
+import { Save } from 'lucide-react'
 import { Button } from '@/components/shadcn/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/shadcn/ui/field'
 import { Input } from '@/components/shadcn/ui/input'
@@ -28,7 +27,7 @@ const defaultLesson: TeacherLessonRequest = {
 }
 
 interface LessonValidation {
-  field: 'title' | 'orderIndex' | 'xpReward'
+  field: 'title' | 'xpReward'
   message: string
 }
 
@@ -36,7 +35,6 @@ export function LessonForm({ initialValue, loading = false, disabled = false, su
   const initialForm = initialValue ?? defaultLesson
   const [previousInitialValue, setPreviousInitialValue] = useState(initialValue)
   const [form, setForm] = useState<TeacherLessonRequest>(initialForm)
-  const [orderIndexInput, setOrderIndexInput] = useState(String(initialForm.orderIndex))
   const [xpRewardInput, setXpRewardInput] = useState(String(initialForm.xpReward))
   const [validation, setValidation] = useState<LessonValidation | null>(null)
   const fieldPrefix = useId()
@@ -45,7 +43,6 @@ export function LessonForm({ initialValue, loading = false, disabled = false, su
     const nextForm = initialValue ?? defaultLesson
     setPreviousInitialValue(initialValue)
     setForm(nextForm)
-    setOrderIndexInput(String(nextForm.orderIndex))
     setXpRewardInput(String(nextForm.xpReward))
     setValidation(null)
   }
@@ -54,16 +51,10 @@ export function LessonForm({ initialValue, loading = false, disabled = false, su
     event.preventDefault()
     if (disabled) return
 
-    const orderIndex = Number(orderIndexInput)
     const xpReward = Number(xpRewardInput)
 
     if (!form.title.trim()) {
       setValidation({ field: 'title', message: 'Vui lòng nhập tiêu đề bài học.' })
-      return
-    }
-
-    if (!orderIndexInput.trim() || !Number.isFinite(orderIndex)) {
-      setValidation({ field: 'orderIndex', message: 'Vui lòng nhập thứ tự hợp lệ.' })
       return
     }
 
@@ -78,12 +69,13 @@ export function LessonForm({ initialValue, loading = false, disabled = false, su
     }
 
     setValidation(null)
-    onSubmit({ ...form, orderIndex, xpReward })
+    onSubmit({ ...form, xpReward })
   }
 
   const titleError = validation?.field === 'title' ? validation.message : undefined
-  const orderIndexError = validation?.field === 'orderIndex' ? validation.message : undefined
   const xpRewardError = validation?.field === 'xpReward' ? validation.message : undefined
+  const titleErrorId = `${fieldPrefix}-title-error`
+  const xpRewardErrorId = `${fieldPrefix}-xp-error`
 
   return (
     <form onSubmit={handleSubmit}>
@@ -93,10 +85,12 @@ export function LessonForm({ initialValue, loading = false, disabled = false, su
           <Input
             id={`${fieldPrefix}-title`}
             value={form.title}
+            disabled={disabled}
             aria-invalid={titleError ? true : undefined}
+            aria-describedby={titleError ? titleErrorId : undefined}
             onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
           />
-          {titleError ? <FieldError>{titleError}</FieldError> : null}
+          {titleError ? <FieldError id={titleErrorId}>{titleError}</FieldError> : null}
         </Field>
 
         <Field>
@@ -104,6 +98,7 @@ export function LessonForm({ initialValue, loading = false, disabled = false, su
           <Textarea
             id={`${fieldPrefix}-description`}
             value={form.description}
+            disabled={disabled}
             onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
           />
         </Field>
@@ -113,6 +108,7 @@ export function LessonForm({ initialValue, loading = false, disabled = false, su
           <Textarea
             id={`${fieldPrefix}-content`}
             value={form.content}
+            disabled={disabled}
             onChange={(event) => setForm((current) => ({ ...current, content: event.target.value }))}
           />
         </Field>
@@ -144,10 +140,12 @@ export function LessonForm({ initialValue, loading = false, disabled = false, su
               id={`${fieldPrefix}-xp`}
               type="number"
               value={xpRewardInput}
+              disabled={disabled}
               aria-invalid={xpRewardError ? true : undefined}
+              aria-describedby={xpRewardError ? xpRewardErrorId : undefined}
               onChange={(event) => setXpRewardInput(event.target.value)}
             />
-            {xpRewardError ? <FieldError>{xpRewardError}</FieldError> : null}
+            {xpRewardError ? <FieldError id={xpRewardErrorId}>{xpRewardError}</FieldError> : null}
           </Field>
         </div>
 
@@ -157,18 +155,11 @@ export function LessonForm({ initialValue, loading = false, disabled = false, su
             type="checkbox"
             className="size-4 shrink-0 accent-indigo-600"
             checked={form.placementTest}
+            disabled={disabled}
             onChange={(event) => setForm((current) => ({ ...current, placementTest: event.target.checked }))}
           />
           <FieldLabel htmlFor={`${fieldPrefix}-placement-test`}>Bài kiểm tra đầu vào</FieldLabel>
         </Field>
-
-        {orderIndexError ? (
-          <Alert variant="destructive">
-            <TriangleAlert aria-hidden="true" />
-            <AlertTitle>Không thể lưu</AlertTitle>
-            <AlertDescription>{orderIndexError}</AlertDescription>
-          </Alert>
-        ) : null}
 
         <div className="flex flex-wrap items-center gap-2">
           <Button type="submit" loading={loading} disabled={disabled}>

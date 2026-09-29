@@ -1,6 +1,5 @@
 import { useId, useState, type FormEvent } from 'react'
-import { Save, TriangleAlert } from 'lucide-react'
-import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
+import { Save } from 'lucide-react'
 import { Button } from '@/components/shadcn/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/shadcn/ui/field'
 import { Input } from '@/components/shadcn/ui/input'
@@ -22,7 +21,7 @@ const defaultTopic: TeacherTopicRequest = {
 }
 
 interface TopicValidation {
-  field: 'name' | 'orderIndex'
+  field: 'name'
   message: string
 }
 
@@ -30,7 +29,6 @@ export function TopicForm({ initialValue, loading = false, disabled = false, sub
   const initialForm = initialValue ?? defaultTopic
   const [previousInitialValue, setPreviousInitialValue] = useState(initialValue)
   const [form, setForm] = useState<TeacherTopicRequest>(initialForm)
-  const [orderIndexInput, setOrderIndexInput] = useState(String(initialForm.orderIndex))
   const [validation, setValidation] = useState<TopicValidation | null>(null)
   const fieldPrefix = useId()
 
@@ -38,7 +36,6 @@ export function TopicForm({ initialValue, loading = false, disabled = false, sub
     const nextForm = initialValue ?? defaultTopic
     setPreviousInitialValue(initialValue)
     setForm(nextForm)
-    setOrderIndexInput(String(nextForm.orderIndex))
     setValidation(null)
   }
 
@@ -46,24 +43,17 @@ export function TopicForm({ initialValue, loading = false, disabled = false, sub
     event.preventDefault()
     if (disabled) return
 
-    const orderIndex = Number(orderIndexInput)
-
     if (!form.name.trim()) {
       setValidation({ field: 'name', message: 'Vui lòng nhập tên chủ đề.' })
       return
     }
 
-    if (!orderIndexInput.trim() || !Number.isFinite(orderIndex)) {
-      setValidation({ field: 'orderIndex', message: 'Vui lòng nhập thứ tự hợp lệ.' })
-      return
-    }
-
     setValidation(null)
-    onSubmit({ ...form, orderIndex })
+    onSubmit({ ...form })
   }
 
   const nameError = validation?.field === 'name' ? validation.message : undefined
-  const orderIndexError = validation?.field === 'orderIndex' ? validation.message : undefined
+  const nameErrorId = `${fieldPrefix}-name-error`
 
   return (
     <form onSubmit={handleSubmit}>
@@ -73,10 +63,12 @@ export function TopicForm({ initialValue, loading = false, disabled = false, sub
           <Input
             id={`${fieldPrefix}-name`}
             value={form.name}
+            disabled={disabled}
             aria-invalid={nameError ? true : undefined}
+            aria-describedby={nameError ? nameErrorId : undefined}
             onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
           />
-          {nameError ? <FieldError>{nameError}</FieldError> : null}
+          {nameError ? <FieldError id={nameErrorId}>{nameError}</FieldError> : null}
         </Field>
 
         <Field>
@@ -84,17 +76,10 @@ export function TopicForm({ initialValue, loading = false, disabled = false, sub
           <Textarea
             id={`${fieldPrefix}-description`}
             value={form.description}
+            disabled={disabled}
             onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
           />
         </Field>
-
-        {orderIndexError ? (
-          <Alert variant="destructive">
-            <TriangleAlert aria-hidden="true" />
-            <AlertTitle>Không thể lưu</AlertTitle>
-            <AlertDescription>{orderIndexError}</AlertDescription>
-          </Alert>
-        ) : null}
 
         <div className="flex flex-wrap items-center gap-2">
           <Button type="submit" loading={loading} disabled={disabled}>

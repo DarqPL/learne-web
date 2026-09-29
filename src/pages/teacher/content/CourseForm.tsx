@@ -1,6 +1,5 @@
 import { useId, useState, type FormEvent } from 'react'
-import { Save, TriangleAlert } from 'lucide-react'
-import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
+import { Save } from 'lucide-react'
 import { Button } from '@/components/shadcn/ui/button'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/shadcn/ui/field'
 import { Input } from '@/components/shadcn/ui/input'
@@ -28,7 +27,7 @@ const defaultCourse: TeacherCourseRequest = {
 const levelOptions = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
 
 interface CourseValidation {
-  field: 'name' | 'orderIndex'
+  field: 'name' | 'level'
   message: string
 }
 
@@ -36,7 +35,6 @@ export function CourseForm({ initialValue, loading = false, disabled = false, su
   const initialForm = initialValue ?? defaultCourse
   const [previousInitialValue, setPreviousInitialValue] = useState(initialValue)
   const [form, setForm] = useState<TeacherCourseRequest>(initialForm)
-  const [orderIndexInput, setOrderIndexInput] = useState(String(initialForm.orderIndex))
   const [validation, setValidation] = useState<CourseValidation | null>(null)
   const fieldPrefix = useId()
 
@@ -44,7 +42,6 @@ export function CourseForm({ initialValue, loading = false, disabled = false, su
     const nextForm = initialValue ?? defaultCourse
     setPreviousInitialValue(initialValue)
     setForm(nextForm)
-    setOrderIndexInput(String(nextForm.orderIndex))
     setValidation(null)
   }
 
@@ -52,24 +49,24 @@ export function CourseForm({ initialValue, loading = false, disabled = false, su
     event.preventDefault()
     if (disabled) return
 
-    const orderIndex = Number(orderIndexInput)
-
-    if (!form.name.trim() || !form.level.trim()) {
-      setValidation({ field: 'name', message: 'Vui lòng nhập tên khóa học và cấp độ.' })
+    if (!form.name.trim()) {
+      setValidation({ field: 'name', message: 'Vui lòng nhập tên khóa học.' })
       return
     }
 
-    if (!orderIndexInput.trim() || !Number.isFinite(orderIndex)) {
-      setValidation({ field: 'orderIndex', message: 'Vui lòng nhập thứ tự hợp lệ.' })
+    if (!form.level.trim()) {
+      setValidation({ field: 'level', message: 'Vui lòng chọn cấp độ.' })
       return
     }
 
     setValidation(null)
-    onSubmit({ ...form, orderIndex })
+    onSubmit({ ...form })
   }
 
   const nameError = validation?.field === 'name' ? validation.message : undefined
-  const orderIndexError = validation?.field === 'orderIndex' ? validation.message : undefined
+  const levelError = validation?.field === 'level' ? validation.message : undefined
+  const nameErrorId = `${fieldPrefix}-name-error`
+  const levelErrorId = `${fieldPrefix}-level-error`
 
   return (
     <form onSubmit={handleSubmit}>
@@ -79,10 +76,12 @@ export function CourseForm({ initialValue, loading = false, disabled = false, su
           <Input
             id={`${fieldPrefix}-name`}
             value={form.name}
+            disabled={disabled}
             aria-invalid={nameError ? true : undefined}
+            aria-describedby={nameError ? nameErrorId : undefined}
             onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
           />
-          {nameError ? <FieldError>{nameError}</FieldError> : null}
+          {nameError ? <FieldError id={nameErrorId}>{nameError}</FieldError> : null}
         </Field>
 
         <Field>
@@ -90,6 +89,7 @@ export function CourseForm({ initialValue, loading = false, disabled = false, su
           <Textarea
             id={`${fieldPrefix}-description`}
             value={form.description}
+            disabled={disabled}
             onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
           />
         </Field>
@@ -115,10 +115,15 @@ export function CourseForm({ initialValue, loading = false, disabled = false, su
             </Select>
           </Field>
 
-          <Field data-invalid={nameError ? true : undefined}>
+          <Field data-invalid={levelError ? true : undefined}>
             <FieldLabel htmlFor={`${fieldPrefix}-level`}>Cấp độ</FieldLabel>
             <Select value={form.level} disabled={disabled} onValueChange={(value) => setForm((current) => ({ ...current, level: value }))}>
-              <SelectTrigger id={`${fieldPrefix}-level`} className="w-full" aria-invalid={nameError ? true : undefined}>
+              <SelectTrigger
+                id={`${fieldPrefix}-level`}
+                className="w-full"
+                aria-invalid={levelError ? true : undefined}
+                aria-describedby={levelError ? levelErrorId : undefined}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -129,16 +134,9 @@ export function CourseForm({ initialValue, loading = false, disabled = false, su
                 ))}
               </SelectContent>
             </Select>
+            {levelError ? <FieldError id={levelErrorId}>{levelError}</FieldError> : null}
           </Field>
         </div>
-
-        {orderIndexError ? (
-          <Alert variant="destructive">
-            <TriangleAlert aria-hidden="true" />
-            <AlertTitle>Không thể lưu</AlertTitle>
-            <AlertDescription>{orderIndexError}</AlertDescription>
-          </Alert>
-        ) : null}
 
         <div className="flex flex-wrap items-center gap-2">
           <Button type="submit" loading={loading} disabled={disabled}>
