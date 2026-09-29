@@ -1,6 +1,7 @@
 import { http } from './client'
 import type {
   ApiMessageResponse,
+  CourseImportResponse,
   TeacherCourse,
   TeacherCourseRequest,
   TeacherLesson,
@@ -71,4 +72,20 @@ export function deleteTeacherQuestion(questionId: number) {
 
 export function submitTeacherCourse(courseId: number) {
   return http.post<TeacherCourse>(`${base}/courses/${courseId}/submit`, {})
+}
+
+export function downloadCourseTemplate() {
+  return http.get<Blob>(`${base}/course-template`, { responseType: 'blob' })
+}
+
+export function exportTeacherCourse(courseId: number) {
+  return http.get<Blob>(`${base}/courses/${courseId}/export`, { responseType: 'blob' })
+}
+
+export function importTeacherCourse(file: File) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return http.post<CourseImportResponse>(`${base}/import`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
 }

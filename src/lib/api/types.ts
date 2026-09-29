@@ -18,6 +18,55 @@ export interface ApiMessageResponse {
   message: string
 }
 
+export type OrderStatus = 'PENDING_PAYMENT' | 'PAID' | 'EXPIRED' | 'CANCELLED' | 'REFUNDED'
+
+export type OrderType = 'COURSE_PURCHASE' | 'PLAN_SUBSCRIPTION'
+
+export type PaymentProvider = 'INTERNAL' | 'SEPAY'
+
+export type PlanCode = 'VIP' | 'PRO' | 'PRO_PLUS'
+
+export type CoursePricingType = 'FREE' | 'PAID'
+
+export type CourseAccessStatus = 'FREE' | 'OWNED' | 'LOCKED'
+
+export interface PaymentInstructionResponse {
+  bankCode: string
+  bankName: string | null
+  accountNumber: string
+  accountName: string | null
+  amountVnd: number
+  paymentReference: string
+  qrUrl: string
+}
+
+export interface OrderItemResponse {
+  id: number
+  productType: 'COURSE' | 'PLAN'
+  courseId: number | null
+  planCode: PlanCode | null
+  itemNameSnapshot: string
+  unitAmountVnd: number
+  quantity: number
+  totalAmountVnd: number
+}
+
+export interface OrderResponse {
+  id: number
+  orderType: OrderType
+  status: OrderStatus
+  originalAmountVnd: number
+  discountAmountVnd: number
+  finalAmountVnd: number
+  couponId: number | null
+  paymentProvider: PaymentProvider
+  paymentReference: string | null
+  paidAt: string | null
+  expiresAt: string
+  items: OrderItemResponse[]
+  paymentInstructions: PaymentInstructionResponse | null
+}
+
 export type GrammarCheckStatus = 'PENDING' | 'SUCCEEDED' | 'FAILED'
 
 export type GrammarCheckErrorType = 'GRAMMAR' | 'SPELLING' | 'PUNCTUATION' | 'WORD_CHOICE' | 'STYLE' | 'OTHER'
@@ -188,6 +237,8 @@ export interface AdminTeacher {
 
 export type ContentStatus = 'DRAFT' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'HIDDEN'
 
+export type CourseRevisionStatus = 'DRAFT' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'SUPERSEDED'
+
 export type CourseType =
   | 'COMPREHENSIVE'
   | 'GRAMMAR'
@@ -261,7 +312,23 @@ export interface TeacherCourse {
   orderIndex: number
   status: ContentStatus
   rejectionReason: string | null
+  latestRevisionId: number | null
+  latestRevisionStatus: CourseRevisionStatus | null
+  hasEditableRevision: boolean
   topics: TeacherTopic[]
+}
+
+export interface CourseImportError {
+  rowNumber: number | null
+  field: string | null
+  message: string
+}
+
+export interface CourseImportResponse {
+  courseId: number
+  revisionId: number
+  status: string
+  errors: CourseImportError[]
 }
 
 export interface TeacherCourseRequest {
@@ -414,6 +481,10 @@ export interface StudentCourseSummary {
   lessonCount: number
   questionCount: number
   publishedAt: string | null
+  pricingType: CoursePricingType
+  priceAmountVnd: number | null
+  accessStatus: CourseAccessStatus
+  accessReason: string | null
   enrolled: boolean
 }
 
@@ -460,6 +531,10 @@ export interface StudentCourseDetail {
   teacherEmail: string
   teacherAvatarUrl: string | null
   publishedAt: string | null
+  pricingType: CoursePricingType
+  priceAmountVnd: number | null
+  accessStatus: CourseAccessStatus
+  accessReason: string | null
   enrolled: boolean
   activeEnrollmentId: number | null
   topics: StudentTopic[]
