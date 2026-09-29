@@ -50,8 +50,8 @@ export function BuilderContentStep({
   onDeleteRequest,
 }: BuilderContentStepProps) {
   return (
-    <div className="grid gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
-      <Card className={`${cardSoftClassName} self-start`}>
+    <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
+      <Card className={`${cardSoftClassName} min-w-0 self-start`}>
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -70,7 +70,7 @@ export function BuilderContentStep({
           {course.topics.length === 0 ? (
             <p className="text-sm text-muted-foreground">Chưa có chủ đề nào. Thêm chủ đề đầu tiên để bắt đầu.</p>
           ) : (
-            <ScrollArea className="max-h-[480px] pr-3">
+            <ScrollArea className="max-h-[480px] min-w-0 pr-3">
               <Accordion type="multiple" defaultValue={course.topics.map((topic) => `topic-${topic.id}`)} className="flex flex-col gap-2">
                 {course.topics.map((topic) => {
                   const isTopicSelected = selectedTopic?.id === topic.id && !selectedLesson
@@ -87,7 +87,7 @@ export function BuilderContentStep({
                         </span>
                       </AccordionTrigger>
                       <AccordionContent>
-                        <div className="flex flex-col gap-2 pb-1">
+                        <div className="flex min-w-0 flex-col gap-2 pb-1">
                           {topic.lessons.length === 0 ? (
                             <p className="rounded-lg border border-dashed border-indigo-200 px-3 py-2 text-sm text-muted-foreground">
                               Chưa có bài học nào trong chủ đề này.
@@ -101,17 +101,20 @@ export function BuilderContentStep({
                                   type="button"
                                   onClick={() => onSelectLesson(lesson.id)}
                                   aria-current={isSelected ? 'true' : undefined}
-                                  className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors ${
+                                  className={`flex w-full min-w-0 flex-col gap-0.5 rounded-lg border px-3 py-2 text-sm transition-colors ${
                                     isSelected
                                       ? 'border-indigo-300 bg-indigo-100/70 font-medium'
-                                      : 'border-indigo-100 bg-white/80 hover:border-indigo-200 hover:bg-indigo-50/60'
+                                      : 'border-indigo-100 bg-white/80 font-normal hover:border-indigo-200 hover:bg-indigo-50/60'
                                   }`}
                                 >
-                                  <span className="min-w-0 flex-1 truncate text-left">{lesson.title || '(Chưa đặt tiêu đề)'}</span>
-                                  <Badge variant="outline" className="shrink-0 border-sky-200 bg-sky-50 text-sky-700">
-                                    {skillTypeLabels[lesson.skillType]}
-                                  </Badge>
-                                  <span className="shrink-0 text-xs text-muted-foreground">{lesson.questions.length} câu</span>
+                                  <span className={`min-w-0 flex-1 truncate text-left ${isSelected ? 'font-medium' : 'font-normal'}`}>{lesson.title || '(Chưa đặt tiêu đề)'}</span>
+                                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                    <span className="truncate">{skillTypeLabels[lesson.skillType]}</span>
+                                    <span aria-hidden="true">·</span>
+                                    <span className="shrink-0">{lesson.questions.length} câu</span>
+                                    <span aria-hidden="true">·</span>
+                                    <span className="shrink-0">{lesson.xpReward} XP</span>
+                                  </span>
                                 </button>
                               )
                             })
