@@ -1,7 +1,20 @@
 import { useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
-import { Alert } from '../../../components/ui/Alert'
-import { Button } from '../../../components/ui/Button'
+import { Download, FileArchive, FileUp, TriangleAlert, Upload } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/shadcn/ui/alert-dialog'
+import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
+import { Button } from '@/components/shadcn/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shadcn/ui/card'
+import { Field, FieldLabel } from '@/components/shadcn/ui/field'
+import { Input } from '@/components/shadcn/ui/input'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { downloadCourseTemplate, exportTeacherCourse, importTeacherCourse } from '../../../lib/api/teacherContentApi'
 import type { CourseImportError, CourseImportResponse } from '../../../lib/api/types'
@@ -12,8 +25,6 @@ interface CourseImportExportPanelProps {
   description?: string
   onImported?: (response: CourseImportResponse) => void
 }
-
-const cardClassName = 'rounded-2xl border border-gray-200 bg-white p-5 shadow-sm'
 
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
@@ -42,6 +53,7 @@ export function CourseImportExportPanel({
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [importErrors, setImportErrors] = useState<CourseImportError[]>([])
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   const handleDownloadTemplate = async () => {
     setAction('template')
@@ -79,9 +91,9 @@ export function CourseImportExportPanel({
     setImportErrors([])
   }
 
-  const handleImportCourse = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!selectedFile) return
+  const handleImportCourse = async () => {
+    if (!selectedFile || action !== null) return
+    setConfirmOpen(false)
     setAction('import')
     setError(null)
     setInfo(null)
@@ -98,44 +110,77 @@ export function CourseImportExportPanel({
     }
   }
 
+  const handleImportSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!selectedFile || action !== null) return
+    setConfirmOpen(true)
+  }
+
   return (
-    <section className={cardClassName}>
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-        <p className="mt-1 text-sm text-gray-600">{description}</p>
-      </div>
+    <Card className="border-indigo-100 bg-white/95 shadow-sm shadow-indigo-100/60">
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
 
-      <div className="flex flex-wrap gap-2">
-        <Button variant="secondary" loading={action === 'template'} disabled={action !== null && action !== 'template'} onClick={handleDownloadTemplate}>
-          Tải template Excel
-        </Button>
-        {courseId ? (
-          <Button variant="secondary" loading={action === 'export'} disabled={action !== null && action !== 'export'} onClick={handleExportCourse}>
-            Export khóa học
+      <CardContent className="flex flex-col gap-4">
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            className="border-indigo-200"
+            loading={action === 'template'}
+            disabled={action !== null && action !== 'template'}
+            onClick={handleDownloadTemplate}
+          >
+            <Download data-icon="inline-start" aria-hidden="true" />
+            Tải template Excel
           </Button>
+          {courseId ? (
+            <Button
+              variant="outline"
+              className="border-indigo-200"
+              loading={action === 'export'}
+              disabled={action !== null && action !== 'export'}
+              onClick={handleExportCourse}
+            >
+              <Upload data-icon="inline-start" aria-hidden="true" />
+              Export khóa học
+            </Button>
+          ) : null}
+        </div>
+
+        <form
+          className="flex flex-col gap-3 rounded-xl border border-indigo-100 bg-indigo-50/50 p-4 sm:flex-row sm:items-end"
+          onSubmit={handleImportSubmit}
+        >
+          <Field className="flex-1">
+            <FieldLabel htmlFor="teacher-course-import-file">File ZIP</FieldLabel>
+            <Input
+              id="teacher-course-import-file"
+              className="bg-white file:mr-3 file:rounded-md file:border-0 file:bg-indigo-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-indigo-800"
+              type="file"
+              accept=".zip,application/zip,application/x-zip-compressed"
+              onChange={handleFileChange}
+            />
+          </Field>
+          <Button type="submit" loading={action === 'import'} disabled={!selectedFile || action !== null}>
+            <FileUp data-icon="inline-start" aria-hidden="true" />
+            Import ZIP
+          </Button>
+        </form>
+
+        {error ? (
+          <Alert variant="destructive">
+            <TriangleAlert aria-hidden="true" />
+            <AlertTitle>Đã xảy ra lỗi</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         ) : null}
-      </div>
-
-      <form className="mt-4 flex flex-col gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4 sm:flex-row sm:items-end" onSubmit={handleImportCourse}>
-        <label className="flex-1 text-sm font-medium text-gray-700">
-          File ZIP
-          <input
-            className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 file:mr-3 file:rounded-md file:border-0 file:bg-gray-200 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-gray-800"
-            type="file"
-            accept=".zip,application/zip,application/x-zip-compressed"
-            onChange={handleFileChange}
-          />
-        </label>
-        <Button type="submit" loading={action === 'import'} disabled={!selectedFile || (action !== null && action !== 'import')}>
-          Import ZIP
-        </Button>
-      </form>
-
-      <div className="mt-4 space-y-3">
-        {error ? <Alert>{error}</Alert> : null}
-        {info ? <Alert variant="success">{info}</Alert> : null}
+        {info ? (
+          <p className="rounded-xl border border-emerald-200 bg-emerald-50/70 px-3 py-2 text-sm text-emerald-800">{info}</p>
+        ) : null}
         {importErrors.length > 0 ? (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <div className="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm text-amber-800">
             <p className="font-medium">Import có cảnh báo:</p>
             <ul className="mt-2 list-disc space-y-1 pl-5">
               {importErrors.map((item, index) => (
@@ -144,7 +189,40 @@ export function CourseImportExportPanel({
             </ul>
           </div>
         ) : null}
-      </div>
-    </section>
+      </CardContent>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="flex items-start gap-3">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
+                <FileArchive className="size-5" aria-hidden="true" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <AlertDialogTitle>Xác nhận import khóa học</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Import file <span className="font-semibold text-gray-900">{selectedFile?.name ?? '(Chưa chọn file)'}</span> sẽ
+                  thêm hoặc ghi đè nội dung khóa học hiện có?
+                  <span className="mt-2 block rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700">
+                    Hãy kiểm tra kỹ file ZIP trước khi tiếp tục.
+                  </span>
+                </AlertDialogDescription>
+              </div>
+            </div>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button variant="outline" disabled={action !== null}>
+                Hủy
+              </Button>
+            </AlertDialogCancel>
+            <Button loading={action === 'import'} disabled={action !== null} onClick={() => void handleImportCourse()}>
+              <FileUp data-icon="inline-start" aria-hidden="true" />
+              Xác nhận import
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </Card>
   )
 }

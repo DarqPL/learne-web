@@ -1,7 +1,11 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { X } from 'lucide-react'
-import { Button as ShadcnButton } from '../../../components/shadcn/ui/button'
-import { Button } from '../../../components/ui/Button'
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
+import { Plus, Save, TriangleAlert, X } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
+import { Button } from '@/components/shadcn/ui/button'
+import { Field, FieldGroup, FieldLabel } from '@/components/shadcn/ui/field'
+import { Input } from '@/components/shadcn/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/shadcn/ui/select'
+import { Textarea } from '@/components/shadcn/ui/textarea'
 import type { TeacherQuestionOptionRequest, TeacherQuestionRequest } from '../../../lib/api/types'
 import { questionTypeLabels, questionTypes } from './contentLabels'
 
@@ -27,12 +31,6 @@ const defaultQuestion: TeacherQuestionRequest = {
     { optionText: '', correct: false, orderIndex: 1 },
   ],
 }
-
-const fieldClassName =
-  'mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500'
-
-const compactOptionInputClassName =
-  'w-full min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500'
 
 const validationId = 'teacher-question-form-errors'
 
@@ -102,6 +100,7 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
   const [xpRewardInput, setXpRewardInput] = useState(String(initialForm.xpReward))
   const [trueFalseAnswer, setTrueFalseAnswer] = useState(getTrueFalseAnswer(initialForm))
   const [validationMessages, setValidationMessages] = useState<string[]>([])
+  const fieldPrefix = useId()
 
   useEffect(() => {
     if (initialValue === previousInitialValue.current) return
@@ -200,200 +199,228 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
   }
 
   return (
-    <form className="space-y-3" aria-describedby={validationMessages.length > 0 ? validationId : undefined} onSubmit={handleSubmit}>
-      <label className="block text-sm font-medium text-gray-700">
-        Loại câu hỏi
-        <select
-          className={fieldClassName}
-          value={form.type}
-          onChange={(event) => {
-            const nextType = event.target.value as TeacherQuestionRequest['type']
-            setForm((current) => ({
-              ...current,
-              type: nextType,
-              correctAnswer: usesTextAnswer(nextType) ? current.correctAnswer : '',
-            }))
-          }}
-        >
-          {questionTypes.map((questionType) => (
-            <option key={questionType} value={questionType}>
-              {questionTypeLabels[questionType]}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label className="block text-sm font-medium text-gray-700">
-        Câu hỏi
-        <textarea
-          className={fieldClassName}
-          value={form.questionText}
-          onChange={(event) => setForm((current) => ({ ...current, questionText: event.target.value }))}
-        />
-      </label>
-
-      {usesTextAnswer(form.type) ? (
-        <label className="block text-sm font-medium text-gray-700">
-          {getCorrectAnswerLabel(form.type)}
-          <input
-            className={fieldClassName}
-            value={form.correctAnswer}
-            onChange={(event) => setForm((current) => ({ ...current, correctAnswer: event.target.value }))}
-          />
-        </label>
-      ) : null}
-
-      <label className="block text-sm font-medium text-gray-700">
-        Giải thích
-        <textarea
-          className={fieldClassName}
-          value={form.explanation}
-          onChange={(event) => setForm((current) => ({ ...current, explanation: event.target.value }))}
-        />
-      </label>
-
-      <div className="grid gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3 sm:grid-cols-3">
-        <label className="block text-sm font-medium text-gray-700">
-          Điểm kiến thức
-          <input
-            className={fieldClassName}
-            value={form.knowledgePoint}
-            onChange={(event) => setForm((current) => ({ ...current, knowledgePoint: event.target.value }))}
-          />
-        </label>
-
-        <label className="block text-sm font-medium text-gray-700">
-          Độ khó
-          <select
-            className={fieldClassName}
-            value={form.difficulty}
-            onChange={(event) => setForm((current) => ({ ...current, difficulty: event.target.value }))}
+    <form aria-describedby={validationMessages.length > 0 ? validationId : undefined} onSubmit={handleSubmit}>
+      <FieldGroup className="gap-3">
+        <Field>
+          <FieldLabel htmlFor={`${fieldPrefix}-type`}>Loại câu hỏi</FieldLabel>
+          <Select
+            value={form.type}
+            disabled={disabled}
+            onValueChange={(value) => {
+              const nextType = value as TeacherQuestionRequest['type']
+              setForm((current) => ({
+                ...current,
+                type: nextType,
+                correctAnswer: usesTextAnswer(nextType) ? current.correctAnswer : '',
+              }))
+            }}
           >
-            {difficultyOptions.map((difficulty) => (
-              <option key={difficulty} value={difficulty}>
-                {difficulty}
-              </option>
-            ))}
-          </select>
-        </label>
+            <SelectTrigger id={`${fieldPrefix}-type`} className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {questionTypes.map((questionType) => (
+                <SelectItem key={questionType} value={questionType}>
+                  {questionTypeLabels[questionType]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
 
-        <label className="block text-sm font-medium text-gray-700">
-          XP
-          <input
-            className={fieldClassName}
-            type="number"
-            value={xpRewardInput}
-            onChange={(event) => setXpRewardInput(event.target.value)}
+        <Field>
+          <FieldLabel htmlFor={`${fieldPrefix}-question-text`}>Câu hỏi</FieldLabel>
+          <Textarea
+            id={`${fieldPrefix}-question-text`}
+            value={form.questionText}
+            onChange={(event) => setForm((current) => ({ ...current, questionText: event.target.value }))}
           />
-        </label>
-      </div>
+        </Field>
 
-      {form.type === 'MULTIPLE_CHOICE' ? (
-        <div className="space-y-2">
-          <p className="text-sm text-gray-600">Trắc nghiệm nhiều lựa chọn, hiện chỉ hỗ trợ một đáp án đúng. Tích vào ô tròn để chọn đáp án đúng.</p>
-          {form.options.map((option, optionIndex) => (
-            <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-2 py-1.5" key={optionIndex}>
-              <input
-                type="radio"
-                name="multipleChoiceCorrectOption"
-                checked={option.correct}
-                onChange={() =>
-                  setForm((current) => ({
-                    ...current,
-                    options: current.options.map((currentOption, currentIndex) =>
-                      currentIndex === optionIndex
-                        ? { ...currentOption, correct: true }
-                        : { ...currentOption, correct: false },
-                    ),
-                  }))
-                }
-                aria-label={`Đánh dấu lựa chọn ${optionIndex + 1} là đáp án đúng`}
-                title="Đáp án đúng"
-                className="size-4 shrink-0 accent-indigo-600"
-              />
-              <input
-                aria-label={`Nội dung lựa chọn ${optionIndex + 1}`}
-                className={compactOptionInputClassName}
-                value={option.optionText}
-                placeholder={`Lựa chọn ${optionIndex + 1}`}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    options: current.options.map((currentOption, currentIndex) =>
-                      currentIndex === optionIndex ? { ...currentOption, optionText: event.target.value } : currentOption,
-                    ),
-                  }))
-                }
-              />
-              <ShadcnButton
+        {usesTextAnswer(form.type) ? (
+          <Field>
+            <FieldLabel htmlFor={`${fieldPrefix}-correct-answer`}>{getCorrectAnswerLabel(form.type)}</FieldLabel>
+            <Input
+              id={`${fieldPrefix}-correct-answer`}
+              value={form.correctAnswer}
+              onChange={(event) => setForm((current) => ({ ...current, correctAnswer: event.target.value }))}
+            />
+          </Field>
+        ) : null}
+
+        <Field>
+          <FieldLabel htmlFor={`${fieldPrefix}-explanation`}>Giải thích</FieldLabel>
+          <Textarea
+            id={`${fieldPrefix}-explanation`}
+            value={form.explanation}
+            onChange={(event) => setForm((current) => ({ ...current, explanation: event.target.value }))}
+          />
+        </Field>
+
+        <div className="grid gap-3 rounded-xl border border-indigo-100 bg-indigo-50/50 p-3 sm:grid-cols-3">
+          <Field>
+            <FieldLabel htmlFor={`${fieldPrefix}-knowledge-point`}>Điểm kiến thức</FieldLabel>
+            <Input
+              id={`${fieldPrefix}-knowledge-point`}
+              className="bg-white"
+              value={form.knowledgePoint}
+              onChange={(event) => setForm((current) => ({ ...current, knowledgePoint: event.target.value }))}
+            />
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor={`${fieldPrefix}-difficulty`}>Độ khó</FieldLabel>
+            <Select value={form.difficulty} disabled={disabled} onValueChange={(value) => setForm((current) => ({ ...current, difficulty: value }))}>
+              <SelectTrigger id={`${fieldPrefix}-difficulty`} className="w-full bg-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {difficultyOptions.map((difficulty) => (
+                  <SelectItem key={difficulty} value={difficulty}>
+                    {difficulty}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor={`${fieldPrefix}-xp`}>XP</FieldLabel>
+            <Input
+              id={`${fieldPrefix}-xp`}
+              className="bg-white"
+              type="number"
+              value={xpRewardInput}
+              onChange={(event) => setXpRewardInput(event.target.value)}
+            />
+          </Field>
+        </div>
+
+        {form.type === 'MULTIPLE_CHOICE' ? (
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-indigo-900/70">
+              Trắc nghiệm nhiều lựa chọn, hiện chỉ hỗ trợ một đáp án đúng. Tích vào ô tròn để chọn đáp án đúng.
+            </p>
+            {form.options.map((option, optionIndex) => (
+              <div className="flex items-center gap-2 rounded-lg border border-indigo-100 bg-white px-2 py-1.5" key={optionIndex}>
+                <input
+                  type="radio"
+                  name={`${fieldPrefix}-multiple-choice-correct-option`}
+                  checked={option.correct}
+                  onChange={() =>
+                    setForm((current) => ({
+                      ...current,
+                      options: current.options.map((currentOption, currentIndex) =>
+                        currentIndex === optionIndex
+                          ? { ...currentOption, correct: true }
+                          : { ...currentOption, correct: false },
+                      ),
+                    }))
+                  }
+                  aria-label={`Đánh dấu lựa chọn ${optionIndex + 1} là đáp án đúng`}
+                  title="Đáp án đúng"
+                  className="size-4 shrink-0 accent-indigo-600"
+                />
+                <Input
+                  aria-label={`Nội dung lựa chọn ${optionIndex + 1}`}
+                  className="min-w-0 flex-1 border-indigo-100 py-1.5"
+                  value={option.optionText}
+                  placeholder={`Lựa chọn ${optionIndex + 1}`}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      options: current.options.map((currentOption, currentIndex) =>
+                        currentIndex === optionIndex ? { ...currentOption, optionText: event.target.value } : currentOption,
+                      ),
+                    }))
+                  }
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="size-8 shrink-0 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                  aria-label={`Xóa lựa chọn ${optionIndex + 1}`}
+                  onClick={() =>
+                    setForm((current) => ({
+                      ...current,
+                      options: current.options.filter((_, currentIndex) => currentIndex !== optionIndex),
+                    }))
+                  }
+                >
+                  <X aria-hidden="true" />
+                </Button>
+              </div>
+            ))}
+
+            <div>
+              <Button
                 type="button"
-                variant="outline"
-                size="icon"
-                className="size-8 shrink-0 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                aria-label={`Xóa lựa chọn ${optionIndex + 1}`}
+                variant="secondary"
                 onClick={() =>
                   setForm((current) => ({
                     ...current,
-                    options: current.options.filter((_, currentIndex) => currentIndex !== optionIndex),
+                    options: [...current.options, { optionText: '', correct: false, orderIndexInput: getNextOptionOrderIndex(current.options) }],
                   }))
                 }
               >
-                <X aria-hidden="true" />
-              </ShadcnButton>
+                <Plus data-icon="inline-start" aria-hidden="true" />
+                Thêm lựa chọn
+              </Button>
             </div>
-          ))}
+          </div>
+        ) : null}
 
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() =>
-              setForm((current) => ({
-                ...current,
-                options: [...current.options, { optionText: '', correct: false, orderIndexInput: getNextOptionOrderIndex(current.options) }],
-              }))
-            }
-          >
-            Thêm lựa chọn
+        {form.type === 'TRUE_FALSE' ? (
+          <FieldGroup className="gap-2">
+            <Field orientation="horizontal">
+              <input
+                type="radio"
+                id={`${fieldPrefix}-true`}
+                name={`${fieldPrefix}-true-false-answer`}
+                value="Đúng"
+                checked={trueFalseAnswer === 'Đúng'}
+                onChange={() => setTrueFalseAnswer('Đúng')}
+                className="size-4 shrink-0 accent-emerald-600"
+              />
+              <FieldLabel htmlFor={`${fieldPrefix}-true`}>Đúng</FieldLabel>
+            </Field>
+            <Field orientation="horizontal">
+              <input
+                type="radio"
+                id={`${fieldPrefix}-false`}
+                name={`${fieldPrefix}-true-false-answer`}
+                value="Sai"
+                checked={trueFalseAnswer === 'Sai'}
+                onChange={() => setTrueFalseAnswer('Sai')}
+                className="size-4 shrink-0 accent-red-500"
+              />
+              <FieldLabel htmlFor={`${fieldPrefix}-false`}>Sai</FieldLabel>
+            </Field>
+          </FieldGroup>
+        ) : null}
+
+        {validationMessages.length > 0 ? (
+          <Alert id={validationId} variant="destructive">
+            <TriangleAlert aria-hidden="true" />
+            <AlertTitle>Không thể lưu câu hỏi</AlertTitle>
+            <AlertDescription>
+              <ul className="list-disc space-y-1 pl-4">
+                {validationMessages.map((validationMessage) => (
+                  <li key={validationMessage}>{validationMessage}</li>
+                ))}
+              </ul>
+            </AlertDescription>
+          </Alert>
+        ) : null}
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="submit" loading={loading} disabled={disabled}>
+            <Save data-icon="inline-start" aria-hidden="true" />
+            {submitLabel}
           </Button>
         </div>
-      ) : null}
-
-      {form.type === 'TRUE_FALSE' ? (
-        <div className="space-y-2 text-sm font-medium text-gray-700">
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="trueFalseAnswer"
-              value="Đúng"
-              checked={trueFalseAnswer === 'Đúng'}
-              onChange={() => setTrueFalseAnswer('Đúng')}
-            />
-            Đúng
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              name="trueFalseAnswer"
-              value="Sai"
-              checked={trueFalseAnswer === 'Sai'}
-              onChange={() => setTrueFalseAnswer('Sai')}
-            />
-            Sai
-          </label>
-        </div>
-      ) : null}
-
-      {validationMessages.length > 0 ? (
-        <div id={validationId} className="space-y-1 text-sm text-red-600" role="alert">
-          {validationMessages.map((validationMessage) => (
-            <p key={validationMessage}>{validationMessage}</p>
-          ))}
-        </div>
-      ) : null}
-
-      <Button type="submit" loading={loading} disabled={disabled}>
-        {submitLabel}
-      </Button>
+      </FieldGroup>
     </form>
   )
 }
