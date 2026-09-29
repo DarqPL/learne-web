@@ -30,11 +30,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   const items = navItemsFor(user.role)
+  const isTeacher = user.role === 'TEACHER'
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
       <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+        <div className={`mx-auto flex h-16 items-center justify-between px-4 sm:px-6 ${isTeacher ? 'w-full' : 'max-w-6xl'}`}>
           <div className="flex items-center gap-6">
             <Link to={homePathFor(user.role)} className="text-xl font-bold text-indigo-600">
               LearnE
@@ -71,7 +72,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>
+      <main className={`w-full flex-1 px-4 py-8 sm:px-6 lg:px-8 ${isTeacher ? '' : 'mx-auto max-w-6xl'}`}>{children}</main>
     </div>
   )
 }
