@@ -51,7 +51,7 @@ export function BuilderContentStep({
 }: BuilderContentStepProps) {
   return (
     <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
-      <Card className={`${cardSoftClassName} min-w-0 self-start`}>
+      <Card className={`${cardSoftClassName} min-w-0 self-start xl:sticky xl:top-24`}>
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -70,8 +70,8 @@ export function BuilderContentStep({
           {course.topics.length === 0 ? (
             <p className="text-sm text-muted-foreground">Chưa có chủ đề nào. Thêm chủ đề đầu tiên để bắt đầu.</p>
           ) : (
-            <ScrollArea className="max-h-[480px] min-w-0 pr-3">
-              <Accordion type="multiple" defaultValue={course.topics.map((topic) => `topic-${topic.id}`)} className="flex flex-col gap-2">
+            <ScrollArea className="h-[420px] min-w-0 pr-3 xl:h-[calc(100vh-22rem)]">
+              <Accordion type="multiple" defaultValue={course.topics[0] ? [`topic-${course.topics[0].id}`] : []} className="flex flex-col gap-2">
                 {course.topics.map((topic) => {
                   const isTopicSelected = selectedTopic?.id === topic.id && !selectedLesson
                   return (
