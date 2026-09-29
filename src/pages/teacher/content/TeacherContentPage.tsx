@@ -316,7 +316,7 @@ export function TeacherContentPage() {
             </Empty>
           ) : (
             <Table>
-              <TableHeader>
+              <TableHeader className="sticky top-0 z-10 [&_th]:bg-white">
                 <TableRow>
                   <TableHead>Tên khóa học</TableHead>
                   <TableHead>Loại</TableHead>
