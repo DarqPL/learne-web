@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react'
-import { BookOpen, Bot, FileCheck2, GraduationCap, LayoutDashboard, Sparkles, UsersRound } from 'lucide-react'
+import { BookOpen, Bot, CreditCard, FileCheck2, GraduationCap, LayoutDashboard, Sparkles, UsersRound } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
 type StudentNavItem = {
@@ -17,6 +17,7 @@ const tabs: StudentNavItem[] = [
   { label: 'AI Tutor', to: '/student/ai-tutor', end: false, icon: Bot, description: 'Luyện hội thoại' },
   { label: 'Khóa học', to: '/student/courses', end: false, icon: BookOpen, description: 'Khám phá nội dung' },
   { label: 'Khóa đã đăng ký', to: '/student/enrollments', end: false, icon: GraduationCap, description: 'Tiếp tục học' },
+  { label: 'Gói học', to: '/student/subscription', end: false, icon: CreditCard, description: 'VIP, PRO, Pro+' },
   { label: 'Giảng viên', to: '/student/teachers', end: false, icon: UsersRound, description: 'Chọn người hướng dẫn' },
 ]
 
