@@ -145,7 +145,7 @@ export function TeacherContentPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(0)
-  }, [searchQuery, statusFilter, courses])
+  }, [searchQuery, statusFilter])
 
   const pageCount = Math.max(1, Math.ceil(filteredCourses.length / PAGE_SIZE))
   const safePage = Math.min(page, pageCount - 1)
@@ -332,6 +332,7 @@ export function TeacherContentPage() {
               </EmptyContent>
             </Empty>
           ) : (
+            <div className="max-h-[60vh] overflow-auto rounded-xl border border-indigo-100">
             <Table>
               <TableHeader className="sticky top-0 z-10 [&_th]:bg-white">
                 <TableRow>
@@ -408,10 +409,11 @@ export function TeacherContentPage() {
                 })}
               </TableBody>
             </Table>
+            </div>
           )}
           {filteredCourses.length > 0 ? (
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-muted-foreground">
+            <nav aria-label="Phân trang khóa học" className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p aria-live="polite" className="text-sm text-muted-foreground">
                 Trang {safePage + 1} / {pageCount} · {filteredCourses.length} khóa học
               </p>
               <div className="flex items-center gap-2">
@@ -457,7 +459,7 @@ export function TeacherContentPage() {
                   <ChevronRight aria-hidden="true" />
                 </Button>
               </div>
-            </div>
+            </nav>
           ) : null}
         </CardContent>
       </Card>
