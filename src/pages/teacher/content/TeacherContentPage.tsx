@@ -470,12 +470,24 @@ export function TeacherContentPage() {
           if (!open) setDeleteTarget(null)
         }}
       >
-        <DialogContent>
+        <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
-            <DialogTitle>Xóa khóa học</DialogTitle>
-            <DialogDescription>
-              {deleteTarget ? `Xóa vĩnh viễn khóa học "${deleteTarget.name}" cùng toàn bộ chủ đề, bài học và câu hỏi? Hành động này không thể hoàn tác.` : null}
-            </DialogDescription>
+            <div className="flex items-start gap-3">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+                <TriangleAlert className="size-5" aria-hidden="true" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <DialogTitle>Xóa khóa học</DialogTitle>
+                <DialogDescription>
+                  {deleteTarget ? (
+                    <>
+                      Xóa vĩnh viễn khóa học <span className="font-semibold text-gray-900">{deleteTarget.name}</span> cùng toàn bộ chủ đề, bài học và câu hỏi?
+                    </>
+                  ) : null}
+                </DialogDescription>
+                <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">Hành động này không thể hoàn tác.</p>
+              </div>
+            </div>
           </DialogHeader>
           <DialogFooter>
             <DialogClose asChild>

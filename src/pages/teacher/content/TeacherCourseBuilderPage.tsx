@@ -695,15 +695,19 @@ export function TeacherCourseBuilderPage() {
           </div>
 
           <Dialog open={submitDialogOpen} onOpenChange={setSubmitDialogOpen}>
-            <DialogContent>
-              <DialogHeader className="gap-3">
-                <div className="flex size-11 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600">
-                  <Send className="size-5" aria-hidden="true" />
+            <DialogContent className="sm:max-w-[480px]">
+              <DialogHeader>
+                <div className="flex items-start gap-3">
+                  <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600">
+                    <Send className="size-5" aria-hidden="true" />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <DialogTitle>Gửi duyệt khóa học</DialogTitle>
+                    <DialogDescription>
+                      Gửi khóa học <span className="font-semibold text-gray-900">{currentCourse.name}</span> để duyệt? Sau khi gửi, nội dung sẽ chuyển sang trạng thái chờ duyệt và chỉ đọc.
+                    </DialogDescription>
+                  </div>
                 </div>
-                <DialogTitle>Gửi duyệt khóa học</DialogTitle>
-                <DialogDescription>
-                  Gửi khóa học &ldquo;{currentCourse.name}&rdquo; để duyệt? Sau khi gửi, nội dung sẽ chuyển sang trạng thái chờ duyệt và chỉ đọc.
-                </DialogDescription>
               </DialogHeader>
               <DialogFooter>
                 <DialogClose asChild>
@@ -720,15 +724,22 @@ export function TeacherCourseBuilderPage() {
           </Dialog>
 
           <Dialog open={deleteCourseDialogOpen} onOpenChange={setDeleteCourseDialogOpen}>
-            <DialogContent>
-              <DialogHeader className="gap-3">
-                <div className="flex size-11 items-center justify-center rounded-2xl bg-red-100 text-red-600">
-                  <TriangleAlert className="size-5" aria-hidden="true" />
+            <DialogContent className="sm:max-w-[480px]">
+              <DialogHeader>
+                <div className="flex items-start gap-3">
+                  <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+                    <TriangleAlert className="size-5" aria-hidden="true" />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <DialogTitle>Xóa khóa học</DialogTitle>
+                    <DialogDescription>
+                      Xóa vĩnh viễn khóa học <span className="font-semibold text-gray-900">{currentCourse.name}</span> cùng toàn bộ chủ đề, bài học và câu hỏi?
+                    </DialogDescription>
+                    <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                      Hành động này không thể hoàn tác.
+                    </p>
+                  </div>
                 </div>
-                <DialogTitle>Xóa khóa học</DialogTitle>
-                <DialogDescription>
-                  Xóa vĩnh viễn khóa học &ldquo;{currentCourse.name}&rdquo; cùng toàn bộ chủ đề, bài học và câu hỏi? Hành động này không thể hoàn tác.
-                </DialogDescription>
               </DialogHeader>
               <DialogFooter>
                 <DialogClose asChild>
@@ -750,20 +761,26 @@ export function TeacherCourseBuilderPage() {
               if (!open) setDeleteTopicTarget(null)
             }}
           >
-            <DialogContent>
-              <DialogHeader className="gap-3">
-                <div className="flex size-11 items-center justify-center rounded-2xl bg-red-100 text-red-600">
-                  <TriangleAlert className="size-5" aria-hidden="true" />
+            <DialogContent className="sm:max-w-[480px]">
+              <DialogHeader>
+                <div className="flex items-start gap-3">
+                  <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+                    <TriangleAlert className="size-5" aria-hidden="true" />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <DialogTitle>Xóa chủ đề</DialogTitle>
+                    <DialogDescription>
+                      {deleteTopicTarget ? (
+                        <>
+                          Xóa vĩnh viễn chủ đề <span className="font-semibold text-gray-900">{deleteTopicTarget.name}</span> cùng toàn bộ bài học và câu hỏi bên trong?
+                        </>
+                      ) : null}
+                    </DialogDescription>
+                    <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                      Hành động này không thể hoàn tác.
+                    </p>
+                  </div>
                 </div>
-                <DialogTitle>Xóa chủ đề</DialogTitle>
-                <DialogDescription>
-                  {deleteTopicTarget ? (
-                    <>
-                      Xóa vĩnh viễn chủ đề &ldquo;{deleteTopicTarget.name}&rdquo; cùng toàn bộ bài học và câu hỏi bên trong? Hành động này không thể
-                      hoàn tác.
-                    </>
-                  ) : null}
-                </DialogDescription>
               </DialogHeader>
               <DialogFooter>
                 <DialogClose asChild>
@@ -792,19 +809,26 @@ export function TeacherCourseBuilderPage() {
               if (!open) setDeleteLessonTarget(null)
             }}
           >
-            <DialogContent>
-              <DialogHeader className="gap-3">
-                <div className="flex size-11 items-center justify-center rounded-2xl bg-red-100 text-red-600">
-                  <TriangleAlert className="size-5" aria-hidden="true" />
+            <DialogContent className="sm:max-w-[480px]">
+              <DialogHeader>
+                <div className="flex items-start gap-3">
+                  <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+                    <TriangleAlert className="size-5" aria-hidden="true" />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <DialogTitle>Xóa bài học</DialogTitle>
+                    <DialogDescription>
+                      {deleteLessonTarget ? (
+                        <>
+                          Xóa vĩnh viễn bài học <span className="font-semibold text-gray-900">{deleteLessonTarget.title}</span> cùng toàn bộ câu hỏi bên trong?
+                        </>
+                      ) : null}
+                    </DialogDescription>
+                    <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                      Hành động này không thể hoàn tác.
+                    </p>
+                  </div>
                 </div>
-                <DialogTitle>Xóa bài học</DialogTitle>
-                <DialogDescription>
-                  {deleteLessonTarget ? (
-                    <>
-                      Xóa vĩnh viễn bài học &ldquo;{deleteLessonTarget.title}&rdquo; cùng toàn bộ câu hỏi bên trong? Hành động này không thể hoàn tác.
-                    </>
-                  ) : null}
-                </DialogDescription>
               </DialogHeader>
               <DialogFooter>
                 <DialogClose asChild>
