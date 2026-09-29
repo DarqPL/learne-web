@@ -158,47 +158,13 @@ export function TeacherContentPage() {
             Quản lý thư viện khóa học của bạn. Tạo khóa học mới, theo dõi trạng thái duyệt và mở builder để xây dựng chủ đề, bài học, câu hỏi.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
-            <div className="flex flex-1 flex-col gap-2">
-              <Label htmlFor="teacher-content-search">Tìm kiếm khóa học</Label>
-              <div className="relative">
-                <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="teacher-content-search"
-                  type="search"
-                  placeholder="Nhập tên khóa học..."
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  className="pl-9"
-                />
-              </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="teacher-content-status">Trạng thái</Label>
-              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as StatusFilter)}>
-                <SelectTrigger id="teacher-content-status" className="w-full lg:w-56">
-                  <SelectValue placeholder="Tất cả trạng thái" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
-                    {statusFilterOptions.map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {contentStatusLabels[status]}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-            <Button asChild>
-              <a href="#tao-khoa-hoc">
-                <Plus data-icon="inline-start" aria-hidden="true" />
-                Tạo khóa học
-              </a>
-            </Button>
-          </div>
+        <CardContent>
+          <Button asChild>
+            <a href="#tao-khoa-hoc">
+              <Plus data-icon="inline-start" aria-hidden="true" />
+              Tạo khóa học
+            </a>
+          </Button>
         </CardContent>
       </Card>
 
@@ -245,6 +211,45 @@ export function TeacherContentPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
+            <div className="flex flex-1 flex-col gap-2">
+              <Label htmlFor="teacher-content-search">Tìm kiếm khóa học</Label>
+              <div className="relative">
+                <Search aria-hidden="true" className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="teacher-content-search"
+                  type="search"
+                  placeholder="Nhập tên khóa học..."
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="teacher-content-status">Trạng thái</Label>
+              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as StatusFilter)}>
+                <SelectTrigger id="teacher-content-status" className="w-full lg:w-56">
+                  <SelectValue placeholder="Tất cả trạng thái" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
+                    {statusFilterOptions.map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {contentStatusLabels[status]}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+            {hasActiveFilter ? (
+              <Button variant="outline" onClick={handleClearFilters}>
+                Xóa bộ lọc
+              </Button>
+            ) : null}
+          </div>
           {courses === null ? (
             <Table>
               <TableHeader>
