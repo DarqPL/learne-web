@@ -113,6 +113,9 @@ const StudentLessonQuizPage = lazy(() =>
 const StudentQuizResultPage = lazy(() =>
   import('./pages/student/learning/StudentQuizResultPage').then((module) => ({ default: module.StudentQuizResultPage })),
 )
+const StudentPaymentPage = lazy(() =>
+  import('./pages/student/payment/StudentPaymentPage').then((module) => ({ default: module.StudentPaymentPage })),
+)
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then((module) => ({ default: module.NotFoundPage })))
 
 function RouteFallback() {
@@ -157,6 +160,7 @@ export default function App() {
                 <Route path="/student/enrollments/:enrollmentId/lessons/:lessonId" element={<StudentLessonDetailPage />} />
                 <Route path="/student/enrollments/:enrollmentId/lessons/:lessonId/quiz" element={<StudentLessonQuizPage />} />
                 <Route path="/student/quiz-attempts/:attemptId" element={<StudentQuizResultPage />} />
+                <Route path="/student/payment/orders/:orderId" element={<StudentPaymentPage />} />
               </Route>
             </Route>
             <Route element={<RequireRole role="TEACHER" />}>
