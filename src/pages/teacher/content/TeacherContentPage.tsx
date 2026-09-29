@@ -467,10 +467,11 @@ export function TeacherContentPage() {
       <Dialog
         open={deleteTarget !== null}
         onOpenChange={(open) => {
+          if (!open && busy) return
           if (!open) setDeleteTarget(null)
         }}
       >
-        <DialogContent className="sm:max-w-[480px]">
+        <DialogContent className="sm:max-w-[480px]" showCloseButton={!busy}>
           <DialogHeader>
             <div className="flex items-start gap-3">
               <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
@@ -484,8 +485,8 @@ export function TeacherContentPage() {
                       Xóa vĩnh viễn khóa học <span className="font-semibold text-gray-900">{deleteTarget.name}</span> cùng toàn bộ chủ đề, bài học và câu hỏi?
                     </>
                   ) : null}
+                  <span className="mt-2 block rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">Hành động này không thể hoàn tác.</span>
                 </DialogDescription>
-                <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">Hành động này không thể hoàn tác.</p>
               </div>
             </div>
           </DialogHeader>

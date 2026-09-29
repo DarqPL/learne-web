@@ -694,8 +694,14 @@ export function TeacherCourseBuilderPage() {
             </div>
           </div>
 
-          <Dialog open={submitDialogOpen} onOpenChange={setSubmitDialogOpen}>
-            <DialogContent className="sm:max-w-[480px]">
+          <Dialog
+            open={submitDialogOpen}
+            onOpenChange={(open) => {
+              if (!open && busy) return
+              setSubmitDialogOpen(open)
+            }}
+          >
+            <DialogContent className="sm:max-w-[480px]" showCloseButton={!busy}>
               <DialogHeader>
                 <div className="flex items-start gap-3">
                   <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600">
@@ -723,8 +729,14 @@ export function TeacherCourseBuilderPage() {
             </DialogContent>
           </Dialog>
 
-          <Dialog open={deleteCourseDialogOpen} onOpenChange={setDeleteCourseDialogOpen}>
-            <DialogContent className="sm:max-w-[480px]">
+          <Dialog
+            open={deleteCourseDialogOpen}
+            onOpenChange={(open) => {
+              if (!open && busy) return
+              setDeleteCourseDialogOpen(open)
+            }}
+          >
+            <DialogContent className="sm:max-w-[480px]" showCloseButton={!busy}>
               <DialogHeader>
                 <div className="flex items-start gap-3">
                   <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
@@ -734,10 +746,10 @@ export function TeacherCourseBuilderPage() {
                     <DialogTitle>Xóa khóa học</DialogTitle>
                     <DialogDescription>
                       Xóa vĩnh viễn khóa học <span className="font-semibold text-gray-900">{currentCourse.name}</span> cùng toàn bộ chủ đề, bài học và câu hỏi?
+                      <span className="mt-2 block rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                        Hành động này không thể hoàn tác.
+                      </span>
                     </DialogDescription>
-                    <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-                      Hành động này không thể hoàn tác.
-                    </p>
                   </div>
                 </div>
               </DialogHeader>
@@ -758,10 +770,11 @@ export function TeacherCourseBuilderPage() {
           <Dialog
             open={deleteTopicTarget !== null}
             onOpenChange={(open) => {
+              if (!open && busy) return
               if (!open) setDeleteTopicTarget(null)
             }}
           >
-            <DialogContent className="sm:max-w-[480px]">
+            <DialogContent className="sm:max-w-[480px]" showCloseButton={!busy}>
               <DialogHeader>
                 <div className="flex items-start gap-3">
                   <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
@@ -774,11 +787,13 @@ export function TeacherCourseBuilderPage() {
                         <>
                           Xóa vĩnh viễn chủ đề <span className="font-semibold text-gray-900">{deleteTopicTarget.name}</span> cùng toàn bộ bài học và câu hỏi bên trong?
                         </>
-                      ) : null}
+                      ) : (
+                        'Không xác định.'
+                      )}
+                      <span className="mt-2 block rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                        Hành động này không thể hoàn tác.
+                      </span>
                     </DialogDescription>
-                    <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-                      Hành động này không thể hoàn tác.
-                    </p>
                   </div>
                 </div>
               </DialogHeader>
@@ -806,10 +821,11 @@ export function TeacherCourseBuilderPage() {
           <Dialog
             open={deleteLessonTarget !== null}
             onOpenChange={(open) => {
+              if (!open && busy) return
               if (!open) setDeleteLessonTarget(null)
             }}
           >
-            <DialogContent className="sm:max-w-[480px]">
+            <DialogContent className="sm:max-w-[480px]" showCloseButton={!busy}>
               <DialogHeader>
                 <div className="flex items-start gap-3">
                   <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
@@ -822,11 +838,13 @@ export function TeacherCourseBuilderPage() {
                         <>
                           Xóa vĩnh viễn bài học <span className="font-semibold text-gray-900">{deleteLessonTarget.title}</span> cùng toàn bộ câu hỏi bên trong?
                         </>
-                      ) : null}
+                      ) : (
+                        'Không xác định.'
+                      )}
+                      <span className="mt-2 block rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                        Hành động này không thể hoàn tác.
+                      </span>
                     </DialogDescription>
-                    <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-                      Hành động này không thể hoàn tác.
-                    </p>
                   </div>
                 </div>
               </DialogHeader>
