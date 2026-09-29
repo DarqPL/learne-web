@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { BookOpen, ClipboardList, FileQuestion, GraduationCap, TriangleAlert, UserRoundCog } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
-import { Badge } from '@/components/shadcn/ui/badge'
 import { Button } from '@/components/shadcn/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/shadcn/ui/card'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/shadcn/ui/empty'
@@ -91,7 +90,7 @@ export function TeacherDashboardPage() {
     <div className="flex flex-col gap-6">
       <Card className={cardSoftClassName}>
         <CardHeader>
-          <Badge variant="secondary">Dashboard Giảng viên</Badge>
+          <p className="text-sm font-semibold uppercase tracking-wide text-indigo-600">Dashboard Giảng viên</p>
           <CardTitle className="text-2xl">Chào mừng {user?.fullName ?? 'giảng viên'}!</CardTitle>
           <CardDescription>
             Theo dõi nội dung học tập, tình trạng kiểm duyệt và tiếp tục hoàn thiện hồ sơ giảng viên.
