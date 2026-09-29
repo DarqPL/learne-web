@@ -696,7 +696,10 @@ export function TeacherCourseBuilderPage() {
 
           <Dialog open={submitDialogOpen} onOpenChange={setSubmitDialogOpen}>
             <DialogContent>
-              <DialogHeader>
+              <DialogHeader className="gap-3">
+                <div className="flex size-11 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600">
+                  <Send className="size-5" aria-hidden="true" />
+                </div>
                 <DialogTitle>Gửi duyệt khóa học</DialogTitle>
                 <DialogDescription>
                   Gửi khóa học &ldquo;{currentCourse.name}&rdquo; để duyệt? Sau khi gửi, nội dung sẽ chuyển sang trạng thái chờ duyệt và chỉ đọc.
@@ -718,7 +721,10 @@ export function TeacherCourseBuilderPage() {
 
           <Dialog open={deleteCourseDialogOpen} onOpenChange={setDeleteCourseDialogOpen}>
             <DialogContent>
-              <DialogHeader>
+              <DialogHeader className="gap-3">
+                <div className="flex size-11 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+                  <TriangleAlert className="size-5" aria-hidden="true" />
+                </div>
                 <DialogTitle>Xóa khóa học</DialogTitle>
                 <DialogDescription>
                   Xóa vĩnh viễn khóa học &ldquo;{currentCourse.name}&rdquo; cùng toàn bộ chủ đề, bài học và câu hỏi? Hành động này không thể hoàn tác.
@@ -745,7 +751,10 @@ export function TeacherCourseBuilderPage() {
             }}
           >
             <DialogContent>
-              <DialogHeader>
+              <DialogHeader className="gap-3">
+                <div className="flex size-11 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+                  <TriangleAlert className="size-5" aria-hidden="true" />
+                </div>
                 <DialogTitle>Xóa chủ đề</DialogTitle>
                 <DialogDescription>
                   {deleteTopicTarget ? (
@@ -784,7 +793,10 @@ export function TeacherCourseBuilderPage() {
             }}
           >
             <DialogContent>
-              <DialogHeader>
+              <DialogHeader className="gap-3">
+                <div className="flex size-11 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+                  <TriangleAlert className="size-5" aria-hidden="true" />
+                </div>
                 <DialogTitle>Xóa bài học</DialogTitle>
                 <DialogDescription>
                   {deleteLessonTarget ? (
