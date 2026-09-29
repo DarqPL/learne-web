@@ -23,10 +23,9 @@ import type {
   TeacherTopicRequest,
 } from '../../../lib/api/types'
 import { LessonForm } from './LessonForm'
-import { QuestionForm } from './QuestionForm'
 import { TopicForm } from './TopicForm'
 import { countLessons, countQuestions } from './contentUtils'
-import { getCourseInitialValue, getLessonInitialValue, getQuestionInitialValue, getTopicInitialValue } from './teacherContentMappers'
+import { getCourseInitialValue, getLessonInitialValue, getTopicInitialValue } from './teacherContentMappers'
 import { BuilderContentStep } from './workspace/BuilderContentStep'
 import { BuilderInfoStep } from './workspace/BuilderInfoStep'
 import { BuilderQuestionsStep } from './workspace/BuilderQuestionsStep'
@@ -160,13 +159,10 @@ export function CourseBuilderWorkspace({
   const lessonDialogTopic = findTopic(course, lessonDialogTopicId)
   const allLessons = course.topics.flatMap((topic) => topic.lessons)
   const activeQuestionLesson = findLesson(course, questionLessonId) ?? allLessons[0] ?? null
-  const dialogQuestion = questionDialog?.mode === 'edit' ? findQuestion(course, questionDialog.questionId) : null
-  const dialogCreateLesson = questionDialog?.mode === 'create' ? findLesson(course, questionDialog.lessonId) : null
 
   const courseInitialValue = useMemo(() => getCourseInitialValue(course), [course])
   const topicInitialValue = useMemo(() => (selectedTopic && !selectedLesson ? getTopicInitialValue(selectedTopic) : null), [selectedTopic, selectedLesson])
   const lessonInitialValue = useMemo(() => (selectedLesson ? getLessonInitialValue(selectedLesson) : null), [selectedLesson])
-  const questionInitialValue = useMemo(() => (dialogQuestion ? getQuestionInitialValue(dialogQuestion) : null), [dialogQuestion])
 
   const handleStepChange = (nextStep: BuilderStep) => {
     setStep(nextStep)
@@ -288,8 +284,11 @@ export function CourseBuilderWorkspace({
           course={course}
           busy={busy}
           editable={editable}
+          action={action}
+          formResetVersion={formResetVersion}
           activeLesson={activeQuestionLesson}
           previewMode={previewMode}
+          questionDialog={questionDialog}
           onLessonChange={handleQuestionLessonChange}
           onTogglePreview={() => setPreviewMode((value) => !value)}
           onAddQuestion={(lessonId) => {
@@ -297,6 +296,9 @@ export function CourseBuilderWorkspace({
             setQuestionDialog({ mode: 'create', lessonId })
           }}
           onEditQuestion={(questionId) => setQuestionDialog({ mode: 'edit', questionId })}
+          onCancelQuestion={() => setQuestionDialog(null)}
+          onCreateQuestion={onCreateQuestion}
+          onUpdateQuestion={onUpdateQuestion}
           onDeleteRequest={setDeleteTarget}
         />
       ) : null}
@@ -358,42 +360,6 @@ export function CourseBuilderWorkspace({
               disabled={action !== null && action !== `create-lesson-${lessonDialogTopic.id}`}
               submitLabel="Tạo bài học"
               onSubmit={(payload) => void onCreateLesson(lessonDialogTopic, payload).then(() => setLessonDialogTopicId(null))}
-            />
-          ) : null}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
-        open={questionDialog !== null}
-        onOpenChange={(open) => {
-          if (!open && busy) return
-          if (!open) setQuestionDialog(null)
-        }}
-      >
-        <DialogContent className="sm:max-w-[480px]" showCloseButton={!busy}>
-          <DialogHeader>
-            <DialogTitle>{questionDialog?.mode === 'edit' ? 'Chỉnh sửa câu hỏi' : 'Thêm câu hỏi'}</DialogTitle>
-            <DialogDescription>
-              {dialogCreateLesson ? `Tạo câu hỏi mới trong bài học "${dialogCreateLesson.title}".` : null}
-              {dialogQuestion ? 'Cập nhật nội dung, đáp án và XP của câu hỏi này.' : null}
-            </DialogDescription>
-          </DialogHeader>
-          {questionDialog?.mode === 'create' && dialogCreateLesson ? (
-            <QuestionForm
-              key={`create-question-${dialogCreateLesson.id}-${formResetVersion}`}
-              loading={action === `create-question-${dialogCreateLesson.id}`}
-              disabled={action !== null && action !== `create-question-${dialogCreateLesson.id}`}
-              submitLabel="Tạo câu hỏi"
-              onSubmit={(payload) => void onCreateQuestion(dialogCreateLesson.id, payload).then(() => setQuestionDialog(null))}
-            />
-          ) : null}
-          {questionDialog?.mode === 'edit' && dialogQuestion && questionInitialValue ? (
-            <QuestionForm
-              initialValue={questionInitialValue}
-              loading={action === `update-question-${dialogQuestion.id}`}
-              disabled={action !== null && action !== `update-question-${dialogQuestion.id}`}
-              submitLabel="Lưu câu hỏi"
-              onSubmit={(payload) => void onUpdateQuestion(dialogQuestion, payload).then(() => setQuestionDialog(null))}
             />
           ) : null}
         </DialogContent>

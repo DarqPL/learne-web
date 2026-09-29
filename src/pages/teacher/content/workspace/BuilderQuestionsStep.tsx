@@ -1,23 +1,32 @@
-import { Eye, EyeOff, Pencil, Plus, Trash2 } from 'lucide-react'
+import { useEffect, useMemo, useRef } from 'react'
+import { Eye, EyeOff, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { Button } from '@/components/shadcn/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shadcn/ui/card'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/shadcn/ui/card'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/shadcn/ui/select'
 import { Separator } from '@/components/shadcn/ui/separator'
-import type { TeacherCourse, TeacherLesson } from '../../../../lib/api/types'
+import type { TeacherCourse, TeacherLesson, TeacherQuestion, TeacherQuestionRequest } from '../../../../lib/api/types'
+import { QuestionForm } from '../QuestionForm'
 import { TeacherContentStatusBadge } from '../TeacherContentStatusBadge'
 import { questionTypeLabels } from '../contentLabels'
-import { cardSoftClassName, type DeleteTarget } from './builderModel'
+import { getQuestionInitialValue } from '../teacherContentMappers'
+import { cardSoftClassName, findLesson, findQuestion, type DeleteTarget, type QuestionDialogState } from './builderModel'
 
 interface BuilderQuestionsStepProps {
   course: TeacherCourse
   busy: boolean
   editable: boolean
+  action: string | null
+  formResetVersion: number
   activeLesson: TeacherLesson | null
   previewMode: boolean
+  questionDialog: QuestionDialogState | null
   onLessonChange: (lessonId: number) => void
   onTogglePreview: () => void
   onAddQuestion: (lessonId: number) => void
   onEditQuestion: (questionId: number) => void
+  onCancelQuestion: () => void
+  onCreateQuestion: (lessonId: number, payload: TeacherQuestionRequest) => Promise<void>
+  onUpdateQuestion: (question: TeacherQuestion, payload: TeacherQuestionRequest) => Promise<void>
   onDeleteRequest: (target: DeleteTarget) => void
 }
 
@@ -25,15 +34,37 @@ export function BuilderQuestionsStep({
   course,
   busy,
   editable,
+  action,
+  formResetVersion,
   activeLesson,
   previewMode,
+  questionDialog,
   onLessonChange,
   onTogglePreview,
   onAddQuestion,
   onEditQuestion,
+  onCancelQuestion,
+  onCreateQuestion,
+  onUpdateQuestion,
   onDeleteRequest,
 }: BuilderQuestionsStepProps) {
   const hasLessons = course.topics.some((topic) => topic.lessons.length > 0)
+  const dialogCreateLesson = questionDialog?.mode === 'create' ? findLesson(course, questionDialog.lessonId) : null
+  const dialogQuestion = questionDialog?.mode === 'edit' ? findQuestion(course, questionDialog.questionId) : null
+  const questionInitialValue = useMemo(
+    () => (dialogQuestion ? getQuestionInitialValue(dialogQuestion) : null),
+    [dialogQuestion],
+  )
+  const editorOpen =
+    (questionDialog?.mode === 'create' && dialogCreateLesson !== null) ||
+    (questionDialog?.mode === 'edit' && dialogQuestion !== null && questionInitialValue !== null)
+  const editorRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (questionDialog && editorOpen) {
+      editorRef.current?.scrollIntoView({ block: 'nearest' })
+    }
+  }, [questionDialog, editorOpen])
 
   return (
     <div className="flex flex-col gap-6">
@@ -165,6 +196,61 @@ export function BuilderQuestionsStep({
                 </Card>
               ))
             )}
+            {editorOpen ? (
+              <Card ref={editorRef} className={cardSoftClassName}>
+                <CardHeader>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <CardTitle>
+                        {questionDialog?.mode === 'edit' ? 'Sửa câu hỏi' : `Thêm câu hỏi vào ${dialogCreateLesson?.title ?? ''}`}
+                      </CardTitle>
+                      <CardDescription>
+                        {questionDialog?.mode === 'edit'
+                          ? 'Cập nhật nội dung, đáp án và XP của câu hỏi này.'
+                          : dialogCreateLesson
+                            ? `Tạo câu hỏi mới trong bài học "${dialogCreateLesson.title}".`
+                            : null}
+                      </CardDescription>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-8 shrink-0"
+                      aria-label="Đóng trình sửa câu hỏi"
+                      disabled={busy}
+                      onClick={onCancelQuestion}
+                    >
+                      <X aria-hidden="true" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {questionDialog?.mode === 'create' && dialogCreateLesson ? (
+                    <QuestionForm
+                      key={`create-question-${dialogCreateLesson.id}-${formResetVersion}`}
+                      loading={action === `create-question-${dialogCreateLesson.id}`}
+                      disabled={action !== null && action !== `create-question-${dialogCreateLesson.id}`}
+                      submitLabel="Tạo câu hỏi"
+                      onSubmit={(payload) => void onCreateQuestion(dialogCreateLesson.id, payload).then(() => onCancelQuestion())}
+                    />
+                  ) : null}
+                  {questionDialog?.mode === 'edit' && dialogQuestion && questionInitialValue ? (
+                    <QuestionForm
+                      initialValue={questionInitialValue}
+                      loading={action === `update-question-${dialogQuestion.id}`}
+                      disabled={action !== null && action !== `update-question-${dialogQuestion.id}`}
+                      submitLabel="Lưu câu hỏi"
+                      onSubmit={(payload) => void onUpdateQuestion(dialogQuestion, payload).then(() => onCancelQuestion())}
+                    />
+                  ) : null}
+                </CardContent>
+                <CardFooter>
+                  <Button variant="outline" disabled={busy} onClick={onCancelQuestion}>
+                    Hủy
+                  </Button>
+                </CardFooter>
+              </Card>
+            ) : null}
           </div>
         )
       ) : null}

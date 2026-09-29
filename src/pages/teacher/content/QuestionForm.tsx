@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { X } from 'lucide-react'
+import { Button as ShadcnButton } from '../../../components/shadcn/ui/button'
 import { Button } from '../../../components/ui/Button'
 import type { TeacherQuestionOptionRequest, TeacherQuestionRequest } from '../../../lib/api/types'
 import { questionTypeLabels, questionTypes } from './contentLabels'
@@ -28,6 +30,9 @@ const defaultQuestion: TeacherQuestionRequest = {
 
 const fieldClassName =
   'mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500'
+
+const compactOptionInputClassName =
+  'w-full min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500'
 
 const validationId = 'teacher-question-form-errors'
 
@@ -247,49 +252,70 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
         />
       </label>
 
-      <label className="block text-sm font-medium text-gray-700">
-        Điểm kiến thức
-        <input
-          className={fieldClassName}
-          value={form.knowledgePoint}
-          onChange={(event) => setForm((current) => ({ ...current, knowledgePoint: event.target.value }))}
-        />
-      </label>
+      <div className="grid gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3 sm:grid-cols-3">
+        <label className="block text-sm font-medium text-gray-700">
+          Điểm kiến thức
+          <input
+            className={fieldClassName}
+            value={form.knowledgePoint}
+            onChange={(event) => setForm((current) => ({ ...current, knowledgePoint: event.target.value }))}
+          />
+        </label>
 
-      <label className="block text-sm font-medium text-gray-700">
-        Độ khó
-        <select
-          className={fieldClassName}
-          value={form.difficulty}
-          onChange={(event) => setForm((current) => ({ ...current, difficulty: event.target.value }))}
-        >
-          {difficultyOptions.map((difficulty) => (
-            <option key={difficulty} value={difficulty}>
-              {difficulty}
-            </option>
-          ))}
-        </select>
-      </label>
+        <label className="block text-sm font-medium text-gray-700">
+          Độ khó
+          <select
+            className={fieldClassName}
+            value={form.difficulty}
+            onChange={(event) => setForm((current) => ({ ...current, difficulty: event.target.value }))}
+          >
+            {difficultyOptions.map((difficulty) => (
+              <option key={difficulty} value={difficulty}>
+                {difficulty}
+              </option>
+            ))}
+          </select>
+        </label>
 
-      <label className="block text-sm font-medium text-gray-700">
-        XP
-        <input
-          className={fieldClassName}
-          type="number"
-          value={xpRewardInput}
-          onChange={(event) => setXpRewardInput(event.target.value)}
-        />
-      </label>
+        <label className="block text-sm font-medium text-gray-700">
+          XP
+          <input
+            className={fieldClassName}
+            type="number"
+            value={xpRewardInput}
+            onChange={(event) => setXpRewardInput(event.target.value)}
+          />
+        </label>
+      </div>
 
       {form.type === 'MULTIPLE_CHOICE' ? (
         <div className="space-y-2">
-          <p className="text-sm text-gray-600">Trắc nghiệm nhiều lựa chọn, hiện chỉ hỗ trợ một đáp án đúng.</p>
+          <p className="text-sm text-gray-600">Trắc nghiệm nhiều lựa chọn, hiện chỉ hỗ trợ một đáp án đúng. Tích vào ô tròn để chọn đáp án đúng.</p>
           {form.options.map((option, optionIndex) => (
-            <div className="grid gap-2 rounded-lg border border-gray-200 p-3 md:grid-cols-[1fr_auto]" key={optionIndex}>
+            <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-2 py-1.5" key={optionIndex}>
+              <input
+                type="radio"
+                name="multipleChoiceCorrectOption"
+                checked={option.correct}
+                onChange={() =>
+                  setForm((current) => ({
+                    ...current,
+                    options: current.options.map((currentOption, currentIndex) =>
+                      currentIndex === optionIndex
+                        ? { ...currentOption, correct: true }
+                        : { ...currentOption, correct: false },
+                    ),
+                  }))
+                }
+                aria-label={`Đánh dấu lựa chọn ${optionIndex + 1} là đáp án đúng`}
+                title="Đáp án đúng"
+                className="size-4 shrink-0 accent-indigo-600"
+              />
               <input
                 aria-label={`Nội dung lựa chọn ${optionIndex + 1}`}
-                className={fieldClassName}
+                className={compactOptionInputClassName}
                 value={option.optionText}
+                placeholder={`Lựa chọn ${optionIndex + 1}`}
                 onChange={(event) =>
                   setForm((current) => ({
                     ...current,
@@ -299,27 +325,12 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
                   }))
                 }
               />
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <input
-                  type="radio"
-                  name="multipleChoiceCorrectOption"
-                  checked={option.correct}
-                  onChange={() =>
-                    setForm((current) => ({
-                      ...current,
-                      options: current.options.map((currentOption, currentIndex) =>
-                        currentIndex === optionIndex
-                          ? { ...currentOption, correct: true }
-                          : { ...currentOption, correct: false },
-                      ),
-                    }))
-                  }
-                />
-                Đúng
-              </label>
-              <Button
+              <ShadcnButton
                 type="button"
-                variant="secondary"
+                variant="outline"
+                size="icon"
+                className="size-8 shrink-0 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                aria-label={`Xóa lựa chọn ${optionIndex + 1}`}
                 onClick={() =>
                   setForm((current) => ({
                     ...current,
@@ -327,8 +338,8 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
                   }))
                 }
               >
-                Xóa
-              </Button>
+                <X aria-hidden="true" />
+              </ShadcnButton>
             </div>
           ))}
 
