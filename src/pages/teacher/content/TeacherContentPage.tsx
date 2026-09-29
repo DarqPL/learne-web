@@ -333,8 +333,8 @@ export function TeacherContentPage() {
             </Empty>
           ) : (
             <div className="max-h-[60vh] overflow-auto rounded-xl border border-indigo-100">
-            <Table>
-              <TableHeader className="sticky top-0 z-10 [&_th]:bg-white">
+            <Table className="[&_tr]:border-indigo-100/70">
+              <TableHeader className="sticky top-0 z-10 [&_th]:bg-indigo-50">
                 <TableRow>
                   <TableHead>Tên khóa học</TableHead>
                   <TableHead>Loại</TableHead>
