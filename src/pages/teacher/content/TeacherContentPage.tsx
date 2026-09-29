@@ -294,8 +294,8 @@ export function TeacherContentPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-2">
-                        <Skeleton className="h-9 w-9" />
-                        <Skeleton className="h-9 w-9" />
+                        <Skeleton className="size-8" />
+                        <Skeleton className="size-8" />
                       </div>
                     </TableCell>
                   </TableRow>
@@ -374,7 +374,7 @@ export function TeacherContentPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center justify-end gap-2">
-                          <Button asChild size="icon" variant="outline" title="Mở builder">
+                          <Button asChild size="icon" variant="outline" title="Mở builder" className="size-8">
                             <Link to={`/teacher/content/courses/${course.id}`} aria-label={`Mở builder khóa học ${course.name}`}>
                               <Pencil aria-hidden="true" />
                             </Link>
@@ -388,6 +388,7 @@ export function TeacherContentPage() {
                               disabled={busy}
                               loading={action === `submit-${course.id}`}
                               onClick={() => void handleSubmitCourse(course)}
+                              className="size-8"
                             >
                               <Send aria-hidden="true" />
                             </Button>
@@ -399,6 +400,7 @@ export function TeacherContentPage() {
                             aria-label={`Xóa khóa học ${course.name}`}
                             disabled={busy}
                             onClick={() => setDeleteTarget(course)}
+                            className="size-8"
                           >
                             <Trash2 aria-hidden="true" />
                           </Button>
