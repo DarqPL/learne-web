@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { BookOpen, Info, Pencil, Plus, Search, Send, Trash2, TriangleAlert } from 'lucide-react'
+import { BookOpen, ChevronLeft, ChevronRight, Info, Pencil, Plus, Search, Send, Trash2, TriangleAlert } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
 import { Button } from '@/components/shadcn/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shadcn/ui/card'
@@ -28,6 +28,8 @@ const statusFilterOptions = Object.keys(contentStatusLabels) as ContentStatus[]
 
 const skeletonRows = [0, 1, 2]
 
+const PAGE_SIZE = 10
+
 function formatCourseContent(course: TeacherCourse) {
   return `${course.topics.length} chủ đề · ${countLessons(course)} bài học · ${countQuestions(course)} câu hỏi`
 }
@@ -41,6 +43,7 @@ export function TeacherContentPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL')
   const [deleteTarget, setDeleteTarget] = useState<TeacherCourse | null>(null)
+  const [page, setPage] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -138,6 +141,15 @@ export function TeacherContentPage() {
       return matchesQuery && matchesStatus
     })
   }, [courses, searchQuery, statusFilter])
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPage(0)
+  }, [searchQuery, statusFilter, courses])
+
+  const pageCount = Math.max(1, Math.ceil(filteredCourses.length / PAGE_SIZE))
+  const safePage = Math.min(page, pageCount - 1)
+  const pagedCourses = filteredCourses.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE)
 
   const hasActiveFilter = searchQuery.trim().length > 0 || statusFilter !== 'ALL'
 
@@ -332,7 +344,7 @@ export function TeacherContentPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCourses.map((course) => {
+                {pagedCourses.map((course) => {
                   const submittable = canSubmitCourse(course)
                   return (
                     <TableRow key={course.id}>
@@ -397,6 +409,56 @@ export function TeacherContentPage() {
               </TableBody>
             </Table>
           )}
+          {filteredCourses.length > 0 ? (
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-muted-foreground">
+                Trang {safePage + 1} / {pageCount} · {filteredCourses.length} khóa học
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-label="Trang trước"
+                  disabled={safePage === 0}
+                  onClick={() => setPage(safePage - 1)}
+                >
+                  <ChevronLeft aria-hidden="true" />
+                  Trước
+                </Button>
+                {pageCount <= 7 ? (
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: pageCount }, (_, i) => (
+                      <Button
+                        key={i}
+                        variant={safePage === i ? 'default' : 'outline'}
+                        size="icon"
+                        className="size-8"
+                        aria-label={`Trang ${i + 1}`}
+                        aria-current={safePage === i ? 'page' : undefined}
+                        onClick={() => setPage(i)}
+                      >
+                        {i + 1}
+                      </Button>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-sm text-muted-foreground" aria-live="polite">
+                    {safePage + 1} / {pageCount}
+                  </span>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-label="Trang tiếp"
+                  disabled={safePage >= pageCount - 1}
+                  onClick={() => setPage(safePage + 1)}
+                >
+                  Tiếp
+                  <ChevronRight aria-hidden="true" />
+                </Button>
+              </div>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 
