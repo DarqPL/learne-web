@@ -1,3 +1,4 @@
+import type * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
@@ -69,7 +70,7 @@ function EmptyTitle({ className, ...props }: React.ComponentProps<"div">) {
 
 function EmptyDescription({ className, ...props }: React.ComponentProps<"p">) {
   return (
-    <div
+    <p
       data-slot="empty-description"
       className={cn(
         "text-sm/relaxed text-muted-foreground [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
