@@ -40,7 +40,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link to={homePathFor(user.role)} className="shrink-0 text-xl font-bold text-indigo-600">
               LearnE
             </Link>
-            <nav className="hidden min-w-0 items-center gap-1 md:flex">
+            <nav className={`${isTeacher ? 'hidden md:flex' : 'flex'} min-w-0 items-center gap-1`}>
               {items.map((item) => (
                 <NavLink
                   key={item.to}
