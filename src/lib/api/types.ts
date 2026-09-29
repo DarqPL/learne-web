@@ -26,6 +26,10 @@ export type PaymentProvider = 'INTERNAL' | 'SEPAY'
 
 export type PlanCode = 'VIP' | 'PRO' | 'PRO_PLUS'
 
+export type CoursePricingType = 'FREE' | 'PAID'
+
+export type CourseAccessStatus = 'FREE' | 'OWNED' | 'LOCKED'
+
 export interface PaymentInstructionResponse {
   bankCode: string
   bankName: string | null
@@ -477,6 +481,10 @@ export interface StudentCourseSummary {
   lessonCount: number
   questionCount: number
   publishedAt: string | null
+  pricingType: CoursePricingType
+  priceAmountVnd: number | null
+  accessStatus: CourseAccessStatus
+  accessReason: string | null
   enrolled: boolean
 }
 
@@ -523,6 +531,10 @@ export interface StudentCourseDetail {
   teacherEmail: string
   teacherAvatarUrl: string | null
   publishedAt: string | null
+  pricingType: CoursePricingType
+  priceAmountVnd: number | null
+  accessStatus: CourseAccessStatus
+  accessReason: string | null
   enrolled: boolean
   activeEnrollmentId: number | null
   topics: StudentTopic[]

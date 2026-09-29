@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { enrollStudentCourse, getStudentCourse } from '../../../lib/api/studentLearningApi'
+import { checkoutCourse } from '../../../lib/api/studentMonetizationApi'
 import type { StudentCourseDetail } from '../../../lib/api/types'
 import { Alert, AlertDescription, AlertTitle } from '../../../components/shadcn/ui/alert'
 import { Avatar } from '../../../components/ui/Avatar'
@@ -129,6 +130,46 @@ export function StudentCourseDetailPage() {
     }
   }
 
+  async function handleCheckoutCourse() {
+    if (!course || enrollingCourseId === course.id || redirectingEnrollmentId === course.id) return
+
+    const checkoutCourseId = course.id
+    setError(null)
+    setInfo(null)
+    setEnrollingCourseId(checkoutCourseId)
+    try {
+      const response = await checkoutCourse(checkoutCourseId)
+      if (!mountedRef.current || currentCourseIdRef.current !== checkoutCourseId) return
+      const order = response.data
+      if (order.status === 'PENDING_PAYMENT' && order.paymentProvider === 'SEPAY') {
+        navigate(`/student/payment/orders/${order.id}`)
+        return
+      }
+      if (order.status === 'PAID') {
+        const refreshed = await getStudentCourse(checkoutCourseId)
+        if (!mountedRef.current || currentCourseIdRef.current !== checkoutCourseId) return
+        setCourse(refreshed.data)
+        setInfo('Thanh toán khóa học thành công.')
+        if (refreshed.data.activeEnrollmentId) {
+          setRedirectingEnrollmentId(checkoutCourseId)
+          if (enrollmentRedirectTimerRef.current) clearTimeout(enrollmentRedirectTimerRef.current)
+          enrollmentRedirectTimerRef.current = setTimeout(() => {
+            navigate(`/student/enrollments/${refreshed.data.activeEnrollmentId}`)
+          }, enrollmentRedirectDelayMs)
+        }
+        return
+      }
+      setError('Đơn thanh toán chưa sẵn sàng. Vui lòng thử lại sau.')
+    } catch (err) {
+      if (!mountedRef.current || currentCourseIdRef.current !== checkoutCourseId) return
+      setError(getApiErrorMessage(err, 'Không thể tạo đơn thanh toán.'))
+    } finally {
+      if (mountedRef.current) {
+        setEnrollingCourseId((currentId) => (currentId === checkoutCourseId ? null : currentId))
+      }
+    }
+  }
+
   if (courseId === null) {
     return (
       <Card className="border-dashed border-gray-200 bg-white">
@@ -170,6 +211,7 @@ export function StudentCourseDetailPage() {
   const lessonCount = countStudentLessons(course)
   const questionCount = countStudentQuestions(course)
   const enrollmentActionPending = enrollingCourseId === course.id || redirectingEnrollmentId === course.id
+  const requiresCheckout = course.accessStatus === 'LOCKED' && course.pricingType === 'PAID'
 
   return (
     <div className="space-y-6 overflow-hidden">
@@ -214,7 +256,12 @@ export function StudentCourseDetailPage() {
                 <ArrowRight aria-hidden="true" />
               </Button>
             ) : null}
-            {!course.enrolled ? (
+            {!course.enrolled && requiresCheckout ? (
+              <Button className="w-full sm:w-auto" size="lg" loading={enrollmentActionPending} onClick={handleCheckoutCourse}>
+                Thanh toán khóa học
+              </Button>
+            ) : null}
+            {!course.enrolled && !requiresCheckout ? (
               <Button className="w-full sm:w-auto" size="lg" loading={enrollmentActionPending} onClick={handleEnroll}>
                 Đăng ký khóa học
               </Button>
@@ -233,7 +280,7 @@ export function StudentCourseDetailPage() {
       {error ? (
         <Alert variant="destructive" className="border-red-200 bg-red-50">
           <FileQuestion aria-hidden="true" />
-          <AlertTitle>Không thể đăng ký khóa học</AlertTitle>
+          <AlertTitle>{requiresCheckout ? 'Không thể tạo đơn thanh toán' : 'Không thể đăng ký khóa học'}</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : null}
