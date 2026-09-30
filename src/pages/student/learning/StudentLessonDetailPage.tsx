@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { getStudentEnrollment, startStudentLesson } from '../../../lib/api/studentLearningApi'
 import type { StudentEnrollmentProgress, StudentLessonProgress } from '../../../lib/api/types'
@@ -141,12 +142,19 @@ export function StudentLessonDetailPage() {
   const locked = lesson.status === 'LOCKED'
   const canStart = lesson.status === 'UNLOCKED'
   const content = lesson.content?.trim()
+  const lessonsInOrder = flattenProgressLessons(enrollment)
+  const currentLessonIndex = lessonsInOrder.findIndex((item) => item.lessonId === lessonId)
+  const nextLesson =
+    currentLessonIndex >= 0
+      ? (lessonsInOrder.slice(currentLessonIndex + 1).find((item) => item.status !== 'LOCKED') ?? null)
+      : null
 
   return (
     <div className="space-y-6">
       <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <div className="bg-gradient-to-br from-indigo-50 via-white to-sky-50 p-6">
-          <button className="text-sm font-semibold text-indigo-600 hover:text-indigo-700" type="button" onClick={() => navigate(`/student/enrollments/${enrollment.enrollmentId}`)}>
+          <button className="inline-flex cursor-pointer items-center gap-1 text-sm font-semibold text-indigo-600 hover:text-indigo-700" type="button" onClick={() => navigate(`/student/enrollments/${enrollment.enrollmentId}`)}>
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Quay lại lộ trình học
           </button>
 
@@ -226,6 +234,25 @@ export function StudentLessonDetailPage() {
           </section>
         </>
       )}
+      <div className="flex justify-end">
+        {nextLesson ? (
+          <Button
+            className="cursor-pointer"
+            onClick={() => navigate(`/student/enrollments/${enrollment.enrollmentId}/lessons/${nextLesson.lessonId}`)}
+          >
+            Bài học tiếp theo
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Button>
+        ) : (
+          <Button
+            variant="secondary"
+            className="cursor-pointer"
+            onClick={() => navigate(`/student/enrollments/${enrollment.enrollmentId}`)}
+          >
+            Quay lại lộ trình học
+          </Button>
+        )}
+      </div>
     </div>
   )
 }
