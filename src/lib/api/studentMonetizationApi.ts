@@ -1,5 +1,5 @@
 import { http } from './client'
-import type { OrderResponse, PlanCode } from './types'
+import type { OrderResponse, PlanCode, SubscriptionSummaryResponse } from './types'
 
 export interface CheckoutCouponRequest {
   couponCode?: string | null
@@ -15,4 +15,8 @@ export function checkoutPlan(planCode: PlanCode, request?: CheckoutCouponRequest
 
 export function getStudentOrder(orderId: number) {
   return http.get<OrderResponse>(`/api/student/orders/${orderId}`)
+}
+
+export function getStudentSubscription() {
+  return http.get<SubscriptionSummaryResponse>('/api/student/subscription')
 }

@@ -8,6 +8,7 @@ import { Alert, AlertDescription, AlertTitle } from '../../../components/shadcn/
 import { Badge } from '../../../components/shadcn/ui/badge'
 import { Button } from '../../../components/shadcn/ui/button'
 import { Card, CardContent } from '../../../components/shadcn/ui/card'
+import { Separator } from '../../../components/shadcn/ui/separator'
 import { formatCountdown, formatVnd, getRemainingMs } from './paymentUtils'
 
 const pollIntervalMs = 3000
@@ -35,6 +36,8 @@ function statusClass(order: OrderResponse, expiredLocally: boolean) {
 function nextActionPath(order: OrderResponse) {
   const courseItem = order.items.find((item) => item.productType === 'COURSE' && item.courseId !== null)
   if (courseItem?.courseId) return `/student/courses/${courseItem.courseId}`
+  const planItem = order.items.find((item) => item.productType === 'PLAN')
+  if (planItem) return '/student/subscription'
   return '/student'
 }
 
@@ -247,6 +250,29 @@ export function StudentPaymentPage() {
             <Button variant="outline" asChild>
               <Link to="/student/courses">Quay lại danh sách khóa học</Link>
             </Button>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {canShowInstructions && instructions ? (
+        <Card className="border-gray-200 bg-white shadow-sm">
+          <CardContent className="space-y-3">
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <p className="text-gray-500">Giá gốc</p>
+              <p className="font-semibold text-gray-950">{formatVnd(order.originalAmountVnd)}</p>
+            </div>
+            {order.discountAmountVnd > 0 ? (
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <p className="text-gray-500">Giảm giá</p>
+                <p className="font-semibold text-emerald-600">-{formatVnd(order.discountAmountVnd)}</p>
+              </div>
+            ) : null}
+            <Separator />
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-bold text-gray-950">Cần chuyển khoản</p>
+              <p className="text-lg font-bold text-gray-950">{formatVnd(order.finalAmountVnd)}</p>
+            </div>
+            {order.discountAmountVnd > 0 ? <Badge variant="secondary">Đã áp dụng giảm giá</Badge> : null}
           </CardContent>
         </Card>
       ) : null}

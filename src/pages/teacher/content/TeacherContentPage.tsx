@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { BookOpen, ChevronLeft, ChevronRight, Info, Pencil, Plus, Search, Send, Trash2, TriangleAlert } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
+import { Badge } from '@/components/shadcn/ui/badge'
 import { Button } from '@/components/shadcn/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shadcn/ui/card'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/shadcn/ui/dialog'
@@ -17,7 +18,7 @@ import type { ContentStatus, TeacherCourse, TeacherCourseRequest } from '../../.
 import { CourseForm } from './CourseForm'
 import { CourseImportExportPanel } from './CourseImportExportPanel'
 import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
-import { contentStatusLabels, courseTypeLabels } from './contentLabels'
+import { contentStatusLabels, coursePriceStatusLabels, coursePricingTypeLabels, courseTypeLabels, formatVndAmount } from './contentLabels'
 import { canSubmitCourse, countLessons, countQuestions } from './contentUtils'
 
 type StatusFilter = ContentStatus | 'ALL'
@@ -269,6 +270,7 @@ export function TeacherContentPage() {
                   <TableHead>Tên khóa học</TableHead>
                   <TableHead>Loại</TableHead>
                   <TableHead>Trình độ</TableHead>
+                  <TableHead>Giá</TableHead>
                   <TableHead>Trạng thái</TableHead>
                   <TableHead>Nội dung</TableHead>
                   <TableHead className="text-right">Hành động</TableHead>
@@ -285,6 +287,9 @@ export function TeacherContentPage() {
                     </TableCell>
                     <TableCell>
                       <Skeleton className="h-4 w-12" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-24" />
                     </TableCell>
                     <TableCell>
                       <Skeleton className="h-4 w-24" />
@@ -332,13 +337,14 @@ export function TeacherContentPage() {
               </EmptyContent>
             </Empty>
           ) : (
-            <div className="max-h-[60vh] overflow-auto rounded-xl border border-indigo-100">
+            <div className="rounded-xl border border-indigo-100 [&>[data-slot=table-container]]:max-h-[60vh] [&>[data-slot=table-container]]:overflow-y-auto">
             <Table className="[&_tr]:border-indigo-100/70">
               <TableHeader className="sticky top-0 z-10 [&_th]:bg-indigo-50">
                 <TableRow>
                   <TableHead>Tên khóa học</TableHead>
                   <TableHead>Loại</TableHead>
                   <TableHead>Trình độ</TableHead>
+                  <TableHead>Giá</TableHead>
                   <TableHead>Trạng thái</TableHead>
                   <TableHead>Nội dung</TableHead>
                   <TableHead className="text-right">Hành động</TableHead>
@@ -365,6 +371,19 @@ export function TeacherContentPage() {
                       </TableCell>
                       <TableCell>
                         <span className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-700">{course.level}</span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex min-w-32 flex-col items-start gap-1">
+                          <Badge variant={course.pricingType === 'PAID' ? 'default' : 'secondary'}>
+                            {coursePricingTypeLabels[course.pricingType]}
+                          </Badge>
+                          <span className="text-sm text-muted-foreground">
+                            {course.pricingType === 'FREE'
+                              ? 'Không thu phí'
+                              : formatVndAmount(course.priceAmountVnd ?? course.proposedPriceAmountVnd)}
+                          </span>
+                          <span className="text-xs text-muted-foreground">{coursePriceStatusLabels[course.priceStatus]}</span>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <TeacherContentStatusBadge status={course.status} />

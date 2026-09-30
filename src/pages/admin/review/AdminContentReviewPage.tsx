@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { approveReviewCourse, getReviewCourse, listPendingReviewCourses, rejectReviewCourse } from '../../../lib/api/adminReviewApi'
-import type { AdminReviewCourseDetail, AdminReviewCourseSummary } from '../../../lib/api/types'
+import type { AdminReviewCourseDetail, AdminReviewCourseSummary, CoursePricingType } from '../../../lib/api/types'
 import { Alert } from '../../../components/ui/Alert'
+import { Alert as ShadcnAlert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
+import { Badge } from '@/components/shadcn/ui/badge'
 import { Button } from '../../../components/ui/Button'
 import { Spinner } from '../../../components/ui/Spinner'
 import { RejectCourseForm } from './RejectCourseForm'
@@ -14,6 +16,15 @@ const mutedCardClassName = 'rounded-xl border border-gray-200 bg-gray-50 p-4'
 
 function StatusBadge({ status }: { status: AdminReviewCourseDetail['status'] }) {
   return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${reviewStatusStyles[status]}`}>{reviewStatusLabels[status]}</span>
+}
+
+function formatVnd(value: number | null | undefined): string {
+  if (value === null || value === undefined) return 'Chưa có giá'
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value)
+}
+
+function pricingLabel(pricingType: CoursePricingType): string {
+  return pricingType === 'PAID' ? 'Trả phí' : 'Miễn phí'
 }
 
 export function AdminContentReviewPage() {
@@ -177,6 +188,10 @@ export function AdminContentReviewPage() {
                     <span className="mt-2 block text-sm text-gray-600">
                       {course.level} · {reviewCourseTypeLabels[course.type]}
                     </span>
+                    <span className="mt-2 flex flex-wrap items-center gap-2">
+                      <Badge variant={course.pricingType === 'PAID' ? 'default' : 'secondary'}>{pricingLabel(course.pricingType)}</Badge>
+                      {course.pricingType === 'PAID' ? <span className="text-sm text-gray-600">{formatVnd(course.proposedPriceAmountVnd)}</span> : null}
+                    </span>
                     <span className="mt-2 block text-xs text-gray-500">
                       {course.topicCount} chủ đề · {course.lessonCount} bài học · {course.questionCount} câu hỏi
                     </span>
@@ -228,6 +243,40 @@ export function AdminContentReviewPage() {
               </div>
 
               {selectedCourse.description ? <p className="text-sm leading-6 text-gray-700">{selectedCourse.description}</p> : null}
+
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <h3 className="text-sm font-semibold text-gray-900">Thông tin giá</h3>
+                <dl className="mt-2 grid gap-2 text-sm text-gray-600 sm:grid-cols-3">
+                  <div>
+                    <dt className="font-medium text-gray-900">Giá hiện tại</dt>
+                    <dd>{formatVnd(selectedCourse.priceAmountVnd)}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-gray-900">Giá đề xuất</dt>
+                    <dd>{formatVnd(selectedCourse.proposedPriceAmountVnd)}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-gray-900">Trạng thái giá</dt>
+                    <dd>{selectedCourse.priceStatus}</dd>
+                  </div>
+                </dl>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <Badge variant={selectedCourse.pricingType === 'PAID' ? 'default' : 'secondary'}>{pricingLabel(selectedCourse.pricingType)}</Badge>
+                </div>
+                {selectedCourse.level === 'A1' && selectedCourse.pricingType === 'PAID' ? (
+                  <ShadcnAlert variant="destructive" className="mt-3">
+                    <AlertTitle>A1 phải miễn phí</AlertTitle>
+                    <AlertDescription>Backend sẽ từ chối duyệt khóa A1 trả phí.</AlertDescription>
+                  </ShadcnAlert>
+                ) : null}
+                {selectedCourse.pricingType === 'PAID' &&
+                (selectedCourse.proposedPriceAmountVnd === null || selectedCourse.proposedPriceAmountVnd <= 0) ? (
+                  <ShadcnAlert variant="destructive" className="mt-3">
+                    <AlertTitle>Thiếu giá đề xuất</AlertTitle>
+                    <AlertDescription>Khóa trả phí cần giá đề xuất lớn hơn 0 trước khi duyệt.</AlertDescription>
+                  </ShadcnAlert>
+                ) : null}
+              </div>
 
               <div className="grid gap-4 rounded-xl border border-indigo-100 bg-indigo-50 p-4 lg:grid-cols-[auto_1fr]">
                 <Button loading={action?.startsWith('approve-course') ?? false} disabled={action !== null} onClick={handleApproveCourse}>

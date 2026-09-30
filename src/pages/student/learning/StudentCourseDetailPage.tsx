@@ -9,6 +9,7 @@ import {
   GraduationCap,
   Layers3,
   Loader2,
+  Lock,
   PlayCircle,
   Target,
   type LucideIcon,
@@ -21,9 +22,12 @@ import { Alert, AlertDescription, AlertTitle } from '../../../components/shadcn/
 import { Avatar } from '../../../components/ui/Avatar'
 import { Badge } from '../../../components/shadcn/ui/badge'
 import { Button } from '../../../components/shadcn/ui/button'
-import { Card, CardContent } from '../../../components/shadcn/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/shadcn/ui/card'
+import { Field, FieldDescription, FieldGroup, FieldLabel } from '../../../components/shadcn/ui/field'
+import { Input } from '../../../components/shadcn/ui/input'
 import { studentCourseTypeLabels, studentQuestionTypeLabels, studentSkillTypeLabels } from './studentLearningLabels'
 import { countStudentLessons, countStudentQuestions, formatStudentLearningDate } from './studentLearningUtils'
+import { formatVnd } from '../payment/paymentUtils'
 
 function parseCourseId(value: string | undefined) {
   const id = Number(value)
@@ -45,6 +49,7 @@ export function StudentCourseDetailPage() {
   const [course, setCourse] = useState<StudentCourseDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
+  const [courseCouponCode, setCourseCouponCode] = useState('')
   const [enrollingCourseId, setEnrollingCourseId] = useState<number | null>(null)
   const [redirectingEnrollmentId, setRedirectingEnrollmentId] = useState<number | null>(null)
   const enrollmentRedirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -138,7 +143,8 @@ export function StudentCourseDetailPage() {
     setInfo(null)
     setEnrollingCourseId(checkoutCourseId)
     try {
-      const response = await checkoutCourse(checkoutCourseId)
+      const couponCode = courseCouponCode.trim()
+      const response = await checkoutCourse(checkoutCourseId, couponCode ? { couponCode } : {})
       if (!mountedRef.current || currentCourseIdRef.current !== checkoutCourseId) return
       const order = response.data
       if (order.status === 'PENDING_PAYMENT' && order.paymentProvider === 'SEPAY') {
@@ -213,6 +219,10 @@ export function StudentCourseDetailPage() {
   const enrollmentActionPending = enrollingCourseId === course.id || redirectingEnrollmentId === course.id
   const requiresCheckout = course.accessStatus === 'LOCKED' && course.pricingType === 'PAID'
 
+  function scrollToPurchasePanel() {
+    document.getElementById('course-purchase-panel')?.scrollIntoView({ behavior: 'smooth' })
+  }
+
   return (
     <div className="space-y-6 overflow-hidden">
       <section className="overflow-hidden rounded-3xl border border-indigo-100 bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.16),_transparent_32%),linear-gradient(135deg,_#ffffff_0%,_#eef6ff_52%,_#f7f3ff_100%)] p-5 shadow-sm sm:p-8">
@@ -249,7 +259,7 @@ export function StudentCourseDetailPage() {
             </Card>
           </div>
 
-          <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:flex-row lg:flex-col">
+          <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:min-w-72 lg:w-80">
             {course.enrolled && course.activeEnrollmentId ? (
               <Button className="w-full sm:w-auto" size="lg" onClick={() => navigate(`/student/enrollments/${course.activeEnrollmentId}`)}>
                 Tiếp tục học
@@ -257,9 +267,34 @@ export function StudentCourseDetailPage() {
               </Button>
             ) : null}
             {!course.enrolled && requiresCheckout ? (
-              <Button className="w-full sm:w-auto" size="lg" loading={enrollmentActionPending} onClick={handleCheckoutCourse}>
-                Thanh toán khóa học
-              </Button>
+              <Card id="course-purchase-panel" className="border-indigo-200 bg-white/90 shadow-sm">
+                <CardHeader>
+                  <CardTitle>Thanh toán khóa học</CardTitle>
+                  <CardDescription>
+                    <span className="mt-1 block text-xl font-bold text-indigo-700">
+                      {course.priceAmountVnd != null ? formatVnd(course.priceAmountVnd) : 'Liên hệ'}
+                    </span>
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FieldGroup>
+                    <Field>
+                      <FieldLabel htmlFor="course-coupon-code">Mã giảm giá</FieldLabel>
+                      <Input
+                        id="course-coupon-code"
+                        placeholder="Nhập mã giảm giá"
+                        autoComplete="off"
+                        value={courseCouponCode}
+                        onChange={(event) => setCourseCouponCode(event.target.value)}
+                      />
+                      <FieldDescription>Nếu có mã, hệ thống sẽ áp dụng trước khi tạo QR.</FieldDescription>
+                    </Field>
+                    <Button className="w-full" size="lg" loading={enrollmentActionPending} onClick={handleCheckoutCourse}>
+                      Mua khóa học
+                    </Button>
+                  </FieldGroup>
+                </CardContent>
+              </Card>
             ) : null}
             {!course.enrolled && !requiresCheckout ? (
               <Button className="w-full sm:w-auto" size="lg" loading={enrollmentActionPending} onClick={handleEnroll}>
@@ -305,7 +340,21 @@ export function StudentCourseDetailPage() {
         </div>
 
         <div className="space-y-5">
-          {course.topics.map((topic) => (
+          {course.topics.length === 0 && requiresCheckout ? (
+            <Card className="border-indigo-200 bg-indigo-50/50">
+              <CardContent className="flex flex-col items-start gap-3 py-6">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
+                  <Lock aria-hidden="true" className="h-5 w-5 text-indigo-700" />
+                </span>
+                <CardTitle className="text-lg">Nội dung khóa học</CardTitle>
+                <p className="text-sm leading-6 text-gray-600">
+                  Nội dung chi tiết từng bài học và câu hỏi sẽ được mở ngay sau khi bạn hoàn tất mua khóa học.
+                </p>
+                <Button onClick={scrollToPurchasePanel}>Mua khóa học ngay</Button>
+              </CardContent>
+            </Card>
+          ) : (
+            course.topics.map((topic) => (
           <Card key={topic.id} className="overflow-hidden border-gray-200 bg-white py-0 shadow-sm">
             <CardContent className="p-0">
               <div className="border-b border-gray-100 bg-gray-50/70 p-5 sm:p-6">
@@ -391,7 +440,8 @@ export function StudentCourseDetailPage() {
               </div>
             </CardContent>
           </Card>
-          ))}
+          ))
+          )}
         </div>
       </section>
     </div>

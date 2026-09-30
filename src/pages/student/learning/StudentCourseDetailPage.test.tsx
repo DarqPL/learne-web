@@ -91,9 +91,9 @@ describe('StudentCourseDetailPage checkout', () => {
 
     renderCourseDetail()
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Thanh toán khóa học' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Mua khóa học' }))
 
-    await waitFor(() => expect(mockedCheckoutCourse).toHaveBeenCalledWith(99))
+    await waitFor(() => expect(mockedCheckoutCourse).toHaveBeenCalledWith(99, {}))
     expect(await screen.findByText('Payment order route')).toBeInTheDocument()
   })
 
@@ -105,10 +105,36 @@ describe('StudentCourseDetailPage checkout', () => {
 
     renderCourseDetail()
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Thanh toán khóa học' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Mua khóa học' }))
 
     await waitFor(() => expect(mockedGetStudentCourse).toHaveBeenCalledTimes(2))
     expect(await screen.findByText('Thanh toán khóa học thành công.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Tiếp tục học' })).toBeInTheDocument()
+  })
+
+  it('sends coupon code when checking out a locked paid course', async () => {
+    mockedGetStudentCourse.mockResolvedValue(courseApiResponse(makeCourse()))
+    mockedCheckoutCourse.mockResolvedValue(checkoutApiResponse(makeOrder()))
+
+    renderCourseDetail()
+
+    fireEvent.change(await screen.findByLabelText(/mã giảm giá/i), { target: { value: ' sale20 ' } })
+    fireEvent.click(await screen.findByRole('button', { name: 'Mua khóa học' }))
+
+    await waitFor(() => expect(mockedCheckoutCourse).toHaveBeenCalledWith(99, { couponCode: 'sale20' }))
+  })
+
+  it('shows locked content notice for paid locked course without topics', async () => {
+    mockedGetStudentCourse.mockResolvedValue(courseApiResponse(makeCourse({ topics: [] })))
+    const scrollIntoViewMock = vi.fn()
+    window.HTMLElement.prototype.scrollIntoView = scrollIntoViewMock
+
+    renderCourseDetail()
+
+    expect(await screen.findByText(/sẽ được mở ngay sau khi bạn hoàn tất mua/i)).toBeInTheDocument()
+    const noticeButton = await screen.findByRole('button', { name: 'Mua khóa học ngay' })
+    expect(document.getElementById('course-purchase-panel')).toBeInTheDocument()
+    fireEvent.click(noticeButton)
+    expect(scrollIntoViewMock).toHaveBeenCalled()
   })
 })
