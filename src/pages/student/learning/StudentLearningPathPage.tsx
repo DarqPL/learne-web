@@ -182,7 +182,6 @@ export function StudentLearningPathPage() {
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">#{item.sequenceOrder}</span>
                             {item.completed ? (
                               <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700">Đã hoàn thành</span>
                             ) : (
