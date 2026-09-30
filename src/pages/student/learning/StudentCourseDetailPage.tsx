@@ -21,9 +21,12 @@ import { Alert, AlertDescription, AlertTitle } from '../../../components/shadcn/
 import { Avatar } from '../../../components/ui/Avatar'
 import { Badge } from '../../../components/shadcn/ui/badge'
 import { Button } from '../../../components/shadcn/ui/button'
-import { Card, CardContent } from '../../../components/shadcn/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/shadcn/ui/card'
+import { Field, FieldDescription, FieldGroup, FieldLabel } from '../../../components/shadcn/ui/field'
+import { Input } from '../../../components/shadcn/ui/input'
 import { studentCourseTypeLabels, studentQuestionTypeLabels, studentSkillTypeLabels } from './studentLearningLabels'
 import { countStudentLessons, countStudentQuestions, formatStudentLearningDate } from './studentLearningUtils'
+import { formatVnd } from '../payment/paymentUtils'
 
 function parseCourseId(value: string | undefined) {
   const id = Number(value)
@@ -45,6 +48,7 @@ export function StudentCourseDetailPage() {
   const [course, setCourse] = useState<StudentCourseDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
+  const [courseCouponCode, setCourseCouponCode] = useState('')
   const [enrollingCourseId, setEnrollingCourseId] = useState<number | null>(null)
   const [redirectingEnrollmentId, setRedirectingEnrollmentId] = useState<number | null>(null)
   const enrollmentRedirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -138,7 +142,8 @@ export function StudentCourseDetailPage() {
     setInfo(null)
     setEnrollingCourseId(checkoutCourseId)
     try {
-      const response = await checkoutCourse(checkoutCourseId)
+      const couponCode = courseCouponCode.trim()
+      const response = await checkoutCourse(checkoutCourseId, couponCode ? { couponCode } : {})
       if (!mountedRef.current || currentCourseIdRef.current !== checkoutCourseId) return
       const order = response.data
       if (order.status === 'PENDING_PAYMENT' && order.paymentProvider === 'SEPAY') {
@@ -249,7 +254,7 @@ export function StudentCourseDetailPage() {
             </Card>
           </div>
 
-          <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:flex-row lg:flex-col">
+          <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:min-w-72 lg:w-80">
             {course.enrolled && course.activeEnrollmentId ? (
               <Button className="w-full sm:w-auto" size="lg" onClick={() => navigate(`/student/enrollments/${course.activeEnrollmentId}`)}>
                 Tiếp tục học
@@ -257,9 +262,34 @@ export function StudentCourseDetailPage() {
               </Button>
             ) : null}
             {!course.enrolled && requiresCheckout ? (
-              <Button className="w-full sm:w-auto" size="lg" loading={enrollmentActionPending} onClick={handleCheckoutCourse}>
-                Thanh toán khóa học
-              </Button>
+              <Card className="border-indigo-200 bg-white/90 shadow-sm">
+                <CardHeader>
+                  <CardTitle>Thanh toán khóa học</CardTitle>
+                  <CardDescription>
+                    <span className="mt-1 block text-xl font-bold text-indigo-700">
+                      {course.priceAmountVnd != null ? formatVnd(course.priceAmountVnd) : 'Liên hệ'}
+                    </span>
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FieldGroup>
+                    <Field>
+                      <FieldLabel htmlFor="course-coupon-code">Mã giảm giá</FieldLabel>
+                      <Input
+                        id="course-coupon-code"
+                        placeholder="Nhập mã giảm giá"
+                        autoComplete="off"
+                        value={courseCouponCode}
+                        onChange={(event) => setCourseCouponCode(event.target.value)}
+                      />
+                      <FieldDescription>Nếu có mã, hệ thống sẽ áp dụng trước khi tạo QR.</FieldDescription>
+                    </Field>
+                    <Button className="w-full" size="lg" loading={enrollmentActionPending} onClick={handleCheckoutCourse}>
+                      Mua khóa học
+                    </Button>
+                  </FieldGroup>
+                </CardContent>
+              </Card>
             ) : null}
             {!course.enrolled && !requiresCheckout ? (
               <Button className="w-full sm:w-auto" size="lg" loading={enrollmentActionPending} onClick={handleEnroll}>
