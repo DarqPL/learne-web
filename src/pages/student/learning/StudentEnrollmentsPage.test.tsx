@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { StudentEnrollmentsPage } from './StudentEnrollmentsPage'
@@ -64,9 +64,11 @@ describe('StudentEnrollmentsPage pagination', () => {
 
     fireEvent.click(screen.getByRole('link', { name: '2' }))
 
-    expect(await screen.findByText('Course 7')).toBeInTheDocument()
-    expect(screen.getByText('Course 8')).toBeInTheDocument()
-    expect(screen.queryByText('Course 1')).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Course 7')).toBeInTheDocument()
+      expect(screen.getByText('Course 8')).toBeInTheDocument()
+      expect(screen.queryByText('Course 1')).not.toBeInTheDocument()
+    })
   })
 
   it('keeps discover-courses empty state when there are no enrollments', async () => {

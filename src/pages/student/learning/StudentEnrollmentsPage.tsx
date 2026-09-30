@@ -47,11 +47,6 @@ export function StudentEnrollmentsPage() {
     }
   }, [])
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setPage(1)
-  }, [enrollments])
-
   const totalPages = enrollments ? Math.max(1, Math.ceil(enrollments.length / PAGE_SIZE)) : 1
   const safePage = Math.min(Math.max(1, page), totalPages)
   const pagedEnrollments = enrollments
