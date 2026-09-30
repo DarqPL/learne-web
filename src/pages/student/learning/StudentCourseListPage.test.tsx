@@ -118,6 +118,48 @@ describe('StudentCourseListPage redesign', () => {
     expect(screen.queryByText(/#7/)).not.toBeInTheDocument()
   })
 
+  it('uses minimal card layout with clamped desc, single stats line with icons, text action, equal height and no separator', async () => {
+    mockedListStudentCourses.mockResolvedValue(coursesApiResponse([makeCourse()]))
+
+    renderListPage()
+
+    const cardLink = await screen.findByRole('link', { name: /English B1 Comprehensive/i })
+
+    const desc = within(cardLink).getByText('Short course description for B1 learners.')
+    expect(desc).toHaveClass('line-clamp-2')
+
+    const stats = within(cardLink).getByText((_, element) => {
+      const text = element?.textContent ?? ''
+      return (
+        element?.tagName.toLowerCase() === 'p' &&
+        /chủ đề/i.test(text) &&
+        /bài học/i.test(text) &&
+        /câu hỏi/i.test(text)
+      )
+    })
+    expect(stats).toBeInTheDocument()
+    expect(stats.tagName.toLowerCase()).not.toBe('hr')
+    expect(stats.querySelectorAll('svg')).toHaveLength(3)
+
+    expect(within(cardLink).getByText('Xem khóa học')).toBeInTheDocument()
+    expect(within(cardLink).queryByRole('button')).not.toBeInTheDocument()
+    expect(cardLink.querySelector('button')).toBeNull()
+
+    const card = cardLink.querySelector('[data-slot="card"]')
+    expect(card).not.toBeNull()
+    expect(card).toHaveClass('h-full')
+    expect(card).toHaveClass('flex')
+    expect(card).toHaveClass('flex-col')
+
+    const footer = cardLink.querySelector('[data-slot="card-footer"]')
+    expect(footer).not.toBeNull()
+    expect(footer).toHaveClass('mt-auto')
+
+    expect(within(cardLink).queryByRole('separator')).not.toBeInTheDocument()
+    expect(cardLink.querySelector('hr')).toBeNull()
+    expect(cardLink.querySelector('[data-slot="separator"]')).toBeNull()
+  })
+
   it('paginates client-side with 6 per page and resets to page 1 on search', async () => {
     const eightCourses = Array.from({ length: 8 }, (_, index) =>
       makeCourse({ id: index + 1, name: `Course ${index + 1}` }),

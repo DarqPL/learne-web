@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ArrowRight, ChevronLeft, ChevronRight, Loader2, Search, XCircle } from 'lucide-react'
+import { ArrowRight, BookOpen, ChevronLeft, ChevronRight, FileQuestion, Layers, Loader2, Search, XCircle } from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { listStudentCourses } from '../../../lib/api/studentLearningApi'
 import type { CourseType, StudentCourseSummary } from '../../../lib/api/types'
@@ -24,7 +24,6 @@ import {
   PaginationItem,
   PaginationLink,
 } from '../../../components/shadcn/ui/pagination'
-import { Separator } from '../../../components/shadcn/ui/separator'
 import { studentCourseTypeLabels } from './studentLearningLabels'
 
 const levelOptions = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
@@ -229,15 +228,15 @@ export function StudentCourseListPage() {
         </Card>
       ) : (
         <>
-          <div className="grid min-w-0 gap-5 lg:grid-cols-2">
+          <div className="grid min-w-0 items-stretch gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {pagedCourses?.map((course) => (
             <Link
               key={course.id}
               to={`/student/courses/${course.id}`}
               className="group block min-w-0 rounded-3xl outline-none transition focus-visible:ring-4 focus-visible:ring-indigo-200"
             >
-              <Card className="h-full gap-0 overflow-hidden border-gray-200 bg-white py-0 shadow-sm transition duration-200 group-hover:-translate-y-0.5 group-hover:border-indigo-200 group-hover:shadow-lg group-hover:shadow-indigo-100/70">
-                <CardHeader className="gap-0">
+              <Card className="h-full flex flex-col gap-3 overflow-hidden border-gray-200 bg-white p-5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:border-indigo-200 group-hover:shadow-sm">
+                <CardHeader className="flex flex-col gap-3 p-0">
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline" className={cn(courseTypeClass(course.type))}>
                       {studentCourseTypeLabels[course.type]}
@@ -247,26 +246,38 @@ export function StudentCourseListPage() {
                     </Badge>
                     {course.enrolled ? <Badge className="bg-emerald-600 text-white">Đã đăng ký</Badge> : null}
                   </div>
-                  <h2 className="mt-3 text-xl font-semibold tracking-tight text-gray-950 transition group-hover:text-indigo-700">
+                  <h2 className="text-xl font-semibold tracking-tight text-gray-950 transition group-hover:text-indigo-700">
                     {course.name}
                   </h2>
-                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-gray-600">{course.description ?? 'Chưa có mô tả.'}</p>
+                  <p className="line-clamp-2 text-sm leading-6 text-gray-600">{course.description ?? 'Chưa có mô tả.'}</p>
                 </CardHeader>
-                <CardContent className="flex flex-col gap-4">
-                  <Separator />
-                  <div className="flex min-w-0 items-center gap-3">
-                    <Avatar className="size-8">
+                <CardContent className="flex flex-col gap-3 p-0">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <Avatar className="size-7">
                       {course.teacherAvatarUrl ? <AvatarImage src={course.teacherAvatarUrl} alt={course.teacherName} /> : null}
                       <AvatarFallback>{teacherInitials(course.teacherName)}</AvatarFallback>
                     </Avatar>
                     <p className="min-w-0 truncate text-sm font-medium text-gray-950">{course.teacherName}</p>
                   </div>
-                  <p className="text-xs leading-5 text-gray-500">
-                    {course.topicCount} chủ đề · {course.lessonCount} bài học · {course.questionCount} câu hỏi
+                  <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-5 text-gray-500">
+                    <span className="inline-flex items-center gap-1">
+                      <Layers aria-hidden="true" className="size-3.5" />
+                      {course.topicCount} chủ đề
+                    </span>
+                    <span aria-hidden="true">·</span>
+                    <span className="inline-flex items-center gap-1">
+                      <BookOpen aria-hidden="true" className="size-3.5" />
+                      {course.lessonCount} bài học
+                    </span>
+                    <span aria-hidden="true">·</span>
+                    <span className="inline-flex items-center gap-1">
+                      <FileQuestion aria-hidden="true" className="size-3.5" />
+                      {course.questionCount} câu hỏi
+                    </span>
                   </p>
                 </CardContent>
-                <CardFooter className="pt-5">
-                  <span className="flex items-center gap-1 text-sm font-medium text-indigo-700 [&_svg]:size-4">
+                <CardFooter className="mt-auto p-0 pt-1">
+                  <span className="inline-flex items-center gap-1 text-sm font-medium text-indigo-700 [&_svg]:size-4">
                     Xem khóa học
                     <ArrowRight aria-hidden="true" data-icon="inline-end" />
                   </span>
