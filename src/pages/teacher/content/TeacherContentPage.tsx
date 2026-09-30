@@ -337,7 +337,7 @@ export function TeacherContentPage() {
               </EmptyContent>
             </Empty>
           ) : (
-            <div className="max-h-[60vh] overflow-auto rounded-xl border border-indigo-100">
+            <div className="rounded-xl border border-indigo-100 [&>[data-slot=table-container]]:max-h-[60vh] [&>[data-slot=table-container]]:overflow-y-auto">
             <Table className="[&_tr]:border-indigo-100/70">
               <TableHeader className="sticky top-0 z-10 [&_th]:bg-indigo-50">
                 <TableRow>
