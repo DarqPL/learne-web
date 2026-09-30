@@ -1,4 +1,4 @@
-import type { ContentStatus, CourseType, QuestionType, SkillType } from '../../../lib/api/types'
+import type { ContentStatus, CoursePriceStatus, CoursePricingType, CourseType, QuestionType, SkillType } from '../../../lib/api/types'
 
 export const contentStatusLabels: Record<ContentStatus, string> = {
   DRAFT: 'Bản nháp',
@@ -50,3 +50,11 @@ export const questionTypeLabels: Record<QuestionType, string> = {
 export const courseTypes = Object.keys(courseTypeLabels) as CourseType[]
 export const skillTypes = Object.keys(skillTypeLabels) as SkillType[]
 export const questionTypes = Object.keys(questionTypeLabels) as QuestionType[]
+
+export const coursePricingTypeLabels: Record<CoursePricingType, string> = { FREE: 'Miễn phí', PAID: 'Trả phí' }
+export const coursePriceStatusLabels: Record<CoursePriceStatus, string> = {
+  NONE: 'Không áp dụng',
+  PENDING_REVIEW: 'Chờ duyệt giá',
+  APPROVED: 'Giá đã duyệt',
+  REJECTED: 'Giá bị từ chối',
+}

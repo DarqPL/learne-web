@@ -5,8 +5,8 @@ import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/shadcn/u
 import { Input } from '@/components/shadcn/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/shadcn/ui/select'
 import { Textarea } from '@/components/shadcn/ui/textarea'
-import type { TeacherCourseRequest } from '../../../lib/api/types'
-import { courseTypeLabels, courseTypes } from './contentLabels'
+import type { CoursePricingType, TeacherCourseRequest } from '../../../lib/api/types'
+import { coursePricingTypeLabels, courseTypeLabels, courseTypes } from './contentLabels'
 
 interface CourseFormProps {
   initialValue?: TeacherCourseRequest
@@ -22,12 +22,29 @@ const defaultCourse: TeacherCourseRequest = {
   type: 'COMPREHENSIVE',
   level: 'A1',
   orderIndex: 0,
+  pricingType: 'FREE',
+  proposedPriceAmountVnd: null,
 }
 
 const levelOptions = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
 
+const pricingTypeOptions: CoursePricingType[] = ['FREE', 'PAID']
+
+function normalizePrice(value: number | null | undefined): number | null {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return null
+  const floored = Math.floor(value)
+  return floored > 0 ? floored : null
+}
+
+function pricingPayload(form: TeacherCourseRequest): TeacherCourseRequest {
+  if (form.level === 'A1' || form.pricingType !== 'PAID') {
+    return { ...form, pricingType: 'FREE', proposedPriceAmountVnd: null }
+  }
+  return { ...form, pricingType: 'PAID', proposedPriceAmountVnd: normalizePrice(form.proposedPriceAmountVnd) }
+}
+
 interface CourseValidation {
-  field: 'name' | 'level'
+  field: 'name' | 'level' | 'price'
   message: string
 }
 
@@ -59,14 +76,23 @@ export function CourseForm({ initialValue, loading = false, disabled = false, su
       return
     }
 
+    if (form.level !== 'A1' && form.pricingType === 'PAID' && normalizePrice(form.proposedPriceAmountVnd) == null) {
+      setValidation({ field: 'price', message: 'Vui lòng nhập giá bán lớn hơn 0.' })
+      return
+    }
+
     setValidation(null)
-    onSubmit({ ...form })
+    onSubmit(pricingPayload({ ...form }))
   }
 
   const nameError = validation?.field === 'name' ? validation.message : undefined
   const levelError = validation?.field === 'level' ? validation.message : undefined
+  const priceError = validation?.field === 'price' ? validation.message : undefined
   const nameErrorId = `${fieldPrefix}-name-error`
   const levelErrorId = `${fieldPrefix}-level-error`
+  const priceErrorId = `${fieldPrefix}-price-error`
+  const isA1Level = form.level === 'A1'
+  const effectivePricingType: CoursePricingType = isA1Level ? 'FREE' : (form.pricingType ?? 'FREE')
 
   return (
     <form onSubmit={handleSubmit}>
@@ -117,7 +143,17 @@ export function CourseForm({ initialValue, loading = false, disabled = false, su
 
           <Field data-invalid={levelError ? true : undefined}>
             <FieldLabel htmlFor={`${fieldPrefix}-level`}>Cấp độ</FieldLabel>
-            <Select value={form.level} disabled={disabled} onValueChange={(value) => setForm((current) => ({ ...current, level: value }))}>
+            <Select
+              value={form.level}
+              disabled={disabled}
+              onValueChange={(value) =>
+                setForm((current) =>
+                  value === 'A1'
+                    ? { ...current, level: value, pricingType: 'FREE', proposedPriceAmountVnd: null }
+                    : { ...current, level: value },
+                )
+              }
+            >
               <SelectTrigger
                 id={`${fieldPrefix}-level`}
                 className="w-full"
@@ -136,6 +172,56 @@ export function CourseForm({ initialValue, loading = false, disabled = false, su
             </Select>
             {levelError ? <FieldError id={levelErrorId}>{levelError}</FieldError> : null}
           </Field>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field>
+            <FieldLabel htmlFor={`${fieldPrefix}-pricing-type`}>Hình thức giá</FieldLabel>
+            <Select
+              value={effectivePricingType}
+              disabled={disabled || isA1Level}
+              onValueChange={(value) =>
+                setForm((current) =>
+                  value === 'PAID'
+                    ? { ...current, pricingType: 'PAID' }
+                    : { ...current, pricingType: 'FREE', proposedPriceAmountVnd: null },
+                )
+              }
+            >
+              <SelectTrigger id={`${fieldPrefix}-pricing-type`} className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {pricingTypeOptions.map((pricingType) => (
+                  <SelectItem key={pricingType} value={pricingType}>
+                    {coursePricingTypeLabels[pricingType]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {isA1Level ? (
+              <p className="text-sm text-muted-foreground">Khóa A1 luôn miễn phí theo chính sách nền tảng.</p>
+            ) : null}
+          </Field>
+
+          {effectivePricingType === 'PAID' && !isA1Level ? (
+            <Field data-invalid={priceError ? true : undefined}>
+              <FieldLabel htmlFor={`${fieldPrefix}-price`}>Giá đề xuất (VND)</FieldLabel>
+              <Input
+                id={`${fieldPrefix}-price`}
+                inputMode="numeric"
+                value={form.proposedPriceAmountVnd?.toString() ?? ''}
+                disabled={disabled}
+                aria-invalid={priceError ? true : undefined}
+                aria-describedby={priceError ? priceErrorId : undefined}
+                onChange={(event) => {
+                  const digits = event.target.value.replace(/\D/g, '')
+                  setForm((current) => ({ ...current, proposedPriceAmountVnd: digits === '' ? null : Number(digits) }))
+                }}
+              />
+              {priceError ? <FieldError id={priceErrorId}>{priceError}</FieldError> : null}
+            </Field>
+          ) : null}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
