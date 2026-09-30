@@ -1,30 +1,25 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import {
-  ArrowRight,
-  BookOpen,
-  CalendarDays,
-  FileQuestion,
-  Filter,
-  GraduationCap,
-  Layers3,
-  Loader2,
-  Search,
-  Sparkles,
-  UserRound,
-  XCircle,
-  type LucideIcon,
-} from 'lucide-react'
+import { ArrowRight, Loader2, Search, XCircle } from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { listStudentCourses } from '../../../lib/api/studentLearningApi'
 import type { CourseType, StudentCourseSummary } from '../../../lib/api/types'
+import { cn } from '../../../lib/utils'
 import { Alert, AlertDescription, AlertTitle } from '../../../components/shadcn/ui/alert'
-import { Avatar } from '../../../components/ui/Avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '../../../components/shadcn/ui/avatar'
 import { Badge } from '../../../components/shadcn/ui/badge'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '../../../components/shadcn/ui/breadcrumb'
 import { Button } from '../../../components/shadcn/ui/button'
-import { Card, CardContent } from '../../../components/shadcn/ui/card'
+import { Card, CardContent, CardFooter, CardHeader } from '../../../components/shadcn/ui/card'
+import { Separator } from '../../../components/shadcn/ui/separator'
 import { studentCourseTypeLabels } from './studentLearningLabels'
-import { formatStudentLearningDate } from './studentLearningUtils'
 
 const levelOptions = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
 
@@ -41,6 +36,13 @@ const courseTypeStyles: Record<CourseType, string> = {
 
 function courseTypeClass(type: CourseType) {
   return courseTypeStyles[type]
+}
+
+function teacherInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return '?'
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase()
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
 }
 
 export function StudentCourseListPage() {
@@ -83,6 +85,7 @@ export function StudentCourseListPage() {
 
   const hasFilters = Boolean(level || teacherId || localSearch.trim())
   const hasNoResults = courses !== null && filteredCourses?.length === 0
+  const teacherFilterName = teacherId ? courses?.find((course) => course.teacherId === teacherId)?.teacherName : undefined
 
   function updateLevelFilter(value: string) {
     const nextParams = new URLSearchParams(searchParams)
@@ -100,31 +103,28 @@ export function StudentCourseListPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <section className="overflow-hidden rounded-3xl border border-indigo-100 bg-gradient-to-br from-white via-indigo-50/70 to-sky-50 p-6 shadow-sm sm:p-8">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-          <div className="max-w-2xl">
-            <Badge variant="outline" className="border-indigo-200 bg-white/80 text-indigo-700 shadow-sm">
-              <Sparkles aria-hidden="true" />
-              Phase 6 · Course Catalog
-            </Badge>
-            <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">Khám phá khóa học</h1>
-            <p className="mt-3 text-base leading-7 text-gray-600">
-              Tìm các khóa học đã được duyệt, đúng trình độ hiện tại và sẵn sàng để bạn bắt đầu học theo tiến độ của mình.
-            </p>
-          </div>
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-200">
-            <GraduationCap aria-hidden="true" className="h-7 w-7" />
-          </div>
-        </div>
+    <div className="flex min-w-0 flex-col gap-6">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/student">Trang chủ</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Khóa học</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
+      <section className="flex min-w-0 flex-col gap-2">
+        <h1 className="text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">Khám phá khóa học</h1>
+        <p className="text-base leading-7 text-gray-600">Tìm khóa học phù hợp với trình độ của bạn.</p>
       </section>
 
       <Card className="border-gray-200 bg-white/95 py-0 shadow-sm">
         <CardContent className="p-4 sm:p-5">
-          <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-gray-800">
-            <Filter aria-hidden="true" className="h-4 w-4 text-indigo-600" />
-            Bộ lọc khóa học
-          </div>
           <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
             <label className="block">
               <span className="mb-1.5 block text-sm font-medium text-gray-700">Trình độ</span>
@@ -144,7 +144,7 @@ export function StudentCourseListPage() {
             <label className="block">
               <span className="mb-1.5 block text-sm font-medium text-gray-700">Tìm kiếm</span>
               <span className="relative block">
-                <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
                 <input
                   value={localSearch}
                   onChange={(event) => setLocalSearch(event.target.value)}
@@ -158,11 +158,10 @@ export function StudentCourseListPage() {
           {teacherId ? (
             <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/80 p-3">
               <Badge variant="outline" className="border-indigo-200 bg-white text-indigo-700">
-                <UserRound aria-hidden="true" />
-                Đang xem khóa học của giảng viên #{teacherId}
+                {teacherFilterName ? `Đang xem khóa học của giảng viên ${teacherFilterName}` : 'Đang lọc theo giảng viên'}
               </Badge>
               <Button variant="ghost" size="sm" onClick={clearFilters} className="text-indigo-700 hover:text-indigo-800">
-                <XCircle aria-hidden="true" />
+                <XCircle aria-hidden="true" data-icon="inline-start" />
                 Xóa bộ lọc
               </Button>
             </div>
@@ -171,15 +170,15 @@ export function StudentCourseListPage() {
       </Card>
 
       {error ? (
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
-            <XCircle aria-hidden="true" className="h-4 w-4" />
+            <XCircle aria-hidden="true" data-icon="inline-start" />
             <AlertTitle>Không thể tải khóa học</AlertTitle>
             <AlertDescription className="text-red-700">{error}</AlertDescription>
           </Alert>
           {hasFilters ? (
             <Button variant="outline" onClick={clearFilters}>
-              <XCircle aria-hidden="true" />
+              <XCircle aria-hidden="true" data-icon="inline-start" />
               Xóa bộ lọc
             </Button>
           ) : null}
@@ -187,8 +186,8 @@ export function StudentCourseListPage() {
       ) : courses === null ? (
         <Card className="border-dashed border-indigo-200 bg-white/90 shadow-sm">
           <CardContent className="flex items-center gap-4 p-6 text-gray-600">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
-              <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin" />
+            <span className="flex size-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+              <Loader2 aria-hidden="true" className="size-5 animate-spin" />
             </span>
             <div>
               <p className="font-medium text-gray-900">Đang tải danh sách khóa học</p>
@@ -198,92 +197,65 @@ export function StudentCourseListPage() {
         </Card>
       ) : hasNoResults ? (
         <Card className="border-dashed border-gray-200 bg-white text-center shadow-sm">
-          <CardContent className="flex flex-col items-center p-8">
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100 text-gray-500">
-              <BookOpen aria-hidden="true" className="h-7 w-7" />
-            </span>
+          <CardContent className="flex flex-col items-center gap-0 p-8">
             <h2 className="mt-4 text-lg font-semibold text-gray-950">Chưa có khóa học phù hợp</h2>
             <p className="mt-2 max-w-md text-sm leading-6 text-gray-600">Thử đổi trình độ, từ khóa tìm kiếm hoặc bỏ bộ lọc giảng viên để xem thêm khóa học.</p>
             {hasFilters ? (
               <Button variant="outline" onClick={clearFilters} className="mt-5">
-                <XCircle aria-hidden="true" />
+                <XCircle aria-hidden="true" data-icon="inline-start" />
                 Xóa bộ lọc
               </Button>
             ) : null}
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-5 lg:grid-cols-2">
+        <div className="grid min-w-0 gap-5 lg:grid-cols-2">
           {filteredCourses?.map((course) => (
             <Link
               key={course.id}
               to={`/student/courses/${course.id}`}
-              className="group block rounded-3xl outline-none transition focus-visible:ring-4 focus-visible:ring-indigo-200"
+              className="group block min-w-0 rounded-3xl outline-none transition focus-visible:ring-4 focus-visible:ring-indigo-200"
             >
               <Card className="h-full gap-0 overflow-hidden border-gray-200 bg-white py-0 shadow-sm transition duration-200 group-hover:-translate-y-0.5 group-hover:border-indigo-200 group-hover:shadow-lg group-hover:shadow-indigo-100/70">
-                <CardContent className="flex h-full flex-col p-5 sm:p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="mb-3 flex flex-wrap gap-2">
-                        <Badge variant="outline" className={courseTypeClass(course.type)}>
-                          {studentCourseTypeLabels[course.type]}
-                        </Badge>
-                        <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
-                          {course.level}
-                        </Badge>
-                        {course.enrolled ? <Badge className="bg-emerald-600 text-white">Đã đăng ký</Badge> : null}
-                      </div>
-                      <h2 className="text-xl font-semibold tracking-tight text-gray-950 transition group-hover:text-indigo-700">{course.name}</h2>
-                      <p className="mt-2 line-clamp-3 text-sm leading-6 text-gray-600">{course.description ?? 'Chưa có mô tả.'}</p>
-                    </div>
-                    <span className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 transition group-hover:bg-indigo-600 group-hover:text-white">
-                      <ArrowRight aria-hidden="true" className="h-5 w-5" />
-                    </span>
+                <CardHeader className="gap-0">
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline" className={cn(courseTypeClass(course.type))}>
+                      {studentCourseTypeLabels[course.type]}
+                    </Badge>
+                    <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
+                      {course.level}
+                    </Badge>
+                    {course.enrolled ? <Badge className="bg-emerald-600 text-white">Đã đăng ký</Badge> : null}
                   </div>
-
-                  <div className="mt-5 flex items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50/80 p-3">
-                    <Avatar name={course.teacherName} url={course.teacherAvatarUrl ?? undefined} size="sm" />
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-gray-950">{course.teacherName}</p>
-                      <p className="truncate text-xs text-gray-500">{course.teacherEmail}</p>
-                    </div>
+                  <h2 className="mt-3 text-xl font-semibold tracking-tight text-gray-950 transition group-hover:text-indigo-700">
+                    {course.name}
+                  </h2>
+                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-gray-600">{course.description ?? 'Chưa có mô tả.'}</p>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-4">
+                  <Separator />
+                  <div className="flex min-w-0 items-center gap-3">
+                    <Avatar className="size-8">
+                      {course.teacherAvatarUrl ? <AvatarImage src={course.teacherAvatarUrl} alt={course.teacherName} /> : null}
+                      <AvatarFallback>{teacherInitials(course.teacherName)}</AvatarFallback>
+                    </Avatar>
+                    <p className="min-w-0 truncate text-sm font-medium text-gray-950">{course.teacherName}</p>
                   </div>
-
-                  <dl className="mt-5 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-                    <Stat icon={Layers3} label="Chủ đề" value={course.topicCount} />
-                    <Stat icon={BookOpen} label="Bài học" value={course.lessonCount} />
-                    <Stat icon={FileQuestion} label="Câu hỏi" value={course.questionCount} />
-                    <Stat icon={CalendarDays} label="Xuất bản" value={formatStudentLearningDate(course.publishedAt)} />
-                  </dl>
-
-                  <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-5 text-sm font-medium text-indigo-700">
-                    <span>Xem chi tiết</span>
-                    <ArrowRight aria-hidden="true" className="h-4 w-4 transition group-hover:translate-x-1" />
-                  </div>
+                  <p className="text-xs leading-5 text-gray-500">
+                    {course.topicCount} chủ đề · {course.lessonCount} bài học · {course.questionCount} câu hỏi
+                  </p>
                 </CardContent>
+                <CardFooter className="pt-5">
+                  <span className="flex items-center gap-1 text-sm font-medium text-indigo-700 [&_svg]:size-4">
+                    Xem khóa học
+                    <ArrowRight aria-hidden="true" data-icon="inline-end" />
+                  </span>
+                </CardFooter>
               </Card>
             </Link>
           ))}
         </div>
       )}
-    </div>
-  )
-}
-
-interface StatProps {
-  icon: LucideIcon
-  label: string
-  value: string | number
-}
-
-function Stat({ icon: Icon, label, value }: StatProps) {
-  return (
-    <div className="rounded-2xl bg-gray-50 p-3">
-      <dt className="flex items-center gap-1.5 text-xs font-medium text-gray-500">
-        <Icon aria-hidden="true" className="h-3.5 w-3.5" />
-        {label}
-      </dt>
-      <dd className="mt-1 truncate font-semibold text-gray-950">{value}</dd>
     </div>
   )
 }
