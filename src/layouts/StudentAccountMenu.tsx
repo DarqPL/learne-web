@@ -56,7 +56,6 @@ export function StudentAccountMenu({ userName, userEmail, onLogout }: StudentAcc
               <AvatarFallback>{getInitials(userName)}</AvatarFallback>
             </Avatar>
             <span className={cn('hidden max-w-28 truncate sm:inline')}>{userName}</span>
-            {userEmail ? <span className={cn('hidden max-w-40 truncate text-xs font-normal text-gray-500 md:inline')}>{userEmail}</span> : null}
             <ChevronDown aria-hidden="true" className={cn('size-4 transition-transform data-[state=open]:rotate-180 group-data-[state=open]:rotate-180')} />
           </button>
         </DropdownMenuTrigger>

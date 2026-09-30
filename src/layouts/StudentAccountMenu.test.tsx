@@ -13,8 +13,14 @@ describe('StudentAccountMenu', () => {
       </MemoryRouter>,
     )
 
+    // Trigger shows avatar + name only — email belongs in the menu, not the trigger.
+    const trigger = screen.getByRole('button', { name: /tài khoản/i })
+    expect(trigger).toHaveTextContent('An')
+    expect(trigger).not.toHaveTextContent('an@example.com')
+
     // Radix opens DropdownMenu on pointerdown; fireEvent.pointerDown works in jsdom.
-    fireEvent.pointerDown(screen.getByRole('button', { name: /tài khoản/i }))
+    fireEvent.pointerDown(trigger)
+    expect(screen.getByText('an@example.com')).toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'Gói học' })).toBeInTheDocument()
     expect(screen.queryByRole('menuitem', { name: 'Hồ sơ' })).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('menuitem', { name: 'Đăng xuất' }))
