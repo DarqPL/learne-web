@@ -5,8 +5,18 @@ import { listStudentEnrollments } from '../../../lib/api/studentLearningApi'
 import type { StudentEnrollment } from '../../../lib/api/types'
 import { Alert } from '../../../components/ui/Alert'
 import { Spinner } from '../../../components/ui/Spinner'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '../../../components/shadcn/ui/pagination'
 import { enrollmentStatusLabels, enrollmentStatusStyles } from './studentLearningLabels'
 import { formatStudentLearningDate } from './studentLearningUtils'
+
+const PAGE_SIZE = 6
 
 function getProgressPercent(value: number) {
   if (!Number.isFinite(value)) return 0
@@ -16,6 +26,7 @@ function getProgressPercent(value: number) {
 export function StudentEnrollmentsPage() {
   const [enrollments, setEnrollments] = useState<StudentEnrollment[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
     let cancelled = false
@@ -35,6 +46,17 @@ export function StudentEnrollmentsPage() {
       cancelled = true
     }
   }, [])
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPage(1)
+  }, [enrollments])
+
+  const totalPages = enrollments ? Math.max(1, Math.ceil(enrollments.length / PAGE_SIZE)) : 1
+  const safePage = Math.min(Math.max(1, page), totalPages)
+  const pagedEnrollments = enrollments
+    ? enrollments.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+    : []
 
   return (
     <div>
@@ -62,8 +84,9 @@ export function StudentEnrollmentsPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-2">
-          {enrollments.map((enrollment) => {
+        <>
+          <div className="grid gap-6 lg:grid-cols-2">
+            {pagedEnrollments.map((enrollment) => {
             const progressPercent = getProgressPercent(enrollment.progressPercent)
 
             return (
@@ -117,7 +140,48 @@ export function StudentEnrollmentsPage() {
               </Link>
             )
           })}
-        </div>
+          </div>
+          {totalPages > 1 ? (
+            <Pagination className="mt-8">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(event) => {
+                      event.preventDefault()
+                      setPage((prev) => Math.max(1, Math.min(prev, totalPages) - 1))
+                    }}
+                    aria-disabled={safePage === 1}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
+                  <PaginationItem key={pageNumber}>
+                    <PaginationLink
+                      href="#"
+                      isActive={pageNumber === safePage}
+                      onClick={(event) => {
+                        event.preventDefault()
+                        setPage(pageNumber)
+                      }}
+                    >
+                      {pageNumber}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(event) => {
+                      event.preventDefault()
+                      setPage((prev) => Math.min(totalPages, Math.max(1, prev) + 1))
+                    }}
+                    aria-disabled={safePage === totalPages}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          ) : null}
+        </>
       )}
     </div>
   )
