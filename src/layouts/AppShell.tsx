@@ -11,7 +11,14 @@ const roleLabels: Record<UserRole, string> = {
   ADMIN: 'Quản trị viên',
 }
 
-export function AppShell({ children }: { children: ReactNode }) {
+type AppShellProps = {
+  children: ReactNode
+  header?: ReactNode
+  fullWidth?: boolean
+  hideDefaultHeader?: boolean
+}
+
+export function AppShell({ children, header, fullWidth, hideDefaultHeader }: AppShellProps) {
   const { user, logout: clearAuth } = useAuth()
   const navigate = useNavigate()
 
@@ -31,9 +38,15 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const items = navItemsFor(user.role)
   const isTeacher = user.role === 'TEACHER'
+  const mainClassName = fullWidth
+    ? 'w-full flex-1 px-4 py-8 sm:px-6 lg:px-8'
+    : `w-full flex-1 px-4 py-8 sm:px-6 lg:px-8 ${isTeacher ? '' : 'mx-auto max-w-6xl'}`
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
+      {hideDefaultHeader ? (
+        header
+      ) : (
       <header className="border-b border-gray-200 bg-white">
         <div className={`mx-auto flex h-16 items-center justify-between gap-3 px-4 sm:px-6 ${isTeacher ? 'w-full' : 'max-w-6xl'}`}>
           <div className="flex min-w-0 items-center gap-3 sm:gap-6">
@@ -72,7 +85,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
-      <main className={`w-full flex-1 px-4 py-8 sm:px-6 lg:px-8 ${isTeacher ? '' : 'mx-auto max-w-6xl'}`}>{children}</main>
+      )}
+      <main className={mainClassName}>{children}</main>
     </div>
   )
 }
