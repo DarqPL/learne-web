@@ -5,14 +5,27 @@ import { CourseForm } from './CourseForm'
 describe('CourseForm pricing', () => {
   it('forces A1 courses to free pricing', () => {
     const onSubmit = vi.fn()
-    render(<CourseForm submitLabel="Lưu khóa học" onSubmit={onSubmit} />)
+    render(
+      <CourseForm
+        submitLabel="Lưu khóa học"
+        onSubmit={onSubmit}
+        initialValue={{
+          name: 'A1 Forced',
+          description: '',
+          type: 'COMPREHENSIVE',
+          level: 'A1',
+          orderIndex: 0,
+          pricingType: 'PAID',
+          proposedPriceAmountVnd: 100000,
+        }}
+      />,
+    )
 
-    fireEvent.change(screen.getByLabelText('Tên khóa học'), { target: { value: 'Tiếng Anh A1' } })
     fireEvent.click(screen.getByRole('button', { name: 'Lưu khóa học' }))
 
     expect(onSubmit).toHaveBeenCalledTimes(1)
     expect(onSubmit).toHaveBeenCalledWith(
-      expect.objectContaining({ pricingType: 'FREE', proposedPriceAmountVnd: null }),
+      expect.objectContaining({ level: 'A1', pricingType: 'FREE', proposedPriceAmountVnd: null }),
     )
   })
 
