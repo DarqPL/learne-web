@@ -5,9 +5,12 @@ import { Alert, AlertDescription, AlertTitle } from '../../../components/shadcn/
 import { Badge } from '../../../components/shadcn/ui/badge'
 import { Button } from '../../../components/shadcn/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/shadcn/ui/card'
+import { Field, FieldLabel } from '../../../components/shadcn/ui/field'
+import { Input } from '../../../components/shadcn/ui/input'
+import { Skeleton } from '../../../components/shadcn/ui/skeleton'
 import { getApiErrorMessage } from '../../../lib/api/client'
-import { checkoutPlan } from '../../../lib/api/studentMonetizationApi'
-import type { PlanCode } from '../../../lib/api/types'
+import { checkoutPlan, getStudentSubscription } from '../../../lib/api/studentMonetizationApi'
+import type { PlanCode, SubscriptionSummaryResponse } from '../../../lib/api/types'
 import { formatVnd } from './paymentUtils'
 
 const plans: Array<{
@@ -49,6 +52,9 @@ export function StudentSubscriptionPlansPage() {
   const [checkoutPlanCode, setCheckoutPlanCode] = useState<PlanCode | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
+  const [subscription, setSubscription] = useState<SubscriptionSummaryResponse | null>(null)
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true)
+  const [planCouponCodes, setPlanCouponCodes] = useState<Record<PlanCode, string>>({ VIP: '', PRO: '', PRO_PLUS: '' })
   const mountedRef = useRef(true)
   const requestSeq = useRef(0)
 
@@ -59,15 +65,36 @@ export function StudentSubscriptionPlansPage() {
     }
   }, [])
 
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      setSubscriptionLoading(true)
+      try {
+        const response = await getStudentSubscription()
+        if (cancelled) return
+        setSubscription(response.data)
+      } catch (err) {
+        if (!cancelled) setError(getApiErrorMessage(err, 'Không thể tải gói đang hoạt động.'))
+      } finally {
+        if (!cancelled) setSubscriptionLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   async function handleCheckoutPlan(planCode: PlanCode) {
     if (checkoutPlanCode) return
+    if (subscription?.planCode === planCode) return
     const seq = requestSeq.current + 1
     requestSeq.current = seq
     setCheckoutPlanCode(planCode)
     setError(null)
     setInfo(null)
     try {
-      const response = await checkoutPlan(planCode)
+      const couponCode = planCouponCodes[planCode].trim()
+      const response = await checkoutPlan(planCode, couponCode ? { couponCode } : {})
       if (!mountedRef.current || requestSeq.current !== seq) return
       const order = response.data
       if (order.status === 'PENDING_PAYMENT' && order.paymentProvider === 'SEPAY') {
@@ -115,10 +142,51 @@ export function StudentSubscriptionPlansPage() {
         </Alert>
       ) : null}
 
+      <section aria-label="Gói hiện tại">
+        {subscriptionLoading ? (
+          <Card className="border-indigo-100 bg-white shadow-sm">
+            <CardContent className="space-y-3">
+              <Badge variant="outline" className="border-indigo-200 bg-white text-indigo-700">
+                Gói hiện tại
+              </Badge>
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-4 w-64" />
+            </CardContent>
+          </Card>
+        ) : subscription?.planCode ? (
+          <Card className="border-indigo-100 bg-white shadow-sm">
+            <CardContent className="space-y-3">
+              <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+                <CheckCircle2 aria-hidden="true" />
+                Gói hiện tại
+              </Badge>
+              <p className="text-lg font-bold text-gray-950">{plans.find((item) => item.code === subscription.planCode)?.name ?? subscription.planCode}</p>
+              <p className="text-sm text-gray-600">
+                Mã gói: {subscription.planCode} · Hiệu lực: {subscription.startsAt ?? '—'} – {subscription.endsAt ?? '—'}
+              </p>
+              <p className="text-sm text-gray-600">
+                AI đã dùng hôm nay: {subscription.aiUsedToday}/{subscription.aiDailyLimit}
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="border-indigo-100 bg-white shadow-sm">
+            <CardContent className="space-y-2">
+              <Badge variant="outline" className="border-indigo-200 bg-white text-indigo-700">
+                Gói hiện tại
+              </Badge>
+              <p className="text-sm text-gray-600">Chưa có gói đang hoạt động</p>
+            </CardContent>
+          </Card>
+        )}
+      </section>
+
       <section className="grid gap-4 lg:grid-cols-3">
         {plans.map((plan) => {
           const Icon = plan.icon
           const loading = checkoutPlanCode === plan.code
+          const isActive = subscription?.planCode === plan.code
+          const couponDisabled = isActive || checkoutPlanCode !== null
 
           return (
             <Card key={plan.code} className="border-indigo-100 bg-white shadow-sm">
@@ -141,8 +209,24 @@ export function StudentSubscriptionPlansPage() {
                     </li>
                   ))}
                 </ul>
-                <Button className="w-full" loading={loading} disabled={checkoutPlanCode !== null && !loading} onClick={() => void handleCheckoutPlan(plan.code)}>
-                  Chọn gói {plan.name}
+                <Field>
+                  <FieldLabel htmlFor={`coupon-${plan.code}`}>Mã giảm giá cho {plan.name}</FieldLabel>
+                  <Input
+                    id={`coupon-${plan.code}`}
+                    placeholder="Nhập mã giảm giá"
+                    autoComplete="off"
+                    value={planCouponCodes[plan.code]}
+                    disabled={couponDisabled}
+                    onChange={(event) => setPlanCouponCodes((prev) => ({ ...prev, [plan.code]: event.target.value }))}
+                  />
+                </Field>
+                <Button
+                  className="w-full"
+                  loading={loading}
+                  disabled={isActive || (checkoutPlanCode !== null && !loading)}
+                  onClick={() => void handleCheckoutPlan(plan.code)}
+                >
+                  {isActive ? `Đang dùng ${plan.name}` : `Chọn gói ${plan.name}`}
                 </Button>
               </CardContent>
             </Card>
