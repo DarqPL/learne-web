@@ -6,6 +6,7 @@ import type { StudentEnrollmentProgress } from '../../../lib/api/types'
 import { Alert } from '../../../components/ui/Alert'
 import { Button } from '../../../components/ui/Button'
 import { Spinner } from '../../../components/ui/Spinner'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../../components/shadcn/ui/accordion'
 import { enrollmentStatusLabels, enrollmentStatusStyles, lessonProgressStatusLabels, lessonProgressStatusStyles, studentCourseTypeLabels, studentSkillTypeLabels } from './studentLearningLabels'
 import { formatStudentLearningDate } from './studentLearningUtils'
 
@@ -134,54 +135,70 @@ export function StudentEnrollmentProgressPage() {
             <p className="text-sm text-gray-600">Chưa có bài học nào trong khóa học này.</p>
           </section>
         ) : (
-          enrollment.topics.map((topic) => (
-            <section key={topic.id} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Chủ đề</p>
-              <h2 className="mt-1 text-lg font-semibold text-gray-900">{topic.name}</h2>
-              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {topic.lessons.map((lesson) => {
-                  const lessonProgressPercent = getProgressPercent(lesson.progressPercent)
-                  const locked = lesson.status === 'LOCKED'
+          <Accordion
+            type="multiple"
+            defaultValue={enrollment.topics[0] ? [`topic-${enrollment.topics[0].id}`] : []}
+            className="space-y-5"
+          >
+            {enrollment.topics.map((topic) => (
+              <AccordionItem
+                key={topic.id}
+                value={`topic-${topic.id}`}
+                className="rounded-2xl border border-gray-200 bg-white px-5 shadow-sm"
+              >
+                <AccordionTrigger className="py-5 hover:no-underline">
+                  <span className="flex min-w-0 flex-1 flex-col gap-1 text-left">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Chủ đề</span>
+                    <span className="text-lg font-semibold text-gray-900">{topic.name}</span>
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="mt-1 grid gap-3 pb-2 md:grid-cols-2 xl:grid-cols-3">
+                    {topic.lessons.map((lesson) => {
+                      const lessonProgressPercent = getProgressPercent(lesson.progressPercent)
+                      const locked = lesson.status === 'LOCKED'
 
-                  return (
-                    <article
-                      key={lesson.lessonId}
-                      className={`rounded-xl border p-4 ${locked ? 'border-gray-100 bg-gray-50' : 'border-gray-200 bg-white'}`}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <span className="text-sm font-semibold text-gray-900">{lesson.title}</span>
-                        <span className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold ${lessonProgressStatusStyles[lesson.status]}`}>
-                          {lessonProgressStatusLabels[lesson.status]}
-                        </span>
-                      </div>
-                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold">
-                        <span className="rounded-full bg-white px-2 py-1 text-gray-700">{studentSkillTypeLabels[lesson.skillType]}</span>
-                        <span className="text-gray-500">{lessonProgressPercent}%</span>
-                      </div>
-                      <dl className="mt-4 grid gap-2 text-xs text-gray-500">
-                        <div>
-                          <dt className="font-medium text-gray-600">Bắt đầu</dt>
-                          <dd>{formatStudentLearningDate(lesson.startedAt)}</dd>
-                        </div>
-                        <div>
-                          <dt className="font-medium text-gray-600">Hoàn thành</dt>
-                          <dd>{formatStudentLearningDate(lesson.completedAt)}</dd>
-                        </div>
-                      </dl>
-                      <Button
-                        className="mt-4 w-full"
-                        variant={locked ? 'secondary' : 'primary'}
-                        disabled={locked}
-                        onClick={() => navigate(`/student/enrollments/${enrollment.enrollmentId}/lessons/${lesson.lessonId}`)}
-                      >
-                        {locked ? 'Chưa mở khóa' : 'Vào bài học'}
-                      </Button>
-                    </article>
-                  )
-                })}
-              </div>
-            </section>
-          ))
+                      return (
+                        <article
+                          key={lesson.lessonId}
+                          className={`rounded-xl border p-4 ${locked ? 'border-gray-100 bg-gray-50' : 'border-gray-200 bg-white'}`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-sm font-semibold text-gray-900">{lesson.title}</span>
+                            <span className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold ${lessonProgressStatusStyles[lesson.status]}`}>
+                              {lessonProgressStatusLabels[lesson.status]}
+                            </span>
+                          </div>
+                          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold">
+                            <span className="rounded-full bg-white px-2 py-1 text-gray-700">{studentSkillTypeLabels[lesson.skillType]}</span>
+                            <span className="text-gray-500">{lessonProgressPercent}%</span>
+                          </div>
+                          <dl className="mt-4 grid gap-2 text-xs text-gray-500">
+                            <div>
+                              <dt className="font-medium text-gray-600">Bắt đầu</dt>
+                              <dd>{formatStudentLearningDate(lesson.startedAt)}</dd>
+                            </div>
+                            <div>
+                              <dt className="font-medium text-gray-600">Hoàn thành</dt>
+                              <dd>{formatStudentLearningDate(lesson.completedAt)}</dd>
+                            </div>
+                          </dl>
+                          <Button
+                            className="mt-4 w-full"
+                            variant={locked ? 'secondary' : 'primary'}
+                            disabled={locked}
+                            onClick={() => navigate(`/student/enrollments/${enrollment.enrollmentId}/lessons/${lesson.lessonId}`)}
+                          >
+                            {locked ? 'Chưa mở khóa' : 'Vào bài học'}
+                          </Button>
+                        </article>
+                      )
+                    })}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         )}
       </div>
     </div>
