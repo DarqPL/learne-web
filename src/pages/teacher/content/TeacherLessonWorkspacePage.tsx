@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Alert } from '../../../components/ui/Alert'
-import { Button } from '../../../components/ui/Button'
-import { Spinner } from '../../../components/ui/Spinner'
+import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
+import { Button } from '@/components/shadcn/ui/button'
+import { Spinner } from '@/components/shadcn/ui/spinner'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import {
   createTeacherQuestion,
@@ -253,13 +253,28 @@ export function TeacherLessonWorkspacePage() {
   return (
     <div className="space-y-6">
       {currentCourse ? (
-        <Button variant="secondary" onClick={() => navigate(`/teacher/content/courses/${currentCourse.id}`)}>
+        <Button
+          variant="outline"
+          onClick={() =>
+            navigate(lesson ? `/teacher/content/courses/${currentCourse.id}?step=cau-hoi&lesson=${lesson.id}` : `/teacher/content/courses/${currentCourse.id}`)
+          }
+        >
           Quay lại khóa học
         </Button>
       ) : null}
 
-      {displayError ? <Alert>{displayError}</Alert> : null}
-      {info ? <Alert variant="success">{info}</Alert> : null}
+      {displayError ? (
+        <Alert variant="destructive">
+          <AlertTitle>Đã xảy ra lỗi</AlertTitle>
+          <AlertDescription>{displayError}</AlertDescription>
+        </Alert>
+      ) : null}
+      {info ? (
+        <Alert className="border-emerald-200 bg-emerald-50/70 text-emerald-800">
+          <AlertTitle>Thông báo</AlertTitle>
+          <AlertDescription className="text-emerald-700">{info}</AlertDescription>
+        </Alert>
+      ) : null}
 
       {!invalidRoute && currentCourse === null && !displayError ? (
         <div className="flex justify-center py-16">
@@ -293,7 +308,7 @@ export function TeacherLessonWorkspacePage() {
                   <h2 className="text-lg font-semibold text-gray-900">Thông tin bài học</h2>
                   <p className="mt-1 text-sm text-gray-600">Cập nhật nội dung bài học và quản lý trạng thái trước khi gửi duyệt khóa học.</p>
                 </div>
-                <Button variant="danger" loading={action === `delete-lesson-${lesson.id}`} disabled={action !== null && action !== `delete-lesson-${lesson.id}`} onClick={handleDeleteLesson}>
+                <Button variant="destructive" loading={action === `delete-lesson-${lesson.id}`} disabled={action !== null && action !== `delete-lesson-${lesson.id}`} onClick={handleDeleteLesson}>
                   Xóa bài học
                 </Button>
               </div>
@@ -349,11 +364,11 @@ export function TeacherLessonWorkspacePage() {
                         <TeacherContentStatusBadge status={question.status} />
                         {editable ? (
                           <>
-                            <Button variant="secondary" disabled={action !== null} onClick={() => setEditingQuestionId(question.id)}>
+                            <Button variant="outline" disabled={action !== null} onClick={() => setEditingQuestionId(question.id)}>
                               Sửa câu hỏi
                             </Button>
                             <Button
-                              variant="danger"
+                              variant="destructive"
                               loading={action === `delete-question-${question.id}`}
                               disabled={action !== null && action !== `delete-question-${question.id}`}
                               onClick={() => handleDeleteQuestion(question)}
@@ -369,7 +384,7 @@ export function TeacherLessonWorkspacePage() {
                       <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
                         <div className="mb-3 flex items-center justify-between gap-3">
                           <h4 className="font-medium text-gray-900">Chỉnh sửa câu hỏi</h4>
-                          <Button variant="secondary" disabled={action !== null} onClick={() => setEditingQuestionId(null)}>
+                          <Button variant="outline" disabled={action !== null} onClick={() => setEditingQuestionId(null)}>
                             Đóng
                           </Button>
                         </div>

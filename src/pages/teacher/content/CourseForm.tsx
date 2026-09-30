@@ -1,5 +1,10 @@
-import { useState, type FormEvent } from 'react'
-import { Button } from '../../../components/ui/Button'
+import { useId, useState, type FormEvent } from 'react'
+import { Save } from 'lucide-react'
+import { Button } from '@/components/shadcn/ui/button'
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/shadcn/ui/field'
+import { Input } from '@/components/shadcn/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/shadcn/ui/select'
+import { Textarea } from '@/components/shadcn/ui/textarea'
 import type { TeacherCourseRequest } from '../../../lib/api/types'
 import { courseTypeLabels, courseTypes } from './contentLabels'
 
@@ -19,101 +24,127 @@ const defaultCourse: TeacherCourseRequest = {
   orderIndex: 0,
 }
 
-const fieldClassName =
-  'mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500'
-
 const levelOptions = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
+
+interface CourseValidation {
+  field: 'name' | 'level'
+  message: string
+}
 
 export function CourseForm({ initialValue, loading = false, disabled = false, submitLabel, onSubmit }: CourseFormProps) {
   const initialForm = initialValue ?? defaultCourse
   const [previousInitialValue, setPreviousInitialValue] = useState(initialValue)
   const [form, setForm] = useState<TeacherCourseRequest>(initialForm)
-  const [orderIndexInput, setOrderIndexInput] = useState(String(initialForm.orderIndex))
-  const [validationMessage, setValidationMessage] = useState('')
+  const [validation, setValidation] = useState<CourseValidation | null>(null)
+  const fieldPrefix = useId()
 
   if (initialValue !== previousInitialValue) {
     const nextForm = initialValue ?? defaultCourse
     setPreviousInitialValue(initialValue)
     setForm(nextForm)
-    setOrderIndexInput(String(nextForm.orderIndex))
-    setValidationMessage('')
+    setValidation(null)
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (disabled) return
 
-    const orderIndex = Number(orderIndexInput)
-
-    if (!form.name.trim() || !form.level.trim()) {
-      setValidationMessage('Vui lòng nhập tên khóa học và cấp độ.')
+    if (!form.name.trim()) {
+      setValidation({ field: 'name', message: 'Vui lòng nhập tên khóa học.' })
       return
     }
 
-    if (!orderIndexInput.trim() || !Number.isFinite(orderIndex)) {
-      setValidationMessage('Vui lòng nhập thứ tự hợp lệ.')
+    if (!form.level.trim()) {
+      setValidation({ field: 'level', message: 'Vui lòng chọn cấp độ.' })
       return
     }
 
-    setValidationMessage('')
-    onSubmit({ ...form, orderIndex })
+    setValidation(null)
+    onSubmit({ ...form })
   }
 
+  const nameError = validation?.field === 'name' ? validation.message : undefined
+  const levelError = validation?.field === 'level' ? validation.message : undefined
+  const nameErrorId = `${fieldPrefix}-name-error`
+  const levelErrorId = `${fieldPrefix}-level-error`
+
   return (
-    <form className="space-y-3" onSubmit={handleSubmit}>
-      <label className="block text-sm font-medium text-gray-700">
-        Tên khóa học
-        <input
-          className={fieldClassName}
-          value={form.name}
-          onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-        />
-      </label>
+    <form onSubmit={handleSubmit}>
+      <FieldGroup className="gap-3">
+        <Field data-invalid={nameError ? true : undefined}>
+          <FieldLabel htmlFor={`${fieldPrefix}-name`}>Tên khóa học</FieldLabel>
+          <Input
+            id={`${fieldPrefix}-name`}
+            value={form.name}
+            disabled={disabled}
+            aria-invalid={nameError ? true : undefined}
+            aria-describedby={nameError ? nameErrorId : undefined}
+            onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+          />
+          {nameError ? <FieldError id={nameErrorId}>{nameError}</FieldError> : null}
+        </Field>
 
-      <label className="block text-sm font-medium text-gray-700">
-        Mô tả
-        <textarea
-          className={fieldClassName}
-          value={form.description}
-          onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
-        />
-      </label>
+        <Field>
+          <FieldLabel htmlFor={`${fieldPrefix}-description`}>Mô tả</FieldLabel>
+          <Textarea
+            id={`${fieldPrefix}-description`}
+            value={form.description}
+            disabled={disabled}
+            onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
+          />
+        </Field>
 
-      <label className="block text-sm font-medium text-gray-700">
-        Loại khóa học
-        <select
-          className={fieldClassName}
-          value={form.type}
-          onChange={(event) => setForm((current) => ({ ...current, type: event.target.value as TeacherCourseRequest['type'] }))}
-        >
-          {courseTypes.map((courseType) => (
-            <option key={courseType} value={courseType}>
-              {courseTypeLabels[courseType]}
-            </option>
-          ))}
-        </select>
-      </label>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field>
+            <FieldLabel htmlFor={`${fieldPrefix}-type`}>Loại khóa học</FieldLabel>
+            <Select
+              value={form.type}
+              disabled={disabled}
+              onValueChange={(value) => setForm((current) => ({ ...current, type: value as TeacherCourseRequest['type'] }))}
+            >
+              <SelectTrigger id={`${fieldPrefix}-type`} className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {courseTypes.map((courseType) => (
+                  <SelectItem key={courseType} value={courseType}>
+                    {courseTypeLabels[courseType]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
 
-      <label className="block text-sm font-medium text-gray-700">
-        Cấp độ
-        <select
-          className={fieldClassName}
-          value={form.level}
-          onChange={(event) => setForm((current) => ({ ...current, level: event.target.value }))}
-        >
-          {levelOptions.map((level) => (
-            <option key={level} value={level}>
-              {level}
-            </option>
-          ))}
-        </select>
-      </label>
+          <Field data-invalid={levelError ? true : undefined}>
+            <FieldLabel htmlFor={`${fieldPrefix}-level`}>Cấp độ</FieldLabel>
+            <Select value={form.level} disabled={disabled} onValueChange={(value) => setForm((current) => ({ ...current, level: value }))}>
+              <SelectTrigger
+                id={`${fieldPrefix}-level`}
+                className="w-full"
+                aria-invalid={levelError ? true : undefined}
+                aria-describedby={levelError ? levelErrorId : undefined}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {levelOptions.map((level) => (
+                  <SelectItem key={level} value={level}>
+                    {level}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {levelError ? <FieldError id={levelErrorId}>{levelError}</FieldError> : null}
+          </Field>
+        </div>
 
-      {validationMessage ? <p className="text-sm text-red-600">{validationMessage}</p> : null}
-
-      <Button type="submit" loading={loading} disabled={disabled}>
-        {submitLabel}
-      </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="submit" loading={loading} disabled={disabled}>
+            <Save data-icon="inline-start" aria-hidden="true" />
+            {submitLabel}
+          </Button>
+        </div>
+      </FieldGroup>
     </form>
   )
 }

@@ -1,4 +1,14 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
+import { Camera, Pencil, RefreshCw, Save, Trash2, TriangleAlert, Video, X } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/shadcn/ui/avatar'
+import { Badge } from '@/components/shadcn/ui/badge'
+import { Button } from '@/components/shadcn/ui/button'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/shadcn/ui/card'
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/shadcn/ui/field'
+import { Input } from '@/components/shadcn/ui/input'
+import { Spinner } from '@/components/shadcn/ui/spinner'
+import { Textarea } from '@/components/shadcn/ui/textarea'
 import { getApiErrorMessage } from '../../lib/api/client'
 import {
   deleteTeacherAvatar,
@@ -9,13 +19,6 @@ import {
   uploadTeacherIntroductionVideo,
 } from '../../lib/api/teacherApi'
 import type { TeacherProfile } from '../../lib/api/types'
-import { Alert } from '../../components/ui/Alert'
-import { Avatar } from '../../components/ui/Avatar'
-import { Button } from '../../components/ui/Button'
-import { Field } from '../../components/ui/Field'
-import { Input } from '../../components/ui/Input'
-import { Spinner } from '../../components/ui/Spinner'
-import { Textarea } from '../../components/ui/Textarea'
 import { validateForm } from '../../lib/validation/validateForm'
 import { maxLength, numberRange, required } from '../../lib/validation/validators'
 
@@ -25,11 +28,14 @@ const statusLabels: Record<TeacherProfile['status'], string> = {
   SUSPENDED: 'Bị khóa',
 }
 
-const statusStyles: Record<TeacherProfile['status'], string> = {
-  ACTIVE: 'bg-green-100 text-green-800',
-  INACTIVE: 'bg-gray-100 text-gray-700',
-  SUSPENDED: 'bg-red-100 text-red-700',
+function getInitials(fullName: string) {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return 'GV'
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
 }
+
+const cardSoftClassName = 'border-indigo-100 bg-white/95 shadow-sm shadow-indigo-100/60'
 
 export function TeacherProfilePage() {
   const [profile, setProfile] = useState<TeacherProfile | null>(null)
@@ -88,6 +94,7 @@ export function TeacherProfilePage() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
+    if (submitting) return
     const errors = validateForm(
       { bio, expertise, yearsOfExperience },
       {
@@ -195,11 +202,16 @@ export function TeacherProfilePage() {
 
   if (loadError || !profile) {
     return (
-      <div>
-        <h1 className="mb-6 text-2xl font-bold text-gray-900">Hồ sơ giảng viên</h1>
-        <Alert>{loadError ?? 'Không thể tải hồ sơ giảng viên.'}</Alert>
+      <div className="mx-auto max-w-2xl">
+        <h1 className="mb-6 text-2xl font-bold text-indigo-950">Hồ sơ giảng viên</h1>
+        <Alert variant="destructive">
+          <TriangleAlert aria-hidden="true" />
+          <AlertTitle>Không thể tải hồ sơ</AlertTitle>
+          <AlertDescription>{loadError ?? 'Không thể tải hồ sơ giảng viên.'}</AlertDescription>
+        </Alert>
         <div className="mt-4">
-          <Button variant="secondary" onClick={load}>
+          <Button variant="outline" onClick={load}>
+            <RefreshCw data-icon="inline-start" aria-hidden="true" />
             Thử lại
           </Button>
         </div>
@@ -210,144 +222,206 @@ export function TeacherProfilePage() {
   if (editing) {
     return (
       <div className="mx-auto max-w-2xl">
-        <h1 className="mb-6 text-2xl font-bold text-gray-900">Chỉnh sửa hồ sơ</h1>
+        <h1 className="mb-6 text-2xl font-bold text-indigo-950">Chỉnh sửa hồ sơ</h1>
         {error ? (
           <div className="mb-4">
-            <Alert>{error}</Alert>
+            <Alert variant="destructive">
+              <TriangleAlert aria-hidden="true" />
+              <AlertTitle>Không thể lưu</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           </div>
         ) : null}
-        <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <Field label="Giới thiệu" error={fieldErrors.bio}>
-            <Textarea value={bio} onChange={(event) => setBio(event.target.value)} maxLength={2000} rows={5} required />
-          </Field>
-          <Field label="Chuyên môn" error={fieldErrors.expertise}>
-            <Input
-              value={expertise}
-              onChange={(event) => setExpertise(event.target.value)}
-              maxLength={255}
-              required
-              placeholder="Ví dụ: Giao tiếp, Ngữ pháp, IELTS"
-            />
-          </Field>
-          <Field label="Số năm kinh nghiệm" error={fieldErrors.yearsOfExperience}>
-            <Input
-              type="number"
-              min={0}
-              max={80}
-              value={yearsOfExperience}
-              onChange={(event) => setYearsOfExperience(event.target.value)}
-              required
-              placeholder="0"
-            />
-          </Field>
-          <div className="flex gap-3">
-            <Button type="submit" loading={submitting}>
-              Lưu hồ sơ
-            </Button>
-            <Button type="button" variant="secondary" disabled={submitting} onClick={() => setEditing(false)}>
-              Hủy
-            </Button>
-          </div>
-        </form>
+        <Card className={cardSoftClassName}>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="pt-6">
+              <FieldGroup className="gap-4">
+                <Field data-invalid={fieldErrors.bio ? true : undefined}>
+                  <FieldLabel htmlFor="teacher-profile-bio">Giới thiệu</FieldLabel>
+                  <Textarea
+                    id="teacher-profile-bio"
+                    value={bio}
+                    disabled={submitting}
+                    aria-invalid={fieldErrors.bio ? true : undefined}
+                    onChange={(event) => setBio(event.target.value)}
+                    maxLength={2000}
+                    rows={5}
+                    required
+                  />
+                  {fieldErrors.bio ? <FieldError>{fieldErrors.bio}</FieldError> : null}
+                </Field>
+                <Field data-invalid={fieldErrors.expertise ? true : undefined}>
+                  <FieldLabel htmlFor="teacher-profile-expertise">Chuyên môn</FieldLabel>
+                  <Input
+                    id="teacher-profile-expertise"
+                    value={expertise}
+                    disabled={submitting}
+                    aria-invalid={fieldErrors.expertise ? true : undefined}
+                    onChange={(event) => setExpertise(event.target.value)}
+                    maxLength={255}
+                    required
+                    placeholder="Ví dụ: Giao tiếp, Ngữ pháp, IELTS"
+                  />
+                  {fieldErrors.expertise ? <FieldError>{fieldErrors.expertise}</FieldError> : null}
+                </Field>
+                <Field data-invalid={fieldErrors.yearsOfExperience ? true : undefined}>
+                  <FieldLabel htmlFor="teacher-profile-experience">Số năm kinh nghiệm</FieldLabel>
+                  <Input
+                    id="teacher-profile-experience"
+                    type="number"
+                    min={0}
+                    max={80}
+                    value={yearsOfExperience}
+                    disabled={submitting}
+                    aria-invalid={fieldErrors.yearsOfExperience ? true : undefined}
+                    onChange={(event) => setYearsOfExperience(event.target.value)}
+                    required
+                    placeholder="0"
+                  />
+                  {fieldErrors.yearsOfExperience ? <FieldError>{fieldErrors.yearsOfExperience}</FieldError> : null}
+                </Field>
+              </FieldGroup>
+            </CardContent>
+            <CardFooter className="flex flex-wrap gap-2">
+              <Button type="submit" loading={submitting}>
+                <Save data-icon="inline-start" aria-hidden="true" />
+                Lưu hồ sơ
+              </Button>
+              <Button type="button" variant="outline" disabled={submitting} onClick={() => setEditing(false)}>
+                <X data-icon="inline-start" aria-hidden="true" />
+                Hủy
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
       </div>
     )
   }
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Hồ sơ giảng viên</h1>
+      <h1 className="mb-6 text-2xl font-bold text-indigo-950">Hồ sơ giảng viên</h1>
       {success ? (
-        <div className="mb-4">
-          <Alert variant="success">{success}</Alert>
-        </div>
+        <p role="status" className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50/70 px-3 py-2 text-sm text-emerald-800">{success}</p>
       ) : null}
       {error ? (
         <div className="mb-4">
-          <Alert>{error}</Alert>
+          <Alert variant="destructive">
+            <TriangleAlert aria-hidden="true" />
+            <AlertTitle>Đã xảy ra lỗi</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         </div>
       ) : null}
-      <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-        <div className="flex flex-col gap-4 border-b border-gray-200 p-6 sm:flex-row sm:items-center sm:gap-6">
-          <Avatar name={profile.fullName} url={profile.avatarUrl} size="lg" />
-          <div className="flex-1">
-            <h2 className="text-xl font-bold text-gray-900">{profile.fullName}</h2>
-            <p className="text-sm text-gray-500">{profile.email}</p>
-            <div className="mt-2 flex gap-2">
-              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusStyles[profile.status]}`}>
-                {statusLabels[profile.status]}
-              </span>
-              <span
-                className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                  profile.completed ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
-                }`}
-              >
-                {profile.completed ? 'Hồ sơ công khai' : 'Hồ sơ chưa hoàn tất'}
-              </span>
+      <Card className={cardSoftClassName}>
+        <CardHeader>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
+            <Avatar size="lg" className="size-16 border-2 border-indigo-100 bg-indigo-50 text-indigo-700">
+              {profile.avatarUrl ? <AvatarImage src={profile.avatarUrl} alt={`Ảnh đại diện của ${profile.fullName}`} /> : null}
+              <AvatarFallback className="bg-indigo-100 text-base font-semibold text-indigo-700">
+                {getInitials(profile.fullName)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <CardTitle className="truncate text-xl">{profile.fullName}</CardTitle>
+              <p className="mt-0.5 truncate text-sm text-muted-foreground">{profile.email}</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <Badge
+                  variant="outline"
+                  className={
+                    profile.status === 'ACTIVE'
+                      ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                      : profile.status === 'SUSPENDED'
+                        ? 'border-red-200 bg-red-50 text-red-700'
+                        : 'border-slate-200 bg-slate-100 text-slate-600'
+                  }
+                >
+                  {statusLabels[profile.status]}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className={
+                    profile.completed
+                      ? 'border-indigo-200 bg-indigo-50 text-indigo-700'
+                      : 'border-amber-200 bg-amber-50 text-amber-700'
+                  }
+                >
+                  {profile.completed ? 'Hồ sơ công khai' : 'Hồ sơ chưa hoàn tất'}
+                </Badge>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium whitespace-nowrap text-white transition-colors hover:bg-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
+                {mediaAction === 'avatar' ? <Spinner className="text-white" /> : <Camera data-icon="inline-start" aria-hidden="true" />}
+                {mediaAction === 'avatar' ? 'Đang tải...' : 'Đổi ảnh'}
+                <input type="file" accept="image/*" className="sr-only" disabled={mediaAction !== null} onChange={handleAvatarUpload} />
+              </label>
+              {profile.avatarUrl ? (
+                <Button
+                  variant="outline"
+                  className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                  loading={mediaAction === 'delete-avatar'}
+                  disabled={mediaAction !== null}
+                  onClick={handleAvatarDelete}
+                >
+                  <Trash2 data-icon="inline-start" aria-hidden="true" />
+                  Xóa ảnh
+                </Button>
+              ) : null}
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <label className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-800 transition-colors hover:bg-gray-300">
-              {mediaAction === 'avatar' ? 'Đang tải...' : 'Đổi ảnh'}
-              <input
-                type="file"
-                accept="image/*"
-                className="sr-only"
-                disabled={mediaAction !== null}
-                onChange={handleAvatarUpload}
-              />
-            </label>
-            {profile.avatarUrl ? (
-              <Button variant="danger" loading={mediaAction === 'delete-avatar'} disabled={mediaAction !== null} onClick={handleAvatarDelete}>
-                Xóa ảnh
-              </Button>
-            ) : null}
-          </div>
-        </div>
-        <div className="space-y-6 p-6">
-          <section>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-5">
+          <section className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-              <h3 className="text-sm font-semibold text-gray-900">Video giới thiệu</h3>
+              <h3 className="text-sm font-semibold text-indigo-950">Video giới thiệu</h3>
               <div className="flex flex-wrap gap-2">
-                <label className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-800 transition-colors hover:bg-gray-300">
+                <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-indigo-200 bg-white px-3 py-1.5 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-50 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
+                  <Video data-icon="inline-start" aria-hidden="true" />
                   {mediaAction === 'video' ? 'Đang tải...' : profile.introductionVideoUrl ? 'Đổi video' : 'Tải video'}
-                  <input
-                    type="file"
-                    accept="video/*"
-                    className="sr-only"
-                    disabled={mediaAction !== null}
-                    onChange={handleVideoUpload}
-                  />
+                  <input type="file" accept="video/*" className="sr-only" disabled={mediaAction !== null} onChange={handleVideoUpload} />
                 </label>
                 {profile.introductionVideoUrl ? (
-                  <Button variant="danger" loading={mediaAction === 'delete-video'} disabled={mediaAction !== null} onClick={handleVideoDelete}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                    loading={mediaAction === 'delete-video'}
+                    disabled={mediaAction !== null}
+                    onClick={handleVideoDelete}
+                  >
+                    <Trash2 data-icon="inline-start" aria-hidden="true" />
                     Xóa video
                   </Button>
                 ) : null}
               </div>
             </div>
             {profile.introductionVideoUrl ? (
-              <video className="w-full rounded-xl border border-gray-200 bg-black" src={profile.introductionVideoUrl} controls />
+              <video className="w-full rounded-xl border border-indigo-100 bg-slate-950" src={profile.introductionVideoUrl} controls />
             ) : (
-              <p className="text-sm text-gray-700">Chưa cập nhật.</p>
+              <p className="text-sm text-muted-foreground">Chưa cập nhật.</p>
             )}
           </section>
           <section>
-            <h3 className="mb-1 text-sm font-semibold text-gray-900">Giới thiệu</h3>
-            <p className="whitespace-pre-wrap text-sm text-gray-700">{profile.bio || 'Chưa cập nhật.'}</p>
+            <h3 className="mb-1 text-sm font-semibold text-indigo-950">Giới thiệu</h3>
+            <p className="text-sm whitespace-pre-wrap text-slate-700">{profile.bio || 'Chưa cập nhật.'}</p>
           </section>
           <section>
-            <h3 className="mb-1 text-sm font-semibold text-gray-900">Chuyên môn</h3>
-            <p className="text-sm text-gray-700">{profile.expertise || 'Chưa cập nhật.'}</p>
+            <h3 className="mb-1 text-sm font-semibold text-indigo-950">Chuyên môn</h3>
+            <p className="text-sm text-slate-700">{profile.expertise || 'Chưa cập nhật.'}</p>
           </section>
           <section>
-            <h3 className="mb-1 text-sm font-semibold text-gray-900">Kinh nghiệm</h3>
-            <p className="text-sm text-gray-700">{profile.yearsOfExperience} năm kinh nghiệm</p>
+            <h3 className="mb-1 text-sm font-semibold text-indigo-950">Kinh nghiệm</h3>
+            <p className="text-sm text-slate-700">{profile.yearsOfExperience} năm kinh nghiệm</p>
           </section>
-        </div>
-        <div className="border-t border-gray-200 p-6">
-          <Button onClick={startEdit}>Chỉnh sửa</Button>
-        </div>
-      </div>
+        </CardContent>
+        <CardFooter>
+          <Button onClick={startEdit}>
+            <Pencil data-icon="inline-start" aria-hidden="true" />
+            Chỉnh sửa
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   )
 }
