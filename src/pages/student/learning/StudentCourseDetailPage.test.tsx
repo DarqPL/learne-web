@@ -123,4 +123,18 @@ describe('StudentCourseDetailPage checkout', () => {
 
     await waitFor(() => expect(mockedCheckoutCourse).toHaveBeenCalledWith(99, { couponCode: 'sale20' }))
   })
+
+  it('shows locked content notice for paid locked course without topics', async () => {
+    mockedGetStudentCourse.mockResolvedValue(courseApiResponse(makeCourse({ topics: [] })))
+    const scrollIntoViewMock = vi.fn()
+    window.HTMLElement.prototype.scrollIntoView = scrollIntoViewMock
+
+    renderCourseDetail()
+
+    expect(await screen.findByText(/sẽ được mở ngay sau khi bạn hoàn tất mua/i)).toBeInTheDocument()
+    const noticeButton = await screen.findByRole('button', { name: 'Mua khóa học ngay' })
+    expect(document.getElementById('course-purchase-panel')).toBeInTheDocument()
+    fireEvent.click(noticeButton)
+    expect(scrollIntoViewMock).toHaveBeenCalled()
+  })
 })

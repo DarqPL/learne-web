@@ -9,6 +9,7 @@ import {
   GraduationCap,
   Layers3,
   Loader2,
+  Lock,
   PlayCircle,
   Target,
   type LucideIcon,
@@ -218,6 +219,10 @@ export function StudentCourseDetailPage() {
   const enrollmentActionPending = enrollingCourseId === course.id || redirectingEnrollmentId === course.id
   const requiresCheckout = course.accessStatus === 'LOCKED' && course.pricingType === 'PAID'
 
+  function scrollToPurchasePanel() {
+    document.getElementById('course-purchase-panel')?.scrollIntoView({ behavior: 'smooth' })
+  }
+
   return (
     <div className="space-y-6 overflow-hidden">
       <section className="overflow-hidden rounded-3xl border border-indigo-100 bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.16),_transparent_32%),linear-gradient(135deg,_#ffffff_0%,_#eef6ff_52%,_#f7f3ff_100%)] p-5 shadow-sm sm:p-8">
@@ -262,7 +267,7 @@ export function StudentCourseDetailPage() {
               </Button>
             ) : null}
             {!course.enrolled && requiresCheckout ? (
-              <Card className="border-indigo-200 bg-white/90 shadow-sm">
+              <Card id="course-purchase-panel" className="border-indigo-200 bg-white/90 shadow-sm">
                 <CardHeader>
                   <CardTitle>Thanh toán khóa học</CardTitle>
                   <CardDescription>
@@ -335,7 +340,21 @@ export function StudentCourseDetailPage() {
         </div>
 
         <div className="space-y-5">
-          {course.topics.map((topic) => (
+          {course.topics.length === 0 && requiresCheckout ? (
+            <Card className="border-indigo-200 bg-indigo-50/50">
+              <CardContent className="flex flex-col items-start gap-3 py-6">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
+                  <Lock aria-hidden="true" className="h-5 w-5 text-indigo-700" />
+                </span>
+                <CardTitle className="text-lg">Nội dung khóa học</CardTitle>
+                <p className="text-sm leading-6 text-gray-600">
+                  Nội dung chi tiết từng bài học và câu hỏi sẽ được mở ngay sau khi bạn hoàn tất mua khóa học.
+                </p>
+                <Button onClick={scrollToPurchasePanel}>Mua khóa học ngay</Button>
+              </CardContent>
+            </Card>
+          ) : (
+            course.topics.map((topic) => (
           <Card key={topic.id} className="overflow-hidden border-gray-200 bg-white py-0 shadow-sm">
             <CardContent className="p-0">
               <div className="border-b border-gray-100 bg-gray-50/70 p-5 sm:p-6">
@@ -421,7 +440,8 @@ export function StudentCourseDetailPage() {
               </div>
             </CardContent>
           </Card>
-          ))}
+          ))
+          )}
         </div>
       </section>
     </div>
