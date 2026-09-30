@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { StudentCourseListPage } from './StudentCourseListPage'
@@ -116,5 +116,35 @@ describe('StudentCourseListPage redesign', () => {
 
     expect(screen.queryByText(/giảng viên #/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/#7/)).not.toBeInTheDocument()
+  })
+
+  it('paginates client-side with 6 per page and resets to page 1 on search', async () => {
+    const eightCourses = Array.from({ length: 8 }, (_, index) =>
+      makeCourse({ id: index + 1, name: `Course ${index + 1}` }),
+    )
+    mockedListStudentCourses.mockResolvedValue(coursesApiResponse(eightCourses))
+
+    renderListPage()
+
+    expect(await screen.findByRole('heading', { name: 'Course 1' })).toBeInTheDocument()
+    expect(screen.getAllByRole('heading', { name: /Course \d/ })).toHaveLength(6)
+    expect(screen.queryByRole('heading', { name: 'Course 7' })).not.toBeInTheDocument()
+
+    expect(screen.getByRole('link', { name: /Trang trước/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: '2' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Trang sau/i })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('link', { name: '2' }))
+
+    expect(await screen.findByRole('heading', { name: 'Course 7' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Course 8' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Course 1' })).not.toBeInTheDocument()
+
+    fireEvent.change(screen.getByPlaceholderText(/Tìm theo tên khóa học hoặc giảng viên/i), {
+      target: { value: 'Course' },
+    })
+
+    expect(await screen.findByRole('heading', { name: 'Course 1' })).toBeInTheDocument()
+    expect(screen.getAllByRole('heading', { name: /Course \d/ })).toHaveLength(6)
   })
 })

@@ -18,10 +18,20 @@ import {
 } from '../../../components/shadcn/ui/breadcrumb'
 import { Button } from '../../../components/shadcn/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '../../../components/shadcn/ui/card'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '../../../components/shadcn/ui/pagination'
 import { Separator } from '../../../components/shadcn/ui/separator'
 import { studentCourseTypeLabels } from './studentLearningLabels'
 
 const levelOptions = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
+
+const PAGE_SIZE = 6
 
 const courseTypeStyles: Record<CourseType, string> = {
   COMPREHENSIVE: 'border-violet-200 bg-violet-50 text-violet-700',
@@ -55,6 +65,7 @@ export function StudentCourseListPage() {
   const [courses, setCourses] = useState<StudentCourseSummary[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [localSearch, setLocalSearch] = useState('')
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
     let cancelled = false
@@ -85,6 +96,9 @@ export function StudentCourseListPage() {
 
   const hasFilters = Boolean(level || teacherId || localSearch.trim())
   const hasNoResults = courses !== null && filteredCourses?.length === 0
+  const totalPages = filteredCourses ? Math.max(1, Math.ceil(filteredCourses.length / PAGE_SIZE)) : 1
+  const safePage = Math.min(Math.max(1, page), totalPages)
+  const pagedCourses = filteredCourses?.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
   const teacherFilterName = teacherId ? courses?.find((course) => course.teacherId === teacherId)?.teacherName : undefined
 
   function updateLevelFilter(value: string) {
@@ -94,10 +108,17 @@ export function StudentCourseListPage() {
     } else {
       nextParams.delete('level')
     }
+    setPage(1)
     setSearchParams(nextParams)
   }
 
+  function handleSearchChange(value: string) {
+    setLocalSearch(value)
+    setPage(1)
+  }
+
   function clearFilters() {
+    setPage(1)
     setSearchParams({})
     setLocalSearch('')
   }
@@ -147,7 +168,7 @@ export function StudentCourseListPage() {
                 <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
                 <input
                   value={localSearch}
-                  onChange={(event) => setLocalSearch(event.target.value)}
+                  onChange={(event) => handleSearchChange(event.target.value)}
                   placeholder="Tìm theo tên khóa học hoặc giảng viên"
                   className="h-10 w-full rounded-xl border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm text-gray-900 shadow-xs outline-none transition placeholder:text-gray-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
                 />
@@ -209,8 +230,9 @@ export function StudentCourseListPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid min-w-0 gap-5 lg:grid-cols-2">
-          {filteredCourses?.map((course) => (
+        <>
+          <div className="grid min-w-0 gap-5 lg:grid-cols-2">
+            {pagedCourses?.map((course) => (
             <Link
               key={course.id}
               to={`/student/courses/${course.id}`}
@@ -254,7 +276,50 @@ export function StudentCourseListPage() {
               </Card>
             </Link>
           ))}
-        </div>
+          </div>
+          {totalPages > 1 ? (
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    aria-label="Trang trước"
+                    onClick={(event) => {
+                      event.preventDefault()
+                      setPage((prev) => Math.max(1, Math.min(prev, totalPages) - 1))
+                    }}
+                    aria-disabled={safePage === 1}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
+                  <PaginationItem key={pageNumber}>
+                    <PaginationLink
+                      href="#"
+                      isActive={pageNumber === safePage}
+                      onClick={(event) => {
+                        event.preventDefault()
+                        setPage(pageNumber)
+                      }}
+                    >
+                      {pageNumber}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    aria-label="Trang sau"
+                    onClick={(event) => {
+                      event.preventDefault()
+                      setPage((prev) => Math.min(totalPages, Math.max(1, prev) + 1))
+                    }}
+                    aria-disabled={safePage === totalPages}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          ) : null}
+        </>
       )}
     </div>
   )
