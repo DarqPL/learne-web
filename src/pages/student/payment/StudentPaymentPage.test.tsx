@@ -172,7 +172,7 @@ describe('StudentPaymentPage', () => {
           id: 8,
           productType: 'PLAN',
           courseId: null,
-          planCode: 'PRO_MONTHLY',
+          planCode: 'PRO',
           itemNameSnapshot: 'Gói Pro tháng',
           unitAmountVnd: 400000,
           quantity: 1,
