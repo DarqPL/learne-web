@@ -19,6 +19,7 @@ import { enrollStudentCourse, getStudentCourse } from '../../../lib/api/studentL
 import { checkoutCourse } from '../../../lib/api/studentMonetizationApi'
 import type { StudentCourseDetail } from '../../../lib/api/types'
 import { Alert, AlertDescription, AlertTitle } from '../../../components/shadcn/ui/alert'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../../components/shadcn/ui/accordion'
 import { Avatar } from '../../../components/ui/Avatar'
 import { Badge } from '../../../components/shadcn/ui/badge'
 import { Button } from '../../../components/shadcn/ui/button'
@@ -38,6 +39,10 @@ function getContentPreview(content: string | null) {
   const text = content?.trim()
   if (!text) return 'Chưa có nội dung xem trước.'
   return text.length > 260 ? `${text.slice(0, 260).trimEnd()}...` : text
+}
+
+function getTotalLessonXp(lesson: StudentCourseDetail['topics'][number]['lessons'][number]) {
+  return lesson.xpReward + lesson.questions.reduce((total, question) => total + question.xpReward, 0)
 }
 
 const enrollmentRedirectDelayMs = 900
@@ -245,18 +250,17 @@ export function StudentCourseDetailPage() {
               ) : null}
             </div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-indigo-600">Course Story</p>
-            <h1 className="mt-3 text-3xl font-bold tracking-tight text-gray-950 sm:text-5xl">{course.name}</h1>
-            {course.description ? <p className="mt-5 max-w-2xl whitespace-pre-wrap text-base leading-7 text-gray-600 sm:text-lg">{course.description}</p> : null}
-
-            <Card className="mt-6 max-w-xl border-white/80 bg-white/80 py-4 shadow-sm backdrop-blur">
-              <CardContent className="flex items-center gap-3 px-4">
+            <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <h1 className="min-w-0 flex-1 text-3xl font-bold tracking-tight text-gray-950 sm:text-5xl">{course.name}</h1>
+              <div className="flex shrink-0 items-center gap-3">
                 <Avatar name={course.teacherName} url={course.teacherAvatarUrl ?? undefined} size="sm" />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-gray-950">{course.teacherName}</p>
                   <p className="truncate text-xs text-gray-500">{course.teacherEmail}</p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+            {course.description ? <p className="mt-5 max-w-2xl whitespace-pre-wrap text-base leading-7 text-gray-600 sm:text-lg">{course.description}</p> : null}
           </div>
 
           <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:min-w-72 lg:w-80">
@@ -354,93 +358,88 @@ export function StudentCourseDetailPage() {
               </CardContent>
             </Card>
           ) : (
-            course.topics.map((topic) => (
-          <Card key={topic.id} className="overflow-hidden border-gray-200 bg-white py-0 shadow-sm">
-            <CardContent className="p-0">
-              <div className="border-b border-gray-100 bg-gray-50/70 p-5 sm:p-6">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="secondary" className="bg-white text-gray-700">
-                    Chặng {topic.orderIndex}
-                  </Badge>
-                  <Badge variant="outline" className="border-indigo-200 text-indigo-700">
-                    Chủ đề
-                  </Badge>
-                </div>
-                <h3 className="mt-3 text-xl font-semibold tracking-tight text-gray-950">{topic.name}</h3>
-                {topic.description ? <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-600">{topic.description}</p> : null}
-              </div>
+            <Accordion
+              type="multiple"
+              defaultValue={course.topics[0] ? [`topic-${course.topics[0].id}`] : []}
+              className="space-y-5"
+            >
+              {course.topics.map((topic) => (
+                <AccordionItem
+                  key={topic.id}
+                  value={`topic-${topic.id}`}
+                  className="rounded-2xl border border-gray-200 bg-white px-5 shadow-sm"
+                >
+                  <AccordionTrigger className="py-5 hover:no-underline">
+                    <span className="flex min-w-0 flex-1 flex-col gap-2 text-left">
+                      <span className="flex flex-wrap items-center gap-2">
+                        <Badge variant="secondary" className="bg-gray-100 text-gray-700">
+                          Chặng {topic.orderIndex}
+                        </Badge>
+                        <Badge variant="outline" className="border-gray-200 text-gray-700">
+                          Chủ đề
+                        </Badge>
+                      </span>
+                      <span className="text-xl font-semibold tracking-tight text-gray-950">{topic.name}</span>
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    {topic.description ? <p className="whitespace-pre-wrap text-sm leading-6 text-gray-600">{topic.description}</p> : null}
 
-              <div className="space-y-4 p-5 sm:p-6">
-                {topic.lessons.map((lesson) => (
-                <article key={lesson.id} className="relative rounded-2xl border border-gray-200 bg-white p-4 shadow-xs sm:p-5">
-                  <div className="absolute left-5 top-5 hidden h-[calc(100%-2.5rem)] w-px bg-indigo-100 sm:block" aria-hidden="true" />
-                  <div className="relative flex flex-col gap-4 sm:pl-8">
-                    <span className="absolute -left-10 top-1 hidden h-5 w-5 rounded-full border-4 border-white bg-indigo-500 shadow-sm sm:block" aria-hidden="true" />
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">Bài học {lesson.orderIndex}</p>
-                        <h4 className="mt-1 text-lg font-semibold text-gray-950">{lesson.title}</h4>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge variant="outline" className="border-sky-200 bg-sky-50 text-sky-700">
-                          {studentSkillTypeLabels[lesson.skillType]}
-                        </Badge>
-                        <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
-                          {lesson.xpReward} XP
-                        </Badge>
-                        <Badge variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700">
-                          {lesson.questionCount} câu hỏi
-                        </Badge>
-                      </div>
+                    <div className="mt-4 space-y-4">
+                      {topic.lessons.map((lesson) => (
+                      <article key={lesson.id} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-xs sm:p-5">
+                        <div className="flex flex-col gap-4">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">Bài học {lesson.orderIndex}</p>
+                              <h4 className="mt-1 text-lg font-semibold text-gray-950">{lesson.title}</h4>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              <Badge variant="outline" className="border-sky-200 bg-sky-50 text-sky-700">
+                                {studentSkillTypeLabels[lesson.skillType]}
+                              </Badge>
+                              <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+                                {getTotalLessonXp(lesson)} XP
+                              </Badge>
+                              <Badge variant="outline" className="border-gray-200 bg-gray-50 text-gray-700">
+                                {lesson.questionCount} câu hỏi
+                              </Badge>
+                            </div>
+                          </div>
+
+                          {lesson.description ? <p className="whitespace-pre-wrap text-sm leading-6 text-gray-600">{lesson.description}</p> : null}
+                          <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-700">Nội dung xem trước</p>
+                            <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-700">{getContentPreview(lesson.content)}</p>
+                          </div>
+
+                          {lesson.questions.length > 0 ? (
+                            <div className="grid gap-3 lg:grid-cols-2">
+                              {lesson.questions.map((question) => (
+                                <Card key={question.id} className="gap-3 border-gray-100 bg-gray-50/70 py-4 shadow-none">
+                                  <CardContent className="space-y-3 px-4">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <Badge variant="secondary" className="bg-white text-gray-700">
+                                        <FileQuestion aria-hidden="true" />
+                                        {studentQuestionTypeLabels[question.type]}
+                                      </Badge>
+                                    </div>
+                                    <p className="text-sm leading-6 text-gray-600">
+                                      Điểm kiến thức: <span className="font-semibold text-gray-800">{question.knowledgePoint ?? 'Chưa có'}</span>
+                                    </p>
+                                  </CardContent>
+                                </Card>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
+                      </article>
+                    ))}
                     </div>
-
-                    {lesson.description ? <p className="whitespace-pre-wrap text-sm leading-6 text-gray-600">{lesson.description}</p> : null}
-                    <div className="rounded-xl border border-dashed border-indigo-200 bg-indigo-50/50 p-4">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">Nội dung xem trước</p>
-                      <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-700">{getContentPreview(lesson.content)}</p>
-                    </div>
-
-                    {lesson.questions.length > 0 ? (
-                      <div className="grid gap-3 lg:grid-cols-2">
-                        {lesson.questions.map((question) => (
-                          <Card key={question.id} className="gap-3 border-gray-100 bg-gray-50/70 py-4 shadow-none">
-                            <CardContent className="space-y-3 px-4">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <Badge variant="secondary" className="bg-white text-gray-700">
-                                  <FileQuestion aria-hidden="true" />
-                                  {studentQuestionTypeLabels[question.type]}
-                                </Badge>
-                                <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
-                                  {question.xpReward} XP
-                                </Badge>
-                              </div>
-                              <p className="line-clamp-3 text-sm font-medium leading-6 text-gray-950">{question.questionText}</p>
-                              <dl className="grid gap-2 text-xs text-gray-600 sm:grid-cols-3">
-                                <div>
-                                  <dt className="text-gray-500">Điểm kiến thức</dt>
-                                  <dd className="mt-1 font-semibold text-gray-800">{question.knowledgePoint ?? 'Chưa có'}</dd>
-                                </div>
-                                <div>
-                                  <dt className="text-gray-500">Độ khó</dt>
-                                  <dd className="mt-1 font-semibold text-gray-800">{question.difficulty ?? 'Chưa có'}</dd>
-                                </div>
-                                <div>
-                                  <dt className="text-gray-500">Số lựa chọn</dt>
-                                  <dd className="mt-1 font-semibold text-gray-800">{question.optionCount}</dd>
-                                </div>
-                              </dl>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-                </article>
+                  </AccordionContent>
+                </AccordionItem>
               ))}
-              </div>
-            </CardContent>
-          </Card>
-          ))
+            </Accordion>
           )}
         </div>
       </section>

@@ -138,3 +138,86 @@ describe('StudentCourseDetailPage checkout', () => {
     expect(scrollIntoViewMock).toHaveBeenCalled()
   })
 })
+
+describe('StudentCourseDetailPage course detail accordion', () => {
+  beforeEach(() => {
+    mockedGetStudentCourse.mockReset()
+    mockedCheckoutCourse.mockReset()
+  })
+
+  function makeDetailCourse() {
+    return makeCourse({
+      accessStatus: 'OWNED',
+      enrolled: true,
+      activeEnrollmentId: 123,
+      topics: [
+        {
+          id: 1,
+          name: 'Topic Alpha',
+          description: 'Topic description',
+          orderIndex: 1,
+          lessons: [
+            {
+              id: 10,
+              title: 'Lesson One',
+              description: 'Lesson description',
+              content: 'Lesson content preview',
+              audioUrl: null,
+              audioPublicId: null,
+              skillType: 'GRAMMAR',
+              orderIndex: 1,
+              xpReward: 10,
+              questionCount: 2,
+              questions: [
+                {
+                  id: 100,
+                  type: 'MULTIPLE_CHOICE',
+                  questionText: 'SECRET_QUESTION_TEXT_XYZ',
+                  knowledgePoint: 'Present simple',
+                  difficulty: 'EASY',
+                  xpReward: 5,
+                  optionCount: 4,
+                },
+                {
+                  id: 101,
+                  type: 'FILL_BLANK',
+                  questionText: 'ANOTHER_SECRET_TEXT_XYZ',
+                  knowledgePoint: 'Past simple',
+                  difficulty: 'MEDIUM',
+                  xpReward: 5,
+                  optionCount: 0,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+  }
+
+  it('renders topic names as accordion triggers', async () => {
+    mockedGetStudentCourse.mockResolvedValue(courseApiResponse(makeDetailCourse()))
+
+    renderCourseDetail()
+
+    expect(await screen.findByRole('button', { name: /Topic Alpha/i })).toBeInTheDocument()
+  })
+
+  it('does not render quiz question text in preview cards', async () => {
+    mockedGetStudentCourse.mockResolvedValue(courseApiResponse(makeDetailCourse()))
+
+    renderCourseDetail()
+
+    await screen.findByRole('button', { name: /Topic Alpha/i })
+    expect(screen.queryByText('SECRET_QUESTION_TEXT_XYZ')).not.toBeInTheDocument()
+    expect(screen.queryByText('ANOTHER_SECRET_TEXT_XYZ')).not.toBeInTheDocument()
+  })
+
+  it('shows summed lesson XP badge including question rewards', async () => {
+    mockedGetStudentCourse.mockResolvedValue(courseApiResponse(makeDetailCourse()))
+
+    renderCourseDetail()
+
+    expect(await screen.findByText('20 XP')).toBeInTheDocument()
+  })
+})
