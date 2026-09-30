@@ -87,7 +87,7 @@ function StudentNavDropdown({ label, links }: { label: string; links: StudentTop
 
 export function StudentTopNav() {
   return (
-    <nav aria-label="Điều hướng học viên">
+    <nav aria-label="Student navigation">
       <div className="hidden items-center gap-1 md:flex">
         <NavLink to="/student" end className={desktopLinkClassName}>
           Trang chủ
