@@ -58,3 +58,8 @@ export const coursePriceStatusLabels: Record<CoursePriceStatus, string> = {
   APPROVED: 'Giá đã duyệt',
   REJECTED: 'Giá bị từ chối',
 }
+
+export function formatVndAmount(value: number | null | undefined): string {
+  if (value === null || value === undefined) return 'Chưa có giá'
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value)
+}

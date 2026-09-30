@@ -45,7 +45,7 @@ import type {
 import { CourseImportExportPanel } from './CourseImportExportPanel'
 import { CourseBuilderWorkspace } from './CourseBuilderWorkspace'
 import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
-import { courseTypeLabels } from './contentLabels'
+import { coursePricingTypeLabels, courseTypeLabels, formatVndAmount } from './contentLabels'
 import { canEditContent, canSubmitCourse, countLessons, countQuestions } from './contentUtils'
 
 const cardSoftClassName = 'border-indigo-100 bg-white/95 shadow-sm shadow-indigo-100/60'
@@ -406,6 +406,14 @@ export function TeacherCourseBuilderPage() {
                     <Badge variant="outline" className="border-sky-200 bg-sky-50 text-sky-700">
                       {currentCourse.level}
                     </Badge>
+                    <Badge variant={currentCourse.pricingType === 'PAID' ? 'default' : 'secondary'}>
+                      {coursePricingTypeLabels[currentCourse.pricingType]}
+                    </Badge>
+                    {currentCourse.pricingType === 'PAID' ? (
+                      <Badge variant="outline">
+                        {formatVndAmount(currentCourse.priceAmountVnd ?? currentCourse.proposedPriceAmountVnd)}
+                      </Badge>
+                    ) : null}
                     <TeacherContentStatusBadge status={currentCourse.status} />
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground">
