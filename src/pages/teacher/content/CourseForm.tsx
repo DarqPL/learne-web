@@ -36,6 +36,11 @@ function normalizePrice(value: number | null | undefined): number | null {
   return floored > 0 ? floored : null
 }
 
+function formatPriceInput(value: number | null | undefined): string {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return ''
+  return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(value)
+}
+
 function pricingPayload(form: TeacherCourseRequest): TeacherCourseRequest {
   if (form.level === 'A1' || form.pricingType !== 'PAID') {
     return { ...form, pricingType: 'FREE', proposedPriceAmountVnd: null }
@@ -210,7 +215,7 @@ export function CourseForm({ initialValue, loading = false, disabled = false, su
               <Input
                 id={`${fieldPrefix}-price`}
                 inputMode="numeric"
-                value={form.proposedPriceAmountVnd?.toString() ?? ''}
+                value={formatPriceInput(form.proposedPriceAmountVnd)}
                 disabled={disabled}
                 aria-invalid={priceError ? true : undefined}
                 aria-describedby={priceError ? priceErrorId : undefined}
