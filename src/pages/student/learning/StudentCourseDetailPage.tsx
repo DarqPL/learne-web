@@ -1,33 +1,29 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import {
-  ArrowRight,
-  BookOpen,
-  CalendarDays,
-  CheckCircle2,
-  FileQuestion,
-  GraduationCap,
-  Layers3,
-  Loader2,
-  Lock,
-  PlayCircle,
-  Target,
-  type LucideIcon,
-} from 'lucide-react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft, ArrowRight, CheckCircle2, ChevronDown, FileQuestion, Loader2, Lock } from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
-import { enrollStudentCourse, getStudentCourse } from '../../../lib/api/studentLearningApi'
+import { enrollStudentCourse, getStudentCourse, getStudentEnrollment } from '../../../lib/api/studentLearningApi'
 import { checkoutCourse } from '../../../lib/api/studentMonetizationApi'
-import type { StudentCourseDetail } from '../../../lib/api/types'
+import type { StudentCourseDetail, StudentEnrollmentProgress } from '../../../lib/api/types'
+import { cn } from '../../../lib/utils'
 import { Alert, AlertDescription, AlertTitle } from '../../../components/shadcn/ui/alert'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../../components/shadcn/ui/accordion'
-import { Avatar } from '../../../components/ui/Avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '../../../components/shadcn/ui/avatar'
 import { Badge } from '../../../components/shadcn/ui/badge'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '../../../components/shadcn/ui/breadcrumb'
 import { Button } from '../../../components/shadcn/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/shadcn/ui/card'
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '../../../components/shadcn/ui/field'
 import { Input } from '../../../components/shadcn/ui/input'
-import { studentCourseTypeLabels, studentQuestionTypeLabels, studentSkillTypeLabels } from './studentLearningLabels'
-import { countStudentLessons, countStudentQuestions, formatStudentLearningDate } from './studentLearningUtils'
+import { lessonProgressStatusLabels, studentCourseTypeLabels, studentQuestionTypeLabels, studentSkillTypeLabels } from './studentLearningLabels'
+import { countStudentLessons, countStudentQuestions, flattenProgressLessons } from './studentLearningUtils'
 import { formatVnd } from '../payment/paymentUtils'
 
 function parseCourseId(value: string | undefined) {
@@ -45,6 +41,13 @@ function getTotalLessonXp(lesson: StudentCourseDetail['topics'][number]['lessons
   return lesson.xpReward + lesson.questions.reduce((total, question) => total + question.xpReward, 0)
 }
 
+function getTeacherInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return '?'
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase()
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
+}
+
 const enrollmentRedirectDelayMs = 900
 
 export function StudentCourseDetailPage() {
@@ -52,6 +55,8 @@ export function StudentCourseDetailPage() {
   const { id } = useParams()
   const courseId = parseCourseId(id)
   const [course, setCourse] = useState<StudentCourseDetail | null>(null)
+  const [enrollmentProgress, setEnrollmentProgress] = useState<StudentEnrollmentProgress | null>(null)
+  const [expandedLessonId, setExpandedLessonId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [courseCouponCode, setCourseCouponCode] = useState('')
@@ -101,6 +106,8 @@ export function StudentCourseDetailPage() {
       setError(null)
       setInfo(null)
       setRedirectingEnrollmentId(null)
+      setEnrollmentProgress(null)
+      setExpandedLessonId(null)
       try {
         const response = await getStudentCourse(courseId)
         if (!cancelled) setCourse(response.data)
@@ -113,6 +120,30 @@ export function StudentCourseDetailPage() {
       cancelled = true
     }
   }, [courseId])
+
+  useEffect(() => {
+    let cancelled = false
+
+    if (!course?.enrolled || !course.activeEnrollmentId) {
+      return () => {
+        cancelled = true
+      }
+    }
+
+    const enrollmentId = course.activeEnrollmentId
+    void (async () => {
+      try {
+        const response = await getStudentEnrollment(enrollmentId)
+        if (!cancelled) setEnrollmentProgress(response.data)
+      } catch {
+        if (!cancelled) setEnrollmentProgress(null)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [course?.enrolled, course?.activeEnrollmentId])
 
   async function handleEnroll() {
     if (!course || enrollingCourseId === course.id || redirectingEnrollmentId === course.id) return
@@ -212,7 +243,7 @@ export function StudentCourseDetailPage() {
     return (
       <Card className="border-indigo-100 bg-gradient-to-br from-white to-indigo-50/70">
         <CardContent className="flex items-center gap-3 py-8 text-sm font-medium text-gray-700">
-          <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin text-indigo-600" />
+          <Loader2 aria-hidden="true" className="size-4 animate-spin text-indigo-600" />
           Đang tải thông tin khóa học...
         </CardContent>
       </Card>
@@ -223,55 +254,98 @@ export function StudentCourseDetailPage() {
   const questionCount = countStudentQuestions(course)
   const enrollmentActionPending = enrollingCourseId === course.id || redirectingEnrollmentId === course.id
   const requiresCheckout = course.accessStatus === 'LOCKED' && course.pricingType === 'PAID'
+  const lessonStatusById = new Map(
+    enrollmentProgress ? flattenProgressLessons(enrollmentProgress).map((lesson) => [lesson.lessonId, lesson.status] as const) : [],
+  )
+  const progressPercent = enrollmentProgress?.progressPercent ?? null
 
   function scrollToPurchasePanel() {
     document.getElementById('course-purchase-panel')?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  function toggleLesson(lessonId: number) {
+    setExpandedLessonId((currentId) => (currentId === lessonId ? null : lessonId))
+  }
+
   return (
-    <div className="space-y-6 overflow-hidden">
-      <section className="overflow-hidden rounded-3xl border border-indigo-100 bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.16),_transparent_32%),linear-gradient(135deg,_#ffffff_0%,_#eef6ff_52%,_#f7f3ff_100%)] p-5 shadow-sm sm:p-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0 max-w-3xl">
-            <div className="mb-5 flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="border-indigo-200 bg-white/85 text-indigo-700 shadow-sm">
-                <GraduationCap aria-hidden="true" />
-                {studentCourseTypeLabels[course.type]}
-              </Badge>
-              <Badge variant="outline" className="border-sky-200 bg-white/85 text-sky-700 shadow-sm">
-                <Target aria-hidden="true" />
-                Trình độ {course.level}
-              </Badge>
-              {course.enrolled ? (
-                <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700 shadow-sm">
-                  <CheckCircle2 aria-hidden="true" />
-                  Đã đăng ký
-                </Badge>
-              ) : null}
-            </div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-indigo-600">Course Story</p>
-            <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <h1 className="min-w-0 flex-1 text-3xl font-bold tracking-tight text-gray-950 sm:text-5xl">{course.name}</h1>
-              <div className="flex shrink-0 items-center gap-3">
-                <Avatar name={course.teacherName} url={course.teacherAvatarUrl ?? undefined} size="sm" />
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-gray-950">{course.teacherName}</p>
-                  <p className="truncate text-xs text-gray-500">{course.teacherEmail}</p>
-                </div>
+    <div className="flex flex-col gap-6 overflow-hidden">
+      <div className="flex flex-col gap-2">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/student/courses">Khóa học</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="max-w-56 truncate sm:max-w-none">{course.name}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+        <Button variant="ghost" size="sm" className="w-fit cursor-pointer" onClick={() => navigate('/student/courses')}>
+          <ArrowLeft data-icon="inline-start" />
+          Quay lại danh sách khóa học
+        </Button>
+      </div>
+
+      <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl font-bold tracking-tight text-gray-950 sm:text-3xl">{course.name}</h1>
+            {course.description ? <p className="mt-2 max-w-2xl whitespace-pre-wrap text-sm leading-6 text-gray-600">{course.description}</p> : null}
+            <div className="mt-3 flex items-center gap-2">
+              <Avatar className="size-9">
+                <AvatarImage src={course.teacherAvatarUrl ?? undefined} alt={course.teacherName} />
+                <AvatarFallback>{getTeacherInitials(course.teacherName)}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-gray-950">{course.teacherName}</p>
+                <p className="text-xs text-gray-500">Giảng viên</p>
               </div>
             </div>
-            {course.description ? <p className="mt-5 max-w-2xl whitespace-pre-wrap text-base leading-7 text-gray-600 sm:text-lg">{course.description}</p> : null}
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Badge variant="secondary">
+                {course.topics.length} chủ đề
+              </Badge>
+              <Badge variant="secondary">
+                {lessonCount} bài học
+              </Badge>
+              <Badge variant="secondary">
+                {questionCount} câu hỏi
+              </Badge>
+              <Badge variant="outline">Trình độ {course.level}</Badge>
+              <Badge variant="outline">{studentCourseTypeLabels[course.type]}</Badge>
+            </div>
+            {progressPercent !== null ? (
+              <div className="mt-4 max-w-md">
+                <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
+                  <span className="font-medium">Tiến độ của bạn</span>
+                  <span>{progressPercent}%</span>
+                </div>
+                <div
+                  role="progressbar"
+                  aria-valuenow={progressPercent}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label="Tiến độ của bạn"
+                  className="mt-1 h-2 overflow-hidden rounded-full bg-gray-100"
+                >
+                  <div className="h-full rounded-full bg-indigo-600 transition-all" style={{ width: `${progressPercent}%` }} />
+                </div>
+              </div>
+            ) : null}
           </div>
 
-          <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:min-w-72 lg:w-80">
+          <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:min-w-60">
             {course.enrolled && course.activeEnrollmentId ? (
-              <Button className="w-full sm:w-auto" size="lg" onClick={() => navigate(`/student/enrollments/${course.activeEnrollmentId}`)}>
+              <Button size="default" className="w-auto" onClick={() => navigate(`/student/enrollments/${course.activeEnrollmentId}`)}>
                 Tiếp tục học
-                <ArrowRight aria-hidden="true" />
+                <ArrowRight data-icon="inline-end" />
               </Button>
             ) : null}
             {!course.enrolled && requiresCheckout ? (
-              <Card id="course-purchase-panel" className="border-indigo-200 bg-white/90 shadow-sm">
+              <Card id="course-purchase-panel" className="w-full border-indigo-200 bg-white shadow-sm sm:w-72">
                 <CardHeader>
                   <CardTitle>Thanh toán khóa học</CardTitle>
                   <CardDescription>
@@ -293,7 +367,7 @@ export function StudentCourseDetailPage() {
                       />
                       <FieldDescription>Nếu có mã, hệ thống sẽ áp dụng trước khi tạo QR.</FieldDescription>
                     </Field>
-                    <Button className="w-full" size="lg" loading={enrollmentActionPending} onClick={handleCheckoutCourse}>
+                    <Button size="default" className="w-full" loading={enrollmentActionPending} onClick={handleCheckoutCourse}>
                       Mua khóa học
                     </Button>
                   </FieldGroup>
@@ -301,19 +375,12 @@ export function StudentCourseDetailPage() {
               </Card>
             ) : null}
             {!course.enrolled && !requiresCheckout ? (
-              <Button className="w-full sm:w-auto" size="lg" loading={enrollmentActionPending} onClick={handleEnroll}>
+              <Button size="default" className="w-auto" loading={enrollmentActionPending} onClick={handleEnroll}>
                 Đăng ký khóa học
               </Button>
             ) : null}
           </div>
         </div>
-
-        <dl className="mt-7 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
-          <StoryStat icon={CalendarDays} label="Ngày xuất bản" value={formatStudentLearningDate(course.publishedAt)} />
-          <StoryStat icon={Layers3} label="Chủ đề" value={course.topics.length} />
-          <StoryStat icon={BookOpen} label="Bài học" value={lessonCount} />
-          <StoryStat icon={FileQuestion} label="Câu hỏi" value={questionCount} />
-        </dl>
       </section>
 
       {error ? (
@@ -331,24 +398,18 @@ export function StudentCourseDetailPage() {
         </Alert>
       ) : null}
 
-      <section className="space-y-5">
+      <section className="flex flex-col gap-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <Badge variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700">
-              <PlayCircle aria-hidden="true" />
-              Course Story
-            </Badge>
-            <h2 className="mt-3 text-2xl font-bold tracking-tight text-gray-950 sm:text-3xl">Lộ trình nội dung khóa học</h2>
-          </div>
-          <p className="max-w-md text-sm leading-6 text-gray-500">Đi qua từng chủ đề như một bản đồ học tập: mở ngữ cảnh, luyện kỹ năng, rồi kiểm tra bằng câu hỏi ngắn.</p>
+          <h2 className="text-xl font-bold tracking-tight text-gray-950 sm:text-2xl">Nội dung khóa học</h2>
+          <p className="max-w-md text-sm leading-6 text-gray-500">Mở từng chủ đề, chọn bài học để xem trước nội dung và điểm kiến thức.</p>
         </div>
 
-        <div className="space-y-5">
+        <div className="flex flex-col gap-4">
           {course.topics.length === 0 && requiresCheckout ? (
             <Card className="border-indigo-200 bg-indigo-50/50">
               <CardContent className="flex flex-col items-start gap-3 py-6">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
-                  <Lock aria-hidden="true" className="h-5 w-5 text-indigo-700" />
+                <span className="flex size-10 items-center justify-center rounded-full bg-indigo-100">
+                  <Lock aria-hidden="true" className="size-5 text-indigo-700" />
                 </span>
                 <CardTitle className="text-lg">Nội dung khóa học</CardTitle>
                 <p className="text-sm leading-6 text-gray-600">
@@ -361,7 +422,7 @@ export function StudentCourseDetailPage() {
             <Accordion
               type="multiple"
               defaultValue={course.topics[0] ? [`topic-${course.topics[0].id}`] : []}
-              className="space-y-5"
+              className="flex flex-col gap-4"
             >
               {course.topics.map((topic) => (
                 <AccordionItem
@@ -385,56 +446,63 @@ export function StudentCourseDetailPage() {
                   <AccordionContent>
                     {topic.description ? <p className="whitespace-pre-wrap text-sm leading-6 text-gray-600">{topic.description}</p> : null}
 
-                    <div className="mt-4 space-y-4">
-                      {topic.lessons.map((lesson) => (
-                      <article key={lesson.id} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-xs sm:p-5">
-                        <div className="flex flex-col gap-4">
-                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                            <div className="min-w-0">
-                              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">Bài học {lesson.orderIndex}</p>
-                              <h4 className="mt-1 text-lg font-semibold text-gray-950">{lesson.title}</h4>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              <Badge variant="outline" className="border-sky-200 bg-sky-50 text-sky-700">
+                    <div className="mt-3 flex flex-col gap-2">
+                      {topic.lessons.map((lesson) => {
+                        const expanded = expandedLessonId === lesson.id
+                        const lessonStatus = lessonStatusById.get(lesson.id)
+                        return (
+                          <div key={lesson.id} className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+                            <button
+                              type="button"
+                              onClick={() => toggleLesson(lesson.id)}
+                              aria-expanded={expanded}
+                              className="flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-left transition-colors hover:bg-gray-50"
+                            >
+                              <span className="shrink-0 text-xs font-semibold text-gray-500">{lesson.orderIndex}</span>
+                              <span className="min-w-0 flex-1 truncate text-sm font-medium text-gray-950">{lesson.title}</span>
+                              <Badge variant="secondary" className="hidden shrink-0 text-[11px] sm:inline-flex">
                                 {studentSkillTypeLabels[lesson.skillType]}
                               </Badge>
-                              <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+                              <Badge variant="outline" className="shrink-0 border-amber-200 bg-amber-50 text-[11px] text-amber-700">
                                 {getTotalLessonXp(lesson)} XP
                               </Badge>
-                              <Badge variant="outline" className="border-gray-200 bg-gray-50 text-gray-700">
+                              <span className="hidden shrink-0 text-xs whitespace-nowrap text-gray-500 md:inline">
                                 {lesson.questionCount} câu hỏi
-                              </Badge>
-                            </div>
+                              </span>
+                              {lessonStatus ? (
+                                <Badge variant="outline" className="shrink-0 text-[11px]">
+                                  {lessonProgressStatusLabels[lessonStatus]}
+                                </Badge>
+                              ) : null}
+                              <ChevronDown aria-hidden="true" className={cn('size-4 shrink-0 text-gray-400 transition-transform', expanded && 'rotate-180')} />
+                            </button>
+                            {expanded ? (
+                              <div className="flex flex-col gap-3 border-t border-gray-100 px-3 py-3">
+                                {lesson.description ? <p className="whitespace-pre-wrap text-sm leading-6 text-gray-600">{lesson.description}</p> : null}
+                                <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-3">
+                                  <p className="text-xs font-semibold tracking-wide text-gray-700 uppercase">Nội dung xem trước</p>
+                                  <p className="mt-1.5 whitespace-pre-wrap text-sm leading-6 text-gray-700">{getContentPreview(lesson.content)}</p>
+                                </div>
+                                {lesson.questions.length > 0 ? (
+                                  <div className="flex flex-col gap-2">
+                                    {lesson.questions.map((question) => (
+                                      <div key={question.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-gray-50 px-2.5 py-2 text-xs text-gray-600">
+                                        <Badge variant="secondary">
+                                          <FileQuestion aria-hidden="true" />
+                                          {studentQuestionTypeLabels[question.type]}
+                                        </Badge>
+                                        <span>
+                                          Điểm kiến thức: <span className="font-semibold text-gray-800">{question.knowledgePoint ?? 'Chưa có'}</span>
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : null}
+                              </div>
+                            ) : null}
                           </div>
-
-                          {lesson.description ? <p className="whitespace-pre-wrap text-sm leading-6 text-gray-600">{lesson.description}</p> : null}
-                          <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-700">Nội dung xem trước</p>
-                            <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-700">{getContentPreview(lesson.content)}</p>
-                          </div>
-
-                          {lesson.questions.length > 0 ? (
-                            <div className="grid gap-3 lg:grid-cols-2">
-                              {lesson.questions.map((question) => (
-                                <Card key={question.id} className="gap-3 border-gray-100 bg-gray-50/70 py-4 shadow-none">
-                                  <CardContent className="space-y-3 px-4">
-                                    <div className="flex flex-wrap items-center gap-2">
-                                      <Badge variant="secondary" className="bg-white text-gray-700">
-                                        <FileQuestion aria-hidden="true" />
-                                        {studentQuestionTypeLabels[question.type]}
-                                      </Badge>
-                                    </div>
-                                    <p className="text-sm leading-6 text-gray-600">
-                                      Điểm kiến thức: <span className="font-semibold text-gray-800">{question.knowledgePoint ?? 'Chưa có'}</span>
-                                    </p>
-                                  </CardContent>
-                                </Card>
-                              ))}
-                            </div>
-                          ) : null}
-                        </div>
-                      </article>
-                    ))}
+                        )
+                      })}
                     </div>
                   </AccordionContent>
                 </AccordionItem>
@@ -443,18 +511,6 @@ export function StudentCourseDetailPage() {
           )}
         </div>
       </section>
-    </div>
-  )
-}
-
-function StoryStat({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string | number }) {
-  return (
-    <div className="rounded-2xl border border-white/80 bg-white/75 p-4 shadow-sm backdrop-blur">
-      <dt className="flex items-center gap-2 text-xs font-medium text-gray-500">
-        <Icon aria-hidden="true" className="h-4 w-4 text-indigo-500" />
-        {label}
-      </dt>
-      <dd className="mt-2 text-lg font-bold text-gray-950">{value}</dd>
     </div>
   )
 }
