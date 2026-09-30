@@ -82,8 +82,10 @@ describe('StudentAiTutorPage chat focus', () => {
 
     scrollIntoViewMock = vi.fn()
     focusMock = vi.fn()
-    HTMLElement.prototype.scrollIntoView = scrollIntoViewMock
-    HTMLElement.prototype.focus = focusMock
+    HTMLElement.prototype.scrollIntoView =
+      scrollIntoViewMock as unknown as typeof HTMLElement.prototype.scrollIntoView
+    HTMLElement.prototype.focus =
+      focusMock as unknown as typeof HTMLElement.prototype.focus
   })
 
   afterEach(() => {

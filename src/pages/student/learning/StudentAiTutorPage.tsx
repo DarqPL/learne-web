@@ -19,7 +19,6 @@ import {
   useState,
   type FormEvent,
   type KeyboardEvent,
-  type Ref,
 } from "react";
 import { Alert, AlertDescription } from "../../../components/shadcn/ui/alert";
 import { Badge } from "../../../components/shadcn/ui/badge";
@@ -603,7 +602,7 @@ export function StudentAiTutorPage() {
         </Card>
 
         <Card
-          ref={chatRegionRef as unknown as Ref<HTMLDivElement>}
+          ref={chatRegionRef}
           className="min-h-[680px] overflow-hidden border-indigo-100 py-0 shadow-sm"
         >
           {!selectedConversation ? (
@@ -810,7 +809,7 @@ export function StudentAiTutorPage() {
                     Tin nhắn gửi AI Tutor
                   </span>
                   <Textarea
-                    ref={composerRef as unknown as Ref<HTMLTextAreaElement>}
+                    ref={composerRef}
                     value={messageText}
                     maxLength={MAX_MESSAGE_LENGTH}
                     disabled={composerDisabled}
