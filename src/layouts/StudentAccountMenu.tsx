@@ -49,14 +49,15 @@ export function StudentAccountMenu({ userName, userEmail, onLogout }: StudentAcc
             type="button"
             aria-label="Tài khoản"
             className={cn(
-              'flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100',
+              'group flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-[15px] font-medium text-gray-700 transition-colors hover:bg-gray-100',
             )}
           >
             <Avatar size="sm">
               <AvatarFallback>{getInitials(userName)}</AvatarFallback>
             </Avatar>
             <span className={cn('hidden max-w-28 truncate sm:inline')}>{userName}</span>
-            <ChevronDown data-icon="inline-end" aria-hidden="true" />
+            {userEmail ? <span className={cn('hidden max-w-40 truncate text-xs font-normal text-gray-500 md:inline')}>{userEmail}</span> : null}
+            <ChevronDown aria-hidden="true" className={cn('size-4 transition-transform data-[state=open]:rotate-180 group-data-[state=open]:rotate-180')} />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className={cn('w-56')}>

@@ -5,21 +5,30 @@ import { describe, expect, it } from 'vitest'
 import { StudentTopNav } from './StudentTopNav'
 
 describe('StudentTopNav', () => {
-  it('renders primary items and grouped dropdown entries', () => {
-    render(
+  it('renders logo, primary items and grouped dropdown entries', () => {
+    const { container } = render(
       <MemoryRouter>
         <StudentTopNav />
       </MemoryRouter>,
     )
+    expect(screen.getByRole('link', { name: 'LearnE' })).toHaveAttribute('href', '/student')
     expect(screen.getByRole('link', { name: 'Trang chủ' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Giảng viên' })).toBeInTheDocument()
+
+    // ChevronDown icons rotate on open via Radix data-state.
+    const chevrons = container.querySelectorAll('svg.lucide-chevron-down')
+    expect(chevrons.length).toBe(2)
+    chevrons.forEach((icon) => {
+      expect(icon.getAttribute('class') ?? '').toContain('transition')
+      expect(icon.getAttribute('class') ?? '').toContain('data-[state=open]:rotate-180')
+    })
 
     // Radix opens DropdownMenu on pointerdown; fireEvent.pointerDown works in jsdom.
     fireEvent.pointerDown(screen.getByRole('button', { name: /khóa học/i }))
     expect(screen.getByRole('menuitem', { name: 'Khám phá khóa học' })).toHaveAttribute('href', '/student/courses')
     expect(screen.getByRole('menuitem', { name: 'Khóa học đã đăng ký' })).toHaveAttribute('href', '/student/enrollments')
     expect(screen.getByRole('menuitem', { name: 'Lộ trình học' })).toHaveAttribute('href', '/student/learning-path')
-    expect(screen.getByRole('menuitem', { name: 'Tiến độ học tập' })).toHaveAttribute('href', '/student/enrollments')
+    expect(screen.queryByRole('menuitem', { name: 'Tiến độ học tập' })).not.toBeInTheDocument()
     expect(screen.getByRole('menuitem', { name: 'Lộ trình học' })).toBeInTheDocument()
 
     fireEvent.pointerDown(screen.getByRole('button', { name: /ai tools/i }))
