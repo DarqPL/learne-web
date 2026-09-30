@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { ChevronDown, Menu } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
@@ -27,7 +26,7 @@ const courseLinks: StudentTopNavLink[] = [
 const aiToolLinks: StudentTopNavLink[] = [
   { label: 'AI đề xuất', to: '/student/course-recommendations' },
   { label: 'AI Tutor', to: '/student/ai-tutor' },
-  { label: 'Kiểm tra ngữ pháp', to: '/student/grammar-check' },
+  { label: 'Kiểm tra ngữ pháp', to: '/student/grammar-check', end: true },
   { label: 'Lịch sử kiểm tra', to: '/student/grammar-check/history' },
 ]
 
@@ -43,33 +42,22 @@ const desktopLinkClassName = ({ isActive }: { isActive: boolean }) =>
 
 const dropdownTriggerClassName = 'flex cursor-pointer items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900'
 
-function isLinkActive(pathname: string, to: string) {
-  return pathname === to || pathname.startsWith(`${to}/`)
+function isLinkActive(pathname: string, link: StudentTopNavLink) {
+  if (link.end) {
+    return pathname === link.to
+  }
+  return pathname === link.to || pathname.startsWith(`${link.to}/`)
 }
 
 function StudentNavDropdown({ label, links }: { label: string; links: StudentTopNavLink[] }) {
-  // Radix opens DropdownMenu on pointerdown, which fireEvent.click does not
-  // emit in jsdom. Control the open state via click/keyboard so the menu
-  // opens the same way in tests and browsers. modal={false} keeps the
-  // sibling trigger reachable while a menu is open.
-  const [open, setOpen] = useState(false)
+  // Uncontrolled Radix dropdown. modal={false} keeps nav non-modal: no
+  // scroll-lock or focus-trap, so sibling nav triggers stay reachable.
   const { pathname } = useLocation()
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          className={dropdownTriggerClassName}
-          onPointerDown={(event) => event.preventDefault()}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown') {
-              event.preventDefault()
-              setOpen((prev) => (event.key === 'ArrowDown' ? true : !prev))
-            }
-          }}
-          onClick={() => setOpen((prev) => !prev)}
-        >
+        <button type="button" className={dropdownTriggerClassName}>
           {label}
           <ChevronDown data-icon="inline-end" aria-hidden="true" />
         </button>
@@ -80,10 +68,12 @@ function StudentNavDropdown({ label, links }: { label: string; links: StudentTop
             // Radix Slot joins className with string concatenation, so a
             // NavLink function className would be stringified. Compute the
             // active state from the location and pass plain strings instead.
-            const isActive = isLinkActive(pathname, link.to)
+            // aria-current is set manually so it always agrees with the
+            // visual active class (do not rely on NavLink internal isActive).
+            const isActive = isLinkActive(pathname, link)
             return (
               <DropdownMenuItem key={link.label} asChild className={cn('cursor-pointer', isActive && 'bg-indigo-50 font-medium text-indigo-700')}>
-                <NavLink to={link.to} className="block w-full rounded-sm px-2 py-1.5 text-sm">
+                <NavLink to={link.to} end={link.end} aria-current={isActive ? 'page' : undefined} className="block w-full rounded-sm px-2 py-1.5 text-sm">
                   {link.label}
                 </NavLink>
               </DropdownMenuItem>
