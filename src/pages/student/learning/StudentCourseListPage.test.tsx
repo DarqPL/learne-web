@@ -134,11 +134,29 @@ describe('StudentCourseListPage redesign', () => {
     expect(screen.getByRole('link', { name: '2' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Trang sau/i })).toBeInTheDocument()
 
+    expect(screen.getByText('Trang trước')).toBeInTheDocument()
+    expect(screen.getByText('Trang sau')).toBeInTheDocument()
+    expect(screen.queryByText('Previous')).not.toBeInTheDocument()
+    expect(screen.queryByText('Next')).not.toBeInTheDocument()
+
+    const prevLink = screen.getByRole('link', { name: 'Trang trước' })
+    const nextLink = screen.getByRole('link', { name: 'Trang sau' })
+    expect(prevLink).toHaveAttribute('aria-disabled', 'true')
+    expect(prevLink).toHaveClass('aria-disabled:opacity-50')
+    expect(prevLink).toHaveClass('aria-disabled:pointer-events-none')
+    expect(nextLink).toHaveAttribute('aria-disabled', 'false')
+
     fireEvent.click(screen.getByRole('link', { name: '2' }))
 
     expect(await screen.findByRole('heading', { name: 'Course 7' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Course 8' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Course 1' })).not.toBeInTheDocument()
+
+    expect(screen.getByRole('link', { name: 'Trang trước' })).toHaveAttribute('aria-disabled', 'false')
+    const lastPageNextLink = screen.getByRole('link', { name: 'Trang sau' })
+    expect(lastPageNextLink).toHaveAttribute('aria-disabled', 'true')
+    expect(lastPageNextLink).toHaveClass('aria-disabled:opacity-50')
+    expect(lastPageNextLink).toHaveClass('aria-disabled:pointer-events-none')
 
     fireEvent.change(screen.getByPlaceholderText(/Tìm theo tên khóa học hoặc giảng viên/i), {
       target: { value: 'Course' },

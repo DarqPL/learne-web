@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ArrowRight, Loader2, Search, XCircle } from 'lucide-react'
+import { ArrowRight, ChevronLeft, ChevronRight, Loader2, Search, XCircle } from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { listStudentCourses } from '../../../lib/api/studentLearningApi'
 import type { CourseType, StudentCourseSummary } from '../../../lib/api/types'
@@ -23,8 +23,6 @@ import {
   PaginationContent,
   PaginationItem,
   PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
 } from '../../../components/shadcn/ui/pagination'
 import { Separator } from '../../../components/shadcn/ui/separator'
 import { studentCourseTypeLabels } from './studentLearningLabels'
@@ -281,15 +279,20 @@ export function StudentCourseListPage() {
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
-                  <PaginationPrevious
+                  <PaginationLink
                     href="#"
+                    size="default"
+                    className="gap-1 px-2.5 sm:pl-2.5 aria-disabled:opacity-50 aria-disabled:pointer-events-none"
                     aria-label="Trang trước"
                     onClick={(event) => {
                       event.preventDefault()
                       setPage((prev) => Math.max(1, Math.min(prev, totalPages) - 1))
                     }}
                     aria-disabled={safePage === 1}
-                  />
+                  >
+                    <ChevronLeft aria-hidden="true" />
+                    <span>Trang trước</span>
+                  </PaginationLink>
                 </PaginationItem>
                 {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
                   <PaginationItem key={pageNumber}>
@@ -306,15 +309,20 @@ export function StudentCourseListPage() {
                   </PaginationItem>
                 ))}
                 <PaginationItem>
-                  <PaginationNext
+                  <PaginationLink
                     href="#"
+                    size="default"
+                    className="gap-1 px-2.5 sm:pr-2.5 aria-disabled:opacity-50 aria-disabled:pointer-events-none"
                     aria-label="Trang sau"
                     onClick={(event) => {
                       event.preventDefault()
                       setPage((prev) => Math.min(totalPages, Math.max(1, prev) + 1))
                     }}
                     aria-disabled={safePage === totalPages}
-                  />
+                  >
+                    <span>Trang sau</span>
+                    <ChevronRight aria-hidden="true" />
+                  </PaginationLink>
                 </PaginationItem>
               </PaginationContent>
             </Pagination>
