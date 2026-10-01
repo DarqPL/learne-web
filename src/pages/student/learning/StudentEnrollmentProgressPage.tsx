@@ -1,12 +1,22 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { getStudentEnrollment } from '../../../lib/api/studentLearningApi'
 import type { StudentEnrollmentProgress } from '../../../lib/api/types'
+import { cn } from '../../../lib/utils'
 import { Alert } from '../../../components/ui/Alert'
 import { Button } from '../../../components/ui/Button'
 import { Spinner } from '../../../components/ui/Spinner'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../../components/shadcn/ui/accordion'
+import { Badge } from '../../../components/shadcn/ui/badge'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '../../../components/shadcn/ui/breadcrumb'
 import { enrollmentStatusLabels, enrollmentStatusStyles, lessonProgressStatusLabels, lessonProgressStatusStyles, studentCourseTypeLabels, studentSkillTypeLabels } from './studentLearningLabels'
 import { formatStudentLearningDate } from './studentLearningUtils'
 
@@ -80,30 +90,48 @@ export function StudentEnrollmentProgressPage() {
   const progressPercent = getProgressPercent(enrollment.progressPercent)
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
-                {studentCourseTypeLabels[enrollment.course.type]}
-              </span>
-              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">Trình độ {enrollment.course.level}</span>
-              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${enrollmentStatusStyles[enrollment.status]}`}>
-                {enrollmentStatusLabels[enrollment.status]}
-              </span>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900">Tiến độ học tập</h1>
-            <h2 className="mt-3 text-xl font-semibold text-gray-900">{enrollment.course.name}</h2>
-            <p className="mt-2 text-sm text-gray-600">{enrollment.course.teacherName}</p>
-          </div>
+    <div className="flex min-w-0 flex-col gap-6">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/student/courses">Khóa học</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/student/enrollments">Khóa học đã đăng ký</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{enrollment.course.name}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
 
-          <Button variant="secondary" onClick={() => navigate('/student/enrollments')}>
-            Khóa học đã đăng ký
-          </Button>
+      <section className="flex min-w-0 flex-col gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700">
+            {studentCourseTypeLabels[enrollment.course.type]}
+          </Badge>
+          <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
+            Trình độ {enrollment.course.level}
+          </Badge>
+          <Badge variant="outline" className={cn(enrollmentStatusStyles[enrollment.status])}>
+            {enrollmentStatusLabels[enrollment.status]}
+          </Badge>
         </div>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">{enrollment.course.name}</h1>
+        <p className="text-base leading-7 text-gray-600">
+          {enrollment.course.teacherName} · {enrollment.completedLessonCount}/{enrollment.totalLessonCount} bài học ·{' '}
+          {progressPercent}% hoàn thành
+        </p>
+      </section>
 
-        <div className="mt-6">
+      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div>
           <div className="mb-2 flex items-center justify-between gap-3 text-sm">
             <span className="font-medium text-gray-700">Tiến độ</span>
             <span className="font-semibold text-gray-900">

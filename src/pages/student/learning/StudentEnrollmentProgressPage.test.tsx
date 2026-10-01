@@ -89,6 +89,28 @@ function renderProgressPage() {
   )
 }
 
+describe('StudentEnrollmentProgressPage catalog sync breadcrumb and slim hero', () => {
+  beforeEach(() => {
+    mockedGetStudentEnrollment.mockReset()
+  })
+
+  it('shows breadcrumb Khoá học / Khóa học đã đăng ký / course name and slim hero', async () => {
+    mockedGetStudentEnrollment.mockResolvedValue(enrollmentApiResponse(makeEnrollment()))
+
+    renderProgressPage()
+
+    expect(await screen.findByRole('heading', { name: 'English B1' })).toBeInTheDocument()
+
+    const breadcrumb = screen.getByRole('navigation', { name: 'breadcrumb' })
+    expect(breadcrumb).toBeInTheDocument()
+    const catalogLink = screen.getByRole('link', { name: 'Khóa học' })
+    expect(catalogLink).toHaveAttribute('href', '/student/courses')
+    const enrollmentsLink = screen.getByRole('link', { name: 'Khóa học đã đăng ký' })
+    expect(enrollmentsLink).toHaveAttribute('href', '/student/enrollments')
+    expect(screen.getAllByText('English B1')).toHaveLength(2)
+  })
+})
+
 describe('StudentEnrollmentProgressPage accordion navigation', () => {
   beforeEach(() => {
     mockedGetStudentEnrollment.mockReset()
