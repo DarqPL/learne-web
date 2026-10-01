@@ -620,7 +620,7 @@ export function StudentAiTutorPage() {
 
         <Card
           ref={chatRegionRef}
-          className="flex max-h-[820px] min-h-[560px] h-[calc(100vh-16rem)] flex-col overflow-hidden border-indigo-100 py-0 shadow-sm"
+          className="flex max-h-[980px] min-h-[640px] h-[calc(100vh-10rem)] flex-col overflow-hidden border-indigo-100 py-0 shadow-sm"
         >
           {!selectedConversation ? (
             <div className="flex min-h-0 flex-1 items-center justify-center bg-gradient-to-br from-white via-indigo-50/40 to-amber-50/50 p-6">
