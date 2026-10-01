@@ -61,14 +61,14 @@ describe('StudentCourseRecommendationsPage learning-path sync', () => {
     mockedGenerate.mockReset()
   })
 
-  it('shows breadcrumb Khoa hoc / AI de xuat with slim hero', async () => {
+  it('shows breadcrumb Trang chu / AI de xuat with slim hero', async () => {
     mockedGetCurrent.mockResolvedValue(apiResponse(makePath()))
 
     renderPage()
 
     const breadcrumb = await screen.findByRole('navigation', { name: 'breadcrumb' })
     expect(breadcrumb).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Khóa học' })).toHaveAttribute('href', '/student/courses')
+    expect(screen.getByRole('link', { name: 'Trang chủ' })).toHaveAttribute('href', '/student')
     expect(screen.getByText('AI đề xuất')).toBeInTheDocument()
 
     const heading = await screen.findByRole('heading', { name: 'Khóa học AI đề xuất' })

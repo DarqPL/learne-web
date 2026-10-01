@@ -104,7 +104,7 @@ export function StudentCourseRecommendationsPage() {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to="/student/courses">Khóa học</Link>
+              <Link to="/student">Trang chủ</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
