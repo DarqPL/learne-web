@@ -211,9 +211,8 @@ export function StudentLearningPathPage() {
               </Card>
             ) : (
               <div className="grid min-w-0 items-stretch gap-5 sm:grid-cols-2">
-                {sortedItems.map((item, index) => {
+                {sortedItems.map((item) => {
                   const scorePercent = formatScore(item.score)
-                  const priority = String(index + 1).padStart(2, '0')
 
                   return (
                     <Card
@@ -221,8 +220,7 @@ export function StudentLearningPathPage() {
                       className="h-full flex flex-col gap-2.5 overflow-hidden border-gray-200 bg-white p-4 transition-colors hover:border-indigo-200 hover:shadow-sm"
                     >
                       <CardHeader className="flex flex-col gap-2.5 p-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-medium tabular-nums text-muted-foreground">{priority}</span>
+                        <div className="flex items-center justify-start gap-2">
                           {item.completed ? (
                             <Badge className="bg-emerald-600 text-white">Đã hoàn thành</Badge>
                           ) : (

@@ -232,18 +232,14 @@ describe('StudentLearningPathPage AI insight redesign', () => {
     expect(screen.getByText(/Dựa trên/i)).toBeInTheDocument()
   })
 
-  it('renders roadmap priority numbers 01/02 with muted tabular-nums', async () => {
+  it('does not render roadmap priority numbers', async () => {
     mockedGetCurrentStudentLearningPath.mockResolvedValue(pathApiResponse(makeTwoItemPath()))
 
     renderLearningPathPage()
 
-    const first = await screen.findByText('01')
-    const second = await screen.findByText('02')
-    expect(first).toBeInTheDocument()
-    expect(second).toBeInTheDocument()
-    expect(first.className).toMatch(/tabular-nums/)
-    expect(first.className).toMatch(/muted|gray-400|gray-500/)
-    expect(second.className).toMatch(/tabular-nums/)
+    await screen.findByText('Lesson Alpha Name')
+    expect(screen.queryByText('01')).not.toBeInTheDocument()
+    expect(screen.queryByText('02')).not.toBeInTheDocument()
     expect(screen.queryByText('#1')).not.toBeInTheDocument()
   })
 
