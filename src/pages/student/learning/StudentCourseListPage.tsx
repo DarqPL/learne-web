@@ -261,17 +261,17 @@ export function StudentCourseListPage() {
                   </div>
                   <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-5 text-gray-500">
                     <span className="inline-flex items-center gap-1">
-                      <Layers aria-hidden="true" className="size-3.5" />
+                      <Layers aria-hidden="true" className="size-3.5 text-indigo-600" />
                       {course.topicCount} chủ đề
                     </span>
                     <span aria-hidden="true">·</span>
                     <span className="inline-flex items-center gap-1">
-                      <BookOpen aria-hidden="true" className="size-3.5" />
+                      <BookOpen aria-hidden="true" className="size-3.5 text-sky-600" />
                       {course.lessonCount} bài học
                     </span>
                     <span aria-hidden="true">·</span>
                     <span className="inline-flex items-center gap-1">
-                      <FileQuestion aria-hidden="true" className="size-3.5" />
+                      <FileQuestion aria-hidden="true" className="size-3.5 text-amber-600" />
                       {course.questionCount} câu hỏi
                     </span>
                   </p>

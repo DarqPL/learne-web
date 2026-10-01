@@ -160,6 +160,29 @@ describe('StudentCourseListPage redesign', () => {
     expect(cardLink.querySelector('[data-slot="separator"]')).toBeNull()
   })
 
+  it('tints card metadata icons with the semantic accent family', async () => {
+    mockedListStudentCourses.mockResolvedValue(coursesApiResponse([makeCourse()]))
+
+    renderListPage()
+
+    const cardLink = await screen.findByRole('link', { name: /English B1 Comprehensive/i })
+    const stats = within(cardLink).getByText((_, element) => {
+      const text = element?.textContent ?? ''
+      return (
+        element?.tagName.toLowerCase() === 'p' &&
+        /chủ đề/i.test(text) &&
+        /bài học/i.test(text) &&
+        /câu hỏi/i.test(text)
+      )
+    })
+
+    const icons = stats.querySelectorAll('svg')
+    expect(icons).toHaveLength(3)
+    expect(icons[0]).toHaveClass('text-indigo-600', 'size-3.5')
+    expect(icons[1]).toHaveClass('text-sky-600', 'size-3.5')
+    expect(icons[2]).toHaveClass('text-amber-600', 'size-3.5')
+  })
+
   it('paginates client-side with 6 per page and resets to page 1 on search', async () => {
     const eightCourses = Array.from({ length: 8 }, (_, index) =>
       makeCourse({ id: index + 1, name: `Course ${index + 1}` }),

@@ -399,4 +399,48 @@ describe('StudentCourseDetailPage compact redesign', () => {
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
     expect(mockedGetStudentEnrollment).not.toHaveBeenCalled()
   })
+
+  it('tints hero stat badges with soft semantic accents', async () => {
+    mockedGetStudentCourse.mockResolvedValue(courseApiResponse(makeCompactCourse()))
+
+    renderCourseDetail()
+
+    await screen.findByRole('button', { name: /Topic Alpha/i })
+
+    const badgeFor = (matcher: RegExp) =>
+      screen.getAllByText(matcher).map((node) => node.closest('[data-slot="badge"]')).find(Boolean) as HTMLElement
+
+    const topics = badgeFor(/1 chủ đề/i)
+    expect(topics).toHaveClass('bg-indigo-50', 'text-indigo-700')
+
+    const lessons = badgeFor(/1 bài học/i)
+    expect(lessons).toHaveClass('bg-sky-50', 'text-sky-700')
+
+    const questions = badgeFor(/2 câu hỏi/i)
+    expect(questions).toHaveClass('bg-amber-50', 'text-amber-700')
+
+    const level = badgeFor(/trình độ B1/i)
+    expect(level).toHaveClass('bg-violet-50', 'text-violet-700')
+
+    const type = badgeFor(/tổng hợp/i)
+    expect(type).toHaveClass('bg-emerald-50', 'text-emerald-700')
+  })
+
+  it('tints the lesson row chevron indigo only while expanded and tints quiz meta question icon amber', async () => {
+    mockedGetStudentCourse.mockResolvedValue(courseApiResponse(makeCompactCourse()))
+
+    renderCourseDetail()
+
+    const lessonRow = await screen.findByRole('button', { name: /Lesson One/i })
+    const chevron = lessonRow.querySelector('svg') as SVGElement
+    expect(chevron).toHaveClass('text-gray-400')
+    expect(chevron).not.toHaveClass('text-indigo-500')
+
+    fireEvent.click(lessonRow)
+
+    expect(chevron).toHaveClass('text-indigo-500')
+
+    const questionBadge = (await screen.findByText('Trắc nghiệm')).closest('[data-slot="badge"]') as HTMLElement
+    expect(questionBadge.querySelector('svg')).toHaveClass('text-amber-600')
+  })
 })

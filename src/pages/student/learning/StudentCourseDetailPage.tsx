@@ -305,17 +305,17 @@ export function StudentCourseDetailPage() {
               </div>
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
-              <Badge variant="secondary">
+              <Badge variant="secondary" className="bg-indigo-50 text-indigo-700">
                 {course.topics.length} chủ đề
               </Badge>
-              <Badge variant="secondary">
+              <Badge variant="secondary" className="bg-sky-50 text-sky-700">
                 {lessonCount} bài học
               </Badge>
-              <Badge variant="secondary">
+              <Badge variant="secondary" className="bg-amber-50 text-amber-700">
                 {questionCount} câu hỏi
               </Badge>
-              <Badge variant="outline">Trình độ {course.level}</Badge>
-              <Badge variant="outline">{studentCourseTypeLabels[course.type]}</Badge>
+              <Badge variant="outline" className="border-violet-200 bg-violet-50 text-violet-700">Trình độ {course.level}</Badge>
+              <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">{studentCourseTypeLabels[course.type]}</Badge>
             </div>
             {progressPercent !== null ? (
               <div className="mt-4 max-w-md">
@@ -474,7 +474,7 @@ export function StudentCourseDetailPage() {
                                   {lessonProgressStatusLabels[lessonStatus]}
                                 </Badge>
                               ) : null}
-                              <ChevronDown aria-hidden="true" className={cn('size-4 shrink-0 text-gray-400 transition-transform', expanded && 'rotate-180')} />
+                              <ChevronDown aria-hidden="true" className={cn('size-4 shrink-0 transition-transform', expanded ? 'rotate-180 text-indigo-500' : 'text-gray-400')} />
                             </button>
                             {expanded ? (
                               <div className="flex flex-col gap-3 border-t border-gray-100 px-3 py-3">
@@ -488,7 +488,7 @@ export function StudentCourseDetailPage() {
                                     {lesson.questions.map((question) => (
                                       <div key={question.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-gray-50 px-2.5 py-2 text-xs text-gray-600">
                                         <Badge variant="secondary">
-                                          <FileQuestion aria-hidden="true" />
+                                          <FileQuestion aria-hidden="true" className="text-amber-600" />
                                           {studentQuestionTypeLabels[question.type]}
                                         </Badge>
                                         <span>
