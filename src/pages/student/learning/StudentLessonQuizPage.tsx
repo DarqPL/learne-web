@@ -6,6 +6,7 @@ import type { StudentQuiz, StudentQuizQuestion } from '../../../lib/api/types'
 import { Alert } from '../../../components/ui/Alert'
 import { Button } from '../../../components/ui/Button'
 import { Spinner } from '../../../components/ui/Spinner'
+import { ArrowLeft } from 'lucide-react'
 import { LessonAudioPlayer } from './LessonAudioPlayer'
 import { studentQuestionTypeLabels } from './studentLearningLabels'
 import {
@@ -195,6 +196,7 @@ export function StudentLessonQuizPage() {
           </div>
 
           <Button variant="secondary" onClick={() => navigate(`/student/enrollments/${quiz.enrollmentId}/lessons/${quiz.lessonId}`)}>
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Quay lại bài học
           </Button>
         </div>
@@ -256,7 +258,7 @@ export function StudentLessonQuizPage() {
               <div className="rounded-2xl bg-gray-50 p-5">
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Nội dung luyện đọc</p>
                 <p className="mt-2 whitespace-pre-wrap text-lg font-semibold text-gray-900">{currentQuestion.targetText?.trim() ? currentQuestion.targetText : currentQuestion.questionText}</p>
-                <p className="mt-4 text-sm leading-6 text-gray-600">Phase 7 chưa hỗ trợ ghi âm và chấm điểm phát âm. Câu hỏi này không tính vào phần nộp bài.</p>
+                <p className="mt-4 text-sm leading-6 text-gray-600">Chưa hỗ trợ ghi âm và chấm điểm phát âm. Câu hỏi này không tính vào phần nộp bài.</p>
               </div>
             ) : isOptionQuestion(currentQuestion) ? (
               <div className="space-y-3" role="radiogroup" aria-labelledby={currentQuestionLabelId}>

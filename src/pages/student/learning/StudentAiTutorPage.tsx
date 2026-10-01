@@ -166,6 +166,8 @@ function sortMessages(messages: AiTutorMessage[]) {
 
 export function StudentAiTutorPage() {
   const mountedRef = useRef(false);
+  const chatRegionRef = useRef<HTMLDivElement | null>(null);
+  const composerRef = useRef<HTMLTextAreaElement | null>(null);
   const listRequestIdRef = useRef(0);
   const detailRequestIdRef = useRef(0);
   const sendRequestIdRef = useRef(0);
@@ -195,6 +197,14 @@ export function StudentAiTutorPage() {
   const [sending, setSending] = useState(false);
   const [archiveError, setArchiveError] = useState<string | null>(null);
   const [archiving, setArchiving] = useState(false);
+
+  function focusChatComposer() {
+    chatRegionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+    composerRef.current?.focus();
+  }
 
   async function loadConversations() {
     const requestId = listRequestIdRef.current + 1;
@@ -239,6 +249,7 @@ export function StudentAiTutorPage() {
       if (!mountedRef.current || detailRequestIdRef.current !== requestId)
         return;
       setSelectedConversation(response.data);
+      focusChatComposer();
     } catch (error) {
       if (mountedRef.current && detailRequestIdRef.current === requestId)
         setDetailError(
@@ -315,6 +326,7 @@ export function StudentAiTutorPage() {
       setArchiveError(null);
       resetCreateForm();
       await loadConversations();
+      focusChatComposer();
     } catch (error) {
       if (mountedRef.current && createRequestIdRef.current === requestId)
         setCreateError(
@@ -544,7 +556,7 @@ export function StudentAiTutorPage() {
                         onClick={() => handleSelectConversation(conversation)}
                         className={`w-full rounded-2xl border p-4 text-left transition disabled:cursor-not-allowed disabled:opacity-60 ${
                           selected
-                            ? "border-indigo-300 bg-indigo-50 shadow-sm shadow-indigo-100"
+                            ? "border-indigo-200 bg-indigo-50 shadow-sm shadow-indigo-100"
                             : "border-slate-200 bg-white hover:border-indigo-200 hover:bg-indigo-50/40"
                         }`}
                       >
@@ -589,7 +601,10 @@ export function StudentAiTutorPage() {
           </CardContent>
         </Card>
 
-        <Card className="min-h-[680px] overflow-hidden border-indigo-100 py-0 shadow-sm">
+        <Card
+          ref={chatRegionRef}
+          className="min-h-[680px] overflow-hidden border-indigo-100 py-0 shadow-sm"
+        >
           {!selectedConversation ? (
             <div className="flex min-h-[680px] items-center justify-center bg-gradient-to-br from-white via-indigo-50/40 to-amber-50/50 p-6">
               <div className="max-w-md text-center">
@@ -794,6 +809,7 @@ export function StudentAiTutorPage() {
                     Tin nhắn gửi AI Tutor
                   </span>
                   <Textarea
+                    ref={composerRef}
                     value={messageText}
                     maxLength={MAX_MESSAGE_LENGTH}
                     disabled={composerDisabled}
@@ -882,7 +898,7 @@ export function StudentAiTutorPage() {
                         key={option.type}
                         className={`cursor-pointer rounded-2xl border p-4 transition ${
                           selected
-                            ? "border-indigo-300 bg-indigo-50 shadow-sm shadow-indigo-100"
+                            ? "border-indigo-200 bg-indigo-50 shadow-sm shadow-indigo-100"
                             : "border-slate-200 bg-white hover:border-indigo-200"
                         } ${creating ? "cursor-not-allowed opacity-60" : ""}`}
                       >

@@ -1,0 +1,115 @@
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { StudentAiTutorPage } from './StudentAiTutorPage'
+import {
+  getAiConversation,
+  listAiConversations,
+} from '../../../lib/api/aiTutorApi'
+
+vi.mock('../../../lib/api/aiTutorApi', () => ({
+  archiveAiConversation: vi.fn(),
+  createAiConversation: vi.fn(),
+  getAiConversation: vi.fn(),
+  listAiConversations: vi.fn(),
+  sendAiTutorMessage: vi.fn(),
+}))
+
+const mockedListAiConversations = vi.mocked(listAiConversations)
+const mockedGetAiConversation = vi.mocked(getAiConversation)
+
+const summary = {
+  id: 1,
+  title: 'Test conversation',
+  practiceType: 'FREE_CHAT',
+  status: 'ACTIVE',
+  messagePreview: 'Hello preview',
+  lastMessageAt: '2026-09-01T10:00:00Z',
+  cleanupWarnAt: '2026-10-01T10:00:00Z',
+  archiveAfter: '2026-11-01T10:00:00Z',
+  cleanupWarning: false,
+}
+
+const detail = {
+  id: 1,
+  title: 'Test conversation',
+  practiceType: 'FREE_CHAT',
+  status: 'ACTIVE',
+  startedAt: '2026-09-01T09:00:00Z',
+  lastMessageAt: '2026-09-01T10:00:00Z',
+  cleanupWarnAt: '2026-10-01T10:00:00Z',
+  archiveAfter: '2026-11-01T10:00:00Z',
+  deleteAfter: null,
+  cleanupWarning: false,
+  messages: [
+    {
+      id: 10,
+      senderType: 'USER',
+      message: 'Hi',
+      createdAt: '2026-09-01T10:00:00Z',
+      feedback: null,
+    },
+    {
+      id: 11,
+      senderType: 'AI',
+      message: 'Hello!',
+      createdAt: '2026-09-01T10:01:00Z',
+      feedback: null,
+    },
+  ],
+}
+
+describe('StudentAiTutorPage chat focus', () => {
+  const originalScrollIntoView = HTMLElement.prototype.scrollIntoView
+  const originalFocus = HTMLElement.prototype.focus
+  let scrollIntoViewMock: ReturnType<typeof vi.fn>
+  let focusMock: ReturnType<typeof vi.fn>
+
+  beforeEach(() => {
+    mockedListAiConversations.mockReset()
+    mockedGetAiConversation.mockReset()
+    mockedListAiConversations.mockResolvedValue({
+      data: {
+        content: [summary],
+        page: 0,
+        size: 3,
+        totalElements: 1,
+        totalPages: 1,
+      },
+    } as Awaited<ReturnType<typeof listAiConversations>>)
+    mockedGetAiConversation.mockResolvedValue({
+      data: detail,
+    } as Awaited<ReturnType<typeof getAiConversation>>)
+
+    scrollIntoViewMock = vi.fn()
+    focusMock = vi.fn()
+    HTMLElement.prototype.scrollIntoView =
+      scrollIntoViewMock as unknown as typeof HTMLElement.prototype.scrollIntoView
+    HTMLElement.prototype.focus =
+      focusMock as unknown as typeof HTMLElement.prototype.focus
+  })
+
+  afterEach(() => {
+    HTMLElement.prototype.scrollIntoView = originalScrollIntoView
+    HTMLElement.prototype.focus = originalFocus
+  })
+
+  it('scrolls to chat and focuses composer after selecting a conversation', async () => {
+    render(<StudentAiTutorPage />)
+
+    const conversationButton = await screen.findByRole('button', {
+      name: /Test conversation/i,
+    })
+    fireEvent.click(conversationButton)
+
+    await waitFor(() => {
+      expect(mockedGetAiConversation).toHaveBeenCalledWith(1)
+    })
+
+    await waitFor(() => {
+      expect(scrollIntoViewMock).toHaveBeenCalled()
+    })
+    await waitFor(() => {
+      expect(focusMock).toHaveBeenCalled()
+    })
+  })
+})

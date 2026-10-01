@@ -1,21 +1,62 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import {
+  ArrowRight,
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  TrendingUp,
+  XCircle,
+} from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { listStudentEnrollments } from '../../../lib/api/studentLearningApi'
-import type { StudentEnrollment } from '../../../lib/api/types'
-import { Alert } from '../../../components/ui/Alert'
-import { Spinner } from '../../../components/ui/Spinner'
+import type { EnrollmentStatus, StudentEnrollment } from '../../../lib/api/types'
+import { cn } from '../../../lib/utils'
+import { Alert, AlertDescription, AlertTitle } from '../../../components/shadcn/ui/alert'
+import { Avatar, AvatarFallback } from '../../../components/shadcn/ui/avatar'
+import { Badge } from '../../../components/shadcn/ui/badge'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '../../../components/shadcn/ui/breadcrumb'
+import { Card, CardContent, CardFooter, CardHeader } from '../../../components/shadcn/ui/card'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+} from '../../../components/shadcn/ui/pagination'
 import { enrollmentStatusLabels, enrollmentStatusStyles } from './studentLearningLabels'
-import { formatStudentLearningDate } from './studentLearningUtils'
+
+const PAGE_SIZE = 6
+
+const enrollmentStatusBorders: Record<EnrollmentStatus, string> = {
+  ACTIVE: 'border-indigo-200',
+  COMPLETED: 'border-green-200',
+  CANCELLED: 'border-gray-200',
+}
 
 function getProgressPercent(value: number) {
   if (!Number.isFinite(value)) return 0
   return Math.min(100, Math.max(0, value))
 }
 
+function teacherInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return '?'
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase()
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
+}
+
 export function StudentEnrollmentsPage() {
   const [enrollments, setEnrollments] = useState<StudentEnrollment[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
     let cancelled = false
@@ -36,21 +77,53 @@ export function StudentEnrollmentsPage() {
     }
   }, [])
 
+  const totalPages = enrollments ? Math.max(1, Math.ceil(enrollments.length / PAGE_SIZE)) : 1
+  const safePage = Math.min(Math.max(1, page), totalPages)
+  const pagedEnrollments = enrollments
+    ? enrollments.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+    : []
+
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Khóa học đã đăng ký</h1>
-        <p className="mt-2 text-gray-600">Theo dõi các khóa học bạn đang tham gia và tiếp tục bài học còn dang dở.</p>
-      </div>
+    <div className="flex min-w-0 flex-col gap-6">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/student/courses">Khóa học</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Khóa học đã đăng ký</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
+      <section className="flex min-w-0 flex-col gap-2">
+        <h1 className="text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">Khóa học đã đăng ký</h1>
+        <p className="text-base leading-7 text-gray-600">
+          Theo dõi các khóa học bạn đang tham gia và tiếp tục bài học còn dang dở.
+        </p>
+      </section>
 
       {error ? (
-        <div role="alert">
-          <Alert>{error}</Alert>
-        </div>
+        <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+          <XCircle aria-hidden="true" data-icon="inline-start" />
+          <AlertTitle>Không thể tải khóa học đã đăng ký</AlertTitle>
+          <AlertDescription className="text-red-700">{error}</AlertDescription>
+        </Alert>
       ) : enrollments === null ? (
-        <div className="flex justify-center py-16">
-          <Spinner />
-        </div>
+        <Card className="border-dashed border-indigo-200 bg-white/90 shadow-sm">
+          <CardContent className="flex items-center gap-4 p-6 text-gray-600">
+            <span className="flex size-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+              <Loader2 aria-hidden="true" className="size-5 animate-spin" />
+            </span>
+            <div>
+              <p className="font-medium text-gray-900">Đang tải khóa học đã đăng ký</p>
+              <p className="text-sm text-gray-500">Hệ thống đang lấy các khóa học bạn đang tham gia.</p>
+            </div>
+          </CardContent>
+        </Card>
       ) : enrollments.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center shadow-sm">
           <p className="text-gray-600">Bạn chưa đăng ký khóa học nào.</p>
@@ -62,62 +135,129 @@ export function StudentEnrollmentsPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-2">
-          {enrollments.map((enrollment) => {
-            const progressPercent = getProgressPercent(enrollment.progressPercent)
+        <>
+          <div className="grid min-w-0 items-stretch gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {pagedEnrollments.map((enrollment) => {
+              const progressPercent = getProgressPercent(enrollment.progressPercent)
 
-            return (
-              <Link
-                key={enrollment.id}
-                to={`/student/enrollments/${enrollment.id}`}
-                className="rounded-2xl border border-gray-200 bg-white p-6 text-left shadow-sm transition-colors hover:border-indigo-200 hover:shadow focus:outline-none focus:ring-2 focus:ring-indigo-100"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <h2 className="text-lg font-semibold text-gray-900">{enrollment.courseName}</h2>
-                    <p className="mt-2 text-sm text-gray-600">{enrollment.teacherName}</p>
-                  </div>
-                  <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${enrollmentStatusStyles[enrollment.status]}`}>
-                    {enrollmentStatusLabels[enrollment.status]}
-                  </span>
-                </div>
-
-                <div className="mt-5">
-                  <div className="mb-2 flex items-center justify-between gap-3 text-sm">
-                    <span className="font-medium text-gray-700">Tiến độ</span>
-                    <span className="font-semibold text-gray-900">
-                      {enrollment.completedLessonCount}/{enrollment.totalLessonCount} bài học
-                    </span>
-                  </div>
-                  <div
-                    className="h-2 overflow-hidden rounded-full bg-gray-100"
-                    role="progressbar"
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-valuenow={progressPercent}
-                    aria-label={`Tiến độ khóa học ${enrollment.courseName}`}
+              return (
+                <Link
+                  key={enrollment.id}
+                  to={`/student/enrollments/${enrollment.id}`}
+                  className="group block min-w-0 rounded-3xl outline-none transition focus-visible:ring-4 focus-visible:ring-indigo-200"
+                >
+                  <Card className="h-full flex flex-col gap-3 overflow-hidden border-gray-200 bg-white p-5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:border-indigo-200 group-hover:shadow-sm">
+                    <CardHeader className="flex flex-col gap-3 p-0">
+                      <div className="flex flex-wrap gap-2">
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            enrollmentStatusStyles[enrollment.status],
+                            enrollmentStatusBorders[enrollment.status],
+                          )}
+                        >
+                          {enrollmentStatusLabels[enrollment.status]}
+                        </Badge>
+                      </div>
+                      <h2 className="text-xl font-semibold tracking-tight text-gray-950 transition group-hover:text-indigo-700">
+                        {enrollment.courseName}
+                      </h2>
+                      <div className="flex min-w-0 items-center gap-2">
+                        <Avatar className="size-7">
+                          <AvatarFallback>{teacherInitials(enrollment.teacherName)}</AvatarFallback>
+                        </Avatar>
+                        <p className="min-w-0 truncate text-sm font-medium text-gray-950">
+                          {enrollment.teacherName}
+                        </p>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="flex flex-col gap-3 p-0">
+                      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-5 text-gray-500">
+                        <span className="inline-flex items-center gap-1">
+                          <BookOpen aria-hidden="true" className="size-3.5 text-sky-600" />
+                          {enrollment.completedLessonCount}/{enrollment.totalLessonCount} bài học
+                        </span>
+                        <span aria-hidden="true">·</span>
+                        <span className="inline-flex items-center gap-1">
+                          <TrendingUp aria-hidden="true" className="size-3.5 text-emerald-600" />
+                          {progressPercent}% hoàn thành
+                        </span>
+                      </p>
+                      <div
+                        className="h-2 overflow-hidden rounded-full bg-gray-100"
+                        role="progressbar"
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={progressPercent}
+                        aria-label={`Tiến độ khóa học ${enrollment.courseName}`}
+                      >
+                        <div className="h-full rounded-full bg-indigo-600" style={{ width: `${progressPercent}%` }} />
+                      </div>
+                    </CardContent>
+                    <CardFooter className="mt-auto p-0 pt-1">
+                      <span className="inline-flex items-center gap-1 text-sm font-medium text-indigo-700 [&_svg]:size-4">
+                        Tiếp tục học
+                        <ArrowRight aria-hidden="true" data-icon="inline-end" />
+                      </span>
+                    </CardFooter>
+                  </Card>
+                </Link>
+              )
+            })}
+          </div>
+          {totalPages > 1 ? (
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationLink
+                    href="#"
+                    size="default"
+                    className="gap-1 px-2.5 sm:pl-2.5 aria-disabled:opacity-50 aria-disabled:pointer-events-none"
+                    aria-label="Trang trước"
+                    onClick={(event) => {
+                      event.preventDefault()
+                      setPage((prev) => Math.max(1, Math.min(prev, totalPages) - 1))
+                    }}
+                    aria-disabled={safePage === 1}
                   >
-                    <div className="h-full rounded-full bg-indigo-600" style={{ width: `${progressPercent}%` }} />
-                  </div>
-                  <p className="mt-2 text-xs font-medium text-gray-500">{progressPercent}% hoàn thành</p>
-                </div>
-
-                <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
-                  <div className="rounded-xl bg-gray-50 p-3">
-                    <dt className="text-xs text-gray-500">Ngày đăng ký</dt>
-                    <dd className="mt-1 font-semibold text-gray-900">{formatStudentLearningDate(enrollment.enrolledAt)}</dd>
-                  </div>
-                  {enrollment.completedAt ? (
-                    <div className="rounded-xl bg-gray-50 p-3">
-                      <dt className="text-xs text-gray-500">Ngày hoàn thành</dt>
-                      <dd className="mt-1 font-semibold text-gray-900">{formatStudentLearningDate(enrollment.completedAt)}</dd>
-                    </div>
-                  ) : null}
-                </dl>
-              </Link>
-            )
-          })}
-        </div>
+                    <ChevronLeft aria-hidden="true" />
+                    <span>Trang trước</span>
+                  </PaginationLink>
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
+                  <PaginationItem key={pageNumber}>
+                    <PaginationLink
+                      href="#"
+                      isActive={pageNumber === safePage}
+                      onClick={(event) => {
+                        event.preventDefault()
+                        setPage(pageNumber)
+                      }}
+                    >
+                      {pageNumber}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationLink
+                    href="#"
+                    size="default"
+                    className="gap-1 px-2.5 sm:pr-2.5 aria-disabled:opacity-50 aria-disabled:pointer-events-none"
+                    aria-label="Trang sau"
+                    onClick={(event) => {
+                      event.preventDefault()
+                      setPage((prev) => Math.min(totalPages, Math.max(1, prev) + 1))
+                    }}
+                    aria-disabled={safePage === totalPages}
+                  >
+                    <span>Trang sau</span>
+                    <ChevronRight aria-hidden="true" />
+                  </PaginationLink>
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          ) : null}
+        </>
       )}
     </div>
   )
