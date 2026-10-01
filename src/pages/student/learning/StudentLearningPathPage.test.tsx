@@ -174,3 +174,117 @@ describe('StudentLearningPathPage technical copy', () => {
     ).not.toBeInTheDocument()
   })
 })
+
+describe('StudentLearningPathPage AI insight redesign', () => {
+  beforeEach(() => {
+    mockedGetCurrentStudentLearningPath.mockReset()
+    mockedGenerateStudentLearningPath.mockReset()
+  })
+
+  function makeTwoItemPath(): StudentLearningPath {
+    const base = makePath()
+    return {
+      ...base,
+      weaknesses: ['Past simple', 'Present perfect'],
+      items: [
+        { ...base.items[0], id: 10, lessonTitle: 'Lesson Alpha Name', sequenceOrder: 1, score: 0.8, completed: false, enrollmentId: 5, lessonId: 20 },
+        {
+          ...base.items[0],
+          id: 11,
+          lessonTitle: 'Lesson Beta Name',
+          courseTitle: 'Course Beta',
+          teacherName: 'Teacher Two',
+          sequenceOrder: 2,
+          reason: 'Second reason.',
+          score: 0.65,
+          completed: false,
+          enrollmentId: 6,
+          lessonId: 21,
+        },
+      ],
+    }
+  }
+
+  it('renders weaknesses as compact AI insight strip with chips and source line', async () => {
+    mockedGetCurrentStudentLearningPath.mockResolvedValue(pathApiResponse(makeTwoItemPath()))
+
+    renderLearningPathPage()
+
+    const title = await screen.findByText('Nên tập trung luyện tập')
+    expect(title).toBeInTheDocument()
+
+    const strip = title.closest('div.rounded-2xl, section.rounded-2xl')
+      ?? title.parentElement?.parentElement
+    expect(strip).not.toBeNull()
+    expect(strip?.className).toMatch(/rounded-2xl/)
+    expect(strip?.className).toMatch(/border-violet|from-violet|via-violet|violet/)
+
+    for (const weakness of ['Past simple', 'Present perfect']) {
+      const chip = await screen.findByText(weakness)
+      expect(chip).toBeInTheDocument()
+      expect(chip.closest('[data-slot="badge"]')).not.toBeNull()
+    }
+
+    const chipsWrap = screen.getByText('Past simple').closest('div')
+    expect(chipsWrap?.className).toMatch(/flex-wrap/)
+    expect(chipsWrap?.className).toMatch(/gap-1\.5/)
+
+    expect(screen.getByText(/Dựa trên/i)).toBeInTheDocument()
+  })
+
+  it('renders roadmap priority numbers 01/02 with muted tabular-nums', async () => {
+    mockedGetCurrentStudentLearningPath.mockResolvedValue(pathApiResponse(makeTwoItemPath()))
+
+    renderLearningPathPage()
+
+    const first = await screen.findByText('01')
+    const second = await screen.findByText('02')
+    expect(first).toBeInTheDocument()
+    expect(second).toBeInTheDocument()
+    expect(first.className).toMatch(/tabular-nums/)
+    expect(first.className).toMatch(/muted|gray-400|gray-500/)
+    expect(second.className).toMatch(/tabular-nums/)
+    expect(screen.queryByText('#1')).not.toBeInTheDocument()
+  })
+
+  it('renders primary Button action and prominent match percent with tighter cards', async () => {
+    mockedGetCurrentStudentLearningPath.mockResolvedValue(pathApiResponse(makeTwoItemPath()))
+
+    renderLearningPathPage()
+
+    const lessonHeading = await screen.findByRole('heading', { name: 'Lesson Alpha Name' })
+    const card = lessonHeading.closest('[data-slot="card"]')
+    expect(card).not.toBeNull()
+    expect(card).toHaveClass('p-4')
+    expect(card?.className).toMatch(/gap-2\.5/)
+
+    const matchValue = await screen.findByText('80%')
+    expect(matchValue).toBeInTheDocument()
+    expect(matchValue.className).toMatch(/text-lg/)
+    expect(matchValue.className).toMatch(/font-bold/)
+    expect(matchValue.className).toMatch(/violet/)
+    expect(screen.getAllByText('Độ phù hợp')[0]).toBeInTheDocument()
+
+    const reason = screen.getByText('AI suggests this lesson.')
+    expect(reason).toHaveClass('line-clamp-2')
+
+    const actions = screen.getAllByRole('link', { name: /Vào bài học/i })
+    expect(actions).toHaveLength(2)
+    const action = actions[0]
+    expect(action).toHaveAttribute('data-slot', 'button')
+    expect(action.className).toMatch(/w-full/)
+  })
+
+  it('keeps short empty line when no weaknesses', async () => {
+    const path = makePath()
+    path.weaknesses = []
+    mockedGetCurrentStudentLearningPath.mockResolvedValue(pathApiResponse(path))
+
+    renderLearningPathPage()
+
+    await screen.findByText('Lesson Alpha Name')
+    expect(
+      screen.getByText(/AI chưa ghi nhận điểm yếu cụ thể/i),
+    ).toBeInTheDocument()
+  })
+})

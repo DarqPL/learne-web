@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Bot, CalendarClock, Info, ListChecks, Loader2, XCircle } from 'lucide-react'
+import { ArrowRight, Bot, CalendarClock, Info, ListChecks, Loader2, Sparkles, XCircle } from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { generateStudentLearningPath, getCurrentStudentLearningPath } from '../../../lib/api/studentLearningApi'
 import type { StudentLearningPath } from '../../../lib/api/types'
@@ -176,25 +176,26 @@ export function StudentLearningPathPage() {
         </Card>
       ) : (
         <div className="flex min-w-0 flex-col gap-6">
-          <Card className="border-gray-200 bg-white shadow-sm">
-            <CardContent className="flex flex-col gap-3 p-4 sm:p-5">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-violet-600">Điểm yếu AI phát hiện</p>
-                <h2 className="mt-1 text-lg font-semibold text-gray-950">Nên tập trung luyện tập</h2>
+          <div className="flex min-w-0 flex-col gap-2 rounded-2xl border border-violet-200 bg-gradient-to-r from-violet-50 to-indigo-50 p-4">
+            <div className="flex items-center gap-2">
+              <span className="flex size-8 items-center justify-center rounded-xl bg-violet-600 text-white">
+                <Sparkles aria-hidden="true" className="size-4" />
+              </span>
+              <h2 className="text-base font-semibold text-gray-950">Nên tập trung luyện tập</h2>
+            </div>
+            {path.weaknesses.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {path.weaknesses.map((weakness) => (
+                  <Badge key={weakness} variant="outline" className="border-violet-200 bg-white/80 text-violet-700">
+                    {weakness}
+                  </Badge>
+                ))}
               </div>
-              {path.weaknesses.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {path.weaknesses.map((weakness) => (
-                    <Badge key={weakness} variant="outline" className="border-violet-200 bg-violet-50 text-violet-700">
-                      {weakness}
-                    </Badge>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm leading-6 text-gray-600">AI chưa ghi nhận điểm yếu cụ thể. Hãy tiếp tục làm quiz để dữ liệu đề xuất chính xác hơn.</p>
-              )}
-            </CardContent>
-          </Card>
+            ) : (
+              <p className="text-sm leading-6 text-gray-600">AI chưa ghi nhận điểm yếu cụ thể. Hãy tiếp tục làm quiz để dữ liệu đề xuất chính xác hơn.</p>
+            )}
+            <p className="text-xs leading-5 text-gray-500">Dựa trên {path.source || 'kết quả học tập gần đây'}.</p>
+          </div>
 
           <section className="flex min-w-0 flex-col gap-4">
             <div>
@@ -210,16 +211,18 @@ export function StudentLearningPathPage() {
               </Card>
             ) : (
               <div className="grid min-w-0 items-stretch gap-5 sm:grid-cols-2">
-                {sortedItems.map((item) => {
+                {sortedItems.map((item, index) => {
                   const scorePercent = formatScore(item.score)
+                  const priority = String(index + 1).padStart(2, '0')
 
                   return (
                     <Card
                       key={item.id}
-                      className="h-full flex flex-col gap-3 overflow-hidden border-gray-200 bg-white p-5 transition-colors hover:border-indigo-200 hover:shadow-sm"
+                      className="h-full flex flex-col gap-2.5 overflow-hidden border-gray-200 bg-white p-4 transition-colors hover:border-indigo-200 hover:shadow-sm"
                     >
-                      <CardHeader className="flex flex-col gap-3 p-0">
-                        <div className="flex flex-wrap gap-2">
+                      <CardHeader className="flex flex-col gap-2.5 p-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-medium tabular-nums text-muted-foreground">{priority}</span>
                           {item.completed ? (
                             <Badge className="bg-emerald-600 text-white">Đã hoàn thành</Badge>
                           ) : (
@@ -227,17 +230,17 @@ export function StudentLearningPathPage() {
                               Chưa hoàn thành
                             </Badge>
                           )}
-                          <Badge variant="outline" className="border-violet-200 bg-violet-50 text-violet-700">
-                            <span>Độ phù hợp</span>
-                            <span aria-hidden="true">·</span>
-                            <span>{scorePercent}%</span>
-                          </Badge>
                         </div>
                         <div className="flex min-w-0 flex-col gap-1">
                           <h3 className="text-lg font-semibold tracking-tight text-gray-950">{item.lessonTitle}</h3>
                           <p className="text-sm text-gray-600">{item.courseTitle}</p>
                           <p className="text-xs leading-5 text-gray-500">Giảng viên: {item.teacherName}</p>
                         </div>
+                        <Badge variant="outline" className="w-fit border-violet-200 bg-violet-50 text-violet-700">
+                          <span>Độ phù hợp</span>
+                          <span aria-hidden="true">·</span>
+                          <span className="text-lg font-bold text-violet-700">{scorePercent}%</span>
+                        </Badge>
                       </CardHeader>
                       <CardContent className="p-0">
                         <p className="line-clamp-2 text-sm leading-6 text-gray-600">
@@ -254,13 +257,12 @@ export function StudentLearningPathPage() {
                             Chưa có enrollment hợp lệ
                           </span>
                         ) : (
-                          <Link
-                            to={`/student/enrollments/${item.enrollmentId}/lessons/${item.lessonId}`}
-                            className="inline-flex items-center gap-1 text-sm font-medium text-indigo-700 transition-colors hover:text-indigo-800 [&_svg]:size-4"
-                          >
-                            Vào bài học
-                            <ArrowRight aria-hidden="true" data-icon="inline-end" />
-                          </Link>
+                          <Button asChild className="w-full">
+                            <Link to={`/student/enrollments/${item.enrollmentId}/lessons/${item.lessonId}`}>
+                              Vào bài học
+                              <ArrowRight aria-hidden="true" data-icon="inline-end" />
+                            </Link>
+                          </Button>
                         )}
                       </CardFooter>
                     </Card>
