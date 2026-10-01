@@ -193,7 +193,7 @@ export function StudentLearningPathPage() {
                           <p className="mt-1 text-xs font-medium text-gray-500">Giảng viên: {item.teacherName}</p>
                         </div>
                         <div className="shrink-0 rounded-xl bg-violet-50 px-3 py-2 text-center">
-                          <p className="text-xs font-medium text-violet-600">Điểm AI</p>
+                          <p className="text-xs font-medium text-violet-600">Độ phù hợp</p>
                           <p className="text-lg font-bold text-violet-800">{scorePercent}%</p>
                         </div>
                       </div>

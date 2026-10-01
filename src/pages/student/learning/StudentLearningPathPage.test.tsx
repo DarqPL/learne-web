@@ -67,4 +67,14 @@ describe('StudentLearningPathPage technical copy', () => {
     expect(screen.queryByText('#1')).not.toBeInTheDocument()
     expect(screen.queryByText(/phase/i)).not.toBeInTheDocument()
   })
+
+  it('renders match score label instead of AI score copy', async () => {
+    mockedGetCurrentStudentLearningPath.mockResolvedValue(pathApiResponse(makePath()))
+
+    renderLearningPathPage()
+
+    expect(await screen.findByText('Độ phù hợp')).toBeInTheDocument()
+    expect(screen.queryByText('Điểm AI')).not.toBeInTheDocument()
+    expect(await screen.findByText('80%')).toBeInTheDocument()
+  })
 })
