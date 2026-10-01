@@ -93,6 +93,41 @@ function renderAt(path: string) {
   )
 }
 
+describe('StudentLessonDetailPage catalog sync', () => {
+  beforeEach(() => {
+    mockedGetStudentEnrollment.mockReset()
+    vi.mocked(startStudentLesson).mockReset()
+  })
+
+  it('shows breadcrumb, back link href, and slim hero without big dl stat cards', async () => {
+    mockedGetStudentEnrollment.mockResolvedValue(enrollmentApiResponse(makeEnrollment()))
+
+    renderAt('/student/enrollments/10/lessons/21')
+
+    expect(await screen.findByRole('heading', { name: 'Lesson 21 Title' })).toBeInTheDocument()
+
+    const breadcrumb = screen.getByRole('navigation', { name: 'breadcrumb' })
+    expect(breadcrumb).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Khóa học' })).toHaveAttribute('href', '/student/courses')
+    expect(screen.getByRole('link', { name: 'Khóa học đã đăng ký' })).toHaveAttribute('href', '/student/enrollments')
+
+    const backLink = screen.getByRole('link', { name: /Quay lại lộ trình học/i })
+    expect(backLink).toHaveAttribute('href', '/student/enrollments/10')
+
+    const heading = screen.getByRole('heading', { name: 'Lesson 21 Title' })
+    expect(heading.className).toMatch(/text-2xl/)
+
+    expect(document.querySelector('dl')).not.toBeInTheDocument()
+
+    const progressbar = screen.getByRole('progressbar')
+    expect(progressbar).toBeInTheDocument()
+    expect(progressbar.className).toMatch(/h-2/)
+
+    const startButton = screen.getByRole('button', { name: /Bắt đầu học/i })
+    expect(startButton.className).toMatch(/w-auto/)
+  })
+})
+
 describe('StudentLessonDetailPage navigation', () => {
   beforeEach(() => {
     mockedGetStudentEnrollment.mockReset()
@@ -104,11 +139,11 @@ describe('StudentLessonDetailPage navigation', () => {
 
     renderAt('/student/enrollments/10/lessons/20')
 
-    expect(await screen.findByText('Lesson 20 Title')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Lesson 20 Title' })).toBeInTheDocument()
 
     fireEvent.click(await screen.findByRole('button', { name: /Bài học tiếp theo/i }))
 
-    expect(await screen.findByText('Lesson 21 Title')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Lesson 21 Title' })).toBeInTheDocument()
   })
 
   it('shows back fallback when the next lesson is locked', async () => {
@@ -116,7 +151,7 @@ describe('StudentLessonDetailPage navigation', () => {
 
     renderAt('/student/enrollments/10/lessons/21')
 
-    expect(await screen.findByText('Lesson 21 Title')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Lesson 21 Title' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Bài học tiếp theo/i })).not.toBeInTheDocument()
 
     const backButtons = await screen.findAllByRole('button', { name: /Quay lại lộ trình học/i })
