@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Info, Loader2, XCircle } from 'lucide-react'
+import { ArrowRight, Bot, CalendarClock, Info, ListChecks, Loader2, XCircle } from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { generateStudentLearningPath, getCurrentStudentLearningPath } from '../../../lib/api/studentLearningApi'
 import type { StudentLearningPath } from '../../../lib/api/types'
@@ -113,10 +113,20 @@ export function StudentLearningPathPage() {
               AI phân tích kết quả học tập để ưu tiên các bài học nên ôn lại, giúp bạn tập trung vào kỹ năng còn yếu trước khi tiếp tục.
             </p>
             {path ? (
-              <p className="mt-2 text-xs leading-5 text-gray-500">
-                Ngày tạo {formatStudentLearningDate(path.generatedAt)} · Nguồn phân tích {path.source || 'Chưa có'} ·{' '}
-                {sortedItems.length} bài đề xuất
-              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Badge variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700">
+                  <CalendarClock aria-hidden="true" />
+                  <span>Ngày tạo {formatStudentLearningDate(path.generatedAt)}</span>
+                </Badge>
+                <Badge variant="outline" className="border-violet-200 bg-violet-50 text-violet-700">
+                  <Bot aria-hidden="true" />
+                  <span>Nguồn phân tích {path.source || 'Chưa có'}</span>
+                </Badge>
+                <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+                  <ListChecks aria-hidden="true" />
+                  <span>{sortedItems.length} bài đề xuất</span>
+                </Badge>
+              </div>
             ) : null}
           </div>
           <Button loading={generating} disabled={loading || generating} onClick={() => void handleGenerate()} className="shrink-0">

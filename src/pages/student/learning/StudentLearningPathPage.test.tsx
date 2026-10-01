@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { StudentLearningPathPage } from './StudentLearningPathPage'
 import { generateStudentLearningPath, getCurrentStudentLearningPath } from '../../../lib/api/studentLearningApi'
+import { formatStudentLearningDate } from './studentLearningUtils'
 import type { StudentLearningPath } from '../../../lib/api/types'
 
 vi.mock('../../../lib/api/studentLearningApi', () => ({
@@ -121,5 +122,55 @@ describe('StudentLearningPathPage technical copy', () => {
     const action = screen.getByRole('link', { name: /Vào bài học/i })
     expect(action).toHaveTextContent(/Vào bài học/)
     expect(action.className).not.toMatch(/bg-indigo-600/)
+  })
+
+  it('renders prominent learning path metadata stats as badges', async () => {
+    const path = makePath()
+    mockedGetCurrentStudentLearningPath.mockResolvedValue(pathApiResponse(path))
+
+    renderLearningPathPage()
+
+    await screen.findByText('Lesson Alpha Name')
+
+    const expectedDate = formatStudentLearningDate(path.generatedAt)
+
+    const createdStat = screen.getByText(
+      (_, element) =>
+        element?.tagName === 'SPAN' &&
+        !element.hasAttribute('data-slot') &&
+        element?.textContent === `Ngày tạo ${expectedDate}`,
+    )
+    expect(createdStat).toBeInTheDocument()
+    expect(createdStat.closest('[data-slot="badge"]')).not.toBeNull()
+    expect(createdStat.closest('[data-slot="badge"]')).toHaveClass('bg-indigo-50')
+
+    const sourceStat = screen.getByText(
+      (_, element) =>
+        element?.tagName === 'SPAN' &&
+        !element.hasAttribute('data-slot') &&
+        element?.textContent === `Nguồn phân tích ${path.source}`,
+    )
+    expect(sourceStat).toBeInTheDocument()
+    expect(sourceStat.closest('[data-slot="badge"]')).not.toBeNull()
+    expect(sourceStat.closest('[data-slot="badge"]')).toHaveClass('bg-violet-50')
+
+    const countStat = screen.getByText(
+      (_, element) =>
+        element?.tagName === 'SPAN' &&
+        !element.hasAttribute('data-slot') &&
+        element?.textContent === `${path.items.length} bài đề xuất`,
+    )
+    expect(countStat).toBeInTheDocument()
+    expect(countStat.closest('[data-slot="badge"]')).not.toBeNull()
+    expect(countStat.closest('[data-slot="badge"]')).toHaveClass('bg-emerald-50')
+
+    expect(
+      screen.queryByText(
+        (_, element) =>
+          element?.tagName === 'P' &&
+          (element?.textContent?.includes('Ngày tạo') ?? false) &&
+          (element?.textContent?.includes('Nguồn phân tích') ?? false),
+      ),
+    ).not.toBeInTheDocument()
   })
 })
