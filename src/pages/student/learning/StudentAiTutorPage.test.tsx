@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { StudentAiTutorPage } from './StudentAiTutorPage'
 import {
@@ -59,6 +60,14 @@ const detail = {
 }
 
 describe('StudentAiTutorPage chat focus', () => {
+  function renderPage() {
+    return render(
+      <MemoryRouter>
+        <StudentAiTutorPage />
+      </MemoryRouter>,
+    )
+  }
+
   const originalScrollIntoView = HTMLElement.prototype.scrollIntoView
   const originalFocus = HTMLElement.prototype.focus
   let scrollIntoViewMock: ReturnType<typeof vi.fn>
@@ -94,7 +103,7 @@ describe('StudentAiTutorPage chat focus', () => {
   })
 
   it('scrolls to chat and focuses composer after selecting a conversation', async () => {
-    render(<StudentAiTutorPage />)
+    renderPage()
 
     const conversationButton = await screen.findByRole('button', {
       name: /Test conversation/i,
@@ -111,5 +120,30 @@ describe('StudentAiTutorPage chat focus', () => {
     await waitFor(() => {
       expect(focusMock).toHaveBeenCalled()
     })
+  })
+
+  it('shows breadcrumb Trang chu link to /student and AI Tutor page', async () => {
+    renderPage()
+
+    const breadcrumb = await screen.findByRole('navigation', { name: 'breadcrumb' })
+    expect(breadcrumb).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Trang chủ' })).toHaveAttribute('href', '/student')
+    expect(screen.getByText('AI Tutor')).toBeInTheDocument()
+  })
+
+  it('bounds message list inside scrollable area so page does not stretch', async () => {
+    renderPage()
+
+    const conversationButton = await screen.findByRole('button', {
+      name: /Test conversation/i,
+    })
+    fireEvent.click(conversationButton)
+
+    const aiMessage = await screen.findByText('Hello!')
+    expect(aiMessage).toBeInTheDocument()
+
+    const scroller = screen.getByTestId('ai-tutor-message-scroller')
+    expect(scroller.className).toMatch(/overflow-y-auto/)
+    expect(scroller.className).toMatch(/max-h-|h-\[/)
   })
 })

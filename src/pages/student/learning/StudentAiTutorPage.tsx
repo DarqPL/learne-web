@@ -13,15 +13,18 @@ import {
   Theater,
   WandSparkles,
 } from "lucide-react";
-import {
-  useEffect,
-  useRef,
-  useState,
-  type FormEvent,
-  type KeyboardEvent,
-} from "react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { Link } from "react-router-dom";
 import { Alert, AlertDescription } from "../../../components/shadcn/ui/alert";
 import { Badge } from "../../../components/shadcn/ui/badge";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "../../../components/shadcn/ui/breadcrumb";
 import { Button } from "../../../components/shadcn/ui/button";
 import {
   Card,
@@ -462,7 +465,21 @@ export function StudentAiTutorPage() {
     messageText.trim().length > MAX_MESSAGE_LENGTH;
 
   return (
-    <div className="space-y-6">
+    <div className="flex min-w-0 flex-col gap-6">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/student">Trang chủ</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>AI Tutor</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       <Card className="relative overflow-hidden border-indigo-100 py-0 shadow-sm">
         <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-violet-300/30 blur-3xl" />
         <div className="absolute bottom-0 left-1/3 h-44 w-44 rounded-full bg-amber-200/40 blur-3xl" />
@@ -603,10 +620,10 @@ export function StudentAiTutorPage() {
 
         <Card
           ref={chatRegionRef}
-          className="min-h-[680px] overflow-hidden border-indigo-100 py-0 shadow-sm"
+          className="flex max-h-[820px] min-h-[560px] h-[calc(100vh-16rem)] flex-col overflow-hidden border-indigo-100 py-0 shadow-sm"
         >
           {!selectedConversation ? (
-            <div className="flex min-h-[680px] items-center justify-center bg-gradient-to-br from-white via-indigo-50/40 to-amber-50/50 p-6">
+            <div className="flex min-h-0 flex-1 items-center justify-center bg-gradient-to-br from-white via-indigo-50/40 to-amber-50/50 p-6">
               <div className="max-w-md text-center">
                 <div className="mx-auto mb-5 flex size-16 items-center justify-center rounded-3xl bg-indigo-600 text-white shadow-xl shadow-indigo-200">
                   <WandSparkles className="size-8" />
@@ -628,7 +645,7 @@ export function StudentAiTutorPage() {
               </div>
             </div>
           ) : (
-            <div className="flex min-h-[680px] flex-col bg-slate-50/80">
+            <div className="flex min-h-0 flex-1 flex-col bg-slate-50/80">
               <div className="border-b bg-white p-5">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="space-y-2">
@@ -675,7 +692,10 @@ export function StudentAiTutorPage() {
                 ) : null}
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+              <div
+                data-testid="ai-tutor-message-scroller"
+                className="max-h-full min-h-0 flex-1 overflow-y-auto p-4 sm:p-6"
+              >
                 {detailLoading ? (
                   <div className="space-y-4">
                     <Skeleton className="h-20 w-3/4" />
