@@ -1,7 +1,8 @@
 import axios from 'axios'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Bot, CalendarClock, Info, ListChecks, Loader2, Sparkles, XCircle } from 'lucide-react'
+import { ArrowRight, CalendarClock, Info, ListChecks,
+Loader2, Sparkles, XCircle } from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { generateStudentLearningPath, getCurrentStudentLearningPath } from '../../../lib/api/studentLearningApi'
 import type { StudentLearningPath } from '../../../lib/api/types'
@@ -118,10 +119,7 @@ export function StudentLearningPathPage() {
                   <CalendarClock aria-hidden="true" />
                   <span>Ngày tạo {formatStudentLearningDate(path.generatedAt)}</span>
                 </Badge>
-                <Badge variant="outline" className="border-violet-200 bg-violet-50 text-violet-700">
-                  <Bot aria-hidden="true" />
-                  <span>Nguồn phân tích {path.source || 'Chưa có'}</span>
-                </Badge>
+
                 <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
                   <ListChecks aria-hidden="true" />
                   <span>{sortedItems.length} bài đề xuất</span>

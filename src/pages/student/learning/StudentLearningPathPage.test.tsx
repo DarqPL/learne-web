@@ -144,15 +144,7 @@ describe('StudentLearningPathPage technical copy', () => {
     expect(createdStat.closest('[data-slot="badge"]')).not.toBeNull()
     expect(createdStat.closest('[data-slot="badge"]')).toHaveClass('bg-indigo-50')
 
-    const sourceStat = screen.getByText(
-      (_, element) =>
-        element?.tagName === 'SPAN' &&
-        !element.hasAttribute('data-slot') &&
-        element?.textContent === `Nguồn phân tích ${path.source}`,
-    )
-    expect(sourceStat).toBeInTheDocument()
-    expect(sourceStat.closest('[data-slot="badge"]')).not.toBeNull()
-    expect(sourceStat.closest('[data-slot="badge"]')).toHaveClass('bg-violet-50')
+    expect(screen.queryByText(/Nguồn phân tích/)).not.toBeInTheDocument()
 
     const countStat = screen.getByText(
       (_, element) =>
@@ -169,7 +161,7 @@ describe('StudentLearningPathPage technical copy', () => {
         (_, element) =>
           element?.tagName === 'P' &&
           (element?.textContent?.includes('Ngày tạo') ?? false) &&
-          (element?.textContent?.includes('Nguồn phân tích') ?? false),
+          (element?.textContent?.includes('bài đề xuất') ?? false),
       ),
     ).not.toBeInTheDocument()
   })
