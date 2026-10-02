@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useState, type FormEvent } from 'react'
-import { ChevronLeft, ChevronRight, Pencil, Plus, Ticket, XCircle } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Pencil, Plus, Ticket, TriangleAlert, XCircle } from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
-import { createAdminCoupon, listAdminCoupons, updateAdminCoupon } from '../../../lib/api/adminCouponApi'
+import { createAdminCoupon, disableAdminCoupon, listAdminCoupons, updateAdminCoupon } from '../../../lib/api/adminCouponApi'
 import type {
   AdminCoupon,
   AdminCouponCreatePayload,
@@ -9,6 +9,16 @@ import type {
   CouponDiscountType,
   CouponProductScope,
 } from '../../../lib/api/types'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../../../components/shadcn/ui/alert-dialog'
 import { Alert, AlertDescription, AlertTitle } from '../../../components/shadcn/ui/alert'
 import { Badge } from '../../../components/shadcn/ui/badge'
 import { Button } from '../../../components/shadcn/ui/button'
@@ -461,6 +471,9 @@ export function AdminCouponPage() {
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const [dialogState, setDialogState] = useState<{ mode: 'create' | 'edit'; coupon?: AdminCoupon } | null>(null)
+  const [disableTarget, setDisableTarget] = useState<AdminCoupon | null>(null)
+  const [disableError, setDisableError] = useState<string | null>(null)
+  const [disabling, setDisabling] = useState(false)
 
   const loadCoupons = useCallback(async () => {
     setCoupons(null)
@@ -501,6 +514,28 @@ export function AdminCouponPage() {
   const handleOpenEdit = useCallback((coupon: AdminCoupon) => {
     setDialogState({ mode: 'edit', coupon })
   }, [])
+
+  const handleOpenDisable = useCallback((coupon: AdminCoupon) => {
+    setDisableError(null)
+    setDisableTarget(coupon)
+  }, [])
+
+  const handleDisable = useCallback(() => {
+    if (!disableTarget || disabling) return
+    setDisabling(true)
+    setDisableError(null)
+    void (async () => {
+      try {
+        await disableAdminCoupon(disableTarget.id)
+        setDisableTarget(null)
+        await loadCoupons()
+      } catch (err) {
+        setDisableError(getApiErrorMessage(err, 'Không thể vô hiệu hóa mã giảm giá.'))
+      } finally {
+        setDisabling(false)
+      }
+    })()
+  }, [disableTarget, disabling, loadCoupons])
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
@@ -584,9 +619,11 @@ export function AdminCouponPage() {
                           <Pencil data-icon="inline-start" aria-hidden="true" />
                           Sửa
                         </Button>
-                        <Button variant="destructive" size="sm" disabled>
-                          Vô hiệu hóa
-                        </Button>
+                        {coupon.active ? (
+                          <Button variant="destructive" size="sm" onClick={() => handleOpenDisable(coupon)}>
+                            Vô hiệu hóa
+                          </Button>
+                        ) : null}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -663,6 +700,56 @@ export function AdminCouponPage() {
             void loadCoupons()
           }}
         />
+      ) : null}
+
+      <AlertDialog
+        open={disableTarget !== null}
+        onOpenChange={(open) => {
+          if (disabling) return
+          if (!open) {
+            setDisableTarget(null)
+            setDisableError(null)
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="flex items-start gap-3">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+                <TriangleAlert className="size-5" aria-hidden="true" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <AlertDialogTitle>Vô hiệu hóa mã giảm giá</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Vô hiệu hóa mã giảm giá <span className="font-semibold text-gray-900">{disableTarget?.code}</span>?
+                  <span className="mt-2 block rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                    Người học sẽ không thể dùng mã này nữa.
+                  </span>
+                </AlertDialogDescription>
+              </div>
+            </div>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button variant="outline" disabled={disabling}>
+                Hủy
+              </Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button variant="destructive" loading={disabling} onClick={() => void handleDisable()}>
+                Vô hiệu hóa
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {disableError ? (
+        <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+          <XCircle aria-hidden="true" data-icon="inline-start" />
+          <AlertTitle>Không thể vô hiệu hóa mã giảm giá</AlertTitle>
+          <AlertDescription className="text-red-700">{disableError}</AlertDescription>
+        </Alert>
       ) : null}
     </div>
   )

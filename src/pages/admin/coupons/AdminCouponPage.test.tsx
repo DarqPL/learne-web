@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AdminCouponPage } from './AdminCouponPage'
-import { createAdminCoupon, listAdminCoupons, updateAdminCoupon } from '../../../lib/api/adminCouponApi'
+import { createAdminCoupon, disableAdminCoupon, listAdminCoupons, updateAdminCoupon } from '../../../lib/api/adminCouponApi'
 import type { AdminCoupon } from '../../../lib/api/types'
 import { formatStudentLearningDate } from '../../student/learning/studentLearningUtils'
 import { fromDatetimeLocalValue, toDatetimeLocalValue } from './adminCouponUtils'
@@ -10,11 +10,13 @@ vi.mock('../../../lib/api/adminCouponApi', () => ({
   listAdminCoupons: vi.fn(),
   createAdminCoupon: vi.fn(),
   updateAdminCoupon: vi.fn(),
+  disableAdminCoupon: vi.fn(),
 }))
 
 const mockedListAdminCoupons = vi.mocked(listAdminCoupons)
 const mockedCreateAdminCoupon = vi.mocked(createAdminCoupon)
 const mockedUpdateAdminCoupon = vi.mocked(updateAdminCoupon)
+const mockedDisableAdminCoupon = vi.mocked(disableAdminCoupon)
 
 function couponsApiResponse(data: AdminCoupon[]): Awaited<ReturnType<typeof listAdminCoupons>> {
   return { data } as Awaited<ReturnType<typeof listAdminCoupons>>
@@ -331,5 +333,77 @@ describe('AdminCouponPage edit dialog', () => {
     expect(mockedUpdateAdminCoupon).toHaveBeenCalledTimes(1)
     expect(mockedUpdateAdminCoupon).toHaveBeenCalledWith(3, { discountValue: 30 })
     await waitFor(() => expect(mockedListAdminCoupons.mock.calls.length).toBeGreaterThanOrEqual(2))
+  })
+})
+
+describe('AdminCouponPage disable confirmation', () => {
+  beforeEach(() => {
+    mockedListAdminCoupons.mockReset()
+    mockedDisableAdminCoupon.mockReset()
+    mockedListAdminCoupons.mockResolvedValue(couponsApiResponse(eightCoupons))
+    mockedDisableAdminCoupon.mockResolvedValue({ data: makeCoupon({ id: 3, code: 'VIP15', active: false }) } as never)
+  })
+
+  it('does not offer the disable action on an already inactive coupon', async () => {
+    render(<AdminCouponPage />)
+    await screen.findByRole('table')
+
+    const inactiveRow = screen.getByText('CHAO100K').closest('tr') as HTMLElement
+    expect(within(inactiveRow).queryByRole('button', { name: 'Vô hiệu hóa' })).not.toBeInTheDocument()
+
+    const activeRow = screen.getByText('VIP15').closest('tr') as HTMLElement
+    expect(within(activeRow).getByRole('button', { name: 'Vô hiệu hóa' })).toBeEnabled()
+  })
+
+  it('opens a confirmation naming the coupon code and does nothing when cancelled', async () => {
+    render(<AdminCouponPage />)
+    await screen.findByRole('table')
+
+    const activeRow = screen.getByText('VIP15').closest('tr') as HTMLElement
+    fireEvent.click(within(activeRow).getByRole('button', { name: 'Vô hiệu hóa' }))
+
+    const dialog = await screen.findByRole('alertdialog')
+    expect(within(dialog).getByRole('heading', { name: 'Vô hiệu hóa mã giảm giá' })).toBeInTheDocument()
+    expect(within(dialog).getByText('VIP15')).toBeInTheDocument()
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Hủy' }))
+
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument())
+    expect(mockedDisableAdminCoupon).not.toHaveBeenCalled()
+    expect(mockedListAdminCoupons.mock.calls.length).toBe(1)
+  })
+
+  it('disables the coupon and refreshes the list after confirming', async () => {
+    render(<AdminCouponPage />)
+    await screen.findByRole('table')
+
+    const activeRow = screen.getByText('VIP15').closest('tr') as HTMLElement
+    fireEvent.click(within(activeRow).getByRole('button', { name: 'Vô hiệu hóa' }))
+
+    const dialog = await screen.findByRole('alertdialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Vô hiệu hóa' }))
+
+    expect(mockedDisableAdminCoupon).toHaveBeenCalledTimes(1)
+    expect(mockedDisableAdminCoupon).toHaveBeenCalledWith(3)
+    await waitFor(() => expect(mockedListAdminCoupons.mock.calls.length).toBeGreaterThanOrEqual(2))
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument())
+  })
+
+  it('shows an error alert when disabling fails', async () => {
+    mockedDisableAdminCoupon.mockRejectedValue(couponAxiosError(500, 'coupon cannot be disabled'))
+
+    render(<AdminCouponPage />)
+    await screen.findByRole('table')
+
+    const activeRow = screen.getByText('VIP15').closest('tr') as HTMLElement
+    fireEvent.click(within(activeRow).getByRole('button', { name: 'Vô hiệu hóa' }))
+
+    const dialog = await screen.findByRole('alertdialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Vô hiệu hóa' }))
+
+    const alert = await screen.findByRole('alert')
+    expect(within(alert).getByText('Không thể vô hiệu hóa mã giảm giá')).toBeInTheDocument()
+    expect(within(alert).getByText('coupon cannot be disabled')).toBeInTheDocument()
+    expect(mockedListAdminCoupons.mock.calls.length).toBe(1)
   })
 })
