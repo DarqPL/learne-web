@@ -5,6 +5,7 @@ const tabs = [
   { label: 'Quản lý học sinh', to: '/admin/students', end: false },
   { label: 'Quản lý giảng viên', to: '/admin/teachers', end: false },
   { label: 'Kiểm duyệt nội dung', to: '/admin/reviews', end: false },
+  { label: 'Mã giảm giá', to: '/admin/coupons', end: false },
 ]
 
 export function AdminSidebar() {

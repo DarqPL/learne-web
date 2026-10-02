@@ -55,6 +55,9 @@ const AdminTeacherListPage = lazy(() =>
 const AdminContentReviewPage = lazy(() =>
   import('./pages/admin/review/AdminContentReviewPage').then((module) => ({ default: module.AdminContentReviewPage })),
 )
+const AdminCouponPage = lazy(() =>
+  import('./pages/admin/coupons/AdminCouponPage').then((module) => ({ default: module.AdminCouponPage })),
+)
 const TeacherProfilePage = lazy(() =>
   import('./pages/teacher/TeacherProfilePage').then((module) => ({ default: module.TeacherProfilePage })),
 )
@@ -184,6 +187,7 @@ export default function App() {
                 <Route path="/admin/teachers/new" element={<CreateTeacherPage />} />
                 <Route path="/admin/teachers" element={<AdminTeacherListPage />} />
                 <Route path="/admin/reviews" element={<AdminContentReviewPage />} />
+                <Route path="/admin/coupons" element={<AdminCouponPage />} />
               </Route>
             </Route>
           </Route>
