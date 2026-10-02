@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { BadgeCheck, XCircle } from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { approveReviewCourse, getReviewCourse, listPendingReviewCourses, rejectReviewCourse } from '../../../lib/api/adminReviewApi'
-import type { AdminReviewCourseDetail, AdminReviewCourseSummary, CoursePricingType } from '../../../lib/api/types'
+import type { AdminReviewCourseDetail, AdminReviewCourseSummary, AdminReviewLesson, CoursePricingType } from '../../../lib/api/types'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -13,6 +13,7 @@ import {
   AlertDialogTitle,
 } from '@/components/shadcn/ui/alert-dialog'
 import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/shadcn/ui/accordion'
 import { Badge } from '@/components/shadcn/ui/badge'
 import {
   Breadcrumb,
@@ -21,6 +22,7 @@ import {
   BreadcrumbPage,
 } from '@/components/shadcn/ui/breadcrumb'
 import { Button } from '@/components/shadcn/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/shadcn/ui/dialog'
 import { Skeleton } from '@/components/shadcn/ui/skeleton'
 import { RejectCourseForm } from './RejectCourseForm'
 import { reviewCourseTypeLabels, reviewQuestionTypeLabels, reviewSkillTypeLabels, reviewStatusLabels, reviewStatusStyles } from './adminReviewLabels'
@@ -52,6 +54,8 @@ export function AdminContentReviewPage() {
   const [approveOpen, setApproveOpen] = useState(false)
   const [approveError, setApproveError] = useState<string | null>(null)
   const [approveProcessing, setApproveProcessing] = useState(false)
+  const [showRejectForm, setShowRejectForm] = useState(false)
+  const [lessonDetail, setLessonDetail] = useState<AdminReviewLesson | null>(null)
   const mountedRef = useRef(false)
   const detailRequestIdRef = useRef(0)
 
@@ -109,6 +113,7 @@ export function AdminContentReviewPage() {
     const requestId = detailRequestIdRef.current + 1
     detailRequestIdRef.current = requestId
     setSelectedCourse(null)
+    setShowRejectForm(false)
     const detailResponse = await getReviewCourse(nextCourseId)
     if (mountedRef.current && detailRequestIdRef.current === requestId) setSelectedCourse(detailResponse.data)
   }
@@ -119,6 +124,7 @@ export function AdminContentReviewPage() {
     setError(null)
     setInfo(null)
     setSelectedCourse(null)
+    setShowRejectForm(false)
     try {
       const response = await getReviewCourse(courseId)
       if (mountedRef.current && detailRequestIdRef.current === requestId) setSelectedCourse(response.data)
@@ -132,6 +138,7 @@ export function AdminContentReviewPage() {
 
   const handleOpenApprove = () => {
     if (!selectedCourse || action !== null || approveProcessing) return
+    if (selectedCourse.status !== 'PENDING_REVIEW') return
     setApproveError(null)
     setApproveOpen(true)
   }
@@ -148,6 +155,7 @@ export function AdminContentReviewPage() {
         await approveReviewCourse(selectedCourse.id)
         if (!mountedRef.current) return
         setInfo('Đã duyệt khóa học.')
+        setShowRejectForm(false)
         await loadPendingCourses(null)
         setApproveOpen(false)
       } catch (err) {
@@ -170,6 +178,7 @@ export function AdminContentReviewPage() {
       await rejectReviewCourse(selectedCourse.id, { reason })
       if (!mountedRef.current) return
       setInfo('Đã từ chối khóa học.')
+      setShowRejectForm(false)
       await loadPendingCourses(null)
     } catch (err) {
       if (mountedRef.current) setError(getApiErrorMessage(err, 'Không thể cập nhật kiểm duyệt nội dung.'))
@@ -179,6 +188,7 @@ export function AdminContentReviewPage() {
   }
 
   const busy = action !== null || approveProcessing
+  const isDecided = selectedCourse !== null && selectedCourse.status !== 'PENDING_REVIEW'
   const detailLoading = courses !== null && courses.length > 0 && selectedCourse === null && error === null
 
   return (
@@ -279,161 +289,206 @@ export function AdminContentReviewPage() {
           ) : selectedCourse === null ? (
             <p className="text-sm text-gray-600">Chọn một khóa học để xem nội dung cần duyệt.</p>
           ) : (
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col gap-4 border-b border-gray-200 pb-5 lg:flex-row lg:items-start lg:justify-between">
-                <div className="flex min-w-0 flex-col gap-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-xl font-semibold text-gray-900">{selectedCourse.name}</h2>
-                    <StatusBadge status={selectedCourse.status} />
+            <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-xl font-semibold text-gray-900">{selectedCourse.name}</h2>
+                  <StatusBadge status={selectedCourse.status} />
+                </div>
+                <dl className="grid gap-x-6 gap-y-1 text-sm text-gray-600 sm:grid-cols-2">
+                  <div className="flex gap-2">
+                    <dt className="shrink-0 font-medium text-gray-900">Giảng viên</dt>
+                    <dd className="truncate">
+                      {selectedCourse.teacherName} · {selectedCourse.teacherEmail}
+                    </dd>
                   </div>
-                  <dl className="grid gap-2 text-sm text-gray-600 sm:grid-cols-2">
-                    <div>
-                      <dt className="font-medium text-gray-900">Giảng viên</dt>
-                      <dd>
-                        {selectedCourse.teacherName} · {selectedCourse.teacherEmail}
-                      </dd>
+                  <div className="flex gap-2">
+                    <dt className="shrink-0 font-medium text-gray-900">Cấp độ</dt>
+                    <dd>{selectedCourse.level}</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="shrink-0 font-medium text-gray-900">Loại khóa học</dt>
+                    <dd>{reviewCourseTypeLabels[selectedCourse.type]}</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="shrink-0 font-medium text-gray-900">Cập nhật</dt>
+                    <dd>{formatReviewDate(selectedCourse.updatedAt)}</dd>
+                  </div>
+                </dl>
+                <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+                  <Badge variant={selectedCourse.pricingType === 'PAID' ? 'default' : 'secondary'}>{pricingLabel(selectedCourse.pricingType)}</Badge>
+                  {selectedCourse.pricingType === 'PAID' ? <span>{formatVnd(selectedCourse.proposedPriceAmountVnd)}</span> : null}
+                  <span>
+                    {selectedCourse.topics.length} chủ đề · {countReviewLessons(selectedCourse)} bài học · {countReviewQuestions(selectedCourse)} câu hỏi
+                  </span>
+                </div>
+                {selectedCourse.description ? <p className="text-sm leading-6 text-gray-700">{selectedCourse.description}</p> : null}
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-sm font-semibold text-gray-900">Thông tin giá</h3>
+                  <dl className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-600">
+                    <div className="flex gap-2">
+                      <dt className="font-medium text-gray-900">Giá hiện tại</dt>
+                      <dd>{formatVnd(selectedCourse.priceAmountVnd)}</dd>
                     </div>
-                    <div>
-                      <dt className="font-medium text-gray-900">Cấp độ</dt>
-                      <dd>{selectedCourse.level}</dd>
+                    <div className="flex gap-2">
+                      <dt className="font-medium text-gray-900">Giá đề xuất</dt>
+                      <dd>{formatVnd(selectedCourse.proposedPriceAmountVnd)}</dd>
                     </div>
-                    <div>
-                      <dt className="font-medium text-gray-900">Loại khóa học</dt>
-                      <dd>{reviewCourseTypeLabels[selectedCourse.type]}</dd>
-                    </div>
-                    <div>
-                      <dt className="font-medium text-gray-900">Cập nhật</dt>
-                      <dd>{formatReviewDate(selectedCourse.updatedAt)}</dd>
+                    <div className="flex gap-2">
+                      <dt className="font-medium text-gray-900">Trạng thái giá</dt>
+                      <dd>{selectedCourse.priceStatus}</dd>
                     </div>
                   </dl>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary">{selectedCourse.topics.length} chủ đề</Badge>
-                  <Badge variant="secondary">{countReviewLessons(selectedCourse)} bài học</Badge>
-                  <Badge variant="secondary">{countReviewQuestions(selectedCourse)} câu hỏi</Badge>
-                </div>
-              </div>
-
-              {selectedCourse.description ? <p className="text-sm leading-6 text-gray-700">{selectedCourse.description}</p> : null}
-
-              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                <h3 className="text-sm font-semibold text-gray-900">Thông tin giá</h3>
-                <dl className="mt-2 grid gap-2 text-sm text-gray-600 sm:grid-cols-3">
-                  <div>
-                    <dt className="font-medium text-gray-900">Giá hiện tại</dt>
-                    <dd>{formatVnd(selectedCourse.priceAmountVnd)}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium text-gray-900">Giá đề xuất</dt>
-                    <dd>{formatVnd(selectedCourse.proposedPriceAmountVnd)}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium text-gray-900">Trạng thái giá</dt>
-                    <dd>{selectedCourse.priceStatus}</dd>
-                  </div>
-                </dl>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <Badge variant={selectedCourse.pricingType === 'PAID' ? 'default' : 'secondary'}>{pricingLabel(selectedCourse.pricingType)}</Badge>
-                </div>
                 {selectedCourse.level === 'A1' && selectedCourse.pricingType === 'PAID' ? (
-                  <Alert variant="destructive" className="mt-3">
+                  <Alert variant="destructive" className="mt-1">
                     <AlertTitle>A1 phải miễn phí</AlertTitle>
                     <AlertDescription>Backend sẽ từ chối duyệt khóa A1 trả phí.</AlertDescription>
                   </Alert>
                 ) : null}
                 {selectedCourse.pricingType === 'PAID' &&
                 (selectedCourse.proposedPriceAmountVnd === null || selectedCourse.proposedPriceAmountVnd <= 0) ? (
-                  <Alert variant="destructive" className="mt-3">
+                  <Alert variant="destructive" className="mt-1">
                     <AlertTitle>Thiếu giá đề xuất</AlertTitle>
                     <AlertDescription>Khóa trả phí cần giá đề xuất lớn hơn 0 trước khi duyệt.</AlertDescription>
                   </Alert>
                 ) : null}
               </div>
 
-              <div className="grid gap-4 rounded-xl border border-indigo-100 bg-indigo-50 p-4 lg:grid-cols-[auto_1fr]">
-                <div>
-                  <Button disabled={busy} onClick={handleOpenApprove}>
+              <div data-testid="approval-panel" className="sticky top-0 z-10 flex flex-col gap-3 border-y border-gray-200 bg-white py-3">
+                <p className="text-sm text-gray-600">Trạng thái hiện tại: {reviewStatusLabels[selectedCourse.status]}</p>
+                <div className="flex flex-row gap-2">
+                  <Button disabled={busy || isDecided} onClick={handleOpenApprove}>
                     Duyệt khóa học
                   </Button>
+                  <Button variant="outline" disabled={busy || isDecided} aria-expanded={showRejectForm} onClick={() => setShowRejectForm((value) => !value)}>
+                    Từ chối
+                  </Button>
                 </div>
-                <RejectCourseForm key={selectedCourse.id} loading={action?.startsWith('reject-course') ?? false} disabled={busy} onSubmit={handleRejectCourse} />
+                {showRejectForm && !isDecided ? (
+                  <RejectCourseForm key={selectedCourse.id} loading={action?.startsWith('reject-course') ?? false} disabled={busy} onSubmit={handleRejectCourse} />
+                ) : null}
               </div>
 
-              <div className="flex flex-col gap-5">
-                {selectedCourse.topics.map((topic) => (
-                  <article key={topic.id} className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Chủ đề: {topic.name}</h3>
-                    {topic.description ? <p className="mt-2 text-sm text-gray-600">{topic.description}</p> : null}
-
-                    <div className="mt-4 flex flex-col gap-4">
-                      {topic.lessons.map((lesson) => (
-                        <section key={lesson.id} className="rounded-xl border border-gray-200 bg-white p-4">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <h4 className="font-semibold text-gray-900">Bài học: {lesson.title}</h4>
-                            <Badge variant="secondary">{reviewSkillTypeLabels[lesson.skillType]}</Badge>
-                            <Badge variant="secondary">{lesson.xpReward} XP</Badge>
-                            {lesson.placementTest ? <Badge variant="secondary">Bài kiểm tra đầu vào</Badge> : null}
-                          </div>
-                          {lesson.description ? <p className="mt-2 text-sm text-gray-600">{lesson.description}</p> : null}
-                          {lesson.content ? <p className="mt-3 whitespace-pre-line text-sm leading-6 text-gray-700">{lesson.content}</p> : null}
-
-                          <div className="mt-4 flex flex-col gap-3">
-                            {lesson.questions.map((question) => (
-                              <div key={question.id} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <h5 className="font-medium text-gray-900">Câu hỏi: {question.questionText}</h5>
-                                  <Badge variant="secondary">{reviewQuestionTypeLabels[question.type]}</Badge>
-                                  <Badge variant="secondary">{question.xpReward} XP</Badge>
+              <div className="flex flex-col gap-2">
+                <h3 className="text-sm font-semibold text-gray-900">Nội dung khóa học</h3>
+                {selectedCourse.topics.length === 0 ? (
+                  <p className="text-sm text-gray-600">Khóa học chưa có chủ đề.</p>
+                ) : (
+                  <Accordion type="multiple" className="flex flex-col gap-2">
+                    {selectedCourse.topics.map((topic) => (
+                      <AccordionItem key={topic.id} value={`topic-${topic.id}`} className="rounded-lg border border-gray-200 px-4">
+                        <AccordionTrigger className="py-3 hover:no-underline">
+                          <span className="flex flex-wrap items-center gap-2">
+                            <span className="font-semibold text-gray-900">Chủ đề: {topic.name}</span>
+                            <Badge variant="secondary">{topic.lessons.length} bài học</Badge>
+                          </span>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          {topic.description ? <p className="mb-2 text-sm text-gray-600">{topic.description}</p> : null}
+                          <div className="flex flex-col gap-1">
+                            {topic.lessons.map((lesson) => (
+                              <div key={lesson.id} className="flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 py-2">
+                                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                                  <span className="font-medium text-gray-900">{lesson.title}</span>
+                                  <Badge variant="secondary">{reviewSkillTypeLabels[lesson.skillType]}</Badge>
+                                  <Badge variant="secondary">{lesson.xpReward} XP</Badge>
+                                  <Badge variant="outline" className={reviewStatusStyles[lesson.status]}>
+                                    {reviewStatusLabels[lesson.status]}
+                                  </Badge>
+                                  {lesson.placementTest ? <Badge variant="secondary">Bài kiểm tra đầu vào</Badge> : null}
                                 </div>
-                                <dl className="mt-3 grid gap-2 text-sm text-gray-600 sm:grid-cols-2">
-                                  {question.correctAnswer ? (
-                                    <div>
-                                      <dt className="font-medium text-gray-900">Đáp án đúng</dt>
-                                      <dd>{question.correctAnswer}</dd>
-                                    </div>
-                                  ) : null}
-                                  {question.explanation ? (
-                                    <div>
-                                      <dt className="font-medium text-gray-900">Giải thích</dt>
-                                      <dd>{question.explanation}</dd>
-                                    </div>
-                                  ) : null}
-                                  {question.knowledgePoint ? (
-                                    <div>
-                                      <dt className="font-medium text-gray-900">Điểm kiến thức</dt>
-                                      <dd>{question.knowledgePoint}</dd>
-                                    </div>
-                                  ) : null}
-                                  {question.difficulty ? (
-                                    <div>
-                                      <dt className="font-medium text-gray-900">Độ khó</dt>
-                                      <dd>{question.difficulty}</dd>
-                                    </div>
-                                  ) : null}
-                                </dl>
-                                {question.options.length > 0 ? (
-                                  <ul className="mt-3 flex flex-col gap-2">
-                                    {question.options.map((option) => (
-                                      <li key={option.id} className="flex items-center justify-between gap-3 rounded-lg bg-white px-3 py-2 text-sm text-gray-700">
-                                        <span>{option.optionText}</span>
-                                        {option.correct ? <Badge variant="secondary">Đáp án đúng</Badge> : null}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                ) : null}
+                                <Button variant="outline" size="sm" onClick={() => setLessonDetail(lesson)}>
+                                  Xem chi tiết bài học
+                                </Button>
                               </div>
                             ))}
                           </div>
-                        </section>
-                      ))}
-                    </div>
-                  </article>
-                ))}
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                )}
               </div>
             </div>
           )}
         </section>
       </div>
+
+      <Dialog
+        open={lessonDetail !== null}
+        onOpenChange={(open) => {
+          if (!open) setLessonDetail(null)
+        }}
+      >
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Xem chi tiết bài học</DialogTitle>
+            {lessonDetail ? <DialogDescription>{lessonDetail.title}</DialogDescription> : null}
+          </DialogHeader>
+          {lessonDetail ? (
+            <div className="flex flex-col gap-3 text-sm">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="secondary">{reviewSkillTypeLabels[lessonDetail.skillType]}</Badge>
+                <Badge variant="secondary">{lessonDetail.xpReward} XP</Badge>
+                <Badge variant="outline" className={reviewStatusStyles[lessonDetail.status]}>
+                  {reviewStatusLabels[lessonDetail.status]}
+                </Badge>
+                {lessonDetail.placementTest ? <Badge variant="secondary">Bài kiểm tra đầu vào</Badge> : null}
+              </div>
+              {lessonDetail.description ? <p className="text-gray-600">{lessonDetail.description}</p> : null}
+              {lessonDetail.content ? <p className="whitespace-pre-line leading-6 text-gray-700">{lessonDetail.content}</p> : null}
+              <div className="flex flex-col gap-3">
+                {lessonDetail.questions.map((question) => (
+                  <div key={question.id} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h5 className="font-medium text-gray-900">Câu hỏi: {question.questionText}</h5>
+                      <Badge variant="secondary">{reviewQuestionTypeLabels[question.type]}</Badge>
+                      <Badge variant="secondary">{question.xpReward} XP</Badge>
+                    </div>
+                    <dl className="mt-3 grid gap-2 text-sm text-gray-600 sm:grid-cols-2">
+                      {question.correctAnswer ? (
+                        <div>
+                          <dt className="font-medium text-gray-900">Đáp án đúng</dt>
+                          <dd>{question.correctAnswer}</dd>
+                        </div>
+                      ) : null}
+                      {question.explanation ? (
+                        <div>
+                          <dt className="font-medium text-gray-900">Giải thích</dt>
+                          <dd>{question.explanation}</dd>
+                        </div>
+                      ) : null}
+                      {question.knowledgePoint ? (
+                        <div>
+                          <dt className="font-medium text-gray-900">Điểm kiến thức</dt>
+                          <dd>{question.knowledgePoint}</dd>
+                        </div>
+                      ) : null}
+                      {question.difficulty ? (
+                        <div>
+                          <dt className="font-medium text-gray-900">Độ khó</dt>
+                          <dd>{question.difficulty}</dd>
+                        </div>
+                      ) : null}
+                    </dl>
+                    {question.options.length > 0 ? (
+                      <ul className="mt-3 flex flex-col gap-2">
+                        {question.options.map((option) => (
+                          <li key={option.id} className="flex items-center justify-between gap-3 rounded-lg bg-white px-3 py-2 text-sm text-gray-700">
+                            <span>{option.optionText}</span>
+                            {option.correct ? <Badge variant="secondary">Đáp án đúng</Badge> : null}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog
         open={approveOpen}

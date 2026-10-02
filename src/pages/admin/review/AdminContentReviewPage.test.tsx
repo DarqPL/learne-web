@@ -91,6 +91,62 @@ function renderPage() {
   )
 }
 
+function makeQuestion(overrides: Partial<AdminReviewCourseDetail['topics'][number]['lessons'][number]['questions'][number]> = {}) {
+  return {
+    id: 101,
+    type: 'MULTIPLE_CHOICE',
+    questionText: 'Cau hoi chi tiet mot',
+    explanation: 'Giai thich chi tiet mot',
+    correctAnswer: 'Dap an A',
+    knowledgePoint: 'Kien thuc mot',
+    orderIndex: 0,
+    difficulty: 'EASY',
+    xpReward: 5,
+    status: 'PENDING_REVIEW',
+    rejectionReason: null,
+    reviewedByAdminId: null,
+    reviewedAt: null,
+    options: [
+      { id: 1001, optionText: 'Lua chon A', correct: true, orderIndex: 0 },
+      { id: 1002, optionText: 'Lua chon B', correct: false, orderIndex: 1 },
+    ],
+    ...overrides,
+  } as AdminReviewCourseDetail['topics'][number]['lessons'][number]['questions'][number]
+}
+
+function makeLesson(overrides: Partial<AdminReviewCourseDetail['topics'][number]['lessons'][number]> = {}) {
+  return {
+    id: 11,
+    title: 'Bai hoc mot',
+    description: 'Mo ta bai hoc mot',
+    content: 'Noi dung chi tiet bai hoc mot',
+    audioUrl: null,
+    audioPublicId: null,
+    skillType: 'GRAMMAR',
+    orderIndex: 0,
+    xpReward: 10,
+    placementTest: false,
+    status: 'PENDING_REVIEW',
+    rejectionReason: null,
+    reviewedByAdminId: null,
+    reviewedAt: null,
+    publishedAt: null,
+    questions: [makeQuestion()],
+    ...overrides,
+  } as AdminReviewCourseDetail['topics'][number]['lessons'][number]
+}
+
+function makeTopic(overrides: Partial<AdminReviewCourseDetail['topics'][number]> = {}) {
+  return {
+    id: 1,
+    name: 'Chu de mot',
+    description: 'Mo ta chu de mot',
+    orderIndex: 0,
+    lessons: [makeLesson()],
+    ...overrides,
+  } as AdminReviewCourseDetail['topics'][number]
+}
+
 describe('AdminContentReviewPage shadcn sync', () => {
   beforeEach(() => {
     mockedList.mockReset()
@@ -241,7 +297,8 @@ describe('AdminContentReviewPage shadcn sync', () => {
 
     await screen.findByRole('heading', { name: 'Khoa hoc A1 co ban' })
 
-    const reasonInput = screen.getByLabelText(/Lý do từ chối/)
+    fireEvent.click(screen.getByRole('button', { name: 'Từ chối' }))
+    const reasonInput = await screen.findByLabelText(/Lý do từ chối/)
     expect(reasonInput).toBeInTheDocument()
 
     // empty reason shows validation and does not call API
@@ -254,5 +311,100 @@ describe('AdminContentReviewPage shadcn sync', () => {
 
     await waitFor(() => expect(mockedReject).toHaveBeenCalledWith(1, { reason: 'Noi dung chua dat' }))
     await waitFor(() => expect(mockedList.mock.calls.length).toBeGreaterThanOrEqual(2))
+  })
+
+  it('shows a sticky approval panel with both action buttons and hides the reject reason until Từ chối is clicked', async () => {
+    mockedList.mockResolvedValue(apiList([makeSummary({ id: 1, name: 'Khoa hoc A1 co ban' })]))
+    mockedDetail.mockResolvedValue(apiDetail(makeDetail({ id: 1, name: 'Khoa hoc A1 co ban' })))
+
+    renderPage()
+
+    await screen.findByRole('heading', { name: 'Khoa hoc A1 co ban' })
+
+    const approveButton = screen.getByRole('button', { name: 'Duyệt khóa học' })
+    const rejectToggle = screen.getByRole('button', { name: 'Từ chối' })
+    expect(approveButton).toBeInTheDocument()
+    expect(rejectToggle).toBeInTheDocument()
+
+    // both buttons sit side by side inside a sticky approval panel near the top
+    const panel = approveButton.closest('[data-testid="approval-panel"]')
+    expect(panel).not.toBeNull()
+    expect((panel as HTMLElement).contains(rejectToggle)).toBe(true)
+    expect((panel as HTMLElement).className).toMatch(/sticky/)
+
+    // reject reason stays hidden until the toggle is clicked
+    expect(screen.queryByLabelText(/Lý do từ chối/)).not.toBeInTheDocument()
+    fireEvent.click(rejectToggle)
+    expect(await screen.findByLabelText(/Lý do từ chối/)).toBeInTheDocument()
+
+    // validation still applies once the form is open
+    fireEvent.click(screen.getByRole('button', { name: 'Từ chối khóa học' }))
+    expect(await screen.findByText('Vui lòng nhập lý do từ chối.')).toBeInTheDocument()
+    expect(mockedReject).not.toHaveBeenCalled()
+
+    fireEvent.change(screen.getByLabelText(/Lý do từ chối/), { target: { value: 'Noi dung chua dat' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Từ chối khóa học' }))
+    await waitFor(() => expect(mockedReject).toHaveBeenCalledWith(1, { reason: 'Noi dung chua dat' }))
+  })
+
+  it('renders topics as a collapsed accordion and keeps lesson detail inside a dialog, not inline', async () => {
+    mockedList.mockResolvedValue(apiList([makeSummary({ id: 1, name: 'Khoa hoc A1 co ban' })]))
+    mockedDetail.mockResolvedValue(
+      apiDetail(
+        makeDetail({
+          id: 1,
+          name: 'Khoa hoc A1 co ban',
+          topics: [makeTopic()],
+        }),
+      ),
+    )
+
+    renderPage()
+
+    await screen.findByRole('heading', { name: 'Khoa hoc A1 co ban' })
+
+    // topics use a shadcn accordion: collapsed trigger shows the topic name + lesson count
+    expect(document.querySelector('[data-slot="accordion"]')).not.toBeNull()
+    const topicTrigger = await screen.findByRole('button', { name: /Chu de mot/ })
+    expect(topicTrigger).toHaveAttribute('aria-expanded', 'false')
+
+    // lesson rows and long content stay hidden until the topic is expanded
+    expect(screen.queryByText('Bai hoc mot')).not.toBeInTheDocument()
+    expect(screen.queryByText('Noi dung chi tiet bai hoc mot')).not.toBeInTheDocument()
+    expect(screen.queryByText('Cau hoi chi tiet mot')).not.toBeInTheDocument()
+
+    fireEvent.click(topicTrigger)
+    await waitFor(() => expect(topicTrigger).toHaveAttribute('aria-expanded', 'true'))
+
+    // compact lesson row appears, but the long detail is still not inline
+    expect(await screen.findByText('Bai hoc mot')).toBeInTheDocument()
+    expect(screen.queryByText('Noi dung chi tiet bai hoc mot')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Cau hoi chi tiet mot/)).not.toBeInTheDocument()
+
+    // full lesson detail opens in a dialog per lesson
+    fireEvent.click(screen.getByRole('button', { name: /Xem chi tiết bài học/ }))
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByText('Noi dung chi tiet bai hoc mot')).toBeInTheDocument()
+    expect(within(dialog).getByText(/Cau hoi chi tiet mot/)).toBeInTheDocument()
+    expect(within(dialog).getByText('Giai thich chi tiet mot')).toBeInTheDocument()
+  })
+
+  it('shows the new status and disables inapplicable buttons after approve', async () => {
+    mockedList.mockResolvedValue(apiList([makeSummary({ id: 1, name: 'Khoa hoc A1 co ban' })]))
+    mockedDetail.mockResolvedValue(apiDetail(makeDetail({ id: 1, name: 'Khoa hoc A1 co ban', status: 'PENDING_REVIEW' })))
+
+    renderPage()
+
+    await screen.findByRole('heading', { name: 'Khoa hoc A1 co ban' })
+    fireEvent.click(screen.getByRole('button', { name: 'Duyệt khóa học' }))
+
+    const confirmDialog = await screen.findByRole('alertdialog')
+    mockedDetail.mockResolvedValue(apiDetail(makeDetail({ id: 1, name: 'Khoa hoc A1 co ban', status: 'APPROVED' })))
+    fireEvent.click(within(confirmDialog).getByRole('button', { name: /^Duyệt$/ }))
+
+    await waitFor(() => expect(mockedApprove).toHaveBeenCalledWith(1))
+    expect(await screen.findByText('Đã duyệt')).toBeInTheDocument()
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Duyệt khóa học' })).toBeDisabled())
+    expect(screen.getByRole('button', { name: 'Từ chối' })).toBeDisabled()
   })
 })
