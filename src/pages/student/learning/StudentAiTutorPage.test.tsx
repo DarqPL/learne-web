@@ -59,6 +59,10 @@ const detail = {
   ],
 }
 
+// The page loads the conversation list and detail through two sequential awaits,
+// which can exceed the 1s default wait under parallel test load.
+const asyncTimeout = 5000
+
 describe('StudentAiTutorPage chat focus', () => {
   function renderPage() {
     return render(
@@ -105,27 +109,38 @@ describe('StudentAiTutorPage chat focus', () => {
   it('scrolls to chat and focuses composer after selecting a conversation', async () => {
     renderPage()
 
-    const conversationButton = await screen.findByRole('button', {
-      name: /Test conversation/i,
-    })
+    const conversationButton = await screen.findByRole(
+      'button',
+      { name: /Test conversation/i },
+      { timeout: asyncTimeout },
+    )
     fireEvent.click(conversationButton)
 
-    await waitFor(() => {
-      expect(mockedGetAiConversation).toHaveBeenCalledWith(1)
-    })
+    await waitFor(
+      () => {
+        expect(mockedGetAiConversation).toHaveBeenCalledWith(1)
+      },
+      { timeout: asyncTimeout },
+    )
 
-    await waitFor(() => {
-      expect(scrollIntoViewMock).toHaveBeenCalled()
-    })
-    await waitFor(() => {
-      expect(focusMock).toHaveBeenCalled()
-    })
+    await waitFor(
+      () => {
+        expect(scrollIntoViewMock).toHaveBeenCalled()
+      },
+      { timeout: asyncTimeout },
+    )
+    await waitFor(
+      () => {
+        expect(focusMock).toHaveBeenCalled()
+      },
+      { timeout: asyncTimeout },
+    )
   })
 
   it('shows breadcrumb Trang chu link to /student and AI Tutor page', async () => {
     renderPage()
 
-    const breadcrumb = await screen.findByRole('navigation', { name: 'breadcrumb' })
+    const breadcrumb = await screen.findByRole('navigation', { name: 'breadcrumb' }, { timeout: asyncTimeout })
     expect(breadcrumb).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Trang chủ' })).toHaveAttribute('href', '/student')
     expect(screen.getByText('AI Tutor')).toBeInTheDocument()
@@ -134,12 +149,14 @@ describe('StudentAiTutorPage chat focus', () => {
   it('bounds message list inside scrollable area so page does not stretch', async () => {
     renderPage()
 
-    const conversationButton = await screen.findByRole('button', {
-      name: /Test conversation/i,
-    })
+    const conversationButton = await screen.findByRole(
+      'button',
+      { name: /Test conversation/i },
+      { timeout: asyncTimeout },
+    )
     fireEvent.click(conversationButton)
 
-    const aiMessage = await screen.findByText('Hello!')
+    const aiMessage = await screen.findByText('Hello!', undefined, { timeout: asyncTimeout })
     expect(aiMessage).toBeInTheDocument()
 
     const scroller = screen.getByTestId('ai-tutor-message-scroller')
