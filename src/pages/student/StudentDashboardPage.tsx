@@ -46,7 +46,6 @@ const quickActions = [
     description:
       "Tìm khóa học đã duyệt theo trình độ và kỹ năng cần cải thiện.",
     to: "/student/courses",
-    phase: "Phase 6",
     icon: BookOpen,
     className: "border-sky-100 bg-sky-50 text-sky-700",
   },
@@ -54,7 +53,6 @@ const quickActions = [
     title: "Khóa đã đăng ký",
     description: "Tiếp tục bài học, theo dõi lesson và tiến độ hoàn thành.",
     to: "/student/enrollments",
-    phase: "Phase 6-7",
     icon: GraduationCap,
     className: "border-emerald-100 bg-emerald-50 text-emerald-700",
   },
@@ -62,7 +60,6 @@ const quickActions = [
     title: "Lộ trình học",
     description: "Xem hành trình học cá nhân và các bước nên ưu tiên.",
     to: "/student/learning-path",
-    phase: "Phase 7",
     icon: MapIcon,
     className: "border-violet-100 bg-violet-50 text-violet-700",
   },
@@ -70,7 +67,6 @@ const quickActions = [
     title: "AI đề xuất khóa học",
     description: "Dùng kết quả đầu vào để đề xuất khóa học phù hợp.",
     to: "/student/course-recommendations",
-    phase: "Phase 8",
     icon: Sparkles,
     className: "border-indigo-100 bg-indigo-50 text-indigo-700",
   },
@@ -78,7 +74,6 @@ const quickActions = [
     title: "Kiểm tra ngữ pháp AI",
     description: "Dán đoạn văn tiếng Anh để AI highlight lỗi và gợi ý sửa.",
     to: "/student/grammar-check",
-    phase: "Phase 9",
     icon: FileCheck2,
     className: "border-amber-100 bg-amber-50 text-amber-700",
   },
@@ -86,7 +81,6 @@ const quickActions = [
     title: "AI Tutor",
     description: "Luyện hội thoại, roleplay và writing cùng gia sư AI.",
     to: "/student/ai-tutor",
-    phase: "Phase 9",
     icon: Bot,
     className: "border-fuchsia-100 bg-fuchsia-50 text-fuchsia-700",
   },
@@ -424,12 +418,6 @@ export function StudentDashboardPage() {
                     >
                       <Icon className="size-6" aria-hidden="true" />
                     </span>
-                    <Badge
-                      variant="outline"
-                      className="border-slate-200 text-slate-500"
-                    >
-                      {action.phase}
-                    </Badge>
                   </div>
                   <div>
                     <CardTitle className="flex items-center justify-between gap-3 text-lg leading-6 text-slate-950">
@@ -460,15 +448,9 @@ export function StudentDashboardPage() {
               Hành trình học trên LearnE
             </h2>
             <p className="mt-1 text-sm text-slate-600">
-              Các phase chính được gom thành một luồng học rõ ràng cho học viên.
+              Các bước học được gom thành một luồng rõ ràng cho học viên.
             </p>
           </div>
-          <Badge
-            variant="outline"
-            className="border-indigo-200 bg-indigo-50 text-indigo-700"
-          >
-            Phase 6-9
-          </Badge>
         </div>
         <div className="grid gap-3 md:grid-cols-4">
           {learningFlow.map((step, index) => {
