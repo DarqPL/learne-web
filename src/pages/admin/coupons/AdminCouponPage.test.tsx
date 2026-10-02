@@ -1,15 +1,20 @@
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AdminCouponPage } from './AdminCouponPage'
-import { listAdminCoupons } from '../../../lib/api/adminCouponApi'
+import { createAdminCoupon, listAdminCoupons, updateAdminCoupon } from '../../../lib/api/adminCouponApi'
 import type { AdminCoupon } from '../../../lib/api/types'
 import { formatStudentLearningDate } from '../../student/learning/studentLearningUtils'
+import { fromDatetimeLocalValue, toDatetimeLocalValue } from './adminCouponUtils'
 
 vi.mock('../../../lib/api/adminCouponApi', () => ({
   listAdminCoupons: vi.fn(),
+  createAdminCoupon: vi.fn(),
+  updateAdminCoupon: vi.fn(),
 }))
 
 const mockedListAdminCoupons = vi.mocked(listAdminCoupons)
+const mockedCreateAdminCoupon = vi.mocked(createAdminCoupon)
+const mockedUpdateAdminCoupon = vi.mocked(updateAdminCoupon)
 
 function couponsApiResponse(data: AdminCoupon[]): Awaited<ReturnType<typeof listAdminCoupons>> {
   return { data } as Awaited<ReturnType<typeof listAdminCoupons>>
@@ -174,5 +179,157 @@ describe('AdminCouponPage list', () => {
     const row = await screen.findByRole('table')
     expect(within(row).getByText(formatStudentLearningDate('2026-01-01T00:00:00.000Z'))).toBeInTheDocument()
     expect(within(row).getByText(formatStudentLearningDate('2026-12-31T23:59:00.000Z'))).toBeInTheDocument()
+  })
+})
+
+function couponAxiosError(status: number, message: string) {
+  return { isAxiosError: true, response: { status, data: { message } } }
+}
+
+async function openCreateDialog() {
+  fireEvent.click(await screen.findByRole('button', { name: /Tạo mã giảm giá/i }))
+  const dialog = await screen.findByRole('dialog')
+  return { dialog, form: within(dialog) as ReturnType<typeof within> }
+}
+
+interface CouponFormValues {
+  code?: string
+  discountType?: 'PERCENT' | 'FIXED_AMOUNT'
+  discountValue?: string
+  validFrom?: string
+  validUntil?: string
+}
+
+function fillCouponForm(form: ReturnType<typeof within>, values: CouponFormValues) {
+  if (values.code !== undefined) {
+    fireEvent.change(form.getByLabelText('Mã giảm giá'), { target: { value: values.code } })
+  }
+  if (values.discountType !== undefined) {
+    fireEvent.click(form.getByRole('radio', { name: values.discountType === 'PERCENT' ? 'Theo %' : 'Số tiền' }))
+  }
+  if (values.discountValue !== undefined) {
+    fireEvent.change(form.getByLabelText('Mức giảm'), { target: { value: values.discountValue } })
+  }
+  if (values.validFrom !== undefined) {
+    fireEvent.change(form.getByLabelText('Bắt đầu'), { target: { value: values.validFrom } })
+  }
+  if (values.validUntil !== undefined) {
+    fireEvent.change(form.getByLabelText('Kết thúc'), { target: { value: values.validUntil } })
+  }
+}
+
+describe('AdminCouponPage create dialog', () => {
+  beforeEach(() => {
+    mockedListAdminCoupons.mockReset()
+    mockedCreateAdminCoupon.mockReset()
+    mockedUpdateAdminCoupon.mockReset()
+    mockedListAdminCoupons.mockResolvedValue(couponsApiResponse(eightCoupons))
+    mockedCreateAdminCoupon.mockResolvedValue({ data: makeCoupon({ id: 9, code: 'SALE20' }) } as never)
+  })
+
+  it('creates a coupon with a trimmed uppercase code, ISO dates and the chosen scopes', async () => {
+    render(<AdminCouponPage />)
+    await screen.findByRole('table')
+
+    const { dialog, form } = await openCreateDialog()
+    expect(within(dialog).getByRole('heading', { name: 'Tạo mã giảm giá' })).toBeInTheDocument()
+
+    fillCouponForm(form, { code: ' sale20 ', discountType: 'PERCENT', discountValue: '20' })
+    fireEvent.click(form.getByRole('checkbox', { name: 'VIP' }))
+    fillCouponForm(form, { validFrom: '2026-03-01T08:00', validUntil: '2026-04-01T23:59' })
+    fireEvent.click(form.getByRole('button', { name: 'Tạo mã giảm giá' }))
+
+    expect(mockedCreateAdminCoupon).toHaveBeenCalledTimes(1)
+    expect(mockedCreateAdminCoupon).toHaveBeenCalledWith(
+      expect.objectContaining({
+        code: 'SALE20',
+        discountType: 'PERCENT',
+        discountValue: 20,
+        productScopes: ['VIP'],
+        validFrom: fromDatetimeLocalValue('2026-03-01T08:00'),
+        validUntil: fromDatetimeLocalValue('2026-04-01T23:59'),
+        active: true,
+      }),
+    )
+    await waitFor(() => expect(mockedListAdminCoupons.mock.calls.length).toBeGreaterThanOrEqual(2))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('blocks submit when no product scope is selected', async () => {
+    render(<AdminCouponPage />)
+    await screen.findByRole('table')
+
+    const { form } = await openCreateDialog()
+    fillCouponForm(form, { code: 'SALE20', discountType: 'PERCENT', discountValue: '20' })
+    fillCouponForm(form, { validFrom: '2026-03-01T08:00', validUntil: '2026-04-01T23:59' })
+    fireEvent.click(form.getByRole('button', { name: 'Tạo mã giảm giá' }))
+
+    expect(form.getByText('Chọn ít nhất một phạm vi áp dụng.')).toBeInTheDocument()
+    expect(mockedCreateAdminCoupon).not.toHaveBeenCalled()
+  })
+
+  it('blocks submit when the end date is not after the start date', async () => {
+    render(<AdminCouponPage />)
+    await screen.findByRole('table')
+
+    const { form } = await openCreateDialog()
+    fillCouponForm(form, { code: 'SALE20', discountType: 'PERCENT', discountValue: '20' })
+    fireEvent.click(form.getByRole('checkbox', { name: 'VIP' }))
+    fillCouponForm(form, { validFrom: '2026-03-01T08:00', validUntil: '2026-03-01T08:00' })
+    fireEvent.click(form.getByRole('button', { name: 'Tạo mã giảm giá' }))
+
+    expect(form.getByText('Ngày hết hạn phải sau ngày bắt đầu.')).toBeInTheDocument()
+    expect(mockedCreateAdminCoupon).not.toHaveBeenCalled()
+  })
+
+  it('shows a friendly message when the code already exists', async () => {
+    mockedCreateAdminCoupon.mockRejectedValue(couponAxiosError(409, 'coupon code already exists'))
+
+    render(<AdminCouponPage />)
+    await screen.findByRole('table')
+
+    const { dialog, form } = await openCreateDialog()
+    fillCouponForm(form, { code: 'SALE20', discountType: 'PERCENT', discountValue: '20' })
+    fireEvent.click(form.getByRole('checkbox', { name: 'VIP' }))
+    fillCouponForm(form, { validFrom: '2026-03-01T08:00', validUntil: '2026-04-01T23:59' })
+    fireEvent.click(form.getByRole('button', { name: 'Tạo mã giảm giá' }))
+
+    expect(await within(dialog).findByText('Mã giảm giá đã tồn tại.')).toBeInTheDocument()
+    expect(mockedListAdminCoupons.mock.calls.length).toBe(1)
+  })
+})
+
+describe('AdminCouponPage edit dialog', () => {
+  beforeEach(() => {
+    mockedListAdminCoupons.mockReset()
+    mockedCreateAdminCoupon.mockReset()
+    mockedUpdateAdminCoupon.mockReset()
+    mockedListAdminCoupons.mockResolvedValue(couponsApiResponse(eightCoupons))
+    mockedUpdateAdminCoupon.mockResolvedValue({ data: eightCoupons[2] } as never)
+  })
+
+  it('prefills the form from the selected coupon and patches only the changed fields', async () => {
+    render(<AdminCouponPage />)
+    await screen.findByRole('table')
+
+    const vipRow = screen.getByText('VIP15').closest('tr') as HTMLElement
+    fireEvent.click(within(vipRow).getByRole('button', { name: 'Sửa' }))
+
+    const dialog = await screen.findByRole('dialog')
+    const form = within(dialog)
+
+    expect(form.getByLabelText('Mã giảm giá')).toHaveValue('VIP15')
+    expect(form.getByRole('radio', { name: 'Theo %' })).toHaveAttribute('aria-checked', 'true')
+    expect(form.getByLabelText('Mức giảm')).toHaveValue('15')
+    expect(form.getByRole('checkbox', { name: 'VIP' })).toHaveAttribute('data-state', 'checked')
+    expect(form.getByLabelText('Bắt đầu')).toHaveValue(toDatetimeLocalValue(eightCoupons[2].validFrom))
+    expect(form.getByLabelText('Kết thúc')).toHaveValue(toDatetimeLocalValue(eightCoupons[2].validUntil))
+
+    fireEvent.change(form.getByLabelText('Mức giảm'), { target: { value: '30' } })
+    fireEvent.click(form.getByRole('button', { name: 'Lưu thay đổi' }))
+
+    expect(mockedUpdateAdminCoupon).toHaveBeenCalledTimes(1)
+    expect(mockedUpdateAdminCoupon).toHaveBeenCalledWith(3, { discountValue: 30 })
+    await waitFor(() => expect(mockedListAdminCoupons.mock.calls.length).toBeGreaterThanOrEqual(2))
   })
 })
