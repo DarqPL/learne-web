@@ -48,7 +48,7 @@ export function AppShell({ children, header, fullWidth, hideDefaultHeader }: App
         header
       ) : (
       <header className="border-b border-gray-200 bg-white">
-        <div className={`mx-auto flex h-16 items-center justify-between gap-3 px-4 sm:px-6 ${isTeacher ? 'w-full' : 'max-w-6xl'}`}>
+        <div className={`flex h-16 items-center justify-between gap-3 px-4 sm:px-6 ${fullWidth || isTeacher ? 'w-full' : 'mx-auto max-w-6xl'}`}>
           <div className="flex min-w-0 items-center gap-3 sm:gap-6">
             <Link to={homePathFor(user.role)} className="shrink-0 text-xl font-bold text-indigo-600">
               LearnE
