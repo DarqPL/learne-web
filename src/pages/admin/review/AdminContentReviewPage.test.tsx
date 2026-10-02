@@ -42,7 +42,7 @@ function makeSummary(overrides: Partial<AdminReviewCourseSummary> = {}): AdminRe
     pricingType: 'FREE',
     priceAmountVnd: null,
     proposedPriceAmountVnd: null,
-    priceStatus: 'NO_PRICE',
+    priceStatus: 'NONE',
     ...overrides,
   }
 }
@@ -69,7 +69,7 @@ function makeDetail(overrides: Partial<AdminReviewCourseDetail> = {}): AdminRevi
     pricingType: 'PAID',
     priceAmountVnd: 100000,
     proposedPriceAmountVnd: 199000,
-    priceStatus: 'PENDING',
+    priceStatus: 'PENDING_REVIEW',
     topics: [],
     ...overrides,
   }
