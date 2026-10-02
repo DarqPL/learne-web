@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, TriangleAlert, XCircle } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Eye, Lock, LockOpen, TriangleAlert, XCircle } from 'lucide-react'
 import { getApiErrorMessage } from '../../lib/api/client'
 import { adminListStudents, adminLockUser, adminUnlockUser } from '../../lib/api/adminApi'
 import type { AdminStudentSummary } from '../../lib/api/types'
@@ -164,9 +164,9 @@ export function AdminStudentListPage() {
         </div>
       ) : (
         <>
-          <div className="rounded-xl border border-gray-200 bg-white shadow-sm [&>[data-slot=table-container]]:max-h-[60vh] [&>[data-slot=table-container]]:overflow-y-auto">
-            <Table>
-              <TableHeader className="sticky top-0 z-10 [&_th]:bg-gray-50">
+          <div className="rounded-xl border border-indigo-100 bg-white shadow-sm [&>[data-slot=table-container]]:max-h-[60vh] [&>[data-slot=table-container]]:overflow-y-auto">
+            <Table className="[&_tr]:border-indigo-100/70">
+              <TableHeader className="sticky top-0 z-10 [&_th]:bg-indigo-50">
                 <TableRow>
                   <TableHead>Họ và tên</TableHead>
                   <TableHead>Email</TableHead>
@@ -196,15 +196,20 @@ export function AdminStudentListPage() {
                       <TableCell>{student.completedLessonCount}</TableCell>
                       <TableCell>
                         <div className="flex items-center justify-end gap-2">
-                          <Button variant="outline" size="sm" asChild>
-                            <Link to={`/admin/students/${student.userId}`}>Chi tiết</Link>
+                          <Button asChild size="icon" variant="outline" title="Chi tiết" className="size-8">
+                            <Link to={`/admin/students/${student.userId}`} aria-label={`Chi tiết học sinh ${student.fullName}`}>
+                              <Eye aria-hidden="true" />
+                            </Link>
                           </Button>
                           <Button
-                            variant={student.locked ? 'secondary' : 'destructive'}
-                            size="sm"
+                            variant="outline"
+                            size="icon"
+                            className="size-8"
+                            title={student.locked ? 'Mở khóa tài khoản' : 'Khóa tài khoản'}
+                            aria-label={student.locked ? `Mở khóa tài khoản ${student.fullName}` : `Khóa tài khoản ${student.fullName}`}
                             onClick={() => handleOpenLock(student)}
                           >
-                            {student.locked ? 'Mở khóa' : 'Khóa'}
+                            {student.locked ? <LockOpen aria-hidden="true" /> : <Lock aria-hidden="true" />}
                           </Button>
                         </div>
                       </TableCell>

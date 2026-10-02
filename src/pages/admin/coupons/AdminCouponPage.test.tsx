@@ -152,7 +152,18 @@ describe('AdminCouponPage list', () => {
     expect(screen.queryByText('Trang sau')).not.toBeInTheDocument()
   })
 
-  it('renders discount text, product scope badges, status badges and actions per row', async () => {
+  it('renders teacher-style indigo table chrome', async () => {
+    mockedListAdminCoupons.mockResolvedValue(couponsApiResponse(eightCoupons.slice(0, 1)))
+
+    render(<AdminCouponPage />)
+
+    const table = await screen.findByRole('table')
+    expect(table.className).toContain('border-indigo-100/70')
+    expect(document.querySelector('[data-slot="table-header"]')?.className).toContain('bg-indigo-50')
+    expect(table.closest('[data-slot="table-container"]')?.parentElement?.className).toContain('border-indigo-100')
+  })
+
+  it('renders discount text, product scope badges, status badges and icon actions per row', async () => {
     mockedListAdminCoupons.mockResolvedValue(couponsApiResponse(eightCoupons))
 
     render(<AdminCouponPage />)
@@ -166,8 +177,8 @@ describe('AdminCouponPage list', () => {
     expect(within(vipRow).getByText('VIP')).toBeInTheDocument()
     expect(within(vipRow).getByText('Giảm 15%')).toBeInTheDocument()
     expect(within(vipRow).getByText('Đang hoạt động')).toBeInTheDocument()
-    expect(within(vipRow).getByRole('button', { name: 'Sửa' })).toBeInTheDocument()
-    expect(within(vipRow).getByRole('button', { name: 'Vô hiệu hóa' })).toBeInTheDocument()
+    expect(within(vipRow).getByRole('button', { name: 'Sửa mã giảm giá VIP15' })).toBeInTheDocument()
+    expect(within(vipRow).getByRole('button', { name: 'Vô hiệu hóa mã giảm giá VIP15' })).toBeInTheDocument()
 
     const inactiveRow = screen.getByText('CHAO100K').closest('tr') as HTMLElement
     expect(within(inactiveRow).getByText('Đã vô hiệu hóa')).toBeInTheDocument()
@@ -315,7 +326,7 @@ describe('AdminCouponPage edit dialog', () => {
     await screen.findByRole('table')
 
     const vipRow = screen.getByText('VIP15').closest('tr') as HTMLElement
-    fireEvent.click(within(vipRow).getByRole('button', { name: 'Sửa' }))
+    fireEvent.click(within(vipRow).getByRole('button', { name: 'Sửa mã giảm giá VIP15' }))
 
     const dialog = await screen.findByRole('dialog')
     const form = within(dialog)
@@ -359,10 +370,10 @@ describe('AdminCouponPage disable confirmation', () => {
     await screen.findByRole('table')
 
     const inactiveRow = screen.getByText('CHAO100K').closest('tr') as HTMLElement
-    expect(within(inactiveRow).queryByRole('button', { name: 'Vô hiệu hóa' })).not.toBeInTheDocument()
+    expect(within(inactiveRow).queryByRole('button', { name: 'Vô hiệu hóa mã giảm giá CHAO100K' })).not.toBeInTheDocument()
 
     const activeRow = screen.getByText('VIP15').closest('tr') as HTMLElement
-    expect(within(activeRow).getByRole('button', { name: 'Vô hiệu hóa' })).toBeEnabled()
+    expect(within(activeRow).getByRole('button', { name: 'Vô hiệu hóa mã giảm giá VIP15' })).toBeEnabled()
   })
 
   it('opens a confirmation naming the coupon code and does nothing when cancelled', async () => {
@@ -370,7 +381,7 @@ describe('AdminCouponPage disable confirmation', () => {
     await screen.findByRole('table')
 
     const activeRow = screen.getByText('VIP15').closest('tr') as HTMLElement
-    fireEvent.click(within(activeRow).getByRole('button', { name: 'Vô hiệu hóa' }))
+    fireEvent.click(within(activeRow).getByRole('button', { name: 'Vô hiệu hóa mã giảm giá VIP15' }))
 
     const dialog = await screen.findByRole('alertdialog')
     expect(within(dialog).getByRole('heading', { name: 'Vô hiệu hóa mã giảm giá' })).toBeInTheDocument()
@@ -388,7 +399,7 @@ describe('AdminCouponPage disable confirmation', () => {
     await screen.findByRole('table')
 
     const activeRow = screen.getByText('VIP15').closest('tr') as HTMLElement
-    fireEvent.click(within(activeRow).getByRole('button', { name: 'Vô hiệu hóa' }))
+    fireEvent.click(within(activeRow).getByRole('button', { name: 'Vô hiệu hóa mã giảm giá VIP15' }))
 
     const dialog = await screen.findByRole('alertdialog')
     fireEvent.click(within(dialog).getByRole('button', { name: 'Vô hiệu hóa' }))
@@ -406,7 +417,7 @@ describe('AdminCouponPage disable confirmation', () => {
     await screen.findByRole('table')
 
     const activeRow = screen.getByText('VIP15').closest('tr') as HTMLElement
-    fireEvent.click(within(activeRow).getByRole('button', { name: 'Vô hiệu hóa' }))
+    fireEvent.click(within(activeRow).getByRole('button', { name: 'Vô hiệu hóa mã giảm giá VIP15' }))
 
     const dialog = await screen.findByRole('alertdialog')
     fireEvent.click(within(dialog).getByRole('button', { name: 'Vô hiệu hóa' }))
@@ -425,7 +436,7 @@ describe('AdminCouponPage disable confirmation', () => {
     await screen.findByRole('table')
 
     const activeRow = screen.getByText('VIP15').closest('tr') as HTMLElement
-    fireEvent.click(within(activeRow).getByRole('button', { name: 'Vô hiệu hóa' }))
+    fireEvent.click(within(activeRow).getByRole('button', { name: 'Vô hiệu hóa mã giảm giá VIP15' }))
 
     const dialog = await screen.findByRole('alertdialog')
     fireEvent.click(within(dialog).getByRole('button', { name: 'Vô hiệu hóa' }))
@@ -450,7 +461,7 @@ describe('AdminCouponPage disable confirmation', () => {
     await screen.findByRole('table')
 
     const activeRow = screen.getByText('VIP15').closest('tr') as HTMLElement
-    fireEvent.click(within(activeRow).getByRole('button', { name: 'Vô hiệu hóa' }))
+    fireEvent.click(within(activeRow).getByRole('button', { name: 'Vô hiệu hóa mã giảm giá VIP15' }))
 
     const dialog = await screen.findByRole('alertdialog')
     fireEvent.click(within(dialog).getByRole('button', { name: 'Vô hiệu hóa' }))

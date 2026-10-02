@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useState, type FormEvent } from 'react'
-import { ChevronLeft, ChevronRight, Pencil, Plus, Ticket, TriangleAlert, XCircle } from 'lucide-react'
+import { Ban, ChevronLeft, ChevronRight, Pencil, Plus, Ticket, TriangleAlert, XCircle } from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { createAdminCoupon, disableAdminCoupon, listAdminCoupons, updateAdminCoupon } from '../../../lib/api/adminCouponApi'
 import type {
@@ -572,9 +572,9 @@ export function AdminCouponPage() {
         </div>
       ) : (
         <>
-          <div className="rounded-xl border border-gray-200 bg-white shadow-sm [&>[data-slot=table-container]]:max-h-[60vh] [&>[data-slot=table-container]]:overflow-y-auto">
-            <Table>
-              <TableHeader className="sticky top-0 z-10 [&_th]:bg-gray-50">
+          <div className="rounded-xl border border-indigo-100 bg-white shadow-sm [&>[data-slot=table-container]]:max-h-[60vh] [&>[data-slot=table-container]]:overflow-y-auto">
+            <Table className="[&_tr]:border-indigo-100/70">
+              <TableHeader className="sticky top-0 z-10 [&_th]:bg-indigo-50">
                 <TableRow>
                   <TableHead>Mã</TableHead>
                   <TableHead>Giảm giá</TableHead>
@@ -614,13 +614,26 @@ export function AdminCouponPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleOpenEdit(coupon)}>
-                          <Pencil data-icon="inline-start" aria-hidden="true" />
-                          Sửa
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="size-8"
+                          title="Sửa"
+                          aria-label={`Sửa mã giảm giá ${coupon.code}`}
+                          onClick={() => handleOpenEdit(coupon)}
+                        >
+                          <Pencil aria-hidden="true" />
                         </Button>
                         {coupon.active ? (
-                          <Button variant="destructive" size="sm" onClick={() => handleOpenDisable(coupon)}>
-                            Vô hiệu hóa
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            className="size-8"
+                            title="Vô hiệu hóa"
+                            aria-label={`Vô hiệu hóa mã giảm giá ${coupon.code}`}
+                            onClick={() => handleOpenDisable(coupon)}
+                          >
+                            <Ban aria-hidden="true" />
                           </Button>
                         ) : null}
                       </div>

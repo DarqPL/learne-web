@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, Plus, TriangleAlert, XCircle } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Lock, LockOpen, Plus, TriangleAlert, XCircle } from 'lucide-react'
 import { getApiErrorMessage } from '../../lib/api/client'
 import { adminListTeachers, adminLockTeacher, adminUnlockTeacher } from '../../lib/api/adminApi'
 import type { AdminTeacher } from '../../lib/api/types'
@@ -184,9 +184,9 @@ export function AdminTeacherListPage() {
         </div>
       ) : (
         <>
-          <div className="rounded-xl border border-gray-200 bg-white shadow-sm [&>[data-slot=table-container]]:max-h-[60vh] [&>[data-slot=table-container]]:overflow-y-auto">
-            <Table>
-              <TableHeader className="sticky top-0 z-10 [&_th]:bg-gray-50">
+          <div className="rounded-xl border border-indigo-100 bg-white shadow-sm [&>[data-slot=table-container]]:max-h-[60vh] [&>[data-slot=table-container]]:overflow-y-auto">
+            <Table className="[&_tr]:border-indigo-100/70">
+              <TableHeader className="sticky top-0 z-10 [&_th]:bg-indigo-50">
                 <TableRow>
                   <TableHead>Họ và tên</TableHead>
                   <TableHead>Email</TableHead>
@@ -234,11 +234,14 @@ export function AdminTeacherListPage() {
                       <TableCell>
                         <div className="flex items-center justify-end gap-2">
                           <Button
-                            variant={teacher.locked ? 'secondary' : 'destructive'}
-                            size="sm"
+                            variant="outline"
+                            size="icon"
+                            className="size-8"
+                            title={teacher.locked ? 'Mở khóa tài khoản' : 'Khóa tài khoản'}
+                            aria-label={teacher.locked ? `Mở khóa tài khoản ${teacher.fullName}` : `Khóa tài khoản ${teacher.fullName}`}
                             onClick={() => handleOpenLock(teacher)}
                           >
-                            {teacher.locked ? 'Mở khóa' : 'Khóa'}
+                            {teacher.locked ? <LockOpen aria-hidden="true" /> : <Lock aria-hidden="true" />}
                           </Button>
                         </div>
                       </TableCell>

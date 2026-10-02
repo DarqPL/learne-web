@@ -99,14 +99,16 @@ describe('AdminTeacherListPage shadcn sync', () => {
     expect(within(alert).getByText('Không thể tải danh sách giảng viên.')).toBeInTheDocument()
   })
 
-  it('renders a shadcn table with sticky header', async () => {
+  it('renders a teacher-style indigo table with sticky header', async () => {
     mockedList.mockResolvedValue(apiResponse(eightTeachers.slice(0, 1)))
 
     renderPage()
 
     const table = await screen.findByRole('table')
     expect(table).toHaveAttribute('data-slot', 'table')
-    expect(document.querySelector('[data-slot="table-header"]')).not.toBeNull()
+    expect(table.className).toContain('border-indigo-100/70')
+    expect(document.querySelector('[data-slot="table-header"]')?.className).toContain('bg-indigo-50')
+    expect(table.closest('[data-slot="table-container"]')?.parentElement?.className).toContain('border-indigo-100')
     expect(screen.getByText('Họ và tên')).toBeInTheDocument()
     expect(screen.getByText('Email')).toBeInTheDocument()
   })
@@ -156,6 +158,17 @@ describe('AdminTeacherListPage shadcn sync', () => {
     expect(document.querySelector('[data-slot="badge"]')).not.toBeNull()
   })
 
+  it('renders icon lock buttons naming the teacher', async () => {
+    mockedList.mockResolvedValue(apiResponse(eightTeachers.slice(0, 2)))
+
+    renderPage()
+
+    await screen.findByRole('table')
+
+    expect(screen.getByRole('button', { name: 'Khóa tài khoản Giang Vien 1' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Mở khóa tài khoản Giang Vien 2' })).toBeInTheDocument()
+  })
+
   it('opens an AlertDialog naming the teacher for lock and confirms via lock API without window.confirm', async () => {
     const confirmSpy = vi.spyOn(window, 'confirm')
     mockedList.mockResolvedValue(apiResponse(eightTeachers.slice(0, 1)))
@@ -163,7 +176,7 @@ describe('AdminTeacherListPage shadcn sync', () => {
     renderPage()
 
     await screen.findByRole('table')
-    fireEvent.click(screen.getByRole('button', { name: 'Khóa' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Khóa tài khoản Giang Vien 1' }))
 
     const dialog = await screen.findByRole('alertdialog')
     expect(within(dialog).getByText('Giang Vien 1')).toBeInTheDocument()
@@ -184,7 +197,7 @@ describe('AdminTeacherListPage shadcn sync', () => {
     renderPage()
 
     await screen.findByRole('table')
-    fireEvent.click(screen.getByRole('button', { name: 'Mở khóa' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Mở khóa tài khoản Giang Vien 2' }))
 
     const dialog = await screen.findByRole('alertdialog')
     expect(within(dialog).getByText('Giang Vien 2')).toBeInTheDocument()
@@ -209,7 +222,7 @@ describe('AdminTeacherListPage shadcn sync', () => {
     renderPage()
 
     await screen.findByRole('table')
-    fireEvent.click(screen.getByRole('button', { name: 'Khóa' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Khóa tài khoản Giang Vien 1' }))
 
     const dialog = await screen.findByRole('alertdialog')
     fireEvent.click(within(dialog).getByRole('button', { name: /^Khóa$/ }))
