@@ -947,3 +947,9 @@ export interface AdminStudentDetail {
     updatedAt: string | null
   }>
 }
+
+export type CouponDiscountType = 'PERCENT' | 'FIXED_AMOUNT'
+export type CouponProductScope = 'COURSE_PURCHASE' | 'VIP' | 'PRO' | 'PRO_PLUS'
+export interface AdminCoupon { id: number; code: string; discountType: CouponDiscountType; discountValue: number; minOrderAmountVnd: number; maxDiscountAmountVnd: number | null; minimumFinalAmountVnd: number; usageLimitTotal: number | null; usageLimitPerUser: number | null; validFrom: string; validUntil: string; active: boolean; productScopes: CouponProductScope[]; courseIds: number[]; teacherIds: number[] }
+export interface AdminCouponCreatePayload { code: string; discountType: CouponDiscountType; discountValue: number; minOrderAmountVnd?: number | null; maxDiscountAmountVnd?: number | null; minimumFinalAmountVnd?: number | null; usageLimitTotal?: number | null; usageLimitPerUser?: number | null; validFrom: string; validUntil: string; active?: boolean; productScopes: CouponProductScope[]; courseIds?: number[]; teacherIds?: number[] }
+export type AdminCouponUpdatePayload = Partial<AdminCouponCreatePayload>
