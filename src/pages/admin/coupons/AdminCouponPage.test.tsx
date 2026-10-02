@@ -336,6 +336,16 @@ describe('AdminCouponPage edit dialog', () => {
   })
 })
 
+function createDeferred<T>() {
+  let resolve!: (value: T) => void
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res
+    reject = rej
+  })
+  return { promise, resolve, reject }
+}
+
 describe('AdminCouponPage disable confirmation', () => {
   beforeEach(() => {
     mockedListAdminCoupons.mockReset()
@@ -405,5 +415,54 @@ describe('AdminCouponPage disable confirmation', () => {
     expect(within(alert).getByText('Không thể vô hiệu hóa mã giảm giá')).toBeInTheDocument()
     expect(within(alert).getByText('coupon cannot be disabled')).toBeInTheDocument()
     expect(mockedListAdminCoupons.mock.calls.length).toBe(1)
+  })
+
+  it('keeps the confirmation open and shows the loading state while the disable request is pending', async () => {
+    const deferred = createDeferred<never>()
+    mockedDisableAdminCoupon.mockReturnValue(deferred.promise as never)
+
+    render(<AdminCouponPage />)
+    await screen.findByRole('table')
+
+    const activeRow = screen.getByText('VIP15').closest('tr') as HTMLElement
+    fireEvent.click(within(activeRow).getByRole('button', { name: 'Vô hiệu hóa' }))
+
+    const dialog = await screen.findByRole('alertdialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Vô hiệu hóa' }))
+
+    await waitFor(() => expect(mockedDisableAdminCoupon).toHaveBeenCalledWith(3))
+
+    const stillOpen = screen.getByRole('alertdialog')
+    const confirm = within(stillOpen).getByRole('button', { name: /Vô hiệu hóa/ })
+    expect(confirm).toBeDisabled()
+    expect(confirm.querySelector('.animate-spin')).not.toBeNull()
+    expect(within(stillOpen).getByRole('button', { name: 'Hủy' })).toBeDisabled()
+
+    deferred.reject(couponAxiosError(500, 'coupon cannot be disabled'))
+    await waitFor(() => expect(within(screen.getByRole('alertdialog')).getByRole('alert')).toBeInTheDocument())
+  })
+
+  it('keeps the confirmation open and renders the failure inside the dialog', async () => {
+    const deferred = createDeferred<never>()
+    mockedDisableAdminCoupon.mockReturnValue(deferred.promise as never)
+
+    render(<AdminCouponPage />)
+    await screen.findByRole('table')
+
+    const activeRow = screen.getByText('VIP15').closest('tr') as HTMLElement
+    fireEvent.click(within(activeRow).getByRole('button', { name: 'Vô hiệu hóa' }))
+
+    const dialog = await screen.findByRole('alertdialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Vô hiệu hóa' }))
+    await waitFor(() => expect(mockedDisableAdminCoupon).toHaveBeenCalledWith(3))
+
+    deferred.reject(couponAxiosError(500, 'coupon cannot be disabled'))
+
+    const stillOpen = await screen.findByRole('alertdialog')
+    const alert = await within(stillOpen).findByRole('alert')
+    expect(within(alert).getByText('Không thể vô hiệu hóa mã giảm giá')).toBeInTheDocument()
+    expect(within(alert).getByText('coupon cannot be disabled')).toBeInTheDocument()
+    expect(mockedListAdminCoupons.mock.calls.length).toBe(1)
+    expect(within(stillOpen).getByRole('button', { name: /Vô hiệu hóa/ })).toBeEnabled()
   })
 })

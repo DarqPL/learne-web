@@ -11,7 +11,6 @@ import type {
 } from '../../../lib/api/types'
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -527,8 +526,8 @@ export function AdminCouponPage() {
     void (async () => {
       try {
         await disableAdminCoupon(disableTarget.id)
-        setDisableTarget(null)
         await loadCoupons()
+        setDisableTarget(null)
       } catch (err) {
         setDisableError(getApiErrorMessage(err, 'Không thể vô hiệu hóa mã giảm giá.'))
       } finally {
@@ -726,6 +725,13 @@ export function AdminCouponPage() {
                     Người học sẽ không thể dùng mã này nữa.
                   </span>
                 </AlertDialogDescription>
+                {disableError ? (
+                  <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+                    <XCircle aria-hidden="true" data-icon="inline-start" />
+                    <AlertTitle>Không thể vô hiệu hóa mã giảm giá</AlertTitle>
+                    <AlertDescription className="text-red-700">{disableError}</AlertDescription>
+                  </Alert>
+                ) : null}
               </div>
             </div>
           </AlertDialogHeader>
@@ -735,22 +741,12 @@ export function AdminCouponPage() {
                 Hủy
               </Button>
             </AlertDialogCancel>
-            <AlertDialogAction asChild>
-              <Button variant="destructive" loading={disabling} onClick={() => void handleDisable()}>
-                Vô hiệu hóa
-              </Button>
-            </AlertDialogAction>
+            <Button variant="destructive" loading={disabling} disabled={disabling} onClick={() => void handleDisable()}>
+              Vô hiệu hóa
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {disableError ? (
-        <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
-          <XCircle aria-hidden="true" data-icon="inline-start" />
-          <AlertTitle>Không thể vô hiệu hóa mã giảm giá</AlertTitle>
-          <AlertDescription className="text-red-700">{disableError}</AlertDescription>
-        </Alert>
-      ) : null}
     </div>
   )
 }
