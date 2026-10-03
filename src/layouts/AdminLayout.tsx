@@ -4,8 +4,8 @@ import { AppShell } from './AppShell'
 
 export function AdminLayout() {
   return (
-    <AppShell>
-      <div className="flex gap-8">
+    <AppShell fullWidth>
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <AdminSidebar />
         <div className="min-w-0 flex-1">
           <Outlet />

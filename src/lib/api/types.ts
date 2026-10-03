@@ -28,6 +28,8 @@ export type PlanCode = 'VIP' | 'PRO' | 'PRO_PLUS'
 
 export type CoursePricingType = 'FREE' | 'PAID'
 
+export type CoursePriceStatus = 'NONE' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED'
+
 export type CourseAccessStatus = 'FREE' | 'OWNED' | 'LOCKED'
 
 export interface PaymentInstructionResponse {
@@ -65,6 +67,14 @@ export interface OrderResponse {
   expiresAt: string
   items: OrderItemResponse[]
   paymentInstructions: PaymentInstructionResponse | null
+}
+
+export interface SubscriptionSummaryResponse {
+  planCode: PlanCode | null
+  aiDailyLimit: number
+  aiUsedToday: number
+  startsAt: string | null
+  endsAt: string | null
 }
 
 export type GrammarCheckStatus = 'PENDING' | 'SUCCEEDED' | 'FAILED'
@@ -315,6 +325,10 @@ export interface TeacherCourse {
   latestRevisionId: number | null
   latestRevisionStatus: CourseRevisionStatus | null
   hasEditableRevision: boolean
+  pricingType: CoursePricingType
+  priceAmountVnd: number | null
+  proposedPriceAmountVnd: number | null
+  priceStatus: CoursePriceStatus
   topics: TeacherTopic[]
 }
 
@@ -337,6 +351,8 @@ export interface TeacherCourseRequest {
   type: CourseType
   level: string
   orderIndex: number
+  pricingType?: CoursePricingType
+  proposedPriceAmountVnd?: number | null
 }
 
 export interface TeacherTopicRequest {
@@ -387,6 +403,12 @@ export interface AdminReviewCourseSummary {
   lessonCount: number
   questionCount: number
   updatedAt: string
+  revisionId: number | null
+  revisionNumber: number
+  pricingType: CoursePricingType
+  priceAmountVnd: number | null
+  proposedPriceAmountVnd: number | null
+  priceStatus: CoursePriceStatus
 }
 
 export interface AdminReviewQuestionOption {
@@ -456,6 +478,12 @@ export interface AdminReviewCourseDetail {
   reviewedAt: string | null
   publishedAt: string | null
   updatedAt: string
+  revisionId: number | null
+  revisionNumber: number
+  pricingType: CoursePricingType
+  priceAmountVnd: number | null
+  proposedPriceAmountVnd: number | null
+  priceStatus: CoursePriceStatus
   topics: AdminReviewTopic[]
 }
 
@@ -919,3 +947,9 @@ export interface AdminStudentDetail {
     updatedAt: string | null
   }>
 }
+
+export type CouponDiscountType = 'PERCENT' | 'FIXED_AMOUNT'
+export type CouponProductScope = 'COURSE_PURCHASE' | 'VIP' | 'PRO' | 'PRO_PLUS'
+export interface AdminCoupon { id: number; code: string; discountType: CouponDiscountType; discountValue: number; minOrderAmountVnd: number; maxDiscountAmountVnd: number | null; minimumFinalAmountVnd: number; usageLimitTotal: number | null; usageLimitPerUser: number | null; validFrom: string; validUntil: string; active: boolean; productScopes: CouponProductScope[]; courseIds: number[]; teacherIds: number[] }
+export interface AdminCouponCreatePayload { code: string; discountType: CouponDiscountType; discountValue: number; minOrderAmountVnd?: number | null; maxDiscountAmountVnd?: number | null; minimumFinalAmountVnd?: number | null; usageLimitTotal?: number | null; usageLimitPerUser?: number | null; validFrom: string; validUntil: string; active?: boolean; productScopes: CouponProductScope[]; courseIds?: number[]; teacherIds?: number[] }
+export type AdminCouponUpdatePayload = Partial<AdminCouponCreatePayload>

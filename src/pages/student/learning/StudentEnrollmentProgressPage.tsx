@@ -1,11 +1,22 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { getStudentEnrollment } from '../../../lib/api/studentLearningApi'
 import type { StudentEnrollmentProgress } from '../../../lib/api/types'
+import { cn } from '../../../lib/utils'
 import { Alert } from '../../../components/ui/Alert'
 import { Button } from '../../../components/ui/Button'
 import { Spinner } from '../../../components/ui/Spinner'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../../components/shadcn/ui/accordion'
+import { Badge } from '../../../components/shadcn/ui/badge'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '../../../components/shadcn/ui/breadcrumb'
 import { enrollmentStatusLabels, enrollmentStatusStyles, lessonProgressStatusLabels, lessonProgressStatusStyles, studentCourseTypeLabels, studentSkillTypeLabels } from './studentLearningLabels'
 import { formatStudentLearningDate } from './studentLearningUtils'
 
@@ -79,30 +90,48 @@ export function StudentEnrollmentProgressPage() {
   const progressPercent = getProgressPercent(enrollment.progressPercent)
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
-                {studentCourseTypeLabels[enrollment.course.type]}
-              </span>
-              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">Trình độ {enrollment.course.level}</span>
-              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${enrollmentStatusStyles[enrollment.status]}`}>
-                {enrollmentStatusLabels[enrollment.status]}
-              </span>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900">Tiến độ học tập</h1>
-            <h2 className="mt-3 text-xl font-semibold text-gray-900">{enrollment.course.name}</h2>
-            <p className="mt-2 text-sm text-gray-600">{enrollment.course.teacherName}</p>
-          </div>
+    <div className="flex min-w-0 flex-col gap-6">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/student/courses">Khóa học</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/student/enrollments">Khóa học đã đăng ký</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{enrollment.course.name}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
 
-          <Button variant="secondary" onClick={() => navigate('/student/enrollments')}>
-            Khóa học đã đăng ký
-          </Button>
+      <section className="flex min-w-0 flex-col gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700">
+            {studentCourseTypeLabels[enrollment.course.type]}
+          </Badge>
+          <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
+            Trình độ {enrollment.course.level}
+          </Badge>
+          <Badge variant="outline" className={cn(enrollmentStatusStyles[enrollment.status])}>
+            {enrollmentStatusLabels[enrollment.status]}
+          </Badge>
         </div>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">{enrollment.course.name}</h1>
+        <p className="text-base leading-7 text-gray-600">
+          {enrollment.course.teacherName} · {enrollment.completedLessonCount}/{enrollment.totalLessonCount} bài học ·{' '}
+          {progressPercent}% hoàn thành
+        </p>
+      </section>
 
-        <div className="mt-6">
+      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div>
           <div className="mb-2 flex items-center justify-between gap-3 text-sm">
             <span className="font-medium text-gray-700">Tiến độ</span>
             <span className="font-semibold text-gray-900">
@@ -134,54 +163,70 @@ export function StudentEnrollmentProgressPage() {
             <p className="text-sm text-gray-600">Chưa có bài học nào trong khóa học này.</p>
           </section>
         ) : (
-          enrollment.topics.map((topic) => (
-            <section key={topic.id} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Chủ đề</p>
-              <h2 className="mt-1 text-lg font-semibold text-gray-900">{topic.name}</h2>
-              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {topic.lessons.map((lesson) => {
-                  const lessonProgressPercent = getProgressPercent(lesson.progressPercent)
-                  const locked = lesson.status === 'LOCKED'
+          <Accordion
+            type="multiple"
+            defaultValue={enrollment.topics[0] ? [`topic-${enrollment.topics[0].id}`] : []}
+            className="space-y-5"
+          >
+            {enrollment.topics.map((topic) => (
+              <AccordionItem
+                key={topic.id}
+                value={`topic-${topic.id}`}
+                className="rounded-2xl border border-gray-200 bg-white px-5 shadow-sm"
+              >
+                <AccordionTrigger className="py-5 hover:no-underline">
+                  <span className="flex min-w-0 flex-1 flex-col gap-1 text-left">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Chủ đề</span>
+                    <span className="text-lg font-semibold text-gray-900">{topic.name}</span>
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="mt-1 grid gap-3 pb-2 md:grid-cols-2 xl:grid-cols-3">
+                    {topic.lessons.map((lesson) => {
+                      const lessonProgressPercent = getProgressPercent(lesson.progressPercent)
+                      const locked = lesson.status === 'LOCKED'
 
-                  return (
-                    <article
-                      key={lesson.lessonId}
-                      className={`rounded-xl border p-4 ${locked ? 'border-gray-100 bg-gray-50' : 'border-gray-200 bg-white'}`}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <span className="text-sm font-semibold text-gray-900">{lesson.title}</span>
-                        <span className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold ${lessonProgressStatusStyles[lesson.status]}`}>
-                          {lessonProgressStatusLabels[lesson.status]}
-                        </span>
-                      </div>
-                      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold">
-                        <span className="rounded-full bg-white px-2 py-1 text-gray-700">{studentSkillTypeLabels[lesson.skillType]}</span>
-                        <span className="text-gray-500">{lessonProgressPercent}%</span>
-                      </div>
-                      <dl className="mt-4 grid gap-2 text-xs text-gray-500">
-                        <div>
-                          <dt className="font-medium text-gray-600">Bắt đầu</dt>
-                          <dd>{formatStudentLearningDate(lesson.startedAt)}</dd>
-                        </div>
-                        <div>
-                          <dt className="font-medium text-gray-600">Hoàn thành</dt>
-                          <dd>{formatStudentLearningDate(lesson.completedAt)}</dd>
-                        </div>
-                      </dl>
-                      <Button
-                        className="mt-4 w-full"
-                        variant={locked ? 'secondary' : 'primary'}
-                        disabled={locked}
-                        onClick={() => navigate(`/student/enrollments/${enrollment.enrollmentId}/lessons/${lesson.lessonId}`)}
-                      >
-                        {locked ? 'Chưa mở khóa' : 'Vào bài học'}
-                      </Button>
-                    </article>
-                  )
-                })}
-              </div>
-            </section>
-          ))
+                      return (
+                        <article
+                          key={lesson.lessonId}
+                          className={`rounded-xl border p-4 ${locked ? 'border-gray-100 bg-gray-50' : 'border-gray-200 bg-white'}`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-sm font-semibold text-gray-900">{lesson.title}</span>
+                            <span className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold ${lessonProgressStatusStyles[lesson.status]}`}>
+                              {lessonProgressStatusLabels[lesson.status]}
+                            </span>
+                          </div>
+                          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold">
+                            <span className="rounded-full bg-white px-2 py-1 text-gray-700">{studentSkillTypeLabels[lesson.skillType]}</span>
+                            <span className="text-gray-500">{lessonProgressPercent}%</span>
+                          </div>
+                          <dl className="mt-4 grid gap-2 text-xs text-gray-500">
+                            <div>
+                              <dt className="font-medium text-gray-600">Bắt đầu</dt>
+                              <dd>{formatStudentLearningDate(lesson.startedAt)}</dd>
+                            </div>
+                            <div>
+                              <dt className="font-medium text-gray-600">Hoàn thành</dt>
+                              <dd>{formatStudentLearningDate(lesson.completedAt)}</dd>
+                            </div>
+                          </dl>
+                          <Button
+                            className="mt-4 w-full"
+                            variant={locked ? 'secondary' : 'primary'}
+                            disabled={locked}
+                            onClick={() => navigate(`/student/enrollments/${enrollment.enrollmentId}/lessons/${lesson.lessonId}`)}
+                          >
+                            {locked ? 'Chưa mở khóa' : 'Vào bài học'}
+                          </Button>
+                        </article>
+                      )
+                    })}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         )}
       </div>
     </div>

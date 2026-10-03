@@ -1,8 +1,8 @@
 import type { ComponentType } from 'react'
-import { BookOpen, Bot, CreditCard, FileCheck2, GraduationCap, LayoutDashboard, Sparkles, UsersRound } from 'lucide-react'
+import { BookOpen, LayoutDashboard, UserRound } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
-type StudentNavItem = {
+type TeacherNavItem = {
   label: string
   to: string
   end: boolean
@@ -10,21 +10,16 @@ type StudentNavItem = {
   description: string
 }
 
-const tabs: StudentNavItem[] = [
-  { label: 'Tổng quan', to: '/student', end: true, icon: LayoutDashboard, description: 'AI Learning Hub' },
-  { label: 'AI đề xuất', to: '/student/course-recommendations', end: false, icon: Sparkles, description: 'Khóa học phù hợp' },
-  { label: 'Kiểm tra ngữ pháp AI', to: '/student/grammar-check', end: false, icon: FileCheck2, description: 'Sửa lỗi văn bản' },
-  { label: 'AI Tutor', to: '/student/ai-tutor', end: false, icon: Bot, description: 'Luyện hội thoại' },
-  { label: 'Khóa học', to: '/student/courses', end: false, icon: BookOpen, description: 'Khám phá nội dung' },
-  { label: 'Khóa đã đăng ký', to: '/student/enrollments', end: false, icon: GraduationCap, description: 'Tiếp tục học' },
-  { label: 'Gói học', to: '/student/subscription', end: false, icon: CreditCard, description: 'VIP, PRO, Pro+' },
-  { label: 'Giảng viên', to: '/student/teachers', end: false, icon: UsersRound, description: 'Chọn người hướng dẫn' },
+const tabs: TeacherNavItem[] = [
+  { label: 'Dashboard', to: '/teacher', end: true, icon: LayoutDashboard, description: 'Tổng quan giảng dạy' },
+  { label: 'Nội dung', to: '/teacher/content', end: false, icon: BookOpen, description: 'Khóa học, bài học, câu hỏi' },
+  { label: 'Hồ sơ', to: '/teacher/profile', end: false, icon: UserRound, description: 'Hồ sơ giảng viên' },
 ]
 
-export function StudentSidebar() {
+export function TeacherSidebar() {
   return (
     <aside className="mb-6 rounded-3xl border border-indigo-100 bg-white/95 p-2 shadow-sm shadow-indigo-100/60 ring-1 ring-white lg:sticky lg:top-24 lg:mb-0 lg:max-h-[calc(100vh-7rem)] lg:w-72 lg:shrink-0 lg:overflow-y-auto lg:p-3">
-      <nav className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0" aria-label="Điều hướng học viên">
+      <nav className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0" aria-label="Điều hướng giảng viên">
         {tabs.map((tab) => (
           <NavLink
             key={tab.to}
@@ -48,7 +43,7 @@ export function StudentSidebar() {
                       isActive ? 'bg-white/20 text-white' : 'bg-indigo-50 text-indigo-600 group-hover:bg-white'
                     }`}
                   >
-                    <Icon className="h-5 w-5" aria-hidden="true" />
+                    <Icon className="size-5" aria-hidden="true" />
                   </span>
                   <span className="grid gap-0.5">
                     <span className="whitespace-nowrap leading-5">{tab.label}</span>

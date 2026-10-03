@@ -21,6 +21,14 @@ import { getGrammarCheck, listGrammarChecks, submitGrammarCheck } from '../../..
 import type { GrammarCheckErrorItem, GrammarCheckListItem, GrammarCheckResult, GrammarCheckStatus } from '../../../lib/api/types'
 import { Alert, AlertDescription } from '../../../components/shadcn/ui/alert'
 import { Badge } from '../../../components/shadcn/ui/badge'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '../../../components/shadcn/ui/breadcrumb'
 import { Button } from '../../../components/shadcn/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/shadcn/ui/card'
 import { Separator } from '../../../components/shadcn/ui/separator'
@@ -252,7 +260,20 @@ export function StudentGrammarCheckPage() {
   const resultErrors = result ? sortErrors(result.errors) : []
 
   return (
-    <div className="space-y-6">
+    <div className="flex min-w-0 flex-col gap-6">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/student">Trang chủ</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Kiểm tra ngữ pháp</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       <Card className="relative overflow-hidden border-indigo-100 py-0 shadow-sm">
         <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-indigo-300/30 blur-3xl" />
         <div className="absolute bottom-0 left-1/2 h-36 w-36 rounded-full bg-sky-300/20 blur-3xl" />

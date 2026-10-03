@@ -15,6 +15,8 @@ export function getCourseInitialValue(course: TeacherCourse): TeacherCourseReque
     type: course.type,
     level: course.level,
     orderIndex: course.orderIndex,
+    pricingType: course.pricingType ?? 'FREE',
+    proposedPriceAmountVnd: course.proposedPriceAmountVnd ?? null,
   }
 }
 

@@ -21,7 +21,7 @@ function getProgressPercent(value: number) {
 
 function getAnswerDisplay(answer: StudentQuizAnswerResult) {
   if (answer.selectedOptionText?.trim()) return answer.selectedOptionText
-  if (answer.selectedOptionId !== null) return `Lựa chọn #${answer.selectedOptionId}`
+  if (answer.selectedOptionId !== null) return 'Lựa chọn đã chọn'
   if (answer.answerText?.trim()) return answer.answerText
   return 'Không có câu trả lời'
 }
@@ -29,7 +29,7 @@ function getAnswerDisplay(answer: StudentQuizAnswerResult) {
 function getCorrectAnswerDisplay(answer: StudentQuizAnswerResult) {
   if (answer.correctOptionText?.trim()) return answer.correctOptionText
   if (answer.correctAnswer?.trim()) return answer.correctAnswer
-  if (answer.correctOptionId !== null) return `Lựa chọn #${answer.correctOptionId}`
+  if (answer.correctOptionId !== null) return 'Lựa chọn đã chọn'
   return 'Không có đáp án hiển thị'
 }
 
@@ -112,8 +112,6 @@ export function StudentQuizResultPage() {
               <h1 className="mt-2 text-3xl font-bold text-gray-900">{formatScorePercent(result.scorePercent)}</h1>
               <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold">
                 <span className={`rounded-full px-3 py-1 ${tone.className}`}>{tone.label}</span>
-                <span className="rounded-full bg-white px-3 py-1 text-gray-700 shadow-sm">Lượt làm #{result.attemptId}</span>
-                <span className="rounded-full bg-white px-3 py-1 text-gray-700 shadow-sm">Bài học #{result.lessonId}</span>
               </div>
               <p className="mt-4 max-w-2xl text-sm leading-6 text-gray-600">{tone.message}</p>
             </div>
@@ -123,6 +121,9 @@ export function StudentQuizResultPage() {
                 Quay lại bài học
               </Button>
               <Button onClick={() => navigate(`/student/enrollments/${result.enrollmentId}/lessons/${result.lessonId}/quiz`)}>Làm lại quiz</Button>
+              <Button variant="secondary" onClick={() => navigate(`/student/enrollments/${result.enrollmentId}`)}>
+                Quay lại lộ trình học
+              </Button>
             </div>
           </div>
 

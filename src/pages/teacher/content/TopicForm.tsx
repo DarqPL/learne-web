@@ -1,5 +1,9 @@
-import { useState, type FormEvent } from 'react'
-import { Button } from '../../../components/ui/Button'
+import { useId, useState, type FormEvent } from 'react'
+import { Save } from 'lucide-react'
+import { Button } from '@/components/shadcn/ui/button'
+import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/shadcn/ui/field'
+import { Input } from '@/components/shadcn/ui/input'
+import { Textarea } from '@/components/shadcn/ui/textarea'
 import type { TeacherTopicRequest } from '../../../lib/api/types'
 
 interface TopicFormProps {
@@ -16,69 +20,74 @@ const defaultTopic: TeacherTopicRequest = {
   orderIndex: 0,
 }
 
-const fieldClassName =
-  'mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500'
+interface TopicValidation {
+  field: 'name'
+  message: string
+}
 
 export function TopicForm({ initialValue, loading = false, disabled = false, submitLabel, onSubmit }: TopicFormProps) {
   const initialForm = initialValue ?? defaultTopic
   const [previousInitialValue, setPreviousInitialValue] = useState(initialValue)
   const [form, setForm] = useState<TeacherTopicRequest>(initialForm)
-  const [orderIndexInput, setOrderIndexInput] = useState(String(initialForm.orderIndex))
-  const [validationMessage, setValidationMessage] = useState('')
+  const [validation, setValidation] = useState<TopicValidation | null>(null)
+  const fieldPrefix = useId()
 
   if (initialValue !== previousInitialValue) {
     const nextForm = initialValue ?? defaultTopic
     setPreviousInitialValue(initialValue)
     setForm(nextForm)
-    setOrderIndexInput(String(nextForm.orderIndex))
-    setValidationMessage('')
+    setValidation(null)
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (disabled) return
 
-    const orderIndex = Number(orderIndexInput)
-
     if (!form.name.trim()) {
-      setValidationMessage('Vui lòng nhập tên chủ đề.')
+      setValidation({ field: 'name', message: 'Vui lòng nhập tên chủ đề.' })
       return
     }
 
-    if (!orderIndexInput.trim() || !Number.isFinite(orderIndex)) {
-      setValidationMessage('Vui lòng nhập thứ tự hợp lệ.')
-      return
-    }
-
-    setValidationMessage('')
-    onSubmit({ ...form, orderIndex })
+    setValidation(null)
+    onSubmit({ ...form })
   }
 
+  const nameError = validation?.field === 'name' ? validation.message : undefined
+  const nameErrorId = `${fieldPrefix}-name-error`
+
   return (
-    <form className="space-y-3" onSubmit={handleSubmit}>
-      <label className="block text-sm font-medium text-gray-700">
-        Tên chủ đề
-        <input
-          className={fieldClassName}
-          value={form.name}
-          onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-        />
-      </label>
+    <form onSubmit={handleSubmit}>
+      <FieldGroup className="gap-3">
+        <Field data-invalid={nameError ? true : undefined}>
+          <FieldLabel htmlFor={`${fieldPrefix}-name`}>Tên chủ đề</FieldLabel>
+          <Input
+            id={`${fieldPrefix}-name`}
+            value={form.name}
+            disabled={disabled}
+            aria-invalid={nameError ? true : undefined}
+            aria-describedby={nameError ? nameErrorId : undefined}
+            onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+          />
+          {nameError ? <FieldError id={nameErrorId}>{nameError}</FieldError> : null}
+        </Field>
 
-      <label className="block text-sm font-medium text-gray-700">
-        Mô tả
-        <textarea
-          className={fieldClassName}
-          value={form.description}
-          onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
-        />
-      </label>
+        <Field>
+          <FieldLabel htmlFor={`${fieldPrefix}-description`}>Mô tả</FieldLabel>
+          <Textarea
+            id={`${fieldPrefix}-description`}
+            value={form.description}
+            disabled={disabled}
+            onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
+          />
+        </Field>
 
-      {validationMessage ? <p className="text-sm text-red-600">{validationMessage}</p> : null}
-
-      <Button type="submit" loading={loading} disabled={disabled}>
-        {submitLabel}
-      </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="submit" loading={loading} disabled={disabled}>
+            <Save data-icon="inline-start" aria-hidden="true" />
+            {submitLabel}
+          </Button>
+        </div>
+      </FieldGroup>
     </form>
   )
 }

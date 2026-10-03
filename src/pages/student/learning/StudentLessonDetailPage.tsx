@@ -1,10 +1,21 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft, ArrowRight, CheckCircle2, FileQuestion } from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { getStudentEnrollment, startStudentLesson } from '../../../lib/api/studentLearningApi'
 import type { StudentEnrollmentProgress, StudentLessonProgress } from '../../../lib/api/types'
-import { Alert } from '../../../components/ui/Alert'
-import { Button } from '../../../components/ui/Button'
+import { cn } from '../../../lib/utils'
+import { Alert, AlertDescription, AlertTitle } from '../../../components/shadcn/ui/alert'
+import { Badge } from '../../../components/shadcn/ui/badge'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '../../../components/shadcn/ui/breadcrumb'
+import { Button } from '../../../components/shadcn/ui/button'
 import { Spinner } from '../../../components/ui/Spinner'
 import { LessonAudioPlayer } from './LessonAudioPlayer'
 import { lessonProgressStatusLabels, lessonProgressStatusStyles, studentCourseTypeLabels, studentSkillTypeLabels } from './studentLearningLabels'
@@ -104,17 +115,20 @@ export function StudentLessonDetailPage() {
 
   if (enrollmentId === null || lessonId === null) {
     return (
-      <div role="alert">
-        <Alert>Không tìm thấy bài học.</Alert>
-      </div>
+      <Alert variant="destructive" className="border-red-200 bg-red-50">
+        <FileQuestion aria-hidden="true" />
+        <AlertTitle>Không tìm thấy bài học.</AlertTitle>
+      </Alert>
     )
   }
 
   if (error && !enrollment) {
     return (
-      <div role="alert">
-        <Alert>{error}</Alert>
-      </div>
+      <Alert variant="destructive" className="border-red-200 bg-red-50">
+        <FileQuestion aria-hidden="true" />
+        <AlertTitle>Không thể tải bài học</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
     )
   }
 
@@ -132,76 +146,130 @@ export function StudentLessonDetailPage() {
 
   if (!lesson) {
     return (
-      <div role="alert">
-        <Alert>Không tìm thấy bài học trong khóa học đã đăng ký.</Alert>
-      </div>
+      <Alert variant="destructive" className="border-red-200 bg-red-50">
+        <FileQuestion aria-hidden="true" />
+        <AlertTitle>Không tìm thấy bài học trong khóa học đã đăng ký.</AlertTitle>
+      </Alert>
     )
   }
 
   const locked = lesson.status === 'LOCKED'
   const canStart = lesson.status === 'UNLOCKED'
   const content = lesson.content?.trim()
+  const lessonsInOrder = flattenProgressLessons(enrollment)
+  const currentLessonIndex = lessonsInOrder.findIndex((item) => item.lessonId === lessonId)
+  const nextLesson =
+    currentLessonIndex >= 0
+      ? (lessonsInOrder.slice(currentLessonIndex + 1).find((item) => item.status !== 'LOCKED') ?? null)
+      : null
 
   return (
-    <div className="space-y-6">
-      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-        <div className="bg-gradient-to-br from-indigo-50 via-white to-sky-50 p-6">
-          <button className="text-sm font-semibold text-indigo-600 hover:text-indigo-700" type="button" onClick={() => navigate(`/student/enrollments/${enrollment.enrollmentId}`)}>
+    <div className="flex min-w-0 flex-col gap-6">
+      <div className="flex flex-col gap-2">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/student/courses">Khóa học</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/student/enrollments">Khóa học đã đăng ký</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to={`/student/enrollments/${enrollment.enrollmentId}`}>{enrollment.course.name}</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="max-w-56 truncate sm:max-w-none">{lesson.title}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+        <Button variant="ghost" size="sm" className="w-fit cursor-pointer" asChild>
+          <Link to={`/student/enrollments/${enrollment.enrollmentId}`}>
+            <ArrowLeft data-icon="inline-start" />
             Quay lại lộ trình học
-          </button>
+          </Link>
+        </Button>
+      </div>
 
-          <div className="mt-5 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-                <span className="rounded-full bg-indigo-100 px-3 py-1 text-indigo-700">{studentCourseTypeLabels[enrollment.course.type]}</span>
-                <span className="rounded-full bg-white px-3 py-1 text-gray-700 shadow-sm">Trình độ {enrollment.course.level}</span>
-                <span className={`rounded-full px-3 py-1 ${lessonProgressStatusStyles[lesson.status]}`}>{lessonProgressStatusLabels[lesson.status]}</span>
-              </div>
-              <p className="mt-5 text-xs font-semibold uppercase tracking-wide text-indigo-600">Bài học</p>
-              <h1 className="mt-2 text-3xl font-bold text-gray-900">{lesson.title}</h1>
-              <p className="mt-3 text-sm text-gray-600">
-                {enrollment.course.name} · {studentSkillTypeLabels[lesson.skillType]}
-              </p>
+      <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="secondary" className="bg-indigo-50 text-indigo-700">
+                {studentCourseTypeLabels[enrollment.course.type]}
+              </Badge>
+              <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
+                Trình độ {enrollment.course.level}
+              </Badge>
+              <Badge variant="outline" className={cn(lessonProgressStatusStyles[lesson.status])}>
+                {lessonProgressStatusLabels[lesson.status]}
+              </Badge>
             </div>
-
-            <div className="flex shrink-0 flex-col gap-2 sm:flex-row lg:flex-col">
-              {canStart ? (
-                <Button loading={starting} disabled={starting} onClick={() => void handleStartLesson(lesson)}>
-                  Bắt đầu học
-                </Button>
-              ) : null}
-              <Button disabled={locked} onClick={() => navigate(`/student/enrollments/${enrollment.enrollmentId}/lessons/${lesson.lessonId}/quiz`)}>
-                {lesson.status === 'COMPLETED' ? 'Làm lại quiz' : 'Bắt đầu làm quiz'}
-              </Button>
+            <h1 className="mt-3 text-2xl font-bold tracking-tight text-gray-950 sm:text-3xl">{lesson.title}</h1>
+            <p className="mt-2 text-sm leading-6 text-gray-600">
+              {enrollment.course.name} · {studentSkillTypeLabels[lesson.skillType]}
+            </p>
+            <p className="mt-3 text-xs leading-5 text-gray-500">
+              Tiến độ khóa học {courseProgressPercent}% · Tiến độ bài học {lessonProgressPercent}% · Bắt đầu{' '}
+              {formatStudentLearningDate(lesson.startedAt)}
+            </p>
+            <div className="mt-3 max-w-md">
+              <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
+                <span className="font-medium">Tiến độ bài học</span>
+                <span>{lessonProgressPercent}%</span>
+              </div>
+              <div
+                role="progressbar"
+                aria-valuenow={lessonProgressPercent}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`Tiến độ bài học ${lesson.title}`}
+                className="mt-1 h-2 overflow-hidden rounded-full bg-gray-100"
+              >
+                <div className="h-full rounded-full bg-indigo-600 transition-all" style={{ width: `${lessonProgressPercent}%` }} />
+              </div>
             </div>
           </div>
 
-          <dl className="mt-6 grid gap-3 text-sm sm:grid-cols-3">
-            <div className="rounded-xl bg-white p-3 shadow-sm">
-              <dt className="text-xs text-gray-500">Tiến độ khóa học</dt>
-              <dd className="mt-1 font-semibold text-gray-900">{courseProgressPercent}%</dd>
-            </div>
-            <div className="rounded-xl bg-white p-3 shadow-sm">
-              <dt className="text-xs text-gray-500">Tiến độ bài học</dt>
-              <dd className="mt-1 font-semibold text-gray-900">{lessonProgressPercent}%</dd>
-            </div>
-            <div className="rounded-xl bg-white p-3 shadow-sm">
-              <dt className="text-xs text-gray-500">Ngày bắt đầu</dt>
-              <dd className="mt-1 font-semibold text-gray-900">{formatStudentLearningDate(lesson.startedAt)}</dd>
-            </div>
-          </dl>
+          <div className="flex shrink-0 flex-col gap-2 sm:flex-row lg:flex-col">
+            {canStart ? (
+              <Button size="default" className="w-auto" loading={starting} disabled={starting} onClick={() => void handleStartLesson(lesson)}>
+                Bắt đầu học
+              </Button>
+            ) : null}
+            <Button
+              size="default"
+              className="w-auto"
+              disabled={locked}
+              onClick={() => navigate(`/student/enrollments/${enrollment.enrollmentId}/lessons/${lesson.lessonId}/quiz`)}
+            >
+              {lesson.status === 'COMPLETED' ? 'Làm lại quiz' : 'Bắt đầu làm quiz'}
+            </Button>
+          </div>
         </div>
       </section>
 
       {error ? (
-        <div role="alert">
-          <Alert>{error}</Alert>
-        </div>
+        <Alert variant="destructive" className="border-red-200 bg-red-50">
+          <FileQuestion aria-hidden="true" />
+          <AlertTitle>Đã xảy ra lỗi</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       ) : null}
       {info ? (
-        <div role="alert">
-          <Alert variant="success">{info}</Alert>
-        </div>
+        <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800">
+          <CheckCircle2 aria-hidden="true" />
+          <AlertTitle>Thành công</AlertTitle>
+          <AlertDescription className="text-emerald-700">{info}</AlertDescription>
+        </Alert>
       ) : null}
 
       {locked ? (
@@ -209,23 +277,48 @@ export function StudentLessonDetailPage() {
           <p className="text-sm leading-6 text-gray-700">Bài học này chưa được mở khóa. Hãy hoàn thành bài trước đó để tiếp tục.</p>
         </section>
       ) : (
-        <>
+        <div className="flex flex-col gap-3">
           {lesson.skillType === 'LISTENING' ? <LessonAudioPlayer audioUrl={lesson.audioUrl} /> : null}
-          <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Nội dung bài học</p>
-            <div className="mt-4 rounded-2xl bg-gray-50 p-5">
+            <div className="mt-3 rounded-xl bg-gray-50 p-5">
               <p className="whitespace-pre-wrap text-sm leading-7 text-gray-700">{content || 'Bài học chưa có nội dung.'}</p>
             </div>
-            <div className="mt-6 rounded-2xl border border-indigo-100 bg-indigo-50 p-5">
+            <div className="mt-3 rounded-xl border border-indigo-100 bg-indigo-50 p-5">
               <p className="text-sm font-semibold text-indigo-900">Sẵn sàng kiểm tra mức hiểu bài?</p>
               <p className="mt-2 text-sm leading-6 text-indigo-800">Làm quiz để hệ thống chấm điểm, cập nhật tiến độ, XP và streak của bạn.</p>
-              <Button className="mt-4" onClick={() => navigate(`/student/enrollments/${enrollment.enrollmentId}/lessons/${lesson.lessonId}/quiz`)}>
+              <Button
+                size="default"
+                className="mt-4 w-auto"
+                onClick={() => navigate(`/student/enrollments/${enrollment.enrollmentId}/lessons/${lesson.lessonId}/quiz`)}
+              >
                 {lesson.status === 'COMPLETED' ? 'Làm lại quiz' : 'Bắt đầu làm quiz'}
               </Button>
             </div>
           </section>
-        </>
+        </div>
       )}
+      <div className="flex justify-end">
+        {nextLesson ? (
+          <Button
+            size="default"
+            className="w-auto cursor-pointer"
+            onClick={() => navigate(`/student/enrollments/${enrollment.enrollmentId}/lessons/${nextLesson.lessonId}`)}
+          >
+            Bài học tiếp theo
+            <ArrowRight data-icon="inline-end" />
+          </Button>
+        ) : (
+          <Button
+            variant="secondary"
+            size="default"
+            className="w-auto cursor-pointer"
+            onClick={() => navigate(`/student/enrollments/${enrollment.enrollmentId}`)}
+          >
+            Quay lại lộ trình học
+          </Button>
+        )}
+      </div>
     </div>
   )
 }

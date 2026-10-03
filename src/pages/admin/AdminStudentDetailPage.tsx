@@ -1,11 +1,32 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { TriangleAlert, XCircle } from 'lucide-react'
 import { getApiErrorMessage } from '../../lib/api/client'
 import { adminGetStudent, adminLockUser, adminUnlockUser } from '../../lib/api/adminApi'
 import type { AdminStudentDetail, AiTutorPracticeType, EnrollmentStatus } from '../../lib/api/types'
-import { Alert } from '../../components/ui/Alert'
-import { Button } from '../../components/ui/Button'
-import { Spinner } from '../../components/ui/Spinner'
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../../components/shadcn/ui/alert-dialog'
+import { Alert, AlertDescription, AlertTitle } from '../../components/shadcn/ui/alert'
+import { Badge } from '../../components/shadcn/ui/badge'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '../../components/shadcn/ui/breadcrumb'
+import { Button } from '../../components/shadcn/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/shadcn/ui/card'
+import { Skeleton } from '../../components/shadcn/ui/skeleton'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/shadcn/ui/table'
 
 const enrollmentStatusLabels: Record<EnrollmentStatus, string> = {
   ACTIVE: 'Đang học',
@@ -32,9 +53,11 @@ export function AdminStudentDetailPage() {
   const [student, setStudent] = useState<AdminStudentDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
-  const [actionUserId, setActionUserId] = useState<number | null>(null)
+  const [lockTarget, setLockTarget] = useState<AdminStudentDetail | null>(null)
+  const [dialogError, setDialogError] = useState<string | null>(null)
+  const [processing, setProcessing] = useState(false)
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!Number.isInteger(userId) || userId <= 0) {
       setError('Mã học sinh không hợp lệ.')
       return
@@ -42,10 +65,11 @@ export function AdminStudentDetailPage() {
     try {
       const response = await adminGetStudent(userId)
       setStudent(response.data)
+      setError(null)
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể tải thông tin học sinh.'))
     }
-  }
+  }, [userId])
 
   useEffect(() => {
     let cancelled = false
@@ -56,7 +80,10 @@ export function AdminStudentDetailPage() {
       }
       try {
         const response = await adminGetStudent(userId)
-        if (!cancelled) setStudent(response.data)
+        if (!cancelled) {
+          setStudent(response.data)
+          setError(null)
+        }
       } catch (err) {
         if (!cancelled) setError(getApiErrorMessage(err, 'Không thể tải thông tin học sinh.'))
       }
@@ -66,157 +93,211 @@ export function AdminStudentDetailPage() {
     }
   }, [userId])
 
-  const handleToggleLock = async () => {
-    if (!student) return
-    const confirmed = window.confirm(
-      student.locked
-        ? `Bạn có chắc muốn mở khóa tài khoản ${student.fullName} (${student.email})?`
-        : `Bạn có chắc muốn khóa tài khoản ${student.fullName} (${student.email})?`,
-    )
-    if (!confirmed) return
-    setActionUserId(student.userId)
-    setInfo(null)
-    setError(null)
-    try {
-      if (student.locked) {
-        await adminUnlockUser(student.userId)
-      } else {
-        await adminLockUser(student.userId)
+  const handleOpenLock = useCallback((target: AdminStudentDetail) => {
+    setDialogError(null)
+    setLockTarget(target)
+  }, [])
+
+  const handleConfirmLock = useCallback(() => {
+    if (!lockTarget || processing) return
+    setProcessing(true)
+    setDialogError(null)
+    void (async () => {
+      try {
+        if (lockTarget.locked) {
+          await adminUnlockUser(lockTarget.userId)
+        } else {
+          await adminLockUser(lockTarget.userId)
+        }
+        setInfo(lockTarget.locked ? 'Đã mở khóa tài khoản.' : 'Đã khóa tài khoản.')
+        setLockTarget(null)
+        await load()
+      } catch (err) {
+        setDialogError(getApiErrorMessage(err, 'Không thể cập nhật trạng thái tài khoản.'))
+      } finally {
+        setProcessing(false)
       }
-      setInfo(student.locked ? 'Đã mở khóa tài khoản.' : 'Đã khóa tài khoản.')
-      await load()
-    } catch (err) {
-      setError(getApiErrorMessage(err, 'Không thể cập nhật trạng thái tài khoản.'))
-    } finally {
-      setActionUserId(null)
-    }
-  }
+    })()
+  }, [lockTarget, processing, load])
+
+  const accountStatus = student
+    ? student.locked
+      ? { label: 'Bị khóa', className: 'border-red-200 bg-red-50 text-red-700' }
+      : student.mustChangePassword
+        ? { label: 'Chưa đổi mật khẩu', className: 'border-amber-200 bg-amber-50 text-amber-800' }
+        : { label: 'Đang hoạt động', className: 'border-emerald-200 bg-emerald-50 text-emerald-700' }
+    : null
 
   return (
-    <div>
-      <Link to="/admin/students" className="mb-4 inline-flex text-sm font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
-        Quay lại danh sách học sinh
-      </Link>
+    <div className="flex min-w-0 flex-col gap-6">
+      <section className="flex flex-col gap-3">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/admin/students">Quản lý học sinh</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{student?.fullName ?? 'Chi tiết học sinh'}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </section>
 
       {error ? (
-        <Alert>{error}</Alert>
+        <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+          <XCircle aria-hidden="true" data-icon="inline-start" />
+          <AlertTitle>Không thể tải thông tin học sinh</AlertTitle>
+          <AlertDescription className="text-red-700">{error}</AlertDescription>
+        </Alert>
       ) : student === null ? (
-        <div className="flex justify-center py-16">
-          <Spinner />
-        </div>
-      ) : (
-        <div className="space-y-6">
-          <div className="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{student.fullName}</h1>
-              <p className="mt-1 text-sm text-gray-600">{student.email}</p>
-              <p className="mt-2 text-sm text-gray-600">
-                Trạng thái: {student.locked ? 'Bị khóa' : student.mustChangePassword ? 'Chưa đổi mật khẩu' : 'Đang hoạt động'}
-              </p>
-            </div>
-            <Button
-              variant={student.locked ? 'secondary' : 'danger'}
-              loading={actionUserId === student.userId}
-              onClick={handleToggleLock}
-            >
-              {student.locked ? 'Mở khóa' : 'Khóa'}
-            </Button>
-          </div>
-
-          {info ? <Alert variant="success">{info}</Alert> : null}
-
+        <div className="flex flex-col gap-3">
+          <Skeleton className="h-28 w-full" />
           <div className="grid gap-4 md:grid-cols-4">
-            {[
-              ['Tổng XP', student.stats.totalXp],
-              ['Streak hiện tại', student.stats.currentStreakDays],
-              ['Streak dài nhất', student.stats.longestStreakDays],
-              ['Khóa đã đăng ký', student.enrollments.length],
-            ].map(([label, value]) => (
-              <div key={label} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <p className="text-sm text-gray-500">{label}</p>
-                <p className="mt-2 text-2xl font-bold text-gray-900">{value}</p>
-              </div>
+            {Array.from({ length: 4 }, (_, index) => (
+              <Skeleton key={index} className="h-24 w-full" />
             ))}
           </div>
-
-          <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900">Khóa học đã đăng ký</h2>
-            {student.enrollments.length === 0 ? (
-              <p className="mt-4 text-sm text-gray-600">Chưa có khóa học đã đăng ký</p>
-            ) : (
-              <div className="mt-4 overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead>
-                    <tr>
-                      {['Khóa học', 'Trạng thái', 'Tiến độ', 'Ngày đăng ký'].map((heading) => (
-                        <th key={heading} className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">
-                          {heading}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {student.enrollments.map((enrollment) => (
-                      <tr key={enrollment.enrollmentId}>
-                        <td className="px-4 py-3 text-sm font-medium text-gray-900">{enrollment.courseName}</td>
-                        <td className="px-4 py-3 text-sm text-gray-600">{enrollmentStatusLabels[enrollment.status]}</td>
-                        <td className="px-4 py-3 text-sm text-gray-600">{enrollment.progressPercent}%</td>
-                        <td className="px-4 py-3 text-sm text-gray-600">{formatDate(enrollment.enrolledAt)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          <Skeleton className="h-48 w-full" />
+        </div>
+      ) : (
+        <div className="flex min-w-0 flex-col gap-6">
+          <Card>
+            <CardContent className="flex flex-col gap-4 pt-6 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <h1 className="text-2xl font-bold tracking-tight text-gray-950">{student.fullName}</h1>
+                <p className="mt-1 text-sm text-gray-600">{student.email}</p>
+                <div className="mt-2">
+                  {accountStatus ? (
+                    <Badge variant="outline" className={accountStatus.className}>
+                      {accountStatus.label}
+                    </Badge>
+                  ) : null}
+                </div>
               </div>
-            )}
+              <Button variant={student.locked ? 'secondary' : 'destructive'} onClick={() => handleOpenLock(student)}>
+                {student.locked ? 'Mở khóa' : 'Khóa'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {info ? (
+            <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800">
+              <AlertTitle>Thành công</AlertTitle>
+              <AlertDescription className="text-emerald-700">{info}</AlertDescription>
+            </Alert>
+          ) : null}
+
+          <section className="grid gap-4 md:grid-cols-4" aria-label="Thống kê học tập">
+            {[
+              { label: 'Tổng XP', value: student.stats.totalXp },
+              { label: 'Streak hiện tại', value: student.stats.currentStreakDays },
+              { label: 'Streak dài nhất', value: student.stats.longestStreakDays },
+              { label: 'Khóa đã đăng ký', value: student.enrollments.length },
+            ].map((item) => (
+              <Card key={item.label}>
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium text-gray-500">{item.label}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold text-gray-950">{item.value}</p>
+                </CardContent>
+              </Card>
+            ))}
           </section>
 
-          <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900">Lượt làm quiz gần đây</h2>
-            {student.recentQuizAttempts.length === 0 ? (
-              <p className="mt-4 text-sm text-gray-600">Chưa có lượt làm quiz gần đây</p>
-            ) : (
-              <div className="mt-4 space-y-3">
-                {student.recentQuizAttempts.map((attempt) => (
+          <Card>
+            <CardHeader>
+              <CardTitle>Khóa học đã đăng ký</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {student.enrollments.length === 0 ? (
+                <p className="text-sm text-gray-600">Chưa có khóa học đã đăng ký</p>
+              ) : (
+                <div className="[&>[data-slot=table-container]]:max-h-[50vh] [&>[data-slot=table-container]]:overflow-y-auto">
+                  <Table>
+                    <TableHeader className="sticky top-0 z-10 [&_th]:bg-gray-50">
+                      <TableRow>
+                        <TableHead>Khóa học</TableHead>
+                        <TableHead>Trạng thái</TableHead>
+                        <TableHead>Tiến độ</TableHead>
+                        <TableHead>Ngày đăng ký</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {student.enrollments.map((enrollment) => (
+                        <TableRow key={enrollment.enrollmentId}>
+                          <TableCell className="font-medium">{enrollment.courseName}</TableCell>
+                          <TableCell>{enrollmentStatusLabels[enrollment.status]}</TableCell>
+                          <TableCell>{enrollment.progressPercent}%</TableCell>
+                          <TableCell>{formatDate(enrollment.enrolledAt)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Lượt làm quiz gần đây</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              {student.recentQuizAttempts.length === 0 ? (
+                <p className="text-sm text-gray-600">Chưa có lượt làm quiz gần đây</p>
+              ) : (
+                student.recentQuizAttempts.map((attempt) => (
                   <div key={attempt.attemptId} className="rounded-xl border border-gray-200 p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="font-medium text-gray-900">{attempt.lessonTitle}</p>
-                      <span className={attempt.passed ? 'text-sm font-medium text-green-700' : 'text-sm font-medium text-red-700'}>
+                      <Badge
+                        variant="outline"
+                        className={attempt.passed ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'}
+                      >
                         {attempt.passed ? 'Đạt' : 'Chưa đạt'}
-                      </span>
+                      </Badge>
                     </div>
                     <p className="mt-2 text-sm text-gray-600">
                       Điểm: {attempt.scorePercent}% - {formatDate(attempt.submittedAt)}
                     </p>
                   </div>
-                ))}
-              </div>
-            )}
-          </section>
+                ))
+              )}
+            </CardContent>
+          </Card>
 
-          <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900">Kiểm tra ngữ pháp gần đây</h2>
-            {student.recentGrammarChecks.length === 0 ? (
-              <p className="mt-4 text-sm text-gray-600">Chưa có lần kiểm tra ngữ pháp gần đây</p>
-            ) : (
-              <div className="mt-4 space-y-3">
-                {student.recentGrammarChecks.map((check) => (
+          <Card>
+            <CardHeader>
+              <CardTitle>Kiểm tra ngữ pháp gần đây</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              {student.recentGrammarChecks.length === 0 ? (
+                <p className="text-sm text-gray-600">Chưa có lần kiểm tra ngữ pháp gần đây</p>
+              ) : (
+                student.recentGrammarChecks.map((check) => (
                   <div key={check.id} className="rounded-xl border border-gray-200 p-4">
                     <p className="text-sm text-gray-500">{formatDate(check.createdAt)}</p>
                     <p className="mt-2 text-sm text-gray-700">Nội dung gốc: {check.originalText}</p>
                     <p className="mt-2 text-sm text-gray-700">Nội dung sửa: {check.correctedText ?? 'Chưa có nội dung sửa'}</p>
                   </div>
-                ))}
-              </div>
-            )}
-          </section>
+                ))
+              )}
+            </CardContent>
+          </Card>
 
-          <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900">Hội thoại AI gần đây</h2>
-            {student.recentAiConversations.length === 0 ? (
-              <p className="mt-4 text-sm text-gray-600">Chưa có hội thoại AI gần đây</p>
-            ) : (
-              <div className="mt-4 space-y-3">
-                {student.recentAiConversations.map((conversation) => (
+          <Card>
+            <CardHeader>
+              <CardTitle>Hội thoại AI gần đây</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              {student.recentAiConversations.length === 0 ? (
+                <p className="text-sm text-gray-600">Chưa có hội thoại AI gần đây</p>
+              ) : (
+                student.recentAiConversations.map((conversation) => (
                   <div key={conversation.id} className="rounded-xl border border-gray-200 p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="font-medium text-gray-900">{conversation.title}</p>
@@ -224,12 +305,80 @@ export function AdminStudentDetailPage() {
                     </div>
                     <p className="mt-2 text-sm text-gray-600">Cập nhật: {formatDate(conversation.updatedAt)}</p>
                   </div>
-                ))}
-              </div>
-            )}
-          </section>
+                ))
+              )}
+            </CardContent>
+          </Card>
         </div>
       )}
+
+      <AlertDialog
+        open={lockTarget !== null}
+        onOpenChange={(open) => {
+          if (processing) return
+          if (!open) {
+            setLockTarget(null)
+            setDialogError(null)
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="flex items-start gap-3">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+                <TriangleAlert className="size-5" aria-hidden="true" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <AlertDialogTitle>
+                  {lockTarget?.locked ? `Mở khóa tài khoản ${lockTarget?.fullName}` : `Khóa tài khoản ${lockTarget?.fullName}`}
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  {lockTarget?.locked ? (
+                    <>
+                      Mở khóa tài khoản <span className="font-semibold text-gray-900">{lockTarget?.fullName}</span> (
+                      {lockTarget?.email})?
+                      <span className="mt-2 block rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
+                        Học viên sẽ có thể đăng nhập trở lại.
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      Khóa tài khoản <span className="font-semibold text-gray-900">{lockTarget?.fullName}</span> (
+                      {lockTarget?.email})?
+                      <span className="mt-2 block rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                        Học viên sẽ không thể đăng nhập cho đến khi được mở khóa.
+                      </span>
+                    </>
+                  )}
+                </AlertDialogDescription>
+                {dialogError ? (
+                  <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+                    <XCircle aria-hidden="true" data-icon="inline-start" />
+                    <AlertTitle>Không thể cập nhật trạng thái tài khoản</AlertTitle>
+                    <AlertDescription className="text-red-700">{dialogError}</AlertDescription>
+                  </Alert>
+                ) : null}
+              </div>
+            </div>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button variant="outline" disabled={processing}>
+                Hủy
+              </Button>
+            </AlertDialogCancel>
+            {lockTarget?.locked ? (
+              <Button variant="secondary" loading={processing} disabled={processing} onClick={() => void handleConfirmLock()}>
+                Mở khóa
+              </Button>
+            ) : (
+              <Button variant="destructive" loading={processing} disabled={processing} onClick={() => void handleConfirmLock()}>
+                Khóa
+              </Button>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

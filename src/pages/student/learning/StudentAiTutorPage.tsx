@@ -13,15 +13,18 @@ import {
   Theater,
   WandSparkles,
 } from "lucide-react";
-import {
-  useEffect,
-  useRef,
-  useState,
-  type FormEvent,
-  type KeyboardEvent,
-} from "react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { Link } from "react-router-dom";
 import { Alert, AlertDescription } from "../../../components/shadcn/ui/alert";
 import { Badge } from "../../../components/shadcn/ui/badge";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "../../../components/shadcn/ui/breadcrumb";
 import { Button } from "../../../components/shadcn/ui/button";
 import {
   Card,
@@ -166,6 +169,8 @@ function sortMessages(messages: AiTutorMessage[]) {
 
 export function StudentAiTutorPage() {
   const mountedRef = useRef(false);
+  const chatRegionRef = useRef<HTMLDivElement | null>(null);
+  const composerRef = useRef<HTMLTextAreaElement | null>(null);
   const listRequestIdRef = useRef(0);
   const detailRequestIdRef = useRef(0);
   const sendRequestIdRef = useRef(0);
@@ -195,6 +200,14 @@ export function StudentAiTutorPage() {
   const [sending, setSending] = useState(false);
   const [archiveError, setArchiveError] = useState<string | null>(null);
   const [archiving, setArchiving] = useState(false);
+
+  function focusChatComposer() {
+    chatRegionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+    composerRef.current?.focus();
+  }
 
   async function loadConversations() {
     const requestId = listRequestIdRef.current + 1;
@@ -239,6 +252,7 @@ export function StudentAiTutorPage() {
       if (!mountedRef.current || detailRequestIdRef.current !== requestId)
         return;
       setSelectedConversation(response.data);
+      focusChatComposer();
     } catch (error) {
       if (mountedRef.current && detailRequestIdRef.current === requestId)
         setDetailError(
@@ -315,6 +329,7 @@ export function StudentAiTutorPage() {
       setArchiveError(null);
       resetCreateForm();
       await loadConversations();
+      focusChatComposer();
     } catch (error) {
       if (mountedRef.current && createRequestIdRef.current === requestId)
         setCreateError(
@@ -450,7 +465,21 @@ export function StudentAiTutorPage() {
     messageText.trim().length > MAX_MESSAGE_LENGTH;
 
   return (
-    <div className="space-y-6">
+    <div className="flex min-w-0 flex-col gap-6">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/student">Trang chủ</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>AI Tutor</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       <Card className="relative overflow-hidden border-indigo-100 py-0 shadow-sm">
         <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-violet-300/30 blur-3xl" />
         <div className="absolute bottom-0 left-1/3 h-44 w-44 rounded-full bg-amber-200/40 blur-3xl" />
@@ -490,8 +519,8 @@ export function StudentAiTutorPage() {
         </div>
       </Card>
 
-      <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-        <Card className="border-slate-200 py-0 shadow-sm">
+      <div className="grid gap-6 xl:h-[calc(100dvh_-_18rem)] xl:min-h-[620px] xl:grid-cols-[360px_minmax(0,1fr)]">
+        <Card className="flex flex-col overflow-hidden border-slate-200 py-0 shadow-sm xl:h-full xl:min-h-0">
           <CardHeader className="border-b bg-white/80 px-5 py-4">
             <CardTitle className="flex items-center gap-2 text-base text-slate-900">
               <Clock3 className="size-4 text-indigo-600" />3 cuộc hội thoại gần
@@ -501,8 +530,8 @@ export function StudentAiTutorPage() {
               Chỉ hiển thị tối đa 3 hội thoại đang hoạt động.
             </CardDescription>
           </CardHeader>
-          <CardContent className="px-0 py-0">
-            <div className="max-h-[520px] overflow-y-auto p-3">
+          <CardContent className="min-h-0 flex-1 px-0 py-0">
+            <div className="max-h-[520px] overflow-y-auto p-3 xl:max-h-none xl:h-full">
               {listLoading ? (
                 <div className="space-y-3">
                   <Skeleton className="h-28 w-full" />
@@ -544,7 +573,7 @@ export function StudentAiTutorPage() {
                         onClick={() => handleSelectConversation(conversation)}
                         className={`w-full rounded-2xl border p-4 text-left transition disabled:cursor-not-allowed disabled:opacity-60 ${
                           selected
-                            ? "border-indigo-300 bg-indigo-50 shadow-sm shadow-indigo-100"
+                            ? "border-indigo-200 bg-indigo-50 shadow-sm shadow-indigo-100"
                             : "border-slate-200 bg-white hover:border-indigo-200 hover:bg-indigo-50/40"
                         }`}
                       >
@@ -589,9 +618,12 @@ export function StudentAiTutorPage() {
           </CardContent>
         </Card>
 
-        <Card className="min-h-[680px] overflow-hidden border-indigo-100 py-0 shadow-sm">
+        <Card
+          ref={chatRegionRef}
+          className="flex max-h-none min-h-[720px] h-[calc(100vh-7rem)] flex-col overflow-hidden border-indigo-100 py-0 shadow-sm"
+        >
           {!selectedConversation ? (
-            <div className="flex min-h-[680px] items-center justify-center bg-gradient-to-br from-white via-indigo-50/40 to-amber-50/50 p-6">
+            <div className="flex min-h-0 flex-1 items-center justify-center bg-gradient-to-br from-white via-indigo-50/40 to-amber-50/50 p-6">
               <div className="max-w-md text-center">
                 <div className="mx-auto mb-5 flex size-16 items-center justify-center rounded-3xl bg-indigo-600 text-white shadow-xl shadow-indigo-200">
                   <WandSparkles className="size-8" />
@@ -613,9 +645,9 @@ export function StudentAiTutorPage() {
               </div>
             </div>
           ) : (
-            <div className="flex min-h-[680px] flex-col bg-slate-50/80">
-              <div className="border-b bg-white p-5">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex min-h-0 flex-1 flex-col bg-slate-50/80">
+              <div className="border-b bg-white px-4 py-3">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <PracticeBadge type={selectedConversation.practiceType} />
@@ -629,15 +661,9 @@ export function StudentAiTutorPage() {
                         </Badge>
                       ) : null}
                     </div>
-                    <h2 className="text-xl font-semibold text-slate-950">
+                    <h2 className="truncate text-base font-semibold text-slate-950">
                       {selectedConversation.title}
                     </h2>
-                    <p className="text-sm text-slate-500">
-                      Hoạt động gần nhất:{" "}
-                      {formatStudentLearningDate(
-                        selectedConversation.lastMessageAt,
-                      )}
-                    </p>
                   </div>
                   <Button
                     variant="outline"
@@ -660,7 +686,10 @@ export function StudentAiTutorPage() {
                 ) : null}
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+              <div
+                data-testid="ai-tutor-message-scroller"
+                className="max-h-full min-h-0 flex-1 overflow-y-auto p-4 sm:p-6"
+              >
                 {detailLoading ? (
                   <div className="space-y-4">
                     <Skeleton className="h-20 w-3/4" />
@@ -778,7 +807,7 @@ export function StudentAiTutorPage() {
 
               <form
                 onSubmit={handleSendMessage}
-                className="border-t bg-white p-4"
+                className="border-t bg-white px-4 py-3"
               >
                 {messageError ? (
                   <Alert
@@ -790,25 +819,26 @@ export function StudentAiTutorPage() {
                   </Alert>
                 ) : null}
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-slate-700">
+                  <span className="sr-only">
                     Tin nhắn gửi AI Tutor
                   </span>
                   <Textarea
+                    ref={composerRef}
                     value={messageText}
                     maxLength={MAX_MESSAGE_LENGTH}
                     disabled={composerDisabled}
                     onChange={(event) => setMessageText(event.target.value)}
                     onKeyDown={handleComposerKeyDown}
                     placeholder="Ví dụ: I want order pizza."
-                    className="min-h-24 resize-none border-indigo-100 bg-indigo-50/30 focus:border-indigo-500 focus:ring-indigo-500"
+                    aria-label="Tin nhắn gửi AI Tutor"
+                    className="min-h-11 resize-none border-indigo-100 bg-indigo-50/30 focus:border-indigo-500 focus:ring-indigo-500"
                   />
                 </label>
-                <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <p
                     className={`text-xs ${messageLength > MAX_MESSAGE_LENGTH ? "text-red-600" : "text-slate-500"}`}
                   >
-                    {messageLength}/{MAX_MESSAGE_LENGTH} ký tự. Nhấn Enter để
-                    gửi, Shift+Enter để xuống dòng.
+                    {messageLength}/{MAX_MESSAGE_LENGTH} ký tự
                   </p>
                   <Button
                     type="submit"
@@ -882,7 +912,7 @@ export function StudentAiTutorPage() {
                         key={option.type}
                         className={`cursor-pointer rounded-2xl border p-4 transition ${
                           selected
-                            ? "border-indigo-300 bg-indigo-50 shadow-sm shadow-indigo-100"
+                            ? "border-indigo-200 bg-indigo-50 shadow-sm shadow-indigo-100"
                             : "border-slate-200 bg-white hover:border-indigo-200"
                         } ${creating ? "cursor-not-allowed opacity-60" : ""}`}
                       >

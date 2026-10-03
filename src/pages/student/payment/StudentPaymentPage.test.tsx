@@ -90,7 +90,7 @@ describe('StudentPaymentPage', () => {
     expect(screen.getByText('CONG TY LEARNE')).toBeInTheDocument()
     expect(screen.getByText('0010000000355')).toBeInTheDocument()
     expect(screen.getByText('LEPAYMENT42')).toBeInTheDocument()
-    expect(screen.getByText('250.000 ₫')).toBeInTheDocument()
+    expect(screen.getAllByText('250.000 ₫').length).toBeGreaterThan(0)
   })
 
   it('polls a pending order and shows paid success when status changes', async () => {
@@ -148,5 +148,52 @@ describe('StudentPaymentPage', () => {
 
     expect(await screen.findByText('Đơn thanh toán không còn hiệu lực')).toBeInTheDocument()
     expect(mockedGetStudentOrder).toHaveBeenCalledTimes(2)
+  })
+
+  it('shows the order amount breakdown with discount', async () => {
+    mockedGetStudentOrder.mockResolvedValue(
+      apiOrder(makeOrder({ originalAmountVnd: 500000, discountAmountVnd: 100000, finalAmountVnd: 400000 })),
+    )
+
+    renderPaymentPage()
+
+    expect(await screen.findByText(/giá gốc/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/giảm giá/i).length).toBeGreaterThan(0)
+    expect(screen.getByText(/cần chuyển khoản/i)).toBeInTheDocument()
+  })
+
+  it("navigates plan orders to the subscription page on 'Tiếp tục'", async () => {
+    const planOrder = makeOrder({
+      status: 'PAID',
+      paidAt: new Date().toISOString(),
+      paymentInstructions: null,
+      items: [
+        {
+          id: 8,
+          productType: 'PLAN',
+          courseId: null,
+          planCode: 'PRO',
+          itemNameSnapshot: 'Gói Pro tháng',
+          unitAmountVnd: 400000,
+          quantity: 1,
+          totalAmountVnd: 400000,
+        },
+      ],
+    })
+    mockedGetStudentOrder.mockResolvedValue(apiOrder(planOrder))
+
+    render(
+      <MemoryRouter initialEntries={['/student/payment/orders/42']}>
+        <Routes>
+          <Route path="/student/payment/orders/:orderId" element={<StudentPaymentPage />} />
+          <Route path="/student/subscription" element={<p>Subscription page</p>} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText('Thanh toán thành công')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Tiếp tục' }))
+
+    expect(await screen.findByText('Subscription page')).toBeInTheDocument()
   })
 })
