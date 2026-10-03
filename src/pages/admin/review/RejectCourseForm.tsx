@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import { Button } from '../../../components/ui/Button'
+import { Button } from '@/components/shadcn/ui/button'
+import { Field, FieldError, FieldLabel } from '@/components/shadcn/ui/field'
+import { Textarea } from '@/components/shadcn/ui/textarea'
 
 export interface RejectCourseFormProps {
   loading?: boolean
@@ -31,27 +33,26 @@ export function RejectCourseForm({ loading = false, disabled = false, onSubmit }
   }
 
   return (
-    <form className="space-y-3" onSubmit={handleSubmit}>
-      <label className="block text-sm font-medium text-gray-700">
-        Lý do từ chối
-        <textarea
-          className="mt-1 min-h-28 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+    <form onSubmit={handleSubmit}>
+      <Field data-invalid={validation ? true : undefined} data-disabled={disabled || loading ? true : undefined}>
+        <FieldLabel htmlFor="reject-course-reason">Lý do từ chối</FieldLabel>
+        <Textarea
+          id="reject-course-reason"
           value={reason}
           maxLength={2000}
           aria-invalid={validation ? true : undefined}
           aria-describedby={validation ? validationId : undefined}
+          disabled={disabled || loading}
           onChange={(event) => setReason(event.target.value)}
           placeholder="Nhập nội dung cần giảng viên chỉnh sửa trước khi gửi duyệt lại."
         />
-      </label>
-      {validation ? (
-        <div id={validationId} role="alert" className="text-sm text-red-600">
-          {validation}
-        </div>
-      ) : null}
-      <Button type="submit" variant="danger" loading={loading} disabled={disabled}>
-        Từ chối khóa học
-      </Button>
+        {validation ? <FieldError id={validationId}>{validation}</FieldError> : null}
+      </Field>
+      <div className="mt-3">
+        <Button type="submit" variant="destructive" loading={loading} disabled={disabled}>
+          Từ chối khóa học
+        </Button>
+      </div>
     </form>
   )
 }
