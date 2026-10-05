@@ -74,14 +74,16 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
                 getPlanSales(targetMonth),
               ])
               if (cancelled) return null
-              const courseTotal = (courseResponse.data ?? []).reduce((sum, row) => sum + row.netRevenueVnd, 0)
-              const planTotal = (planResponse.data ?? []).reduce((sum, row) => sum + row.netRevenueVnd, 0)
+              const courseRowsForMonth = courseResponse.data.rows ?? []
+              const planRowsForMonth = planResponse.data.rows ?? []
+              const courseTotal = courseRowsForMonth.reduce((sum, row) => sum + row.netRevenueVnd, 0)
+              const planTotal = planRowsForMonth.reduce((sum, row) => sum + row.netRevenueVnd, 0)
               return {
                 month: targetMonth,
                 label: formatMonthLabel(targetMonth),
                 total: courseTotal + planTotal,
-                courseRows: courseResponse.data ?? [],
-                planRows: planResponse.data ?? [],
+                courseRows: courseRowsForMonth,
+                planRows: planRowsForMonth,
               }
             }),
           ),

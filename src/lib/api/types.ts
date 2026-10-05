@@ -982,6 +982,16 @@ export interface RevenueTeacherShareRow {
   suggestedTotalShareVnd: number
 }
 
+export interface RevenueCourseSalesResponse {
+  month: string
+  rows: RevenueCourseSalesRow[]
+}
+
+export interface RevenuePlanSalesResponse {
+  month: string
+  rows: RevenuePlanSalesRow[]
+}
+
 export interface TeacherShareResponse {
   month: string
   planRevenuePoolVnd: number

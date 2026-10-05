@@ -62,18 +62,21 @@ function makeTeacherRow(overrides: Partial<RevenueTeacherShareRow> = {}): Revenu
 function setupMocks(currentMonth = '2026-03') {
   mockedCourseSales.mockImplementation(async (month: string) => {
     if (month === currentMonth) {
-      return apiResponse([
-        makeCourseRow({ netRevenueVnd: 1_000_000, courseName: 'Khóa học A' }),
-        makeCourseRow({ courseId: 2, courseName: 'Khóa học B', netRevenueVnd: 2_000_000 }),
-      ]) as never
+      return apiResponse({
+        month,
+        rows: [
+          makeCourseRow({ netRevenueVnd: 1_000_000, courseName: 'Khóa học A' }),
+          makeCourseRow({ courseId: 2, courseName: 'Khóa học B', netRevenueVnd: 2_000_000 }),
+        ],
+      }) as never
     }
-    return apiResponse([makeCourseRow({ netRevenueVnd: 500_000, courseName: `Khóa ${month}` })]) as never
+    return apiResponse({ month, rows: [makeCourseRow({ netRevenueVnd: 500_000, courseName: `Khóa ${month}` })] }) as never
   })
   mockedPlanSales.mockImplementation(async (month: string) => {
     if (month === currentMonth) {
-      return apiResponse([makePlanRow({ netRevenueVnd: 500_000 })]) as never
+      return apiResponse({ month, rows: [makePlanRow({ netRevenueVnd: 500_000 })] }) as never
     }
-    return apiResponse([makePlanRow({ netRevenueVnd: 100_000, planCode: 'PRO' })]) as never
+    return apiResponse({ month, rows: [makePlanRow({ netRevenueVnd: 100_000, planCode: 'PRO' })] }) as never
   })
   mockedTeacherShare.mockImplementation(async (month: string) => {
     return {
@@ -206,8 +209,8 @@ describe('AdminRevenueSection', () => {
   })
 
   it('shows empty states when there is no revenue data', async () => {
-    mockedCourseSales.mockResolvedValue(apiResponse([]) as never)
-    mockedPlanSales.mockResolvedValue({ data: [] } as never)
+    mockedCourseSales.mockResolvedValue(apiResponse({ month: '2026-03', rows: [] }) as never)
+    mockedPlanSales.mockResolvedValue({ data: { month: '2026-03', rows: [] } } as never)
     mockedTeacherShare.mockResolvedValue({
       data: { month: '2026-03', planRevenuePoolVnd: 0, totalActivityScore: 0, rows: [] },
     } as never)
@@ -221,7 +224,7 @@ describe('AdminRevenueSection', () => {
 
   it('shows an alert when revenue fetch fails', async () => {
     mockedCourseSales.mockRejectedValue(new Error('boom'))
-    mockedPlanSales.mockResolvedValue({ data: [] } as never)
+    mockedPlanSales.mockResolvedValue({ data: { month: '2026-03', rows: [] } } as never)
     mockedTeacherShare.mockResolvedValue({
       data: { month: '2026-03', planRevenuePoolVnd: 0, totalActivityScore: 0, rows: [] },
     } as never)
