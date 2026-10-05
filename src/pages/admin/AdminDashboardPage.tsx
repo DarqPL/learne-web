@@ -194,6 +194,8 @@ export function AdminDashboardPage() {
         </section>
       )}
 
+      <AdminRevenueSection />
+
       <section className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
         <Card>
           <CardHeader>
@@ -257,8 +259,6 @@ export function AdminDashboardPage() {
           </CardContent>
         </Card>
       </section>
-
-      <AdminRevenueSection />
     </div>
   )
 }
