@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { BookOpen, ChevronLeft, ChevronRight, Info, Pencil, Plus, Search, Send, Trash2, TriangleAlert } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
@@ -45,14 +45,27 @@ export function TeacherContentPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL')
   const [deleteTarget, setDeleteTarget] = useState<TeacherCourse | null>(null)
   const [page, setPage] = useState(0)
+  const [cursorStack, setCursorStack] = useState<(string | undefined)[]>([undefined])
+  const [nextCursor, setNextCursor] = useState<string | null>(null)
+  const [hasNext, setHasNext] = useState(false)
+  const requestVersion = useRef(0)
 
   useEffect(() => {
+    const version = ++requestVersion.current
     let cancelled = false
     void (async () => {
       try {
-        const response = await listTeacherCourses()
-        if (!cancelled) {
-          setCourses(response.data)
+        const response = await listTeacherCourses({
+          ...(statusFilter !== 'ALL' ? { status: statusFilter } : {}),
+          ...(searchQuery.trim() ? { q: searchQuery.trim() } : {}),
+          size: PAGE_SIZE,
+        })
+        if (!cancelled && version === requestVersion.current) {
+          setCourses(response.data.content)
+          setNextCursor(response.data.nextCursor)
+          setHasNext(response.data.hasNext)
+          setPage(0)
+          setCursorStack([undefined])
         }
       } catch (err) {
         if (!cancelled) {
@@ -64,11 +77,19 @@ export function TeacherContentPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [searchQuery, statusFilter])
 
   const refreshCourses = async () => {
-    const response = await listTeacherCourses()
-    setCourses(response.data)
+    const response = await listTeacherCourses({
+      ...(statusFilter !== 'ALL' ? { status: statusFilter } : {}),
+      ...(searchQuery.trim() ? { q: searchQuery.trim() } : {}),
+      size: PAGE_SIZE,
+    })
+    setCourses(response.data.content)
+    setNextCursor(response.data.nextCursor)
+    setHasNext(response.data.hasNext)
+    setPage(0)
+    setCursorStack([undefined])
   }
 
   const handleCreateCourse = async (payload: TeacherCourseRequest) => {
@@ -134,23 +155,24 @@ export function TeacherContentPage() {
     }
   }
 
-  const filteredCourses = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase()
-    return (courses ?? []).filter((course) => {
-      const matchesQuery = query.length === 0 || course.name.toLowerCase().includes(query)
-      const matchesStatus = statusFilter === 'ALL' || course.status === statusFilter
-      return matchesQuery && matchesStatus
+  const filteredCourses = courses ?? []
+  const pagedCourses = filteredCourses
+
+  async function loadTeacherPage(cursor: string | undefined, targetPage: number) {
+    const version = requestVersion.current
+    const response = await listTeacherCourses({
+      ...(statusFilter !== 'ALL' ? { status: statusFilter } : {}),
+      ...(searchQuery.trim() ? { q: searchQuery.trim() } : {}),
+      size: PAGE_SIZE,
+      ...(cursor ? { cursor } : {}),
     })
-  }, [courses, searchQuery, statusFilter])
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setPage(0)
-  }, [searchQuery, statusFilter])
-
-  const pageCount = Math.max(1, Math.ceil(filteredCourses.length / PAGE_SIZE))
-  const safePage = Math.min(page, pageCount - 1)
-  const pagedCourses = filteredCourses.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE)
+    if (version === requestVersion.current) {
+      setCourses(response.data.content)
+      setNextCursor(response.data.nextCursor)
+      setHasNext(response.data.hasNext)
+      setPage(targetPage)
+    }
+  }
 
   const hasActiveFilter = searchQuery.trim().length > 0 || statusFilter !== 'ALL'
 
@@ -435,46 +457,32 @@ export function TeacherContentPage() {
           {filteredCourses.length > 0 ? (
             <nav aria-label="Phân trang khóa học" className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p aria-live="polite" className="text-sm text-muted-foreground">
-                Trang {safePage + 1} / {pageCount} · {filteredCourses.length} khóa học
+                Trang {page + 1} · {filteredCourses.length} khóa học
               </p>
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   aria-label="Trang trước"
-                  disabled={safePage === 0}
-                  onClick={() => setPage(safePage - 1)}
+                  disabled={page === 0}
+                  onClick={() => void loadTeacherPage(cursorStack[page - 1], page - 1)}
                 >
                   <ChevronLeft aria-hidden="true" />
                   Trước
                 </Button>
-                {pageCount <= 7 ? (
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: pageCount }, (_, i) => (
-                      <Button
-                        key={i}
-                        variant={safePage === i ? 'default' : 'outline'}
-                        size="icon"
-                        className="size-8"
-                        aria-label={`Trang ${i + 1}`}
-                        aria-current={safePage === i ? 'page' : undefined}
-                        onClick={() => setPage(i)}
-                      >
-                        {i + 1}
-                      </Button>
-                    ))}
-                  </div>
-                ) : (
-                  <span className="text-sm text-muted-foreground" aria-live="polite">
-                    {safePage + 1} / {pageCount}
-                  </span>
-                )}
+                <span className="text-sm text-muted-foreground" aria-live="polite">
+                  {page + 1}
+                </span>
                 <Button
                   variant="outline"
                   size="sm"
                   aria-label="Trang tiếp"
-                  disabled={safePage >= pageCount - 1}
-                  onClick={() => setPage(safePage + 1)}
+                  disabled={!hasNext || !nextCursor}
+                  onClick={() => {
+                    if (!nextCursor) return
+                    setCursorStack((current) => [...current.slice(0, page + 1), nextCursor])
+                    void loadTeacherPage(nextCursor, page + 1)
+                  }}
                 >
                   Tiếp
                   <ChevronRight aria-hidden="true" />

@@ -16,7 +16,7 @@ const mockedLock = vi.mocked(adminLockTeacher)
 const mockedUnlock = vi.mocked(adminUnlockTeacher)
 
 function apiResponse(data: AdminTeacher[]): Awaited<ReturnType<typeof adminListTeachers>> {
-  return { data } as Awaited<ReturnType<typeof adminListTeachers>>
+  return { data: { content: data, page: 0, size: data.length, totalElements: data.length, totalPages: 1 } } as Awaited<ReturnType<typeof adminListTeachers>>
 }
 
 function makeTeacher(overrides: Partial<AdminTeacher> = {}): AdminTeacher {
@@ -120,13 +120,12 @@ describe('AdminTeacherListPage shadcn sync', () => {
 
     await screen.findByRole('table')
 
-    expect(tableRows()).toHaveLength(6)
+    expect(tableRows()).toHaveLength(8)
     expect(screen.getByText('Giang Vien 1')).toBeInTheDocument()
-    expect(screen.queryByText('Giang Vien 7')).not.toBeInTheDocument()
-    expect(screen.queryByText('Giang Vien 8')).not.toBeInTheDocument()
+    expect(screen.getByText('Giang Vien 7')).toBeInTheDocument()
+    expect(screen.getByText('Giang Vien 8')).toBeInTheDocument()
 
-    expect(screen.getByRole('link', { name: 'Trang trước' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Trang sau' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Trang trước' })).not.toBeInTheDocument()
     expect(screen.queryByText('Previous')).not.toBeInTheDocument()
     expect(screen.queryByText('Next')).not.toBeInTheDocument()
   })
@@ -137,12 +136,7 @@ describe('AdminTeacherListPage shadcn sync', () => {
     renderPage()
 
     await screen.findByRole('table')
-    fireEvent.click(screen.getByRole('link', { name: '2' }))
-
-    expect(tableRows()).toHaveLength(2)
-    expect(screen.getByText('Giang Vien 7')).toBeInTheDocument()
-    expect(screen.getByText('Giang Vien 8')).toBeInTheDocument()
-    expect(screen.queryByText('Giang Vien 1')).not.toBeInTheDocument()
+    expect(tableRows()).toHaveLength(8)
   })
 
   it('renders status badges for account and profile states', async () => {

@@ -18,6 +18,21 @@ export interface ApiMessageResponse {
   message: string
 }
 
+export interface CursorPage<T> {
+  content: T[]
+  nextCursor: string | null
+  hasNext: boolean
+  size: number
+}
+
+export interface NumberedPage<T> {
+  content: T[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
+
 export type OrderStatus = 'PENDING_PAYMENT' | 'PAID' | 'EXPIRED' | 'CANCELLED' | 'REFUNDED'
 
 export type OrderType = 'COURSE_PURCHASE' | 'PLAN_SUBSCRIPTION'

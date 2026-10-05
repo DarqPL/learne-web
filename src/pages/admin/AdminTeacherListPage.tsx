@@ -73,11 +73,14 @@ export function AdminTeacherListPage() {
   const [lockTarget, setLockTarget] = useState<AdminTeacher | null>(null)
   const [dialogError, setDialogError] = useState<string | null>(null)
   const [processing, setProcessing] = useState(false)
+  const [totalPages, setTotalPages] = useState(1)
 
-  const loadTeachers = useCallback(async () => {
+  const loadTeachers = useCallback(async (targetPage = page) => {
     try {
-      const response = await adminListTeachers()
-      setTeachers(response.data)
+      const response = await adminListTeachers({ page: Math.max(0, targetPage - 1), size: PAGE_SIZE })
+      setTeachers(response.data.content)
+      setPage(response.data.page + 1)
+      setTotalPages(Math.max(1, response.data.totalPages))
       setError(null)
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể tải danh sách giảng viên.'))
@@ -88,9 +91,11 @@ export function AdminTeacherListPage() {
     let cancelled = false
     void (async () => {
       try {
-        const response = await adminListTeachers()
+        const response = await adminListTeachers({ page: 0, size: PAGE_SIZE })
         if (!cancelled) {
-          setTeachers(response.data)
+          setTeachers(response.data.content)
+          setPage(response.data.page + 1)
+          setTotalPages(Math.max(1, response.data.totalPages))
           setError(null)
         }
       } catch (err) {
@@ -102,9 +107,8 @@ export function AdminTeacherListPage() {
     }
   }, [])
 
-  const totalPages = teachers ? Math.max(1, Math.ceil(teachers.length / PAGE_SIZE)) : 1
   const safePage = Math.min(Math.max(1, page), totalPages)
-  const pagedTeachers = teachers?.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+  const pagedTeachers = teachers
 
   const handleOpenLock = useCallback((teacher: AdminTeacher) => {
     setDialogError(null)
@@ -263,7 +267,7 @@ export function AdminTeacherListPage() {
                     aria-label="Trang trước"
                     onClick={(event) => {
                       event.preventDefault()
-                      setPage((prev) => Math.max(1, Math.min(prev, totalPages) - 1))
+                      void loadTeachers(Math.max(1, safePage - 1))
                     }}
                     aria-disabled={safePage === 1}
                   >
@@ -278,7 +282,7 @@ export function AdminTeacherListPage() {
                       isActive={pageNumber === safePage}
                       onClick={(event) => {
                         event.preventDefault()
-                        setPage(pageNumber)
+                        void loadTeachers(pageNumber)
                       }}
                     >
                       {pageNumber}
@@ -293,7 +297,7 @@ export function AdminTeacherListPage() {
                     aria-label="Trang sau"
                     onClick={(event) => {
                       event.preventDefault()
-                      setPage((prev) => Math.min(totalPages, Math.max(1, prev) + 1))
+                      void loadTeachers(Math.min(totalPages, safePage + 1))
                     }}
                     aria-disabled={safePage === totalPages}
                   >

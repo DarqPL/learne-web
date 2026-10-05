@@ -19,7 +19,7 @@ const mockedUpdateAdminCoupon = vi.mocked(updateAdminCoupon)
 const mockedDisableAdminCoupon = vi.mocked(disableAdminCoupon)
 
 function couponsApiResponse(data: AdminCoupon[]): Awaited<ReturnType<typeof listAdminCoupons>> {
-  return { data } as Awaited<ReturnType<typeof listAdminCoupons>>
+  return { data: { content: data, page: 0, size: data.length, totalElements: data.length, totalPages: 1 } } as Awaited<ReturnType<typeof listAdminCoupons>>
 }
 
 function makeCoupon(overrides: Partial<AdminCoupon> = {}): AdminCoupon {
@@ -103,41 +103,33 @@ describe('AdminCouponPage list', () => {
     expect(screen.queryByText('Trang sau')).not.toBeInTheDocument()
   })
 
-  it('renders six rows per page with Vietnamese pagination labels', async () => {
+  it('renders backend page content with Vietnamese pagination labels', async () => {
     mockedListAdminCoupons.mockResolvedValue(couponsApiResponse(eightCoupons))
 
     render(<AdminCouponPage />)
 
     await screen.findByRole('table')
 
-    expect(tableRows()).toHaveLength(6)
+    expect(tableRows()).toHaveLength(8)
     expect(screen.getByText('CHAO20')).toBeInTheDocument()
-    expect(screen.queryByText('CHAO10')).not.toBeInTheDocument()
-    expect(screen.queryByText('CHAOCU')).not.toBeInTheDocument()
+    expect(screen.getByText('CHAO10')).toBeInTheDocument()
+    expect(screen.getByText('CHAOCU')).toBeInTheDocument()
 
-    const prevLink = screen.getByRole('link', { name: 'Trang trước' })
-    const nextLink = screen.getByRole('link', { name: 'Trang sau' })
-    expect(prevLink).toHaveAttribute('aria-disabled', 'true')
-    expect(prevLink).toHaveClass('aria-disabled:opacity-50')
-    expect(nextLink).toHaveAttribute('aria-disabled', 'false')
+    expect(screen.queryByRole('link', { name: 'Trang trước' })).not.toBeInTheDocument()
     expect(screen.queryByText('Previous')).not.toBeInTheDocument()
     expect(screen.queryByText('Next')).not.toBeInTheDocument()
   })
 
-  it('moves to the second page showing the remaining rows', async () => {
+  it('does not slice backend page content locally', async () => {
     mockedListAdminCoupons.mockResolvedValue(couponsApiResponse(eightCoupons))
 
     render(<AdminCouponPage />)
 
     await screen.findByRole('table')
-    fireEvent.click(screen.getByRole('link', { name: '2' }))
-
-    expect(tableRows()).toHaveLength(2)
+    expect(tableRows()).toHaveLength(8)
     expect(screen.getByText('CHAO10')).toBeInTheDocument()
     expect(screen.getByText('CHAOCU')).toBeInTheDocument()
-    expect(screen.queryByText('CHAO20')).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Trang trước' })).toHaveAttribute('aria-disabled', 'false')
-    expect(screen.getByRole('link', { name: 'Trang sau' })).toHaveAttribute('aria-disabled', 'true')
+    expect(screen.getByText('CHAO20')).toBeInTheDocument()
   })
 
   it('hides pagination when every coupon fits on a single page', async () => {
