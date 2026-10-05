@@ -125,8 +125,8 @@ describe('AdminRevenueSection', () => {
 
     render(<AdminRevenueSection initialMonth="2026-03" />)
 
-    // 1_000_000 + 2_000_000 + 500_000 = 3_500_000
-    expect(await screen.findByText(/3\.500\.000/)).toBeInTheDocument()
+    // 1_000_000 + 2_000_000 + 500_000 = 3_500_000 (total card + trend fallback table)
+    expect((await screen.findAllByText(/3\.500\.000/)).length).toBeGreaterThanOrEqual(1)
   })
 
   it('fetches 6 months for the trend and renders 6 month labels', async () => {
@@ -134,7 +134,7 @@ describe('AdminRevenueSection', () => {
 
     render(<AdminRevenueSection initialMonth="2026-03" />)
 
-    await screen.findByText(/3\.500\.000/)
+    await screen.findAllByText(/3\.500\.000/)
 
     await waitFor(() => {
       expect(mockedCourseSales.mock.calls.length).toBeGreaterThanOrEqual(6)
@@ -149,8 +149,19 @@ describe('AdminRevenueSection', () => {
     const trendCard = screen.getByText('Xu hướng 6 tháng').closest('[data-slot="card"]')
     expect(trendCard).not.toBeNull()
     const withinTrend = within(trendCard as HTMLElement)
-    expect(withinTrend.getByText('10/2025')).toBeInTheDocument()
-    expect(withinTrend.getByText('03/2026')).toBeInTheDocument()
+    expect(withinTrend.getAllByText('10/2025').length).toBeGreaterThanOrEqual(1)
+    expect(withinTrend.getAllByText('03/2026').length).toBeGreaterThanOrEqual(1)
+
+    // a11y fallback table lists the same 6 months + net totals
+    const trendTable = withinTrend.getByRole('table')
+    const withinTable = within(trendTable)
+    expect(withinTable.getByText('10/2025')).toBeInTheDocument()
+    expect(withinTable.getByText('03/2026')).toBeInTheDocument()
+    expect(withinTable.getAllByRole('row')).toHaveLength(7)
+    // prior months: 500k course + 100k plan = 600k net
+    expect(withinTable.getAllByText(/600\.000/).length).toBeGreaterThanOrEqual(1)
+    // current month: 1M + 2M + 500k = 3.5M net
+    expect(withinTable.getByText(/3\.500\.000/)).toBeInTheDocument()
   })
 
   it('renders course, plan and teacher-share tables with Vietnamese headers', async () => {
@@ -181,7 +192,7 @@ describe('AdminRevenueSection', () => {
 
     render(<AdminRevenueSection initialMonth="2026-03" />)
 
-    await screen.findByText(/3\.500\.000/)
+    await screen.findAllByText(/3\.500\.000/)
     expect(mockedCourseSales).toHaveBeenCalledWith('2026-03')
 
     const monthInput = screen.getByLabelText('Tháng') as HTMLInputElement

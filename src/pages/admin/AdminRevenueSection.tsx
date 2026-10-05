@@ -66,25 +66,27 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
 
     void (async () => {
       try {
-        const trendResults = await Promise.all(
-          months.map(async (targetMonth) => {
-            const [courseResponse, planResponse] = await Promise.all([
-              getCourseSales(targetMonth),
-              getPlanSales(targetMonth),
-            ])
-            if (cancelled) return null
-            const courseTotal = (courseResponse.data ?? []).reduce((sum, row) => sum + row.netRevenueVnd, 0)
-            const planTotal = (planResponse.data ?? []).reduce((sum, row) => sum + row.netRevenueVnd, 0)
-            return {
-              month: targetMonth,
-              label: formatMonthLabel(targetMonth),
-              total: courseTotal + planTotal,
-              courseRows: courseResponse.data ?? [],
-              planRows: planResponse.data ?? [],
-            }
-          }),
-        )
-        const teacherResponse = await getTeacherShare(month)
+        const [trendResults, teacherResponse] = await Promise.all([
+          Promise.all(
+            months.map(async (targetMonth) => {
+              const [courseResponse, planResponse] = await Promise.all([
+                getCourseSales(targetMonth),
+                getPlanSales(targetMonth),
+              ])
+              if (cancelled) return null
+              const courseTotal = (courseResponse.data ?? []).reduce((sum, row) => sum + row.netRevenueVnd, 0)
+              const planTotal = (planResponse.data ?? []).reduce((sum, row) => sum + row.netRevenueVnd, 0)
+              return {
+                month: targetMonth,
+                label: formatMonthLabel(targetMonth),
+                total: courseTotal + planTotal,
+                courseRows: courseResponse.data ?? [],
+                planRows: planResponse.data ?? [],
+              }
+            }),
+          ),
+          getTeacherShare(month),
+        ])
         if (cancelled) return
         const validResults = trendResults.filter((item) => item !== null)
         setTrend(validResults.map(({ month: pointMonth, label, total }) => ({ month: pointMonth, label, total })))
@@ -176,27 +178,47 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
                   Chưa có dữ liệu xu hướng doanh thu.
                 </p>
               ) : (
-                <div className="h-64 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={trend} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
-                      <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
-                      <XAxis dataKey="label" tick={{ fontSize: 12 }} interval={0} />
-                      <YAxis tickFormatter={(value: number) => formatCompactVnd(value)} tick={{ fontSize: 12 }} width={80} />
-                      <Tooltip
-                        formatter={(value) => formatVnd(Number(value))}
-                        labelFormatter={(label) => `Tháng ${String(label)}`}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="total"
-                        name="Doanh thu"
-                        stroke="#4f46e5"
-                        strokeWidth={2}
-                        dot={{ r: 3 }}
-                        activeDot={{ r: 5 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                <div className="flex flex-col gap-3">
+                  <div className="h-64 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={trend} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
+                        <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
+                        <XAxis dataKey="label" tick={{ fontSize: 12 }} interval={0} />
+                        <YAxis tickFormatter={(value: number) => formatCompactVnd(value)} tick={{ fontSize: 12 }} width={80} />
+                        <Tooltip
+                          formatter={(value) => formatVnd(Number(value))}
+                          labelFormatter={(label) => `Tháng ${String(label)}`}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="total"
+                          name="Doanh thu"
+                          stroke="#4f46e5"
+                          strokeWidth={2}
+                          dot={{ r: 3 }}
+                          activeDot={{ r: 5 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="rounded-xl border border-indigo-100 bg-white shadow-sm [&>[data-slot=table-container]]:max-h-[40vh] [&>[data-slot=table-container]]:overflow-y-auto">
+                    <Table className="[&_tr]:border-indigo-100/70">
+                      <TableHeader className="sticky top-0 z-10 [&_th]:bg-indigo-50">
+                        <TableRow>
+                          <TableHead>Tháng</TableHead>
+                          <TableHead className="text-right">Doanh thu net</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {trend.map((point) => (
+                          <TableRow key={point.month}>
+                            <TableCell className="font-medium">{point.label}</TableCell>
+                            <TableCell className="text-right">{formatVnd(point.total)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </div>
               )}
             </CardContent>
