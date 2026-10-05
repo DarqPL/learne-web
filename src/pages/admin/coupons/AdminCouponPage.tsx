@@ -473,13 +473,16 @@ export function AdminCouponPage() {
   const [disableTarget, setDisableTarget] = useState<AdminCoupon | null>(null)
   const [disableError, setDisableError] = useState<string | null>(null)
   const [disabling, setDisabling] = useState(false)
+  const [totalPages, setTotalPages] = useState(1)
 
-  const loadCoupons = useCallback(async () => {
+  const loadCoupons = useCallback(async (targetPage = page) => {
     setCoupons(null)
     setError(null)
     try {
-      const response = await listAdminCoupons()
-      setCoupons(response.data)
+      const response = await listAdminCoupons({ page: Math.max(0, targetPage - 1), size: PAGE_SIZE })
+      setCoupons(response.data.content)
+      setPage(response.data.page + 1)
+      setTotalPages(Math.max(1, response.data.totalPages))
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể tải danh sách mã giảm giá.'))
     }
@@ -491,8 +494,12 @@ export function AdminCouponPage() {
       setCoupons(null)
       setError(null)
       try {
-        const response = await listAdminCoupons()
-        if (!cancelled) setCoupons(response.data)
+        const response = await listAdminCoupons({ page: 0, size: PAGE_SIZE })
+        if (!cancelled) {
+          setCoupons(response.data.content)
+          setPage(response.data.page + 1)
+          setTotalPages(Math.max(1, response.data.totalPages))
+        }
       } catch (err) {
         if (!cancelled) setError(getApiErrorMessage(err, 'Không thể tải danh sách mã giảm giá.'))
       }
@@ -502,9 +509,8 @@ export function AdminCouponPage() {
     }
   }, [])
 
-  const totalPages = coupons ? Math.max(1, Math.ceil(coupons.length / PAGE_SIZE)) : 1
   const safePage = Math.min(Math.max(1, page), totalPages)
-  const pagedCoupons = coupons?.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+  const pagedCoupons = coupons
 
   const handleOpenCreate = useCallback(() => {
     setDialogState({ mode: 'create' })
@@ -655,7 +661,7 @@ export function AdminCouponPage() {
                     aria-label="Trang trước"
                     onClick={(event) => {
                       event.preventDefault()
-                      setPage((prev) => Math.max(1, Math.min(prev, totalPages) - 1))
+                      void loadCoupons(Math.max(1, safePage - 1))
                     }}
                     aria-disabled={safePage === 1}
                   >
@@ -670,7 +676,7 @@ export function AdminCouponPage() {
                       isActive={pageNumber === safePage}
                       onClick={(event) => {
                         event.preventDefault()
-                        setPage(pageNumber)
+                        void loadCoupons(pageNumber)
                       }}
                     >
                       {pageNumber}
@@ -685,7 +691,7 @@ export function AdminCouponPage() {
                     aria-label="Trang sau"
                     onClick={(event) => {
                       event.preventDefault()
-                      setPage((prev) => Math.min(totalPages, Math.max(1, prev) + 1))
+                      void loadCoupons(Math.min(totalPages, safePage + 1))
                     }}
                     aria-disabled={safePage === totalPages}
                   >

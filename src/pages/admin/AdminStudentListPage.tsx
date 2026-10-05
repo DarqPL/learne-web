@@ -61,11 +61,14 @@ export function AdminStudentListPage() {
   const [lockTarget, setLockTarget] = useState<AdminStudentSummary | null>(null)
   const [dialogError, setDialogError] = useState<string | null>(null)
   const [processing, setProcessing] = useState(false)
+  const [totalPages, setTotalPages] = useState(1)
 
-  const loadStudents = useCallback(async () => {
+  const loadStudents = useCallback(async (targetPage = page) => {
     try {
-      const response = await adminListStudents()
-      setStudents(response.data)
+      const response = await adminListStudents({ page: Math.max(0, targetPage - 1), size: PAGE_SIZE })
+      setStudents(response.data.content)
+      setPage(response.data.page + 1)
+      setTotalPages(Math.max(1, response.data.totalPages))
       setError(null)
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể tải danh sách học sinh.'))
@@ -76,9 +79,11 @@ export function AdminStudentListPage() {
     let cancelled = false
     void (async () => {
       try {
-        const response = await adminListStudents()
+        const response = await adminListStudents({ page: 0, size: PAGE_SIZE })
         if (!cancelled) {
-          setStudents(response.data)
+            setStudents(response.data.content)
+            setPage(response.data.page + 1)
+            setTotalPages(Math.max(1, response.data.totalPages))
           setError(null)
         }
       } catch (err) {
@@ -90,9 +95,8 @@ export function AdminStudentListPage() {
     }
   }, [])
 
-  const totalPages = students ? Math.max(1, Math.ceil(students.length / PAGE_SIZE)) : 1
   const safePage = Math.min(Math.max(1, page), totalPages)
-  const pagedStudents = students?.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+  const pagedStudents = students
 
   const handleOpenLock = useCallback((student: AdminStudentSummary) => {
     setDialogError(null)
@@ -231,7 +235,7 @@ export function AdminStudentListPage() {
                     aria-label="Trang trước"
                     onClick={(event) => {
                       event.preventDefault()
-                      setPage((prev) => Math.max(1, Math.min(prev, totalPages) - 1))
+                      void loadStudents(Math.max(1, safePage - 1))
                     }}
                     aria-disabled={safePage === 1}
                   >
@@ -246,7 +250,7 @@ export function AdminStudentListPage() {
                       isActive={pageNumber === safePage}
                       onClick={(event) => {
                         event.preventDefault()
-                        setPage(pageNumber)
+                        void loadStudents(pageNumber)
                       }}
                     >
                       {pageNumber}
@@ -261,7 +265,7 @@ export function AdminStudentListPage() {
                     aria-label="Trang sau"
                     onClick={(event) => {
                       event.preventDefault()
-                      setPage((prev) => Math.min(totalPages, Math.max(1, prev) + 1))
+                      void loadStudents(Math.min(totalPages, safePage + 1))
                     }}
                     aria-disabled={safePage === totalPages}
                   >

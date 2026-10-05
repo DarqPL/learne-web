@@ -14,7 +14,7 @@ const mockedListStudentEnrollments = vi.mocked(listStudentEnrollments)
 function enrollmentsApiResponse(
   data: StudentEnrollment[],
 ): Awaited<ReturnType<typeof listStudentEnrollments>> {
-  return { data } as Awaited<ReturnType<typeof listStudentEnrollments>>
+  return { data: { content: data, nextCursor: null, hasNext: false, size: data.length } } as Awaited<ReturnType<typeof listStudentEnrollments>>
 }
 
 function makeEnrollment(id: number): StudentEnrollment {
@@ -121,13 +121,11 @@ describe('StudentEnrollmentsPage redesign sync with course catalog', () => {
 
     expect(await screen.findByText('Course 1')).toBeInTheDocument()
 
-    expect(screen.getByRole('link', { name: /Trang trước/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Trang sau/i })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Trang trước/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Trang sau/i })).not.toBeInTheDocument()
     expect(screen.queryByText('Previous')).not.toBeInTheDocument()
     expect(screen.queryByText('Next')).not.toBeInTheDocument()
 
-    const prevLink = screen.getByRole('link', { name: 'Trang trước' })
-    expect(prevLink).toHaveAttribute('aria-disabled', 'true')
   })
 })
 
@@ -136,10 +134,10 @@ describe('StudentEnrollmentsPage pagination', () => {
     mockedListStudentEnrollments.mockReset()
   })
 
-  it('renders 6 cards with pagination control and shows remaining courses on page 2', async () => {
-    mockedListStudentEnrollments.mockResolvedValue(
-      enrollmentsApiResponse([1, 2, 3, 4, 5, 6, 7, 8].map((id) => makeEnrollment(id))),
-    )
+  it('renders cursor results and appends the next page', async () => {
+    mockedListStudentEnrollments
+      .mockResolvedValueOnce({ data: { content: [1, 2, 3, 4, 5, 6].map((id) => makeEnrollment(id)), nextCursor: 'next', hasNext: true, size: 6 } } as Awaited<ReturnType<typeof listStudentEnrollments>>)
+      .mockResolvedValueOnce(enrollmentsApiResponse([7, 8].map((id) => makeEnrollment(id))))
 
     renderEnrollmentsPage()
 
@@ -147,17 +145,13 @@ describe('StudentEnrollmentsPage pagination', () => {
     for (const id of [1, 2, 3, 4, 5, 6]) {
       expect(screen.getByText(`Course ${id}`)).toBeInTheDocument()
     }
-    expect(screen.queryByText('Course 7')).not.toBeInTheDocument()
-    expect(screen.queryByText('Course 8')).not.toBeInTheDocument()
-
-    expect(screen.getByRole('navigation', { name: /pagination/i })).toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('link', { name: '2' }))
+    expect(screen.getByRole('button', { name: 'Tải thêm khóa học' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Tải thêm khóa học' }))
 
     await waitFor(() => {
       expect(screen.getByText('Course 7')).toBeInTheDocument()
       expect(screen.getByText('Course 8')).toBeInTheDocument()
-      expect(screen.queryByText('Course 1')).not.toBeInTheDocument()
+      expect(screen.getByText('Course 1')).toBeInTheDocument()
     })
   })
 

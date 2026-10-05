@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ArrowRight, BookOpen, ChevronLeft, ChevronRight, FileQuestion, Layers, Loader2, Search, XCircle } from 'lucide-react'
+import { ArrowRight, BookOpen, FileQuestion, Layers, Loader2, Search, XCircle } from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { listStudentCourses } from '../../../lib/api/studentLearningApi'
 import type { CourseType, StudentCourseSummary } from '../../../lib/api/types'
@@ -18,12 +18,6 @@ import {
 } from '../../../components/shadcn/ui/breadcrumb'
 import { Button } from '../../../components/shadcn/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '../../../components/shadcn/ui/card'
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-} from '../../../components/shadcn/ui/pagination'
 import { studentCourseTypeLabels } from './studentLearningLabels'
 
 const levelOptions = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
@@ -62,19 +56,31 @@ export function StudentCourseListPage() {
   const [courses, setCourses] = useState<StudentCourseSummary[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [localSearch, setLocalSearch] = useState('')
-  const [page, setPage] = useState(1)
+  const [nextCursor, setNextCursor] = useState<string | null>(null)
+  const [hasNext, setHasNext] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const requestVersion = useRef(0)
 
   useEffect(() => {
+    const version = ++requestVersion.current
     let cancelled = false
     void (async () => {
       setCourses(null)
+      setNextCursor(null)
+      setHasNext(false)
       setError(null)
       try {
         const response = await listStudentCourses({
           ...(level ? { level } : {}),
           ...(teacherId ? { teacherId } : {}),
+          ...(localSearch.trim() ? { q: localSearch.trim() } : {}),
+          size: PAGE_SIZE,
         })
-        if (!cancelled) setCourses(response.data)
+        if (!cancelled && version === requestVersion.current) {
+          setCourses(response.data.content)
+          setNextCursor(response.data.nextCursor)
+          setHasNext(response.data.hasNext)
+        }
       } catch (err) {
         if (!cancelled) setError(getApiErrorMessage(err, 'Không thể tải danh sách khóa học.'))
       }
@@ -82,21 +88,38 @@ export function StudentCourseListPage() {
     return () => {
       cancelled = true
     }
-  }, [level, teacherId])
-
-  const searchText = localSearch.trim().toLowerCase()
-  const filteredCourses = courses?.filter((course) => {
-    if (!searchText) return true
-    const description = course.description ?? ''
-    return [course.name, course.teacherName, description].some((value) => value.toLowerCase().includes(searchText))
-  })
+  }, [level, teacherId, localSearch])
 
   const hasFilters = Boolean(level || teacherId || localSearch.trim())
-  const hasNoResults = courses !== null && filteredCourses?.length === 0
-  const totalPages = filteredCourses ? Math.max(1, Math.ceil(filteredCourses.length / PAGE_SIZE)) : 1
-  const safePage = Math.min(Math.max(1, page), totalPages)
-  const pagedCourses = filteredCourses?.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+  const hasNoResults = courses !== null && courses.length === 0
   const teacherFilterName = teacherId ? courses?.find((course) => course.teacherId === teacherId)?.teacherName : undefined
+
+  async function loadMoreCourses() {
+    if (!nextCursor || loadingMore) return
+    const version = requestVersion.current
+    setLoadingMore(true)
+    setError(null)
+    try {
+      const response = await listStudentCourses({
+        ...(level ? { level } : {}),
+        ...(teacherId ? { teacherId } : {}),
+        ...(localSearch.trim() ? { q: localSearch.trim() } : {}),
+        size: PAGE_SIZE,
+        cursor: nextCursor,
+      })
+      if (version === requestVersion.current) {
+        setCourses((current) => [...(current ?? []), ...response.data.content])
+        setNextCursor(response.data.nextCursor)
+        setHasNext(response.data.hasNext)
+      }
+    } catch (err) {
+      if (version === requestVersion.current) {
+        setError(getApiErrorMessage(err, 'Không thể tải thêm khóa học.'))
+      }
+    } finally {
+      setLoadingMore(false)
+    }
+  }
 
   function updateLevelFilter(value: string) {
     const nextParams = new URLSearchParams(searchParams)
@@ -105,17 +128,14 @@ export function StudentCourseListPage() {
     } else {
       nextParams.delete('level')
     }
-    setPage(1)
     setSearchParams(nextParams)
   }
 
   function handleSearchChange(value: string) {
     setLocalSearch(value)
-    setPage(1)
   }
 
   function clearFilters() {
-    setPage(1)
     setSearchParams({})
     setLocalSearch('')
   }
@@ -229,7 +249,7 @@ export function StudentCourseListPage() {
       ) : (
         <>
           <div className="grid min-w-0 items-stretch gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {pagedCourses?.map((course) => (
+            {courses?.map((course) => (
             <Link
               key={course.id}
               to={`/student/courses/${course.id}`}
@@ -286,57 +306,11 @@ export function StudentCourseListPage() {
             </Link>
           ))}
           </div>
-          {totalPages > 1 ? (
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationLink
-                    href="#"
-                    size="default"
-                    className="gap-1 px-2.5 sm:pl-2.5 aria-disabled:opacity-50 aria-disabled:pointer-events-none"
-                    aria-label="Trang trước"
-                    onClick={(event) => {
-                      event.preventDefault()
-                      setPage((prev) => Math.max(1, Math.min(prev, totalPages) - 1))
-                    }}
-                    aria-disabled={safePage === 1}
-                  >
-                    <ChevronLeft aria-hidden="true" />
-                    <span>Trang trước</span>
-                  </PaginationLink>
-                </PaginationItem>
-                {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
-                  <PaginationItem key={pageNumber}>
-                    <PaginationLink
-                      href="#"
-                      isActive={pageNumber === safePage}
-                      onClick={(event) => {
-                        event.preventDefault()
-                        setPage(pageNumber)
-                      }}
-                    >
-                      {pageNumber}
-                    </PaginationLink>
-                  </PaginationItem>
-                ))}
-                <PaginationItem>
-                  <PaginationLink
-                    href="#"
-                    size="default"
-                    className="gap-1 px-2.5 sm:pr-2.5 aria-disabled:opacity-50 aria-disabled:pointer-events-none"
-                    aria-label="Trang sau"
-                    onClick={(event) => {
-                      event.preventDefault()
-                      setPage((prev) => Math.min(totalPages, Math.max(1, prev) + 1))
-                    }}
-                    aria-disabled={safePage === totalPages}
-                  >
-                    <span>Trang sau</span>
-                    <ChevronRight aria-hidden="true" />
-                  </PaginationLink>
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+          {hasNext ? (
+            <Button type="button" variant="outline" className="mx-auto" onClick={() => void loadMoreCourses()} disabled={loadingMore}>
+              {loadingMore ? <Loader2 className="animate-spin" aria-hidden="true" /> : null}
+              Tải thêm khóa học
+            </Button>
           ) : null}
         </>
       )}

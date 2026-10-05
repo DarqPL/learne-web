@@ -10,12 +10,13 @@ import type {
   TeacherQuestionRequest,
   TeacherTopic,
   TeacherTopicRequest,
+  CursorPage,
 } from './types'
 
 const base = '/api/teacher/content'
 
-export function listTeacherCourses() {
-  return http.get<TeacherCourse[]>(`${base}/courses`)
+export function listTeacherCourses(params?: { status?: string; q?: string; size?: number; cursor?: string }) {
+  return http.get<CursorPage<TeacherCourse>>(`${base}/courses`, { params })
 }
 
 export function createTeacherCourse(payload: TeacherCourseRequest) {

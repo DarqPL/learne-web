@@ -3,8 +3,6 @@ import { Link } from 'react-router-dom'
 import {
   ArrowRight,
   BookOpen,
-  ChevronLeft,
-  ChevronRight,
   Loader2,
   TrendingUp,
   XCircle,
@@ -25,12 +23,7 @@ import {
   BreadcrumbSeparator,
 } from '../../../components/shadcn/ui/breadcrumb'
 import { Card, CardContent, CardFooter, CardHeader } from '../../../components/shadcn/ui/card'
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-} from '../../../components/shadcn/ui/pagination'
+import { Button } from '../../../components/shadcn/ui/button'
 import { enrollmentStatusLabels, enrollmentStatusStyles } from './studentLearningLabels'
 
 const PAGE_SIZE = 6
@@ -56,17 +49,25 @@ function teacherInitials(name: string): string {
 export function StudentEnrollmentsPage() {
   const [enrollments, setEnrollments] = useState<StudentEnrollment[] | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [page, setPage] = useState(1)
+  const [nextCursor, setNextCursor] = useState<string | null>(null)
+  const [hasNext, setHasNext] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
 
   useEffect(() => {
     let cancelled = false
 
     void (async () => {
       setEnrollments(null)
+      setNextCursor(null)
+      setHasNext(false)
       setError(null)
       try {
-        const response = await listStudentEnrollments()
-        if (!cancelled) setEnrollments(response.data)
+        const response = await listStudentEnrollments({ size: PAGE_SIZE })
+        if (!cancelled) {
+          setEnrollments(response.data.content)
+          setNextCursor(response.data.nextCursor)
+          setHasNext(response.data.hasNext)
+        }
       } catch (err) {
         if (!cancelled) setError(getApiErrorMessage(err, 'Không thể tải danh sách khóa học đã đăng ký.'))
       }
@@ -77,11 +78,20 @@ export function StudentEnrollmentsPage() {
     }
   }, [])
 
-  const totalPages = enrollments ? Math.max(1, Math.ceil(enrollments.length / PAGE_SIZE)) : 1
-  const safePage = Math.min(Math.max(1, page), totalPages)
-  const pagedEnrollments = enrollments
-    ? enrollments.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
-    : []
+  async function loadMoreEnrollments() {
+    if (!nextCursor || loadingMore) return
+    setLoadingMore(true)
+    try {
+      const response = await listStudentEnrollments({ size: PAGE_SIZE, cursor: nextCursor })
+      setEnrollments((current) => [...(current ?? []), ...response.data.content])
+      setNextCursor(response.data.nextCursor)
+      setHasNext(response.data.hasNext)
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Không thể tải thêm khóa học đã đăng ký.'))
+    } finally {
+      setLoadingMore(false)
+    }
+  }
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
@@ -137,7 +147,7 @@ export function StudentEnrollmentsPage() {
       ) : (
         <>
           <div className="grid min-w-0 items-stretch gap-5 sm:grid-cols-2 xl:grid-cols-3">
-            {pagedEnrollments.map((enrollment) => {
+            {enrollments.map((enrollment) => {
               const progressPercent = getProgressPercent(enrollment.progressPercent)
 
               return (
@@ -205,57 +215,11 @@ export function StudentEnrollmentsPage() {
               )
             })}
           </div>
-          {totalPages > 1 ? (
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationLink
-                    href="#"
-                    size="default"
-                    className="gap-1 px-2.5 sm:pl-2.5 aria-disabled:opacity-50 aria-disabled:pointer-events-none"
-                    aria-label="Trang trước"
-                    onClick={(event) => {
-                      event.preventDefault()
-                      setPage((prev) => Math.max(1, Math.min(prev, totalPages) - 1))
-                    }}
-                    aria-disabled={safePage === 1}
-                  >
-                    <ChevronLeft aria-hidden="true" />
-                    <span>Trang trước</span>
-                  </PaginationLink>
-                </PaginationItem>
-                {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
-                  <PaginationItem key={pageNumber}>
-                    <PaginationLink
-                      href="#"
-                      isActive={pageNumber === safePage}
-                      onClick={(event) => {
-                        event.preventDefault()
-                        setPage(pageNumber)
-                      }}
-                    >
-                      {pageNumber}
-                    </PaginationLink>
-                  </PaginationItem>
-                ))}
-                <PaginationItem>
-                  <PaginationLink
-                    href="#"
-                    size="default"
-                    className="gap-1 px-2.5 sm:pr-2.5 aria-disabled:opacity-50 aria-disabled:pointer-events-none"
-                    aria-label="Trang sau"
-                    onClick={(event) => {
-                      event.preventDefault()
-                      setPage((prev) => Math.min(totalPages, Math.max(1, prev) + 1))
-                    }}
-                    aria-disabled={safePage === totalPages}
-                  >
-                    <span>Trang sau</span>
-                    <ChevronRight aria-hidden="true" />
-                  </PaginationLink>
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+          {hasNext ? (
+            <Button type="button" variant="outline" className="mx-auto" onClick={() => void loadMoreEnrollments()} disabled={loadingMore}>
+              {loadingMore ? <Loader2 className="animate-spin" aria-hidden="true" /> : null}
+              Tải thêm khóa học
+            </Button>
           ) : null}
         </>
       )}
