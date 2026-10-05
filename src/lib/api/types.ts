@@ -953,3 +953,38 @@ export type CouponProductScope = 'COURSE_PURCHASE' | 'VIP' | 'PRO' | 'PRO_PLUS'
 export interface AdminCoupon { id: number; code: string; discountType: CouponDiscountType; discountValue: number; minOrderAmountVnd: number; maxDiscountAmountVnd: number | null; minimumFinalAmountVnd: number; usageLimitTotal: number | null; usageLimitPerUser: number | null; validFrom: string; validUntil: string; active: boolean; productScopes: CouponProductScope[]; courseIds: number[]; teacherIds: number[] }
 export interface AdminCouponCreatePayload { code: string; discountType: CouponDiscountType; discountValue: number; minOrderAmountVnd?: number | null; maxDiscountAmountVnd?: number | null; minimumFinalAmountVnd?: number | null; usageLimitTotal?: number | null; usageLimitPerUser?: number | null; validFrom: string; validUntil: string; active?: boolean; productScopes: CouponProductScope[]; courseIds?: number[]; teacherIds?: number[] }
 export type AdminCouponUpdatePayload = Partial<AdminCouponCreatePayload>
+
+export interface RevenueCourseSalesRow {
+  courseId: number
+  courseName: string
+  teacherId: number
+  teacherName: string
+  paidOrderCount: number
+  grossRevenueVnd: number
+  discountAmountVnd: number
+  netRevenueVnd: number
+}
+
+export interface RevenuePlanSalesRow {
+  planCode: string
+  paidOrderCount: number
+  grossRevenueVnd: number
+  discountAmountVnd: number
+  netRevenueVnd: number
+}
+
+export interface RevenueTeacherShareRow {
+  teacherId: number
+  teacherName: string
+  activityScore: number
+  directCourseNetRevenueVnd: number
+  suggestedPlanShareVnd: number
+  suggestedTotalShareVnd: number
+}
+
+export interface TeacherShareResponse {
+  month: string
+  planRevenuePoolVnd: number
+  totalActivityScore: number
+  rows: RevenueTeacherShareRow[]
+}

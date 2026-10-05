@@ -16,6 +16,7 @@ import { adminGetDashboard } from '../../lib/api/adminApi'
 import { getApiErrorMessage } from '../../lib/api/client'
 import type { AdminDashboard } from '../../lib/api/types'
 import { useAuth } from '../../lib/auth/auth-context'
+import { AdminRevenueSection } from './AdminRevenueSection'
 
 const statusLabels: Record<string, string> = {
   DRAFT: 'Bản nháp',
@@ -256,6 +257,8 @@ export function AdminDashboardPage() {
           </CardContent>
         </Card>
       </section>
+
+      <AdminRevenueSection />
     </div>
   )
 }
