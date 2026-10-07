@@ -1,4 +1,19 @@
 import { useEffect, useState, type ChangeEvent } from 'react'
+import {
+  CalendarDays,
+  Camera,
+  Clock3,
+  FileText,
+  Globe,
+  GraduationCap,
+  Mail,
+  Phone,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  Trash2,
+  UserRound,
+} from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
 import {
   AlertDialog,
@@ -265,23 +280,28 @@ export function StudentProfilePage() {
         </div>
       ) : null}
 
-      <Card>
-        <CardHeader>
+      <Card className="overflow-hidden border-indigo-100 shadow-lg shadow-indigo-100/60">
+        <CardHeader className="bg-gradient-to-br from-indigo-600 via-indigo-500 to-violet-500 text-white">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
-            <Avatar className="size-16">
+            <Avatar className="size-16 shadow-lg ring-4 ring-white/80">
               {profile.avatarUrl ? (
                 <AvatarImage src={profile.avatarUrl} alt={`Ảnh đại diện của ${profile.fullName}`} />
               ) : null}
-              <AvatarFallback>{getInitials(profile.fullName)}</AvatarFallback>
+              <AvatarFallback className="bg-white/20 text-white">{getInitials(profile.fullName)}</AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
-              <CardTitle className="truncate text-xl">{profile.fullName}</CardTitle>
-              <p className="mt-0.5 truncate text-sm text-muted-foreground">{profile.email}</p>
+              <CardTitle className="truncate text-xl text-white">{profile.fullName}</CardTitle>
+              <p className="mt-0.5 truncate text-sm text-indigo-100">{profile.email}</p>
+              <span className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-medium text-white">
+                <GraduationCap aria-hidden="true" className="size-3" />
+                {profile.currentLevel ?? 'Chưa xác định'}
+              </span>
             </div>
             <div className="flex flex-wrap gap-2">
               <label
-                className={`inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium whitespace-nowrap text-primary-foreground ${avatarDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                className={`inline-flex items-center justify-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-medium whitespace-nowrap text-indigo-700 transition-colors duration-200 hover:bg-indigo-50 ${avatarDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
               >
+                <Camera aria-hidden="true" className="size-4" />
                 {mediaAction === 'avatar' ? 'Đang tải...' : 'Đổi ảnh'}
                 <input
                   type="file"
@@ -296,15 +316,52 @@ export function StudentProfilePage() {
                 <Button
                   type="button"
                   variant="outline"
+                  className="border-white/60 bg-transparent text-white transition-colors duration-200 hover:bg-white/10 hover:text-white"
                   disabled={avatarDisabled}
                   loading={mediaAction === 'delete-avatar' && !deleteOpen}
                   onClick={() => setDeleteOpen(true)}
                 >
+                  <Trash2 aria-hidden="true" className="size-4" />
                   Xóa ảnh
                 </Button>
               ) : null}
             </div>
           </div>
+          <dl className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <div className="flex items-center gap-2.5 rounded-xl border border-white/15 bg-white/10 px-3 py-2">
+              <GraduationCap aria-hidden="true" className="size-4 shrink-0 text-indigo-100" />
+              <div className="min-w-0">
+                <dt className="text-[11px] font-medium tracking-wide text-indigo-100 uppercase">
+                  Trình độ hiện tại
+                </dt>
+                <dd className="truncate text-sm font-semibold text-white">
+                  {profile.currentLevel ?? 'Chưa xác định'}
+                </dd>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 rounded-xl border border-white/15 bg-white/10 px-3 py-2">
+              <Clock3 aria-hidden="true" className="size-4 shrink-0 text-indigo-100" />
+              <div className="min-w-0">
+                <dt className="text-[11px] font-medium tracking-wide text-indigo-100 uppercase">
+                  Phút học/ngày
+                </dt>
+                <dd className="truncate text-sm font-semibold text-white">
+                  {profile.dailyLearningMinutes ?? '—'}
+                </dd>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 rounded-xl border border-white/15 bg-white/10 px-3 py-2">
+              <Sparkles aria-hidden="true" className="size-4 shrink-0 text-indigo-100" />
+              <div className="min-w-0">
+                <dt className="text-[11px] font-medium tracking-wide text-indigo-100 uppercase">
+                  Số kỹ năng
+                </dt>
+                <dd className="truncate text-sm font-semibold text-white">
+                  {(profile.preferredSkills ?? []).length}
+                </dd>
+              </div>
+            </div>
+          </dl>
         </CardHeader>
         <CardContent>
           {/* Controlled Tabs value + onClick on triggers only (no onValueChange):
@@ -316,32 +373,38 @@ export function StudentProfilePage() {
               <TabsTrigger
                 value="info"
                 title="Xem và sửa thông tin cá nhân"
-                className="cursor-pointer text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 data-[state=active]:bg-indigo-600 data-[state=active]:font-medium data-[state=active]:text-white data-[state=active]:shadow-sm"
+                className="cursor-pointer text-gray-600 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900 data-[state=active]:bg-indigo-600 data-[state=active]:font-medium data-[state=active]:text-white data-[state=active]:shadow-sm"
                 onClick={() => requestTabChange('info')}
               >
+                <UserRound data-icon="inline-start" aria-hidden="true" className="size-4" />
                 Thông tin
               </TabsTrigger>
               <TabsTrigger
                 value="learning"
                 title="Xem và sửa trình độ, mục tiêu và kỹ năng học tập"
-                className="cursor-pointer text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 data-[state=active]:bg-indigo-600 data-[state=active]:font-medium data-[state=active]:text-white data-[state=active]:shadow-sm"
+                className="cursor-pointer text-gray-600 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900 data-[state=active]:bg-indigo-600 data-[state=active]:font-medium data-[state=active]:text-white data-[state=active]:shadow-sm"
                 onClick={() => requestTabChange('learning')}
               >
+                <GraduationCap data-icon="inline-start" aria-hidden="true" className="size-4" />
                 Học tập
               </TabsTrigger>
               <TabsTrigger
                 value="privacy"
                 title="Quản lý quyền hiển thị hồ sơ công khai"
-                className="cursor-pointer text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 data-[state=active]:bg-indigo-600 data-[state=active]:font-medium data-[state=active]:text-white data-[state=active]:shadow-sm"
+                className="cursor-pointer text-gray-600 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900 data-[state=active]:bg-indigo-600 data-[state=active]:font-medium data-[state=active]:text-white data-[state=active]:shadow-sm"
                 onClick={() => requestTabChange('privacy')}
               >
+                <ShieldCheck data-icon="inline-start" aria-hidden="true" className="size-4" />
                 Riêng tư
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="info" className="mt-4 flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="fullName">Họ và tên</Label>
+                <Label htmlFor="fullName" className="flex items-center gap-1.5">
+                  <UserRound aria-hidden="true" className="size-3.5 text-indigo-600" />
+                  Họ và tên
+                </Label>
                 <Input
                   id="fullName"
                   value={draft.fullName}
@@ -352,7 +415,10 @@ export function StudentProfilePage() {
                 {errors.fullName ? <p className="text-sm text-destructive">{errors.fullName}</p> : null}
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="phoneNumber">Số điện thoại</Label>
+                <Label htmlFor="phoneNumber" className="flex items-center gap-1.5">
+                  <Phone aria-hidden="true" className="size-3.5 text-indigo-600" />
+                  Số điện thoại
+                </Label>
                 <Input
                   id="phoneNumber"
                   value={draft.phoneNumber ?? ''}
@@ -363,7 +429,10 @@ export function StudentProfilePage() {
                 {errors.phoneNumber ? <p className="text-sm text-destructive">{errors.phoneNumber}</p> : null}
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="dateOfBirth">Ngày sinh</Label>
+                <Label htmlFor="dateOfBirth" className="flex items-center gap-1.5">
+                  <CalendarDays aria-hidden="true" className="size-3.5 text-indigo-600" />
+                  Ngày sinh
+                </Label>
                 <Input
                   id="dateOfBirth"
                   type="date"
@@ -375,7 +444,10 @@ export function StudentProfilePage() {
                 {errors.dateOfBirth ? <p className="text-sm text-destructive">{errors.dateOfBirth}</p> : null}
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="bio">Tiểu sử</Label>
+                <Label htmlFor="bio" className="flex items-center gap-1.5">
+                  <FileText aria-hidden="true" className="size-3.5 text-indigo-600" />
+                  Tiểu sử
+                </Label>
                 <Textarea
                   id="bio"
                   value={draft.bio ?? ''}
@@ -388,7 +460,10 @@ export function StudentProfilePage() {
 
             <TabsContent value="learning" className="mt-4 flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="currentLevel">Trình độ hiện tại</Label>
+                <Label htmlFor="currentLevel" className="flex items-center gap-1.5">
+                  <GraduationCap aria-hidden="true" className="size-3.5 text-indigo-600" />
+                  Trình độ hiện tại
+                </Label>
                 <Select
                   value={draft.currentLevel ?? 'none'}
                   disabled={!isEditingLearning}
@@ -410,7 +485,10 @@ export function StudentProfilePage() {
                 </Select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="dailyLearningMinutes">Thời lượng học mỗi ngày (phút)</Label>
+                <Label htmlFor="dailyLearningMinutes" className="flex items-center gap-1.5">
+                  <Clock3 aria-hidden="true" className="size-3.5 text-indigo-600" />
+                  Thời lượng học mỗi ngày (phút)
+                </Label>
                 <Input
                   id="dailyLearningMinutes"
                   type="number"
@@ -429,7 +507,10 @@ export function StudentProfilePage() {
                 ) : null}
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="learningGoal">Mục tiêu học tập</Label>
+                <Label htmlFor="learningGoal" className="flex items-center gap-1.5">
+                  <Target aria-hidden="true" className="size-3.5 text-indigo-600" />
+                  Mục tiêu học tập
+                </Label>
                 <Textarea
                   id="learningGoal"
                   value={draft.learningGoal ?? ''}
@@ -438,24 +519,36 @@ export function StudentProfilePage() {
                 />
               </div>
               <fieldset className="flex flex-col gap-2">
-                <legend className="text-sm font-medium">Kỹ năng luyện tập</legend>
+                <legend className="flex items-center gap-1.5 text-sm font-medium">
+                  <Sparkles aria-hidden="true" className="size-3.5 text-indigo-600" />
+                  Kỹ năng luyện tập
+                </legend>
                 <div className="grid grid-cols-2 gap-2">
-                  {skillOptions.map((skill) => (
-                    <div key={skill.value} className="flex items-center gap-2">
-                      <Checkbox
-                        id={`skill-${skill.value}`}
-                        checked={draft.preferredSkills.includes(skill.value)}
-                        disabled={!isEditingLearning}
-                        onCheckedChange={(checked) => {
-                          const next = checked === true
-                            ? [...draft.preferredSkills, skill.value]
-                            : draft.preferredSkills.filter((item) => item !== skill.value)
-                          setDraft({ ...draft, preferredSkills: next })
-                        }}
-                      />
-                      <Label htmlFor={`skill-${skill.value}`}>{skill.label}</Label>
-                    </div>
-                  ))}
+                  {skillOptions.map((skill) => {
+                    const checked = draft.preferredSkills.includes(skill.value)
+                    return (
+                      <div
+                        key={skill.value}
+                        className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors duration-200 ${checked ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-gray-200 bg-white text-gray-700 hover:border-indigo-300'} ${isEditingLearning ? '' : 'cursor-not-allowed opacity-70'}`}
+                      >
+                        <Checkbox
+                          id={`skill-${skill.value}`}
+                          checked={checked}
+                          disabled={!isEditingLearning}
+                          onCheckedChange={(checkedState) => {
+                            const next =
+                              checkedState === true
+                                ? [...draft.preferredSkills, skill.value]
+                                : draft.preferredSkills.filter((item) => item !== skill.value)
+                            setDraft({ ...draft, preferredSkills: next })
+                          }}
+                        />
+                        <Label htmlFor={`skill-${skill.value}`} className="cursor-pointer">
+                          {skill.label}
+                        </Label>
+                      </div>
+                    )
+                  })}
                 </div>
                 {errors.preferredSkills ? (
                   <p className="text-sm text-destructive">{errors.preferredSkills}</p>
@@ -466,9 +559,14 @@ export function StudentProfilePage() {
 
             <TabsContent value="privacy" className="mt-4 flex flex-col gap-4">
               <div className="flex items-center justify-between gap-3">
-                <div>
-                  <Label htmlFor="publicProfileEnabled">Hồ sơ công khai</Label>
-                  <p className="text-sm text-muted-foreground">Cho phép người khác xem hồ sơ của bạn.</p>
+                <div className="flex items-start gap-2.5">
+                  <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                    <Globe aria-hidden="true" className="size-4" />
+                  </span>
+                  <div>
+                    <Label htmlFor="publicProfileEnabled">Hồ sơ công khai</Label>
+                    <p className="text-sm text-muted-foreground">Cho phép người khác xem hồ sơ của bạn.</p>
+                  </div>
                 </div>
                 <Switch
                   id="publicProfileEnabled"
@@ -478,13 +576,18 @@ export function StudentProfilePage() {
                 />
               </div>
               <div className="flex items-center justify-between gap-3">
-                <div>
-                  <Label htmlFor="showEmail">Hiển thị email</Label>
-                  {!draft.publicProfileEnabled ? (
-                    <p className="text-sm text-muted-foreground">
-                      Hồ sơ công khai đang tắt nên email sẽ không hiển thị.
-                    </p>
-                  ) : null}
+                <div className="flex items-start gap-2.5">
+                  <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                    <Mail aria-hidden="true" className="size-4" />
+                  </span>
+                  <div>
+                    <Label htmlFor="showEmail">Hiển thị email</Label>
+                    {!draft.publicProfileEnabled ? (
+                      <p className="text-sm text-muted-foreground">
+                        Hồ sơ công khai đang tắt nên email sẽ không hiển thị.
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
                 <Switch
                   id="showEmail"
@@ -494,13 +597,18 @@ export function StudentProfilePage() {
                 />
               </div>
               <div className="flex items-center justify-between gap-3">
-                <div>
-                  <Label htmlFor="showPhoneNumber">Hiển thị số điện thoại</Label>
-                  {!draft.publicProfileEnabled ? (
-                    <p className="text-sm text-muted-foreground">
-                      Hồ sơ công khai đang tắt nên số điện thoại sẽ không hiển thị.
-                    </p>
-                  ) : null}
+                <div className="flex items-start gap-2.5">
+                  <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                    <Phone aria-hidden="true" className="size-4" />
+                  </span>
+                  <div>
+                    <Label htmlFor="showPhoneNumber">Hiển thị số điện thoại</Label>
+                    {!draft.publicProfileEnabled ? (
+                      <p className="text-sm text-muted-foreground">
+                        Hồ sơ công khai đang tắt nên số điện thoại sẽ không hiển thị.
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
                 <Switch
                   id="showPhoneNumber"
@@ -510,13 +618,18 @@ export function StudentProfilePage() {
                 />
               </div>
               <div className="flex items-center justify-between gap-3">
-                <div>
-                  <Label htmlFor="showDateOfBirth">Hiển thị ngày sinh</Label>
-                  {!draft.publicProfileEnabled ? (
-                    <p className="text-sm text-muted-foreground">
-                      Hồ sơ công khai đang tắt nên ngày sinh sẽ không hiển thị.
-                    </p>
-                  ) : null}
+                <div className="flex items-start gap-2.5">
+                  <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                    <CalendarDays aria-hidden="true" className="size-4" />
+                  </span>
+                  <div>
+                    <Label htmlFor="showDateOfBirth">Hiển thị ngày sinh</Label>
+                    {!draft.publicProfileEnabled ? (
+                      <p className="text-sm text-muted-foreground">
+                        Hồ sơ công khai đang tắt nên ngày sinh sẽ không hiển thị.
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
                 <Switch
                   id="showDateOfBirth"
