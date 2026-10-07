@@ -316,7 +316,7 @@ export function StudentProfilePage() {
               <TabsTrigger
                 value="info"
                 title="Xem và sửa thông tin cá nhân"
-                className="cursor-pointer text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 data-[state=active]:bg-indigo-50 data-[state=active]:font-medium data-[state=active]:text-indigo-700 data-[state=active]:shadow-none"
+                className="cursor-pointer text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 data-[state=active]:bg-indigo-600 data-[state=active]:font-medium data-[state=active]:text-white data-[state=active]:shadow-sm"
                 onClick={() => requestTabChange('info')}
               >
                 Thông tin
@@ -324,7 +324,7 @@ export function StudentProfilePage() {
               <TabsTrigger
                 value="learning"
                 title="Xem và sửa trình độ, mục tiêu và kỹ năng học tập"
-                className="cursor-pointer text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 data-[state=active]:bg-indigo-50 data-[state=active]:font-medium data-[state=active]:text-indigo-700 data-[state=active]:shadow-none"
+                className="cursor-pointer text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 data-[state=active]:bg-indigo-600 data-[state=active]:font-medium data-[state=active]:text-white data-[state=active]:shadow-sm"
                 onClick={() => requestTabChange('learning')}
               >
                 Học tập
@@ -332,7 +332,7 @@ export function StudentProfilePage() {
               <TabsTrigger
                 value="privacy"
                 title="Quản lý quyền hiển thị hồ sơ công khai"
-                className="cursor-pointer text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 data-[state=active]:bg-indigo-50 data-[state=active]:font-medium data-[state=active]:text-indigo-700 data-[state=active]:shadow-none"
+                className="cursor-pointer text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 data-[state=active]:bg-indigo-600 data-[state=active]:font-medium data-[state=active]:text-white data-[state=active]:shadow-sm"
                 onClick={() => requestTabChange('privacy')}
               >
                 Riêng tư
