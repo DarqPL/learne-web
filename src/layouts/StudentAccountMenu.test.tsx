@@ -5,24 +5,26 @@ import { describe, expect, it, vi } from 'vitest'
 import { StudentAccountMenu } from './StudentAccountMenu'
 
 describe('StudentAccountMenu', () => {
-  it('excludes profile and confirms logout via dialog', () => {
+  it('shows profile, password, subscription, and logout actions in the account dropdown', () => {
     const onLogout = vi.fn()
     render(
       <MemoryRouter>
-        <StudentAccountMenu userName="An" userEmail="an@example.com" onLogout={onLogout} />
+        <StudentAccountMenu userName="Nguyen Van A" userEmail="student@example.com" onLogout={onLogout} />
       </MemoryRouter>,
     )
 
     // Trigger shows avatar + name only — email belongs in the menu, not the trigger.
     const trigger = screen.getByRole('button', { name: /tài khoản/i })
-    expect(trigger).toHaveTextContent('An')
-    expect(trigger).not.toHaveTextContent('an@example.com')
+    expect(trigger).toHaveTextContent('Nguyen Van A')
+    expect(trigger).not.toHaveTextContent('student@example.com')
 
     // Radix opens DropdownMenu on pointerdown; fireEvent.pointerDown works in jsdom.
     fireEvent.pointerDown(trigger)
-    expect(screen.getByText('an@example.com')).toBeInTheDocument()
-    expect(screen.getByRole('menuitem', { name: 'Gói học' })).toBeInTheDocument()
-    expect(screen.queryByRole('menuitem', { name: 'Hồ sơ' })).not.toBeInTheDocument()
+    expect(screen.getByText('student@example.com')).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: /hồ sơ của tôi/i })).toHaveAttribute('href', '/profile')
+    expect(screen.getByRole('menuitem', { name: /đổi mật khẩu/i })).toHaveAttribute('href', '/change-password')
+    expect(screen.getByRole('menuitem', { name: /gói học/i })).toHaveAttribute('href', '/student/subscription')
+    expect(screen.getByRole('menuitem', { name: /đăng xuất/i })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('menuitem', { name: 'Đăng xuất' }))
     expect(screen.getByRole('alertdialog')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Đăng xuất' }))

@@ -250,6 +250,44 @@ export interface UpdateTeacherProfileRequest {
   yearsOfExperience: number
 }
 
+export type StudentCurrentLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'
+
+export type StudentPreferredSkill = 'VOCABULARY' | 'GRAMMAR' | 'READING' | 'WRITING' | 'LISTENING' | 'SPEAKING'
+
+export interface StudentProfile {
+  studentId: number
+  fullName: string
+  email: string
+  phoneNumber: string | null
+  dateOfBirth: string | null
+  bio: string | null
+  learningGoal: string | null
+  currentLevel: StudentCurrentLevel | null
+  dailyLearningMinutes: number | null
+  // Backend may return null for new profiles.
+  preferredSkills: StudentPreferredSkill[] | null
+  avatarUrl: string | null
+  publicProfileEnabled: boolean
+  showEmail: boolean
+  showPhoneNumber: boolean
+  showDateOfBirth: boolean
+}
+
+export interface UpdateStudentProfileRequest {
+  fullName: string
+  phoneNumber: string | null
+  dateOfBirth: string | null
+  bio: string | null
+  learningGoal: string | null
+  currentLevel: StudentCurrentLevel | null
+  dailyLearningMinutes: number | null
+  preferredSkills: StudentPreferredSkill[]
+  publicProfileEnabled: boolean
+  showEmail: boolean
+  showPhoneNumber: boolean
+  showDateOfBirth: boolean
+}
+
 export interface AdminTeacher {
   userId: number
   fullName: string
