@@ -264,7 +264,8 @@ export interface StudentProfile {
   learningGoal: string | null
   currentLevel: StudentCurrentLevel | null
   dailyLearningMinutes: number | null
-  preferredSkills: StudentPreferredSkill[]
+  // Backend may return null for new profiles.
+  preferredSkills: StudentPreferredSkill[] | null
   avatarUrl: string | null
   publicProfileEnabled: boolean
   showEmail: boolean
