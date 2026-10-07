@@ -280,8 +280,8 @@ export function StudentProfilePage() {
         </div>
       ) : null}
 
-      <Card className="overflow-hidden border-indigo-100 shadow-lg shadow-indigo-100/60">
-        <CardHeader className="bg-gradient-to-br from-indigo-600 via-indigo-500 to-violet-500 text-white">
+      <Card className="gap-0 overflow-hidden border-indigo-100 py-0 shadow-lg shadow-indigo-100/60">
+        <CardHeader className="bg-gradient-to-br from-indigo-600 via-indigo-500 to-violet-500 py-6 text-white">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
             <Avatar className="size-16 shadow-lg ring-4 ring-white/80">
               {profile.avatarUrl ? (
@@ -327,8 +327,8 @@ export function StudentProfilePage() {
               ) : null}
             </div>
           </div>
-          <dl className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-3">
-            <div className="flex items-center gap-2.5 rounded-xl border border-white/15 bg-white/10 px-3 py-2">
+          <dl className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="flex items-center gap-3 rounded-xl border border-white/15 bg-white/10 px-4 py-3">
               <GraduationCap aria-hidden="true" className="size-4 shrink-0 text-indigo-100" />
               <div className="min-w-0">
                 <dt className="text-[11px] font-medium tracking-wide text-indigo-100 uppercase">
@@ -339,7 +339,7 @@ export function StudentProfilePage() {
                 </dd>
               </div>
             </div>
-            <div className="flex items-center gap-2.5 rounded-xl border border-white/15 bg-white/10 px-3 py-2">
+            <div className="flex items-center gap-3 rounded-xl border border-white/15 bg-white/10 px-4 py-3">
               <Clock3 aria-hidden="true" className="size-4 shrink-0 text-indigo-100" />
               <div className="min-w-0">
                 <dt className="text-[11px] font-medium tracking-wide text-indigo-100 uppercase">
@@ -350,7 +350,7 @@ export function StudentProfilePage() {
                 </dd>
               </div>
             </div>
-            <div className="flex items-center gap-2.5 rounded-xl border border-white/15 bg-white/10 px-3 py-2">
+            <div className="flex items-center gap-3 rounded-xl border border-white/15 bg-white/10 px-4 py-3">
               <Sparkles aria-hidden="true" className="size-4 shrink-0 text-indigo-100" />
               <div className="min-w-0">
                 <dt className="text-[11px] font-medium tracking-wide text-indigo-100 uppercase">
@@ -363,7 +363,7 @@ export function StudentProfilePage() {
             </div>
           </dl>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6 pb-6">
           {/* Controlled Tabs value + onClick on triggers only (no onValueChange):
               Radix onValueChange does not fire under fireEvent in tests, while
               onClick works in both browser and tests. Kept as single path to
@@ -529,7 +529,7 @@ export function StudentProfilePage() {
                     return (
                       <div
                         key={skill.value}
-                        className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors duration-200 ${checked ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-gray-200 bg-white text-gray-700 hover:border-indigo-300'} ${isEditingLearning ? '' : 'cursor-not-allowed opacity-70'}`}
+                        className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors duration-200 ${checked ? 'border-indigo-500 bg-indigo-50 font-medium text-indigo-700' : 'border-gray-200 bg-white text-gray-600 hover:border-indigo-300 hover:text-indigo-700'} ${isEditingLearning ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}`}
                       >
                         <Checkbox
                           id={`skill-${skill.value}`}
@@ -582,11 +582,11 @@ export function StudentProfilePage() {
                   </span>
                   <div>
                     <Label htmlFor="showEmail">Hiển thị email</Label>
-                    {!draft.publicProfileEnabled ? (
-                      <p className="text-sm text-muted-foreground">
-                        Hồ sơ công khai đang tắt nên email sẽ không hiển thị.
-                      </p>
-                    ) : null}
+                    <p className="text-sm text-muted-foreground">
+                      {draft.publicProfileEnabled
+                        ? 'Email sẽ hiển thị trên hồ sơ công khai của bạn.'
+                        : 'Hồ sơ công khai đang tắt nên email sẽ không hiển thị.'}
+                    </p>
                   </div>
                 </div>
                 <Switch
@@ -603,11 +603,11 @@ export function StudentProfilePage() {
                   </span>
                   <div>
                     <Label htmlFor="showPhoneNumber">Hiển thị số điện thoại</Label>
-                    {!draft.publicProfileEnabled ? (
-                      <p className="text-sm text-muted-foreground">
-                        Hồ sơ công khai đang tắt nên số điện thoại sẽ không hiển thị.
-                      </p>
-                    ) : null}
+                    <p className="text-sm text-muted-foreground">
+                      {draft.publicProfileEnabled
+                        ? 'Số điện thoại sẽ hiển thị trên hồ sơ công khai của bạn.'
+                        : 'Hồ sơ công khai đang tắt nên số điện thoại sẽ không hiển thị.'}
+                    </p>
                   </div>
                 </div>
                 <Switch
@@ -624,11 +624,11 @@ export function StudentProfilePage() {
                   </span>
                   <div>
                     <Label htmlFor="showDateOfBirth">Hiển thị ngày sinh</Label>
-                    {!draft.publicProfileEnabled ? (
-                      <p className="text-sm text-muted-foreground">
-                        Hồ sơ công khai đang tắt nên ngày sinh sẽ không hiển thị.
-                      </p>
-                    ) : null}
+                    <p className="text-sm text-muted-foreground">
+                      {draft.publicProfileEnabled
+                        ? 'Ngày sinh sẽ hiển thị trên hồ sơ công khai của bạn.'
+                        : 'Hồ sơ công khai đang tắt nên ngày sinh sẽ không hiển thị.'}
+                    </p>
                   </div>
                 </div>
                 <Switch
