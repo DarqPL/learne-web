@@ -313,13 +313,28 @@ export function StudentProfilePage() {
               avoid double requestTabChange calls. */}
           <Tabs value={activeTab}>
             <TabsList>
-              <TabsTrigger value="info" onClick={() => requestTabChange('info')}>
+              <TabsTrigger
+                value="info"
+                title="Xem và sửa thông tin cá nhân"
+                className="cursor-pointer transition-colors hover:bg-indigo-50 hover:text-indigo-700 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                onClick={() => requestTabChange('info')}
+              >
                 Thông tin
               </TabsTrigger>
-              <TabsTrigger value="learning" onClick={() => requestTabChange('learning')}>
+              <TabsTrigger
+                value="learning"
+                title="Xem và sửa trình độ, mục tiêu và kỹ năng học tập"
+                className="cursor-pointer transition-colors hover:bg-indigo-50 hover:text-indigo-700 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                onClick={() => requestTabChange('learning')}
+              >
                 Học tập
               </TabsTrigger>
-              <TabsTrigger value="privacy" onClick={() => requestTabChange('privacy')}>
+              <TabsTrigger
+                value="privacy"
+                title="Quản lý quyền hiển thị hồ sơ công khai"
+                className="cursor-pointer transition-colors hover:bg-indigo-50 hover:text-indigo-700 data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-sm"
+                onClick={() => requestTabChange('privacy')}
+              >
                 Riêng tư
               </TabsTrigger>
             </TabsList>
