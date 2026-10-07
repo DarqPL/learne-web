@@ -312,7 +312,7 @@ export function StudentProfilePage() {
               onClick works in both browser and tests. Kept as single path to
               avoid double requestTabChange calls. */}
           <Tabs value={activeTab}>
-            <TabsList>
+            <TabsList className="gap-2">
               <TabsTrigger
                 value="info"
                 title="Xem và sửa thông tin cá nhân"
