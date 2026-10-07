@@ -316,7 +316,7 @@ export function StudentProfilePage() {
               <TabsTrigger
                 value="info"
                 title="Xem và sửa thông tin cá nhân"
-                className="cursor-pointer transition-colors hover:bg-indigo-50 hover:text-indigo-700 data-[state=active]:bg-indigo-600 data-[state=active]:font-semibold data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:ring-2 data-[state=active]:ring-indigo-300 data-[state=active]:ring-offset-1"
+                className="cursor-pointer border border-transparent text-gray-500 transition-colors hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 data-[state=active]:border-indigo-600 data-[state=active]:bg-indigo-50 data-[state=active]:font-semibold data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm"
                 onClick={() => requestTabChange('info')}
               >
                 Thông tin
@@ -324,7 +324,7 @@ export function StudentProfilePage() {
               <TabsTrigger
                 value="learning"
                 title="Xem và sửa trình độ, mục tiêu và kỹ năng học tập"
-                className="cursor-pointer transition-colors hover:bg-indigo-50 hover:text-indigo-700 data-[state=active]:bg-indigo-600 data-[state=active]:font-semibold data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:ring-2 data-[state=active]:ring-indigo-300 data-[state=active]:ring-offset-1"
+                className="cursor-pointer border border-transparent text-gray-500 transition-colors hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 data-[state=active]:border-indigo-600 data-[state=active]:bg-indigo-50 data-[state=active]:font-semibold data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm"
                 onClick={() => requestTabChange('learning')}
               >
                 Học tập
@@ -332,7 +332,7 @@ export function StudentProfilePage() {
               <TabsTrigger
                 value="privacy"
                 title="Quản lý quyền hiển thị hồ sơ công khai"
-                className="cursor-pointer transition-colors hover:bg-indigo-50 hover:text-indigo-700 data-[state=active]:bg-indigo-600 data-[state=active]:font-semibold data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:ring-2 data-[state=active]:ring-indigo-300 data-[state=active]:ring-offset-1"
+                className="cursor-pointer border border-transparent text-gray-500 transition-colors hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 data-[state=active]:border-indigo-600 data-[state=active]:bg-indigo-50 data-[state=active]:font-semibold data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm"
                 onClick={() => requestTabChange('privacy')}
               >
                 Riêng tư
