@@ -149,7 +149,7 @@ export function StudentProfilePage() {
     if (!file) return
     const validationError = validateAvatarFile(file)
     if (validationError) {
-      setErrors({ avatar: validationError })
+      setErrors((prev) => ({ ...prev, avatar: validationError }))
       return
     }
     setMediaAction('avatar')
@@ -158,6 +158,12 @@ export function StudentProfilePage() {
       const response = await uploadStudentAvatar(file)
       setProfile(response.data)
       setDraft(toDraft(response.data))
+      setErrors((prev) => {
+        if (!prev.avatar) return prev
+        const next = { ...prev }
+        delete next.avatar
+        return next
+      })
       setMessage('Ảnh đại diện đã được cập nhật.')
     } catch (err) {
       setApiError(getApiErrorMessage(err, 'Không thể tải ảnh đại diện.'))
@@ -173,6 +179,12 @@ export function StudentProfilePage() {
       const response = await deleteStudentAvatar()
       setProfile(response.data)
       setDraft(toDraft(response.data))
+      setErrors((prev) => {
+        if (!prev.avatar) return prev
+        const next = { ...prev }
+        delete next.avatar
+        return next
+      })
       setMessage('Ảnh đại diện đã được xóa.')
       setDeleteOpen(false)
     } catch (err) {
@@ -224,6 +236,9 @@ export function StudentProfilePage() {
   const isEditingInfo = editingTab === 'info'
   const isEditingLearning = editingTab === 'learning'
   const isEditingPrivacy = editingTab === 'privacy'
+  // Disable avatar operations while any tab has unsaved edits so the
+  // server-response draft reset in handleAvatarUpload/Delete cannot wipe them.
+  const avatarDisabled = editingTab !== null || mediaAction !== null
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -264,14 +279,16 @@ export function StudentProfilePage() {
               <p className="mt-0.5 truncate text-sm text-muted-foreground">{profile.email}</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium whitespace-nowrap text-primary-foreground">
+              <label
+                className={`inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium whitespace-nowrap text-primary-foreground ${avatarDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+              >
                 {mediaAction === 'avatar' ? 'Đang tải...' : 'Đổi ảnh'}
                 <input
                   type="file"
                   accept="image/png,image/jpeg,image/webp"
                   className="sr-only"
                   aria-label="Đổi ảnh"
-                  disabled={mediaAction !== null}
+                  disabled={avatarDisabled}
                   onChange={(event) => void handleAvatarUpload(event)}
                 />
               </label>
@@ -279,7 +296,7 @@ export function StudentProfilePage() {
                 <Button
                   type="button"
                   variant="outline"
-                  disabled={mediaAction !== null}
+                  disabled={avatarDisabled}
                   loading={mediaAction === 'delete-avatar' && !deleteOpen}
                   onClick={() => setDeleteOpen(true)}
                 >
@@ -290,7 +307,11 @@ export function StudentProfilePage() {
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={requestTabChange}>
+          {/* Controlled Tabs value + onClick on triggers only (no onValueChange):
+              Radix onValueChange does not fire under fireEvent in tests, while
+              onClick works in both browser and tests. Kept as single path to
+              avoid double requestTabChange calls. */}
+          <Tabs value={activeTab}>
             <TabsList>
               <TabsTrigger value="info" onClick={() => requestTabChange('info')}>
                 Thông tin

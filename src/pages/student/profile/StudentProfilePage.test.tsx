@@ -88,7 +88,10 @@ describe('StudentProfilePage', () => {
           fullName: 'Student Updated',
           phoneNumber: '0909000000',
           dateOfBirth: '2001-02-03',
+          bio: 'Dang hoc IELTS.',
           learningGoal: 'Dat B2 trong nam nay.',
+          currentLevel: 'A2',
+          dailyLearningMinutes: 45,
           preferredSkills: ['GRAMMAR', 'READING'],
           publicProfileEnabled: true,
           showEmail: false,
@@ -97,6 +100,71 @@ describe('StudentProfilePage', () => {
         }),
       ),
     )
+  })
+
+  it('cancel resets in-progress edits without calling update', async () => {
+    render(<StudentProfilePage />)
+
+    await screen.findByDisplayValue('Student One')
+    fireEvent.click(screen.getByRole('button', { name: /chỉnh sửa thông tin/i }))
+    const nameInput = screen.getByLabelText(/họ và tên/i)
+    fireEvent.change(nameInput, { target: { value: 'Changed Name' } })
+    expect(nameInput).toHaveValue('Changed Name')
+    fireEvent.click(screen.getByRole('button', { name: /^hủy$/i }))
+
+    expect(screen.getByLabelText(/họ và tên/i)).toHaveValue('Student One')
+    expect(mockedUpdate).not.toHaveBeenCalled()
+  })
+
+  it('shows destructive alert and keeps profile on api error', async () => {
+    mockedUpdate.mockRejectedValueOnce({
+      isAxiosError: true,
+      response: { data: { message: 'Lỗi' } },
+    })
+    render(<StudentProfilePage />)
+
+    await screen.findByDisplayValue('Student One')
+    fireEvent.click(screen.getByRole('button', { name: /chỉnh sửa thông tin/i }))
+    fireEvent.change(screen.getByLabelText(/họ và tên/i), { target: { value: 'Broken Name' } })
+    fireEvent.click(screen.getByRole('button', { name: /lưu thông tin/i }))
+
+    expect(await screen.findByText('Lỗi')).toBeInTheDocument()
+    expect(screen.getByText('Student One')).toBeInTheDocument()
+    expect(mockedUpdate).toHaveBeenCalledTimes(1)
+  })
+
+  it('rejects invalid avatar type without uploading', async () => {
+    render(<StudentProfilePage />)
+
+    await screen.findByText('Student One')
+    const file = new File(['avatar'], 'avatar.gif', { type: 'image/gif' })
+    fireEvent.change(screen.getByLabelText(/đổi ảnh/i), { target: { files: [file] } })
+
+    expect(await screen.findByText(/chỉ hỗ trợ ảnh png/i)).toBeInTheDocument()
+    expect(mockedUpload).not.toHaveBeenCalled()
+  })
+
+  it('rejects oversized avatar without uploading', async () => {
+    render(<StudentProfilePage />)
+
+    await screen.findByText('Student One')
+    const bigFile = new File([new Uint8Array(5 * 1024 * 1024 + 1)], 'big.png', {
+      type: 'image/png',
+    })
+    fireEvent.change(screen.getByLabelText(/đổi ảnh/i), { target: { files: [bigFile] } })
+
+    expect(await screen.findByText(/tối đa 5 mib/i)).toBeInTheDocument()
+    expect(mockedUpload).not.toHaveBeenCalled()
+  })
+
+  it('renders null avatar and skills without crash', async () => {
+    mockLoaded({ preferredSkills: null, avatarUrl: null })
+    render(<StudentProfilePage />)
+
+    expect(await screen.findByRole('heading', { name: /hồ sơ học viên/i })).toBeInTheDocument()
+    expect(screen.getByText('Student One')).toBeInTheDocument()
+    expect(screen.getByText('SO')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /xóa ảnh/i })).not.toBeInTheDocument()
   })
 
   it('blocks invalid full name before submit', async () => {
