@@ -71,7 +71,7 @@ describe('TeacherListPage', () => {
   })
 
   it('shows an empty message when there are no teachers', async () => {
-    mockedGetTeachers.mockResolvedValueOnce({ data: [] } as Awaited<ReturnType<typeof getTeachers>>)
+    mockedGetTeachers.mockResolvedValueOnce({ data: [] as TeacherProfileSummary[] } as Awaited<ReturnType<typeof getTeachers>>)
     renderPage()
 
     expect(await screen.findByText(/Chưa có giảng viên nào/)).toBeInTheDocument()
