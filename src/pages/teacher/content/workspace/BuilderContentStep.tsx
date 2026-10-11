@@ -7,6 +7,7 @@ import { Button } from '@/components/shadcn/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shadcn/ui/card'
 import { ScrollArea } from '@/components/shadcn/ui/scroll-area'
 import { Separator } from '@/components/shadcn/ui/separator'
+import { LessonAudioPlayer } from '../../../student/learning/LessonAudioPlayer'
 import type { TeacherCourse, TeacherLesson, TeacherLessonRequest, TeacherTopic, TeacherTopicRequest } from '../../../../lib/api/types'
 import { LessonForm } from '../LessonForm'
 import { TeacherContentStatusBadge } from '../TeacherContentStatusBadge'
@@ -181,6 +182,7 @@ export function BuilderContentStep({
                   <AlertDescription>{selectedLesson.rejectionReason}</AlertDescription>
                 </Alert>
               ) : null}
+              <LessonAudioPlayer audioUrl={selectedLesson.audioUrl} />
               {editable ? (
                 <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
                   <LessonForm

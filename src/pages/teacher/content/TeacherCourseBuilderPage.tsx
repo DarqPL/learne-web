@@ -450,7 +450,7 @@ export function TeacherCourseBuilderPage() {
             importExportPanel={
               <CourseImportExportPanel
                 courseId={currentCourse.id}
-                description="Export khóa học hiện tại hoặc import ZIP để cập nhật cấu trúc nội dung."
+                description="Export khóa học hiện tại hoặc import gói nén để cập nhật cấu trúc nội dung."
                 onImported={handleImportCourse}
               />
             }

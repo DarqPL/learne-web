@@ -45,7 +45,7 @@ function formatImportError(error: CourseImportError) {
 export function CourseImportExportPanel({
   courseId,
   title = 'Import / Export khóa học',
-  description = 'Tải template Excel, export khóa học hiện có hoặc import gói ZIP nội dung.',
+  description = 'Tải template Excel, export khóa học hiện có hoặc import gói nén nội dung.',
   onImported,
 }: CourseImportExportPanelProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -61,7 +61,7 @@ export function CourseImportExportPanel({
     setInfo(null)
     try {
       const response = await downloadCourseTemplate()
-      downloadBlob(response.data, 'course-template.xlsx')
+      downloadBlob(response.data, 'course-template.xlsm')
       setInfo('Đã tải template Excel.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể tải template Excel.'))
@@ -101,10 +101,10 @@ export function CourseImportExportPanel({
     try {
       const response = await importTeacherCourse(selectedFile)
       setImportErrors(response.data.errors)
-      setInfo('Đã import ZIP khóa học.')
+      setInfo('Đã import gói nén khóa học.')
       onImported?.(response.data)
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Không thể import ZIP khóa học.'))
+      setError(getApiErrorMessage(err, 'Không thể import gói nén khóa học.'))
     } finally {
       setAction(null)
     }
@@ -154,18 +154,18 @@ export function CourseImportExportPanel({
           onSubmit={handleImportSubmit}
         >
           <Field className="flex-1">
-            <FieldLabel htmlFor="teacher-course-import-file">File ZIP</FieldLabel>
+            <FieldLabel htmlFor="teacher-course-import-file">File gói nén</FieldLabel>
             <Input
               id="teacher-course-import-file"
               className="bg-white file:mr-3 file:rounded-md file:border-0 file:bg-indigo-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-indigo-800"
               type="file"
-              accept=".zip,application/zip,application/x-zip-compressed"
+              accept=".zip,.rar,.7z,application/zip,application/x-zip-compressed,application/vnd.rar,application/x-7z-compressed"
               onChange={handleFileChange}
             />
           </Field>
           <Button type="submit" loading={action === 'import'} disabled={!selectedFile || action !== null}>
             <FileUp data-icon="inline-start" aria-hidden="true" />
-            Import ZIP
+            Import gói nén
           </Button>
         </form>
 
@@ -204,7 +204,7 @@ export function CourseImportExportPanel({
                   Import file <span className="font-semibold text-gray-900">{selectedFile?.name ?? '(Chưa chọn file)'}</span> sẽ
                   thêm hoặc ghi đè nội dung khóa học hiện có?
                   <span className="mt-2 block rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700">
-                    Hãy kiểm tra kỹ file ZIP trước khi tiếp tục.
+                    Hãy kiểm tra kỹ file gói nén trước khi tiếp tục.
                   </span>
                 </AlertDialogDescription>
               </div>

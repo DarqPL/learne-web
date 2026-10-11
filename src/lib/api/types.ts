@@ -349,6 +349,8 @@ export interface TeacherLesson {
   title: string
   description: string | null
   content: string | null
+  audioUrl: string | null
+  audioPublicId: string | null
   skillType: SkillType
   orderIndex: number
   xpReward: number

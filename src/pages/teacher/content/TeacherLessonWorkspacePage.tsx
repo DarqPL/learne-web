@@ -19,6 +19,7 @@ import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
 import { questionTypeLabels, skillTypeLabels } from './contentLabels'
 import { canEditContent, findTeacherLesson } from './contentUtils'
 import { getLessonInitialValue, getQuestionInitialValue } from './teacherContentMappers'
+import { LessonAudioPlayer } from '../../student/learning/LessonAudioPlayer'
 
 const cardClassName = 'rounded-2xl border border-gray-200 bg-white p-5 shadow-sm'
 
@@ -313,6 +314,7 @@ export function TeacherLessonWorkspacePage() {
                 </Button>
               </div>
               <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <LessonAudioPlayer audioUrl={lesson.audioUrl} />
                 <LessonEditForm lesson={lesson} action={action} onSubmit={handleUpdateLesson} />
               </div>
             </section>
@@ -321,6 +323,7 @@ export function TeacherLessonWorkspacePage() {
               <h2 className="text-lg font-semibold text-gray-900">Nội dung bài học</h2>
               <p className="mt-3 text-sm font-medium text-gray-700">Mô tả</p>
               <p className="mt-1 whitespace-pre-wrap text-gray-600">{lesson.description || 'Chưa có mô tả bài học.'}</p>
+              <LessonAudioPlayer audioUrl={lesson.audioUrl} />
               <p className="mt-4 text-sm font-medium text-gray-700">Nội dung</p>
               <p className="mt-1 whitespace-pre-wrap text-gray-600">{lesson.content || 'Chưa có nội dung bài học.'}</p>
             </section>
