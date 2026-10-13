@@ -77,7 +77,7 @@ export function CourseImportExportPanel({
     setInfo(null)
     try {
       const response = await exportTeacherCourse(courseId)
-      downloadBlob(response.data, `course-${courseId}-export.xlsx`)
+      downloadBlob(response.data, `course-${courseId}-export.zip`)
       setInfo('Đã export khóa học.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể export khóa học.'))

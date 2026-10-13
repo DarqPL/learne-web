@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import type { AxiosResponse } from 'axios'
 import { describe, expect, it, vi } from 'vitest'
-import { downloadCourseTemplate } from '../../../lib/api/teacherContentApi'
+import { downloadCourseTemplate, exportTeacherCourse } from '../../../lib/api/teacherContentApi'
 import { CourseImportExportPanel } from './CourseImportExportPanel'
 
 vi.mock('../../../lib/api/teacherContentApi', () => ({
@@ -8,6 +9,10 @@ vi.mock('../../../lib/api/teacherContentApi', () => ({
   exportTeacherCourse: vi.fn(),
   importTeacherCourse: vi.fn(),
 }))
+
+function blobResponse(data: Blob) {
+  return { data } as AxiosResponse<Blob>
+}
 
 describe('CourseImportExportPanel', () => {
   it('accepts zip rar and 7z import packages', () => {
@@ -34,7 +39,7 @@ describe('CourseImportExportPanel', () => {
   })
 
   it('downloads the course template as an xlsm file', async () => {
-    vi.mocked(downloadCourseTemplate).mockResolvedValue({ data: new Blob(['template']) })
+    vi.mocked(downloadCourseTemplate).mockResolvedValue(blobResponse(new Blob(['template'])))
     const createObjectUrl = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:template')
     const revokeObjectUrl = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
     const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
@@ -52,7 +57,35 @@ describe('CourseImportExportPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Tải template Excel' }))
 
     await waitFor(() => expect(downloadCourseTemplate).toHaveBeenCalledTimes(1))
-    expect(createdAnchor?.download).toBe('course-template.xlsm')
+    expect((createdAnchor as HTMLAnchorElement | null)?.download).toBe('course-template.xlsm')
+    expect(click).toHaveBeenCalledTimes(1)
+
+    createElement.mockRestore()
+    createObjectUrl.mockRestore()
+    revokeObjectUrl.mockRestore()
+    click.mockRestore()
+  })
+
+  it('downloads course exports as zip files', async () => {
+    vi.mocked(exportTeacherCourse).mockResolvedValue(blobResponse(new Blob(['zip'], { type: 'application/zip' })))
+    const createObjectUrl = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:export')
+    const revokeObjectUrl = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+    let createdAnchor: HTMLAnchorElement | null = null
+    const createElement = vi.spyOn(document, 'createElement').mockImplementation((tagName) => {
+      const element = document.createElementNS('http://www.w3.org/1999/xhtml', tagName)
+      if (tagName === 'a') {
+        createdAnchor = element as HTMLAnchorElement
+      }
+      return element as HTMLElement
+    })
+
+    render(<CourseImportExportPanel courseId={42} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Export khóa học' }))
+
+    await waitFor(() => expect(exportTeacherCourse).toHaveBeenCalledWith(42))
+    expect((createdAnchor as HTMLAnchorElement | null)?.download).toBe('course-42-export.zip')
     expect(click).toHaveBeenCalledTimes(1)
 
     createElement.mockRestore()
