@@ -15,7 +15,7 @@ export function LessonAudioPlayer({ audioUrl, title = 'Audio bài nghe' }: Lesso
           <p className="mt-1 text-sm leading-6 text-gray-600">Nghe đoạn audio trước khi đọc nội dung hoặc trả lời câu hỏi.</p>
         </div>
       </div>
-      <audio className="mt-4 w-full" controls preload="metadata" src={audioUrl}>
+      <audio aria-label={title} className="mt-4 w-full" controls preload="metadata" src={audioUrl}>
         Trình duyệt của bạn chưa hỗ trợ phát audio trực tiếp.
       </audio>
     </section>
