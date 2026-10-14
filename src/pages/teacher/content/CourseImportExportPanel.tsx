@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
 } from '@/components/shadcn/ui/alert-dialog'
 import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/shadcn/ui/accordion'
 import { Button } from '@/components/shadcn/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shadcn/ui/card'
 import { Field, FieldLabel } from '@/components/shadcn/ui/field'
@@ -161,6 +162,20 @@ export function CourseImportExportPanel({
           ) : null}
         </div>
 
+        <Accordion type="single" collapsible className="rounded-xl border border-indigo-100 bg-indigo-50/50 px-4">
+          <AccordionItem value="import-guide">
+            <AccordionTrigger>Hướng dẫn file import</AccordionTrigger>
+            <AccordionContent>
+              <ul className="list-disc space-y-1 pl-5 text-sm text-indigo-950/80">
+                <li>1 file `.xlsm` duy nhất từ template Tải template Excel.</li>
+                <li>Cột bắt buộc Content: topic_title, lesson_title, skill_type, question_type, question_text + đáp án theo loại (trắc nghiệm: option_a..d + correct_option; loại khác: correct_answer).</li>
+                <li>Audio mp3/wav/m4a/ogg trong thư mục `audio/`, mỗi file tối đa 20MB.</li>
+                <li>Nhập lại (reimport): giữ cột `_course_id...` để cập nhật thay vì tạo mới.</li>
+              </ul>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+
         <form
           className="flex flex-col gap-3 rounded-xl border border-indigo-100 bg-indigo-50/50 p-4 sm:flex-row sm:items-end"
           onSubmit={handleImportSubmit}
@@ -215,7 +230,7 @@ export function CourseImportExportPanel({
                 <AlertDialogTitle>Xác nhận import khóa học</AlertDialogTitle>
                 <AlertDialogDescription>
                   Import file <span className="font-semibold text-gray-900">{selectedFile?.name ?? '(Chưa chọn file)'}</span> sẽ
-                  thêm hoặc ghi đè nội dung khóa học hiện có?
+                  Import sẽ ghi đè bản nháp hiện tại, hoặc tạo bản nháp mới nếu khóa học đã xuất bản/đang chờ duyệt. Nội dung đã xuất bản không đổi cho đến khi được duyệt.
                   <span className="mt-2 block rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700">
                     Hãy kiểm tra kỹ file gói nén trước khi tiếp tục.
                   </span>
