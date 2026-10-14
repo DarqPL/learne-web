@@ -93,7 +93,7 @@ describe('CourseImportExportPanel', () => {
   it('shows revision info after import', async () => {
     mockedImportTeacherCourse.mockResolvedValueOnce({
       data: { courseId: 1, revisionId: 4, status: 'DRAFT', errors: [] },
-    } as AxiosResponse<CourseImportResponse>)
+    } as unknown as AxiosResponse<CourseImportResponse>)
     render(<CourseImportExportPanel />)
 
     fireEvent.change(screen.getByLabelText(/file gói nén/i), {
