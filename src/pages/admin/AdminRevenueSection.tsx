@@ -29,13 +29,23 @@ import {
   formatMonthLabel,
   formatVnd,
   getCurrentMonth,
+  getCurrentYear,
   getLast6Months,
+  getYearMonths,
   planCodeLabel,
 } from './adminRevenueUtils'
 
 interface TrendPoint {
   month: string
   label: string
+  total: number
+}
+
+interface YearPoint {
+  month: string
+  label: string
+  course: number
+  plan: number
   total: number
 }
 
@@ -51,10 +61,30 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
   const [trend, setTrend] = useState<TrendPoint[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'trend' | 'year'>('trend')
+  const [year, setYear] = useState<number>(Number((initialMonth ?? getCurrentMonth()).split('-')[0]))
+  const [yearData, setYearData] = useState<YearPoint[] | null>(null)
 
   function handleMonthChange(value: string) {
     if (!value) return
     setMonth(value)
+    setLoading(true)
+    setError(null)
+  }
+
+  function handleViewModeChange(next: 'trend' | 'year') {
+    if (next === viewMode) return
+    setViewMode(next)
+    if (next === 'year') {
+      setLoading(true)
+      setError(null)
+    }
+  }
+
+  function handleYearChange(value: string) {
+    const next = Number(value)
+    if (Number.isNaN(next)) return
+    setYear(next)
     setLoading(true)
     setError(null)
   }
@@ -109,9 +139,43 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
     }
   }, [month])
 
+  useEffect(() => {
+    if (viewMode !== 'year') return
+    let cancelled = false
+    void (async () => {
+      try {
+        const months = getYearMonths(year)
+        const points = await Promise.all(
+          months.map(async (targetMonth, index) => {
+            const [courseResponse, planResponse] = await Promise.all([
+              getCourseSales(targetMonth),
+              getPlanSales(targetMonth),
+            ])
+            if (cancelled) return null
+            const course = (courseResponse.data.rows ?? []).reduce((sum, row) => sum + row.netRevenueVnd, 0)
+            const plan = (planResponse.data.rows ?? []).reduce((sum, row) => sum + row.netRevenueVnd, 0)
+            return { month: targetMonth, label: `T${index + 1}`, course, plan, total: course + plan }
+          }),
+        )
+        if (cancelled) return
+        setYearData(points.filter((p): p is YearPoint => p !== null))
+        setError(null)
+      } catch (err) {
+        if (!cancelled) setError(getApiErrorMessage(err, 'Không thể tải dữ liệu doanh thu.'))
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [viewMode, year])
+
   const courseTotal = (courseRows ?? []).reduce((sum, row) => sum + row.netRevenueVnd, 0)
   const planTotal = (planRows ?? []).reduce((sum, row) => sum + row.netRevenueVnd, 0)
   const totalRevenue = courseTotal + planTotal
+  const yearCourse = (yearData ?? []).reduce((sum, point) => sum + point.course, 0)
+  const yearPlan = (yearData ?? []).reduce((sum, point) => sum + point.plan, 0)
 
   const topCourses = [...(courseRows ?? [])].sort((a, b) => b.netRevenueVnd - a.netRevenueVnd).slice(0, 8)
   const courseChartData = topCourses.map((row) => ({ name: row.courseName, total: row.netRevenueVnd }))
@@ -145,6 +209,54 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
         </Alert>
       ) : null}
 
+      <div className="flex min-w-0 flex-wrap items-end gap-3">
+        <div role="group" aria-label="Chế độ xem doanh thu" className="flex overflow-hidden rounded-md border border-gray-200">
+          <button
+            type="button"
+            aria-pressed={viewMode === 'trend'}
+            onClick={() => {
+              handleViewModeChange('trend')
+            }}
+            className={
+              viewMode === 'trend'
+                ? 'bg-indigo-600 px-4 py-2 text-sm font-medium text-white'
+                : 'bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50'
+            }
+          >
+            6 tháng
+          </button>
+          <button
+            type="button"
+            aria-pressed={viewMode === 'year'}
+            onClick={() => {
+              handleViewModeChange('year')
+            }}
+            className={
+              viewMode === 'year'
+                ? 'bg-indigo-600 px-4 py-2 text-sm font-medium text-white'
+                : 'bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50'
+            }
+          >
+            Theo năm
+          </button>
+        </div>
+        {viewMode === 'year' ? (
+          <div className="flex w-32 flex-col gap-1.5">
+            <Label htmlFor="admin-revenue-year">Năm</Label>
+            <Input
+              id="admin-revenue-year"
+              type="number"
+              min={2024}
+              max={getCurrentYear()}
+              value={year}
+              onChange={(event) => {
+                handleYearChange(event.target.value)
+              }}
+            />
+          </div>
+        ) : null}
+      </div>
+
       {loading ? (
         <div className="flex flex-col gap-3">
           <Skeleton className="h-28 w-full" />
@@ -169,6 +281,53 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
             </CardContent>
           </Card>
 
+          {viewMode === 'year' ? (
+            <>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Tổng năm {year}</CardTitle>
+                  <CardDescription>Tổng net khóa học + gói trong năm {year}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold text-gray-950">{formatVnd(yearCourse + yearPlan)}</p>
+                  <p className="mt-1 text-sm text-gray-600">
+                    Khóa học {formatVnd(yearCourse)} · Gói {formatVnd(yearPlan)}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Doanh thu theo tháng năm {year}</CardTitle>
+                  <CardDescription>Doanh thu net khóa học + gói từng tháng trong năm {year}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {!yearData || yearData.length === 0 ? (
+                    <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+                      Chưa có dữ liệu doanh thu năm {year}.
+                    </p>
+                  ) : (
+                    <div className="h-64 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={yearData} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
+                          <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
+                          <XAxis dataKey="label" tick={{ fontSize: 12 }} interval={0} />
+                          <YAxis
+                            tickFormatter={(value: number) => formatCompactVnd(value)}
+                            tick={{ fontSize: 12 }}
+                            width={80}
+                          />
+                          <Tooltip formatter={(value) => formatVnd(Number(value))} />
+                          <Bar dataKey="course" name="Khóa học" stackId="revenue" fill="#4f46e5" />
+                          <Bar dataKey="plan" name="Gói" stackId="revenue" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </>
+          ) : (
           <Card>
             <CardHeader>
               <CardTitle>Xu hướng 6 tháng</CardTitle>
@@ -225,6 +384,7 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
               )}
             </CardContent>
           </Card>
+          )}
 
           <div className="grid gap-4 lg:grid-cols-2">
             <Card>

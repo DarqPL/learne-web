@@ -233,4 +233,70 @@ describe('AdminRevenueSection', () => {
 
     expect(await screen.findByRole('alert')).toBeInTheDocument()
   })
+
+  it('renders yearly chart with 12 months when year mode is selected', async () => {
+    mockedCourseSales.mockImplementation(
+      async (month: string) =>
+        apiResponse({ month, rows: [makeCourseRow({ netRevenueVnd: 100_000, courseName: `Year course ${month}` })] }) as never,
+    )
+    mockedPlanSales.mockImplementation(
+      async (month: string) => apiResponse({ month, rows: [makePlanRow({ netRevenueVnd: 100_000 })] }) as never,
+    )
+    mockedTeacherShare.mockResolvedValue({
+      data: { month: '2026-10', planRevenuePoolVnd: 0, totalActivityScore: 0, rows: [] },
+    } as never)
+
+    render(<AdminRevenueSection initialMonth="2026-10" />)
+
+    fireEvent.click(await screen.findByRole('button', { name: /theo năm/i }))
+
+    // 12 months x (100k course + 100k plan) = 2.400.000 net
+    expect(await screen.findByText(/tổng năm 2026/i)).toBeInTheDocument()
+    expect(await screen.findByText(/2\.400\.000/)).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(mockedCourseSales).toHaveBeenCalledWith('2026-01')
+      expect(mockedCourseSales).toHaveBeenCalledWith('2026-12')
+    })
+    const calledMonths = mockedCourseSales.mock.calls.map((call) => call[0])
+    expect(new Set(calledMonths).size).toBe(12)
+
+    const yearCard = screen.getByText(/tổng năm 2026/i).closest('[data-slot="card"]')
+    expect(yearCard).not.toBeNull()
+    for (let index = 1; index <= 12; index += 1) {
+      expect(screen.getAllByText(`T${index}`, { exact: true }).length).toBeGreaterThanOrEqual(1)
+    }
+  })
+
+  it('renders zero columns for empty months in year mode', async () => {
+    mockedCourseSales.mockResolvedValue(apiResponse({ month: '2026-10', rows: [] }) as never)
+    mockedPlanSales.mockResolvedValue({ data: { month: '2026-10', rows: [] } } as never)
+    mockedTeacherShare.mockResolvedValue({
+      data: { month: '2026-10', planRevenuePoolVnd: 0, totalActivityScore: 0, rows: [] },
+    } as never)
+
+    render(<AdminRevenueSection initialMonth="2026-10" />)
+
+    fireEvent.click(await screen.findByRole('button', { name: /theo năm/i }))
+
+    expect(await screen.findByText(/tổng năm 2026/i)).toBeInTheDocument()
+    const yearCard = screen.getByText(/tổng năm 2026/i).closest('[data-slot="card"]')
+    expect(yearCard).not.toBeNull()
+    expect(within(yearCard as HTMLElement).getAllByText(/0\s*₫/).length).toBeGreaterThanOrEqual(1)
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('shows error banner when a yearly fetch fails', async () => {
+    mockedCourseSales.mockRejectedValue(new Error('boom'))
+    mockedPlanSales.mockResolvedValue({ data: { month: '2026-10', rows: [] } } as never)
+    mockedTeacherShare.mockResolvedValue({
+      data: { month: '2026-10', planRevenuePoolVnd: 0, totalActivityScore: 0, rows: [] },
+    } as never)
+
+    render(<AdminRevenueSection initialMonth="2026-10" />)
+
+    fireEvent.click(await screen.findByRole('button', { name: /theo năm/i }))
+
+    expect(await screen.findByText('Không thể tải dữ liệu doanh thu')).toBeInTheDocument()
+  })
 })
