@@ -205,7 +205,7 @@ export function BuilderQuestionsStep({
                       </CardTitle>
                       <CardDescription>
                         {questionDialog?.mode === 'edit'
-                          ? 'Cập nhật nội dung, đáp án và XP của câu hỏi này.'
+                          ? 'Cập nhật nội dung và đáp án của câu hỏi này.'
                           : dialogCreateLesson
                             ? `Tạo câu hỏi mới trong bài học "${dialogCreateLesson.title}".`
                             : null}
