@@ -35,3 +35,11 @@ export function planCodeLabel(planCode: string): string {
   if (planCode === 'PRO_PLUS') return 'PRO+'
   return planCode
 }
+
+export function getCurrentYear(): number {
+  return new Date().getFullYear()
+}
+
+export function getYearMonths(year: number): string[] {
+  return Array.from({ length: 12 }, (_, index) => `${year}-${String(index + 1).padStart(2, '0')}`)
+}
