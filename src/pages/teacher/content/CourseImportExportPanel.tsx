@@ -91,6 +91,8 @@ export function CourseImportExportPanel({
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSelectedFile(event.target.files?.[0] ?? null)
+    setError(null)
+    setInfo(null)
     setImportErrors([])
   }
 
@@ -229,8 +231,7 @@ export function CourseImportExportPanel({
               <div className="flex flex-col gap-1">
                 <AlertDialogTitle>Xác nhận import khóa học</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Import file <span className="font-semibold text-gray-900">{selectedFile?.name ?? '(Chưa chọn file)'}</span> sẽ
-                  Import sẽ ghi đè bản nháp hiện tại, hoặc tạo bản nháp mới nếu khóa học đã xuất bản/đang chờ duyệt. Nội dung đã xuất bản không đổi cho đến khi được duyệt.
+                  Import file <span className="font-semibold text-gray-900">{selectedFile?.name ?? '(Chưa chọn file)'}</span> sẽ ghi đè bản nháp hiện tại, hoặc tạo bản nháp mới nếu khóa học đã xuất bản/đang chờ duyệt. Nội dung đã xuất bản không đổi cho đến khi được duyệt.
                   <span className="mt-2 block rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700">
                     Hãy kiểm tra kỹ file gói nén trước khi tiếp tục.
                   </span>

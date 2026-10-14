@@ -52,8 +52,42 @@ describe('CourseImportExportPanel', () => {
     Object.defineProperty(big, 'size', { value: 101 * 1024 * 1024 })
     fireEvent.change(screen.getByLabelText(/file gói nén/i), { target: { files: [big] } })
     fireEvent.click(screen.getByRole('button', { name: /import gói nén/i }))
-    expect(await screen.findByText(/tối đa 100MB/i)).toBeInTheDocument()
+    expect(await screen.findByText(/File vượt quá 100MB/i)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /xác nhận import/i })).not.toBeInTheDocument()
     expect(mockedImportTeacherCourse).not.toHaveBeenCalled()
+  })
+
+  it('blocks confirm when the file is replaced by an oversized one before confirming', async () => {
+    render(<CourseImportExportPanel />)
+
+    fireEvent.change(screen.getByLabelText(/file gói nén/i), {
+      target: { files: [new File(['x'], 'ok.zip', { type: 'application/zip' })] },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /import gói nén/i }))
+    expect(await screen.findByRole('button', { name: /xác nhận import/i })).toBeInTheDocument()
+
+    const big = new File(['x'], 'big.zip', { type: 'application/zip' })
+    Object.defineProperty(big, 'size', { value: 101 * 1024 * 1024 })
+    fireEvent.change(screen.getByLabelText(/file gói nén/i), { target: { files: [big] } })
+    fireEvent.click(screen.getByRole('button', { name: /xác nhận import/i }))
+
+    expect(await screen.findByText(/File vượt quá 100MB/i)).toBeInTheDocument()
+    expect(mockedImportTeacherCourse).not.toHaveBeenCalled()
+  })
+
+  it('clears the oversize error when a valid file is picked', async () => {
+    render(<CourseImportExportPanel />)
+
+    const big = new File(['x'], 'big.zip', { type: 'application/zip' })
+    Object.defineProperty(big, 'size', { value: 101 * 1024 * 1024 })
+    fireEvent.change(screen.getByLabelText(/file gói nén/i), { target: { files: [big] } })
+    fireEvent.click(screen.getByRole('button', { name: /import gói nén/i }))
+    expect(await screen.findByText(/File vượt quá 100MB/i)).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText(/file gói nén/i), {
+      target: { files: [new File(['x'], 'ok.zip', { type: 'application/zip' })] },
+    })
+    await waitFor(() => expect(screen.queryByText(/File vượt quá 100MB/i)).not.toBeInTheDocument())
   })
 
   it('shows revision info after import', async () => {
