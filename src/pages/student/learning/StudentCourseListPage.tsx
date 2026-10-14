@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ArrowRight, BookOpen, FileQuestion, Layers, Loader2, Search, XCircle } from 'lucide-react'
+import { ArrowRight, BookOpen, ChevronLeft, ChevronRight, FileQuestion, Layers, Loader2, Search, XCircle } from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { listStudentCourses } from '../../../lib/api/studentLearningApi'
 import type { CourseType, StudentCourseSummary } from '../../../lib/api/types'
@@ -56,9 +56,10 @@ export function StudentCourseListPage() {
   const [courses, setCourses] = useState<StudentCourseSummary[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [localSearch, setLocalSearch] = useState('')
+  const [page, setPage] = useState(0)
+  const [cursorStack, setCursorStack] = useState<(string | undefined)[]>([undefined])
   const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [hasNext, setHasNext] = useState(false)
-  const [loadingMore, setLoadingMore] = useState(false)
   const requestVersion = useRef(0)
 
   useEffect(() => {
@@ -80,6 +81,8 @@ export function StudentCourseListPage() {
           setCourses(response.data.content)
           setNextCursor(response.data.nextCursor)
           setHasNext(response.data.hasNext)
+          setPage(0)
+          setCursorStack([undefined])
         }
       } catch (err) {
         if (!cancelled) setError(getApiErrorMessage(err, 'Không thể tải danh sách khóa học.'))
@@ -94,10 +97,8 @@ export function StudentCourseListPage() {
   const hasNoResults = courses !== null && courses.length === 0
   const teacherFilterName = teacherId ? courses?.find((course) => course.teacherId === teacherId)?.teacherName : undefined
 
-  async function loadMoreCourses() {
-    if (!nextCursor || loadingMore) return
+  async function loadCoursesPage(cursor: string | undefined, targetPage: number) {
     const version = requestVersion.current
-    setLoadingMore(true)
     setError(null)
     try {
       const response = await listStudentCourses({
@@ -105,19 +106,18 @@ export function StudentCourseListPage() {
         ...(teacherId ? { teacherId } : {}),
         ...(localSearch.trim() ? { q: localSearch.trim() } : {}),
         size: PAGE_SIZE,
-        cursor: nextCursor,
+        ...(cursor ? { cursor } : {}),
       })
       if (version === requestVersion.current) {
-        setCourses((current) => [...(current ?? []), ...response.data.content])
+        setCourses(response.data.content)
         setNextCursor(response.data.nextCursor)
         setHasNext(response.data.hasNext)
+        setPage(targetPage)
       }
     } catch (err) {
       if (version === requestVersion.current) {
-        setError(getApiErrorMessage(err, 'Không thể tải thêm khóa học.'))
+        setError(getApiErrorMessage(err, 'Không thể tải danh sách khóa học.'))
       }
-    } finally {
-      setLoadingMore(false)
     }
   }
 
@@ -306,11 +306,41 @@ export function StudentCourseListPage() {
             </Link>
           ))}
           </div>
-          {hasNext ? (
-            <Button type="button" variant="outline" className="mx-auto" onClick={() => void loadMoreCourses()} disabled={loadingMore}>
-              {loadingMore ? <Loader2 className="animate-spin" aria-hidden="true" /> : null}
-              Tải thêm khóa học
-            </Button>
+          {courses.length > 0 ? (
+            <nav aria-label="Phân trang khóa học" className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p aria-live="polite" className="text-sm text-muted-foreground">
+                Trang {page + 1} · {courses.length} khóa học
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-label="Trang trước"
+                  disabled={page === 0}
+                  onClick={() => void loadCoursesPage(cursorStack[page - 1], page - 1)}
+                >
+                  <ChevronLeft aria-hidden="true" />
+                  Trước
+                </Button>
+                <span className="text-sm text-muted-foreground" aria-live="polite">
+                  {page + 1}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-label="Trang tiếp"
+                  disabled={!hasNext || !nextCursor}
+                  onClick={() => {
+                    if (!nextCursor) return
+                    setCursorStack((current) => [...current.slice(0, page + 1), nextCursor])
+                    void loadCoursesPage(nextCursor, page + 1)
+                  }}
+                >
+                  Tiếp
+                  <ChevronRight aria-hidden="true" />
+                </Button>
+              </div>
+            </nav>
           ) : null}
         </>
       )}
