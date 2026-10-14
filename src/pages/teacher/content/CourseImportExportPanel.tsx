@@ -42,6 +42,8 @@ function formatImportError(error: CourseImportError) {
   return prefix ? `${prefix} - ${error.message}` : error.message
 }
 
+const MAX_IMPORT_ARCHIVE_BYTES = 100 * 1024 * 1024
+
 export function CourseImportExportPanel({
   courseId,
   title = 'Import / Export khóa học',
@@ -93,6 +95,11 @@ export function CourseImportExportPanel({
 
   const handleImportCourse = async () => {
     if (!selectedFile || action !== null) return
+    if (selectedFile.size > MAX_IMPORT_ARCHIVE_BYTES) {
+      setConfirmOpen(false)
+      setError('File vượt quá 100MB cho phép.')
+      return
+    }
     setConfirmOpen(false)
     setAction('import')
     setError(null)
@@ -113,6 +120,10 @@ export function CourseImportExportPanel({
   const handleImportSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!selectedFile || action !== null) return
+    if (selectedFile.size > MAX_IMPORT_ARCHIVE_BYTES) {
+      setError('File vượt quá 100MB cho phép.')
+      return
+    }
     setConfirmOpen(true)
   }
 
@@ -159,9 +170,10 @@ export function CourseImportExportPanel({
               id="teacher-course-import-file"
               className="bg-white file:mr-3 file:rounded-md file:border-0 file:bg-indigo-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-indigo-800"
               type="file"
-              accept=".zip,.rar,.7z,application/zip,application/x-zip-compressed,application/vnd.rar,application/x-7z-compressed"
+              accept=".zip,.rar,.7z,application/zip,application/x-zip-compressed,application/vnd.rar,application/x-rar-compressed,application/x-7z-compressed"
               onChange={handleFileChange}
             />
+            <p className="text-xs text-indigo-900/70">Chấp nhận file .zip, .rar, .7z tối đa 100MB. Bên trong phải có đúng 1 file .xlsm từ template và audio (mp3/wav/m4a/ogg, mỗi file tối đa 20MB) đặt trong thư mục audio/.</p>
           </Field>
           <Button type="submit" loading={action === 'import'} disabled={!selectedFile || action !== null}>
             <FileUp data-icon="inline-start" aria-hidden="true" />

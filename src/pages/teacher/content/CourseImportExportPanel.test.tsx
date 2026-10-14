@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { AxiosResponse } from 'axios'
-import { describe, expect, it, vi } from 'vitest'
-import { downloadCourseTemplate, exportTeacherCourse } from '../../../lib/api/teacherContentApi'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { downloadCourseTemplate, exportTeacherCourse, importTeacherCourse } from '../../../lib/api/teacherContentApi'
 import { CourseImportExportPanel } from './CourseImportExportPanel'
 
 vi.mock('../../../lib/api/teacherContentApi', () => ({
@@ -9,6 +9,12 @@ vi.mock('../../../lib/api/teacherContentApi', () => ({
   exportTeacherCourse: vi.fn(),
   importTeacherCourse: vi.fn(),
 }))
+
+const mockedImportTeacherCourse = vi.mocked(importTeacherCourse)
+
+beforeEach(() => {
+  vi.clearAllMocks()
+})
 
 function blobResponse(data: Blob) {
   return { data } as AxiosResponse<Blob>
@@ -20,7 +26,7 @@ describe('CourseImportExportPanel', () => {
 
     expect(screen.getByLabelText('File gói nén')).toHaveAttribute(
       'accept',
-      '.zip,.rar,.7z,application/zip,application/x-zip-compressed,application/vnd.rar,application/x-7z-compressed',
+      '.zip,.rar,.7z,application/zip,application/x-zip-compressed,application/vnd.rar,application/x-rar-compressed,application/x-7z-compressed',
     )
   })
 
@@ -36,6 +42,17 @@ describe('CourseImportExportPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Import gói nén' }))
 
     expect(screen.getByText('Hãy kiểm tra kỹ file gói nén trước khi tiếp tục.')).toBeInTheDocument()
+  })
+
+  it('rejects oversized archives before upload', async () => {
+    render(<CourseImportExportPanel />)
+
+    const big = new File(['x'], 'big.zip', { type: 'application/zip' })
+    Object.defineProperty(big, 'size', { value: 101 * 1024 * 1024 })
+    fireEvent.change(screen.getByLabelText(/file gói nén/i), { target: { files: [big] } })
+    fireEvent.click(screen.getByRole('button', { name: /import gói nén/i }))
+    expect(await screen.findByText(/tối đa 100MB/i)).toBeInTheDocument()
+    expect(mockedImportTeacherCourse).not.toHaveBeenCalled()
   })
 
   it('downloads the course template as an xlsm file', async () => {
