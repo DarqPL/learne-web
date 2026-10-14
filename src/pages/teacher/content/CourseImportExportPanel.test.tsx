@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { AxiosResponse } from 'axios'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { downloadCourseTemplate, exportTeacherCourse, importTeacherCourse } from '../../../lib/api/teacherContentApi'
+import type { CourseImportResponse } from '../../../lib/api/types'
 import { CourseImportExportPanel } from './CourseImportExportPanel'
 
 vi.mock('../../../lib/api/teacherContentApi', () => ({
@@ -53,6 +54,21 @@ describe('CourseImportExportPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: /import gói nén/i }))
     expect(await screen.findByText(/tối đa 100MB/i)).toBeInTheDocument()
     expect(mockedImportTeacherCourse).not.toHaveBeenCalled()
+  })
+
+  it('shows revision info after import', async () => {
+    mockedImportTeacherCourse.mockResolvedValueOnce({
+      data: { courseId: 1, revisionId: 4, status: 'DRAFT', errors: [] },
+    } as AxiosResponse<CourseImportResponse>)
+    render(<CourseImportExportPanel />)
+
+    fireEvent.change(screen.getByLabelText(/file gói nén/i), {
+      target: { files: [new File(['x'], 'ok.zip', { type: 'application/zip' })] },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /import gói nén/i }))
+    fireEvent.click(await screen.findByRole('button', { name: /xác nhận import/i }))
+
+    expect(await screen.findByText(/bản nháp R4/i)).toBeInTheDocument()
   })
 
   it('downloads the course template as an xlsm file', async () => {

@@ -108,7 +108,8 @@ export function CourseImportExportPanel({
     try {
       const response = await importTeacherCourse(selectedFile)
       setImportErrors(response.data.errors)
-      setInfo('Đã import gói nén khóa học.')
+      const { revisionId, status } = response.data
+      setInfo(`Đã import khóa học (bản nháp R${revisionId}, trạng thái ${status}). Dữ liệu đã xuất bản không đổi cho đến khi được duyệt.`)
       onImported?.(response.data)
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể import gói nén khóa học.'))
