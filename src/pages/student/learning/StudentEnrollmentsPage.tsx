@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowRight,
   BookOpen,
+  ChevronLeft,
+  ChevronRight,
   Loader2,
   TrendingUp,
   XCircle,
@@ -49,11 +51,14 @@ function teacherInitials(name: string): string {
 export function StudentEnrollmentsPage() {
   const [enrollments, setEnrollments] = useState<StudentEnrollment[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [page, setPage] = useState(0)
+  const [cursorStack, setCursorStack] = useState<(string | undefined)[]>([undefined])
   const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [hasNext, setHasNext] = useState(false)
-  const [loadingMore, setLoadingMore] = useState(false)
+  const requestVersion = useRef(0)
 
   useEffect(() => {
+    const version = ++requestVersion.current
     let cancelled = false
 
     void (async () => {
@@ -63,10 +68,12 @@ export function StudentEnrollmentsPage() {
       setError(null)
       try {
         const response = await listStudentEnrollments({ size: PAGE_SIZE })
-        if (!cancelled) {
+        if (!cancelled && version === requestVersion.current) {
           setEnrollments(response.data.content)
           setNextCursor(response.data.nextCursor)
           setHasNext(response.data.hasNext)
+          setPage(0)
+          setCursorStack([undefined])
         }
       } catch (err) {
         if (!cancelled) setError(getApiErrorMessage(err, 'Không thể tải danh sách khóa học đã đăng ký.'))
@@ -78,18 +85,21 @@ export function StudentEnrollmentsPage() {
     }
   }, [])
 
-  async function loadMoreEnrollments() {
-    if (!nextCursor || loadingMore) return
-    setLoadingMore(true)
+  async function loadEnrollmentsPage(cursor: string | undefined, targetPage: number) {
+    const version = requestVersion.current
+    setError(null)
     try {
-      const response = await listStudentEnrollments({ size: PAGE_SIZE, cursor: nextCursor })
-      setEnrollments((current) => [...(current ?? []), ...response.data.content])
-      setNextCursor(response.data.nextCursor)
-      setHasNext(response.data.hasNext)
+      const response = await listStudentEnrollments({ size: PAGE_SIZE, ...(cursor ? { cursor } : {}) })
+      if (version === requestVersion.current) {
+        setEnrollments(response.data.content)
+        setNextCursor(response.data.nextCursor)
+        setHasNext(response.data.hasNext)
+        setPage(targetPage)
+      }
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Không thể tải thêm khóa học đã đăng ký.'))
-    } finally {
-      setLoadingMore(false)
+      if (version === requestVersion.current) {
+        setError(getApiErrorMessage(err, 'Không thể tải danh sách khóa học đã đăng ký.'))
+      }
     }
   }
 
@@ -215,11 +225,41 @@ export function StudentEnrollmentsPage() {
               )
             })}
           </div>
-          {hasNext ? (
-            <Button type="button" variant="outline" className="mx-auto" onClick={() => void loadMoreEnrollments()} disabled={loadingMore}>
-              {loadingMore ? <Loader2 className="animate-spin" aria-hidden="true" /> : null}
-              Tải thêm khóa học
-            </Button>
+          {enrollments.length > 0 ? (
+            <nav aria-label="Phân trang khóa học" className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p aria-live="polite" className="text-sm text-muted-foreground">
+                Trang {page + 1} · {enrollments.length} khóa học
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-label="Trang trước"
+                  disabled={page === 0}
+                  onClick={() => void loadEnrollmentsPage(cursorStack[page - 1], page - 1)}
+                >
+                  <ChevronLeft aria-hidden="true" />
+                  Trước
+                </Button>
+                <span className="text-sm text-muted-foreground" aria-live="polite">
+                  {page + 1}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-label="Trang tiếp"
+                  disabled={!hasNext || !nextCursor}
+                  onClick={() => {
+                    if (!nextCursor) return
+                    setCursorStack((current) => [...current.slice(0, page + 1), nextCursor])
+                    void loadEnrollmentsPage(nextCursor, page + 1)
+                  }}
+                >
+                  Tiếp
+                  <ChevronRight aria-hidden="true" />
+                </Button>
+              </div>
+            </nav>
           ) : null}
         </>
       )}
