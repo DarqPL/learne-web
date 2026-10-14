@@ -34,11 +34,7 @@ const defaultQuestion: TeacherQuestionRequest = {
 
 const validationId = 'teacher-question-form-errors'
 
-const nonNegativeIntegerPattern = /^\d+$/
-
 const textAnswerQuestionTypes: TeacherQuestionRequest['type'][] = ['FILL_BLANK', 'WORD_ORDER', 'TRANSLATION', 'SHORT_ANSWER']
-
-const difficultyOptions = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
 
 function usesTextAnswer(type: TeacherQuestionRequest['type']) {
   return textAnswerQuestionTypes.includes(type) || type === 'PRONUNCIATION'
@@ -58,7 +54,6 @@ interface QuestionFieldErrors {
   questionText?: string
   correctAnswer?: string
   explanation?: string
-  xpReward?: string
   options?: string
 }
 
@@ -80,10 +75,6 @@ function getTrueFalseAnswer(question: TeacherQuestionRequest) {
   return question.correctAnswer === 'Sai' ? 'Sai' : 'Đúng'
 }
 
-function isNonNegativeIntegerInput(value: string) {
-  return nonNegativeIntegerPattern.test(value.trim())
-}
-
 function getNextOptionOrderIndex(options: QuestionOptionForm[]) {
   let maxOrderIndex = -1
 
@@ -100,7 +91,6 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
   const initialForm = initialValue ?? defaultQuestion
   const previousInitialValue = useRef(initialValue)
   const [form, setForm] = useState<QuestionFormState>(toFormState(initialForm))
-  const [xpRewardInput, setXpRewardInput] = useState(String(initialForm.xpReward))
   const [trueFalseAnswer, setTrueFalseAnswer] = useState(getTrueFalseAnswer(initialForm))
   const [validationMessages, setValidationMessages] = useState<string[]>([])
   const [fieldErrors, setFieldErrors] = useState<QuestionFieldErrors>({})
@@ -117,7 +107,6 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
     queueMicrotask(() => {
       if (cancelled) return
       setForm(toFormState(nextForm))
-      setXpRewardInput(String(nextForm.xpReward))
       setTrueFalseAnswer(getTrueFalseAnswer(nextForm))
       setValidationMessages([])
       setFieldErrors({})
@@ -134,19 +123,11 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
 
     const nextValidationMessages: string[] = []
     const nextFieldErrors: QuestionFieldErrors = {}
-    const trimmedXpRewardInput = xpRewardInput.trim()
-    const xpReward = Number(trimmedXpRewardInput)
 
     if (!form.questionText.trim()) {
       const message = 'Vui lòng nhập câu hỏi.'
       nextValidationMessages.push(message)
       nextFieldErrors.questionText = message
-    }
-
-    if (!isNonNegativeIntegerInput(trimmedXpRewardInput)) {
-      const message = 'Vui lòng nhập XP hợp lệ.'
-      nextValidationMessages.push(message)
-      nextFieldErrors.xpReward = message
     }
 
     if (usesTextAnswer(form.type) && !form.correctAnswer.trim()) {
@@ -198,18 +179,16 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
 
     setValidationMessages([])
     setFieldErrors({})
-    onSubmit({ ...form, correctAnswer, orderIndex: form.orderIndex, xpReward, options })
+    onSubmit({ ...form, correctAnswer, orderIndex: form.orderIndex, xpReward: initialForm.xpReward, options })
   }
 
   const questionTextError = fieldErrors.questionText
   const correctAnswerError = fieldErrors.correctAnswer
   const explanationError = fieldErrors.explanation
-  const xpRewardError = fieldErrors.xpReward
   const optionsError = fieldErrors.options
   const questionTextErrorId = `${fieldPrefix}-question-text-error`
   const correctAnswerErrorId = `${fieldPrefix}-correct-answer-error`
   const explanationErrorId = `${fieldPrefix}-explanation-error`
-  const xpRewardErrorId = `${fieldPrefix}-xp-error`
   const optionsErrorId = `${fieldPrefix}-options-error`
 
   return (
@@ -282,50 +261,6 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
           />
           {explanationError ? <FieldError id={explanationErrorId}>{explanationError}</FieldError> : null}
         </Field>
-
-        <div className="grid gap-3 rounded-xl border border-indigo-100 bg-indigo-50/50 p-3 sm:grid-cols-3">
-          <Field>
-            <FieldLabel htmlFor={`${fieldPrefix}-knowledge-point`}>Điểm kiến thức</FieldLabel>
-            <Input
-              id={`${fieldPrefix}-knowledge-point`}
-              className="bg-white"
-              value={form.knowledgePoint}
-              disabled={disabled}
-              onChange={(event) => setForm((current) => ({ ...current, knowledgePoint: event.target.value }))}
-            />
-          </Field>
-
-          <Field>
-            <FieldLabel htmlFor={`${fieldPrefix}-difficulty`}>Độ khó</FieldLabel>
-            <Select value={form.difficulty} disabled={disabled} onValueChange={(value) => setForm((current) => ({ ...current, difficulty: value }))}>
-              <SelectTrigger id={`${fieldPrefix}-difficulty`} className="w-full bg-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {difficultyOptions.map((difficulty) => (
-                  <SelectItem key={difficulty} value={difficulty}>
-                    {difficulty}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-
-          <Field data-invalid={xpRewardError ? true : undefined}>
-            <FieldLabel htmlFor={`${fieldPrefix}-xp`}>XP</FieldLabel>
-            <Input
-              id={`${fieldPrefix}-xp`}
-              className="bg-white"
-              type="number"
-              value={xpRewardInput}
-              disabled={disabled}
-              aria-invalid={xpRewardError ? true : undefined}
-              aria-describedby={xpRewardError ? xpRewardErrorId : undefined}
-              onChange={(event) => setXpRewardInput(event.target.value)}
-            />
-            {xpRewardError ? <FieldError id={xpRewardErrorId}>{xpRewardError}</FieldError> : null}
-          </Field>
-        </div>
 
         {form.type === 'MULTIPLE_CHOICE' ? (
           <div className="flex flex-col gap-2">

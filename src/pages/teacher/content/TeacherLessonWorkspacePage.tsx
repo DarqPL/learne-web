@@ -99,13 +99,6 @@ function ReadOnlyQuestionDetails({ question }: { question: TeacherQuestion }) {
           <p className="mt-1 whitespace-pre-wrap text-gray-600">{question.explanation}</p>
         </div>
       ) : null}
-
-      {question.knowledgePoint ? (
-        <div>
-          <p className="font-medium text-gray-700">Kiến thức liên quan</p>
-          <p className="mt-1 whitespace-pre-wrap text-gray-600">{question.knowledgePoint}</p>
-        </div>
-      ) : null}
     </div>
   )
 }
@@ -360,7 +353,7 @@ export function TeacherLessonWorkspacePage() {
                       <div>
                         <h3 className="font-semibold text-gray-900">{question.questionText}</h3>
                         <p className="mt-1 text-sm text-gray-600">
-                          {questionTypeLabels[question.type]}{question.difficulty ? ` · ${question.difficulty}` : ''} · {question.xpReward} XP
+                          {questionTypeLabels[question.type]} · {question.xpReward} XP
                         </p>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">

@@ -166,8 +166,7 @@ export function BuilderQuestionsStep({
                       <div className="min-w-0">
                         <p className="truncate font-medium">{question.questionText || '(Chưa có nội dung)'}</p>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          {questionTypeLabels[question.type]}
-                          {question.difficulty ? ` · ${question.difficulty}` : ''} · {question.xpReward} XP
+                          {questionTypeLabels[question.type]} · {question.xpReward} XP
                         </p>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
