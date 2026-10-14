@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Skeleton } from '@/components/shadcn/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/shadcn/ui/table'
 import { getApiErrorMessage } from '../../../lib/api/client'
-import { createTeacherCourse, deleteTeacherCourse, listTeacherCourses, submitTeacherCourse } from '../../../lib/api/teacherContentApi'
+import { createEditRevision, createTeacherCourse, deleteTeacherCourse, listTeacherCourses, submitTeacherCourse } from '../../../lib/api/teacherContentApi'
 import type { ContentStatus, TeacherCourse, TeacherCourseRequest } from '../../../lib/api/types'
 import { CourseForm } from './CourseForm'
 import { CourseImportExportPanel } from './CourseImportExportPanel'
@@ -132,6 +132,21 @@ export function TeacherContentPage() {
       setInfo(`Đã gửi khóa học "${course.name}" để duyệt.`)
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể gửi duyệt khóa học.'))
+    } finally {
+      setAction(null)
+    }
+  }
+
+  const handleCreateEditRevision = async (course: TeacherCourse) => {
+    setAction(`revision-${course.id}`)
+    setError(null)
+    setInfo(null)
+    try {
+      await createEditRevision(course.id)
+      await refreshCourses()
+      setInfo(`Đã tạo bản nháp chỉnh sửa cho khóa học "${course.name}".`)
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Không thể tạo bản nháp chỉnh sửa.'))
     } finally {
       setAction(null)
     }
@@ -420,6 +435,23 @@ export function TeacherContentPage() {
                               <Pencil aria-hidden="true" />
                             </Link>
                           </Button>
+                          {course.hasEditableRevision ? (
+                            <Button asChild size="sm" variant="outline" title="Tiếp tục sửa bản nháp">
+                              <Link to={`/teacher/content/courses/${course.id}`}>Tiếp tục sửa bản nháp</Link>
+                            </Button>
+                          ) : null}
+                          {course.status === 'APPROVED' && !course.hasEditableRevision ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              title="Tạo bản nháp chỉnh sửa"
+                              disabled={busy}
+                              loading={action === `revision-${course.id}`}
+                              onClick={() => void handleCreateEditRevision(course)}
+                            >
+                              Tạo bản nháp chỉnh sửa
+                            </Button>
+                          ) : null}
                           {submittable ? (
                             <Button
                               size="icon"
