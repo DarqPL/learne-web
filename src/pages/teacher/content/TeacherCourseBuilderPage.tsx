@@ -46,7 +46,7 @@ import { CourseImportExportPanel } from './CourseImportExportPanel'
 import { CourseBuilderWorkspace } from './CourseBuilderWorkspace'
 import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
 import { coursePricingTypeLabels, courseTypeLabels, formatVndAmount } from './contentLabels'
-import { canEditContent, canSubmitCourse, countLessons, countQuestions } from './contentUtils'
+import { canEditCourseContent, canSubmitCourse, countLessons, countQuestions, isPendingRevision } from './contentUtils'
 
 const cardSoftClassName = 'border-indigo-100 bg-white/95 shadow-sm shadow-indigo-100/60'
 
@@ -325,7 +325,7 @@ export function TeacherCourseBuilderPage() {
   }
 
   const currentCourse = parsedCourseId !== null && course?.id === parsedCourseId ? course : null
-  const editable = currentCourse ? canEditContent(currentCourse.status) : false
+  const editable = currentCourse ? canEditCourseContent(currentCourse) : false
   const canSubmit = currentCourse ? canSubmitCourse(currentCourse) : false
   const displayError = parsedCourseId === null ? 'Không tìm thấy khóa học.' : error
   const busy = action !== null
@@ -440,6 +440,27 @@ export function TeacherCourseBuilderPage() {
               </CardContent>
             ) : null}
           </Card>
+
+          {isPendingRevision(currentCourse) ? (
+            <Alert className="border-amber-200 bg-amber-50/60">
+              <Info aria-hidden="true" className="text-amber-600" />
+              <AlertTitle>Thông báo</AlertTitle>
+              <AlertDescription>Bản nháp đang chờ duyệt.</AlertDescription>
+            </Alert>
+          ) : null}
+          {currentCourse.status === 'APPROVED' &&
+          (currentCourse.hasEditableRevision ||
+            currentCourse.latestRevisionStatus === 'DRAFT' ||
+            currentCourse.latestRevisionStatus === 'REJECTED') ? (
+            <Alert className="border-indigo-200 bg-indigo-50/60">
+              <Info aria-hidden="true" className="text-indigo-600" />
+              <AlertTitle>Thông báo</AlertTitle>
+              <AlertDescription>
+                Đang sửa bản nháp R{currentCourse.latestRevisionId} — nội dung đã xuất bản không đổi cho đến khi được
+                duyệt.
+              </AlertDescription>
+            </Alert>
+          ) : null}
 
           <CourseBuilderWorkspace
             course={currentCourse}

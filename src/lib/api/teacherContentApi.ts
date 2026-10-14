@@ -75,6 +75,10 @@ export function submitTeacherCourse(courseId: number) {
   return http.post<TeacherCourse>(`${base}/courses/${courseId}/submit`, {})
 }
 
+export function createEditRevision(courseId: number) {
+  return http.post<TeacherCourse>(`${base}/courses/${courseId}/edit-revision`)
+}
+
 export function downloadCourseTemplate() {
   return http.get<Blob>(`${base}/course-template`, { responseType: 'blob' })
 }

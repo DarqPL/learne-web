@@ -4,6 +4,15 @@ export function canEditContent(status: ContentStatus) {
   return status === 'DRAFT' || status === 'REJECTED'
 }
 
+export function canEditCourseContent(course: TeacherCourse) {
+  if (canEditContent(course.status)) return true
+  return course.hasEditableRevision || course.latestRevisionStatus === 'DRAFT' || course.latestRevisionStatus === 'REJECTED'
+}
+
+export function isPendingRevision(course: TeacherCourse) {
+  return course.latestRevisionStatus === 'PENDING_REVIEW'
+}
+
 export function countLessons(course: TeacherCourse) {
   return course.topics.reduce((total, topic) => total + topic.lessons.length, 0)
 }
