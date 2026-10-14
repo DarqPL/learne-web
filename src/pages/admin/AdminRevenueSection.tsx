@@ -63,10 +63,15 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'trend' | 'year'>('trend')
-  const [year, setYear] = useState<number>(Number((initialMonth ?? getCurrentMonth()).split('-')[0]))
+  const [year, setYear] = useState<number>(() => {
+    const parsed = Number((initialMonth ?? getCurrentMonth()).split('-')[0])
+    if (Number.isNaN(parsed)) return getCurrentYear()
+    return Math.min(Math.max(parsed, 2024), getCurrentYear())
+  })
   const [yearData, setYearData] = useState<YearPoint[] | null>(null)
 
   function handleMonthChange(value: string) {
+    if (viewMode !== 'trend') return
     if (!value) return
     setMonth(value)
     setLoading(true)

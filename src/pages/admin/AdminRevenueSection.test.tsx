@@ -381,4 +381,21 @@ describe('AdminRevenueSection', () => {
     expect(screen.queryByLabelText('Năm')).not.toBeNull()
     expect(document.querySelector('input#admin-revenue-year')).toBeNull()
   })
+
+  it('does not show full-page skeleton when month changes in year mode', async () => {
+    setupMocks('2026-03')
+
+    render(<AdminRevenueSection initialMonth="2026-03" />)
+
+    await screen.findByText('Xu hướng 6 tháng')
+    fireEvent.click(screen.getByRole('button', { name: /theo năm/i }))
+    expect(await screen.findByText(/tổng năm 2026/i)).toBeInTheDocument()
+
+    const monthInput = screen.getByLabelText('Tháng') as HTMLInputElement
+    fireEvent.change(monthInput, { target: { value: '2026-02' } })
+
+    // month input is ignored in year mode: no full-page skeleton, year chart stays
+    expect(document.querySelector('[data-slot="skeleton"]')).toBeNull()
+    expect(screen.getByText(/tổng năm 2026/i)).toBeInTheDocument()
+  })
 })
