@@ -15,6 +15,7 @@ import { Alert, AlertDescription, AlertTitle } from '../../components/shadcn/ui/
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/shadcn/ui/card'
 import { Input } from '../../components/shadcn/ui/input'
 import { Label } from '../../components/shadcn/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/shadcn/ui/select'
 import { Skeleton } from '../../components/shadcn/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/shadcn/ui/table'
 import { getCourseSales, getPlanSales, getTeacherShare } from '../../lib/api/adminRevenueApi'
@@ -75,21 +76,20 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
   function handleViewModeChange(next: 'trend' | 'year') {
     if (next === viewMode) return
     setViewMode(next)
-    if (next === 'year') {
-      setLoading(true)
-      setError(null)
-    }
   }
 
   function handleYearChange(value: string) {
+    if (value === '') return
     const next = Number(value)
     if (Number.isNaN(next)) return
-    setYear(next)
-    setLoading(true)
-    setError(null)
+    const clamped = Math.min(Math.max(next, 2024), getCurrentYear())
+    setYear((prev) => (prev === clamped ? prev : clamped))
   }
 
+  const yearOptions = Array.from({ length: getCurrentYear() - 2024 + 1 }, (_, index) => 2024 + index)
+
   useEffect(() => {
+    if (viewMode !== 'trend') return
     let cancelled = false
 
     const months = getLast6Months(month)
@@ -137,10 +137,13 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
     return () => {
       cancelled = true
     }
-  }, [month])
+  }, [month, viewMode])
 
   useEffect(() => {
     if (viewMode !== 'year') return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoading(true)
+    setError(null)
     let cancelled = false
     void (async () => {
       try {
@@ -243,16 +246,18 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
         {viewMode === 'year' ? (
           <div className="flex w-32 flex-col gap-1.5">
             <Label htmlFor="admin-revenue-year">Năm</Label>
-            <Input
-              id="admin-revenue-year"
-              type="number"
-              min={2024}
-              max={getCurrentYear()}
-              value={year}
-              onChange={(event) => {
-                handleYearChange(event.target.value)
-              }}
-            />
+            <Select value={String(year)} onValueChange={handleYearChange}>
+              <SelectTrigger id="admin-revenue-year">
+                <SelectValue placeholder="Chọn năm" />
+              </SelectTrigger>
+              <SelectContent>
+                {yearOptions.map((option) => (
+                  <SelectItem key={option} value={String(option)}>
+                    {String(option)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         ) : null}
       </div>
