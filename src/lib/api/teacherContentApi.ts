@@ -1,6 +1,7 @@
 import { http } from './client'
 import type {
   ApiMessageResponse,
+  CourseSubmission,
   CourseImportResponse,
   TeacherCourse,
   TeacherCourseRequest,
@@ -72,7 +73,15 @@ export function deleteTeacherQuestion(questionId: number) {
 }
 
 export function submitTeacherCourse(courseId: number) {
-  return http.post<TeacherCourse>(`${base}/courses/${courseId}/submit`, {})
+  return http.post<CourseSubmission>(`${base}/courses/${courseId}/submit`, {})
+}
+
+export function getCourseSubmission(courseId: number, submissionId: string, signal?: AbortSignal) {
+  return http.get<CourseSubmission>(`${base}/courses/${courseId}/submissions/${submissionId}`, { signal })
+}
+
+export function getLatestCourseSubmission(courseId: number, signal?: AbortSignal) {
+  return http.get<CourseSubmission>(`${base}/courses/${courseId}/submission`, { signal })
 }
 
 export function createEditRevision(courseId: number) {

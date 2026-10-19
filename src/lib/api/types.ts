@@ -288,6 +288,14 @@ export interface UpdateStudentProfileRequest {
   showDateOfBirth: boolean
 }
 
+export interface TeacherInvitationDelivery {
+  status: 'NOT_REQUESTED' | 'HISTORY_UNAVAILABLE' | 'QUEUED' | 'SENDING' | 'RETRYING' | 'SENT' | 'FAILED' | 'SKIPPED'
+  requestedAt: string | null
+  completedAt: string | null
+  failureCode: string | null
+  canResend: boolean
+}
+
 export interface AdminTeacher {
   userId: number
   fullName: string
@@ -296,6 +304,7 @@ export interface AdminTeacher {
   mustChangePassword: boolean
   profileStatus: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | null
   completed: boolean
+  invitationDelivery?: TeacherInvitationDelivery | null
 }
 
 export type ContentStatus = 'DRAFT' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'HIDDEN'
@@ -368,7 +377,22 @@ export interface TeacherTopic {
   lessons: TeacherLesson[]
 }
 
+export interface CourseSubmission {
+  id: string
+  courseId: number
+  revisionId: number
+  status: 'QUEUED' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED'
+  processedQuestions: number
+  totalQuestions: number
+  createdAt: string
+  completedAt: string | null
+  failureCode: string | null
+  message: string | null
+}
+
 export interface TeacherCourse {
+  submission?: CourseSubmission | null
+  editingLocked?: boolean
   id: number
   name: string
   description: string | null

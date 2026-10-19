@@ -271,9 +271,11 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
               <div className="flex items-center gap-2 rounded-lg border border-indigo-100 bg-white px-2 py-1.5" key={optionIndex}>
                 <input
                   type="radio"
+                  disabled={disabled}
                   name={`${fieldPrefix}-multiple-choice-correct-option`}
                   checked={option.correct}
-                  onChange={() =>
+                  onChange={() => {
+                    if (disabled) return
                     setForm((current) => ({
                       ...current,
                       options: current.options.map((currentOption, currentIndex) =>
@@ -282,7 +284,7 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
                           : { ...currentOption, correct: false },
                       ),
                     }))
-                  }
+                  }}
                   aria-label={`Đánh dấu lựa chọn ${optionIndex + 1} là đáp án đúng`}
                   title="Đáp án đúng"
                   className="size-4 shrink-0 accent-indigo-600"
@@ -308,6 +310,7 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
                   size="icon"
                   className="size-8 shrink-0 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
                   aria-label={`Xóa lựa chọn ${optionIndex + 1}`}
+                  disabled={disabled}
                   onClick={() =>
                     setForm((current) => ({
                       ...current,
@@ -324,6 +327,7 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
               <Button
                 type="button"
                 variant="secondary"
+                disabled={disabled}
                 onClick={() =>
                   setForm((current) => ({
                     ...current,
@@ -348,7 +352,8 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
                 name={`${fieldPrefix}-true-false-answer`}
                 value="Đúng"
                 checked={trueFalseAnswer === 'Đúng'}
-                onChange={() => setTrueFalseAnswer('Đúng')}
+                disabled={disabled}
+                onChange={() => { if (!disabled) setTrueFalseAnswer('Đúng') }}
                 className="size-4 shrink-0 accent-emerald-600"
               />
               <FieldLabel htmlFor={`${fieldPrefix}-true`}>Đúng</FieldLabel>
@@ -360,7 +365,8 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
                 name={`${fieldPrefix}-true-false-answer`}
                 value="Sai"
                 checked={trueFalseAnswer === 'Sai'}
-                onChange={() => setTrueFalseAnswer('Sai')}
+                disabled={disabled}
+                onChange={() => { if (!disabled) setTrueFalseAnswer('Sai') }}
                 className="size-4 shrink-0 accent-red-500"
               />
               <FieldLabel htmlFor={`${fieldPrefix}-false`}>Sai</FieldLabel>

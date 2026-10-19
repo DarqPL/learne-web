@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import type { ContentEditingState } from '../contentUtils'
 import { Pencil, Plus, Trash2, TriangleAlert } from 'lucide-react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/shadcn/ui/accordion'
 import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
@@ -19,7 +20,7 @@ interface BuilderContentStepProps {
   course: TeacherCourse
   action: string | null
   busy: boolean
-  editable: boolean
+  editingState: ContentEditingState
   selectedTopic: TeacherTopic | null
   selectedLesson: TeacherLesson | null
   topicInitialValue: TeacherTopicRequest | null
@@ -37,7 +38,7 @@ export function BuilderContentStep({
   course,
   action,
   busy,
-  editable,
+  editingState,
   selectedTopic,
   selectedLesson,
   topicInitialValue,
@@ -50,6 +51,7 @@ export function BuilderContentStep({
   onUpdateLesson,
   onDeleteRequest,
 }: BuilderContentStepProps) {
+  const editable = editingState.kind === 'editable'
   return (
     <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
       <Card className={`${cardSoftClassName} min-w-0 self-start xl:sticky xl:top-24`}>

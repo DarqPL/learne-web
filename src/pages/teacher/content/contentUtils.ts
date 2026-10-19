@@ -5,6 +5,7 @@ export function canEditContent(status: ContentStatus) {
 }
 
 export function canEditCourseContent(course: TeacherCourse) {
+  if (course.editingLocked) return false
   if (canEditContent(course.status)) return true
   return course.hasEditableRevision || course.latestRevisionStatus === 'DRAFT' || course.latestRevisionStatus === 'REJECTED'
 }
@@ -25,8 +26,16 @@ export function countQuestions(course: TeacherCourse) {
 }
 
 export function canSubmitCourse(course: TeacherCourse) {
+  if (course.editingLocked) return false
   const hasSubmittableRevision = course.hasEditableRevision || course.latestRevisionStatus === 'DRAFT' || course.latestRevisionStatus === 'REJECTED'
   return (canEditContent(course.status) || hasSubmittableRevision) && course.topics.length > 0 && countLessons(course) > 0 && countQuestions(course) > 0
+}
+
+export type ContentEditingState = { kind: 'editable' } | { kind: 'locked'; reason: string } | { kind: 'read-only'; reason: string }
+
+export function getContentEditingState(course: TeacherCourse): ContentEditingState {
+  if (course.editingLocked) return { kind: 'locked', reason: 'Khóa học đang được xử lý để gửi duyệt. Tạm khóa chỉnh sửa nội dung.' }
+  return canEditCourseContent(course) ? { kind: 'editable' } : { kind: 'read-only', reason: 'Khóa học đang ở trạng thái chỉ đọc.' }
 }
 
 export function findTeacherCourse(courses: TeacherCourse[], courseId: number | null) {

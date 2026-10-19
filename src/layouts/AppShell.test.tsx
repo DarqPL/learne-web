@@ -8,6 +8,10 @@ vi.mock('../lib/auth/auth-context', () => ({
 }))
 
 describe('AppShell', () => {
+  it('renders an optional header actions slot', () => {
+    render(<MemoryRouter><AppShell headerActions={<button>Notifications slot</button>}>Content</AppShell></MemoryRouter>)
+    expect(screen.getByRole('button', { name: 'Notifications slot' })).toBeInTheDocument()
+  })
   it('supports a custom full-width student header without default logout', () => {
     render(
       <MemoryRouter>
