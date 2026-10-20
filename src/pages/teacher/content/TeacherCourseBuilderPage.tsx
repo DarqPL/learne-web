@@ -36,6 +36,7 @@ import {
 } from '../../../lib/api/teacherContentApi'
 import type {
   CourseImportResponse,
+  LessonAudioFields,
   TeacherCourse,
   TeacherCourseRequest,
   TeacherLesson,
@@ -49,7 +50,7 @@ import { CourseImportExportPanel } from './CourseImportExportPanel'
 import { CourseBuilderWorkspace } from './CourseBuilderWorkspace'
 import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
 import { coursePricingTypeLabels, courseTypeLabels, formatVndAmount } from './contentLabels'
-import { canSubmitCourse, countLessons, countQuestions, isPendingRevision } from './contentUtils'
+import { canSubmitCourse, countLessons, countQuestions, isPendingRevision, mergeLessonAudio } from './contentUtils'
 
 const cardSoftClassName = 'border-indigo-100 bg-white/95 shadow-sm shadow-indigo-100/60'
 
@@ -135,6 +136,10 @@ export function TeacherCourseBuilderPage() {
           }
         : current,
     )
+  }
+
+  const handleAudioChanged = (lessonId: number, audio: LessonAudioFields) => {
+    setCourse((current) => (current ? mergeLessonAudio(current, lessonId, audio) : current))
   }
 
   const handleUpdateCourse = async (payload: TeacherCourseRequest) => {
@@ -519,6 +524,7 @@ export function TeacherCourseBuilderPage() {
             onCreateQuestion={handleCreateQuestion}
             onUpdateQuestion={handleUpdateQuestion}
             onDeleteQuestion={handleDeleteQuestion}
+            onAudioChanged={handleAudioChanged}
           />
 
           <AlertDialog

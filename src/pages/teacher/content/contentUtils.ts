@@ -1,4 +1,4 @@
-import type { ContentStatus, TeacherCourse } from '../../../lib/api/types'
+import type { ContentStatus, LessonAudioFields, TeacherCourse } from '../../../lib/api/types'
 
 export function canEditContent(status: ContentStatus) {
   return status === 'DRAFT' || status === 'REJECTED'
@@ -12,6 +12,16 @@ export function canEditCourseContent(course: TeacherCourse) {
 
 export function isPendingRevision(course: TeacherCourse) {
   return course.latestRevisionStatus === 'PENDING_REVIEW'
+}
+
+export function isRevisionBackedCourse(course: TeacherCourse) {
+  if (course.status !== 'APPROVED') return false
+  return (
+    course.hasEditableRevision ||
+    course.latestRevisionStatus === 'DRAFT' ||
+    course.latestRevisionStatus === 'REJECTED' ||
+    course.latestRevisionStatus === 'PENDING_REVIEW'
+  )
 }
 
 export function countLessons(course: TeacherCourse) {
@@ -44,4 +54,21 @@ export function findTeacherCourse(courses: TeacherCourse[], courseId: number | n
 
 export function findTeacherLesson(course: TeacherCourse, lessonId: number) {
   return course.topics.flatMap((topic) => topic.lessons).find((lesson) => lesson.id === lessonId) ?? null
+}
+
+export function mergeLessonAudio(course: TeacherCourse, lessonId: number, audio: LessonAudioFields): TeacherCourse {
+  return {
+    ...course,
+    topics: course.topics.map((topic) => {
+      if (!topic.lessons.some((item) => item.id === lessonId)) return topic
+      return {
+        ...topic,
+        lessons: topic.lessons.map((item) =>
+          item.id === lessonId
+            ? { ...item, audioUrl: audio.audioUrl, audioPublicId: audio.audioPublicId }
+            : item,
+        ),
+      }
+    }),
+  }
 }

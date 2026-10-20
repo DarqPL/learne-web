@@ -26,6 +26,20 @@ const defaultLesson: TeacherLessonRequest = {
   placementTest: false,
 }
 
+function sameLessonValue(current: TeacherLessonRequest | undefined, next: TeacherLessonRequest | undefined) {
+  const a = current ?? defaultLesson
+  const b = next ?? defaultLesson
+  return (
+    a.title === b.title &&
+    a.description === b.description &&
+    a.content === b.content &&
+    a.skillType === b.skillType &&
+    a.orderIndex === b.orderIndex &&
+    a.xpReward === b.xpReward &&
+    a.placementTest === b.placementTest
+  )
+}
+
 interface LessonValidation {
   field: 'title'
   message: string
@@ -38,7 +52,7 @@ export function LessonForm({ initialValue, loading = false, disabled = false, su
   const [validation, setValidation] = useState<LessonValidation | null>(null)
   const fieldPrefix = useId()
 
-  if (initialValue !== previousInitialValue) {
+  if (!sameLessonValue(initialValue, previousInitialValue)) {
     const nextForm = initialValue ?? defaultLesson
     setPreviousInitialValue(initialValue)
     setForm(nextForm)

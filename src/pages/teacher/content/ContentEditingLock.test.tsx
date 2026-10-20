@@ -210,6 +210,7 @@ describe('lock arrives while a mutation is open', () => {
       onCreateTopic: vi.fn().mockResolvedValue(undefined), onUpdateTopic: vi.fn().mockResolvedValue(undefined), onDeleteTopic: vi.fn().mockResolvedValue(undefined),
       onCreateLesson: vi.fn().mockResolvedValue(undefined), onUpdateLesson: vi.fn().mockResolvedValue(undefined), onDeleteLesson: vi.fn().mockResolvedValue(undefined),
       onCreateQuestion: vi.fn().mockResolvedValue(undefined), onUpdateQuestion: vi.fn().mockResolvedValue(undefined), onDeleteQuestion: vi.fn().mockResolvedValue(undefined),
+      onAudioChanged: vi.fn(),
     }
     const props: CourseBuilderWorkspaceProps = { course: { ...course, editingLocked: false }, action: null, editingState: { kind: 'editable' }, canSubmit: true, formResetVersion: 0, importExportPanel: null, ...callbacks }
     const { rerender } = render(<MemoryRouter initialEntries={[`/${path}`]}><CourseBuilderWorkspace {...props} /></MemoryRouter>)
@@ -226,7 +227,7 @@ describe('lock arrives while a mutation is open', () => {
   it('disables an already open submit confirmation when the course becomes locked', () => {
     const onSubmitCourse = vi.fn().mockResolvedValue(undefined)
     const noop = vi.fn().mockResolvedValue(undefined)
-    const props: CourseBuilderWorkspaceProps = { course: { ...course, editingLocked: false }, action: null, editingState: { kind: 'editable' }, canSubmit: true, formResetVersion: 0, importExportPanel: null, onSubmitCourse, onUpdateCourse: noop, onCreateTopic: noop, onUpdateTopic: noop, onDeleteTopic: noop, onCreateLesson: noop, onUpdateLesson: noop, onDeleteLesson: noop, onCreateQuestion: noop, onUpdateQuestion: noop, onDeleteQuestion: noop }
+    const props: CourseBuilderWorkspaceProps = { course: { ...course, editingLocked: false }, action: null, editingState: { kind: 'editable' }, canSubmit: true, formResetVersion: 0, importExportPanel: null, onSubmitCourse, onUpdateCourse: noop, onCreateTopic: noop, onUpdateTopic: noop, onDeleteTopic: noop, onCreateLesson: noop, onUpdateLesson: noop, onDeleteLesson: noop, onCreateQuestion: noop, onUpdateQuestion: noop, onDeleteQuestion: noop, onAudioChanged: vi.fn() }
     const { rerender } = render(<MemoryRouter><CourseBuilderWorkspace {...props} /></MemoryRouter>)
     fireEvent.click(screen.getByRole('button', { name: 'Gửi duyệt' }))
     const confirm = screen.getByRole('button', { name: 'Gửi duyệt' })
