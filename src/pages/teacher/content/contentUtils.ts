@@ -1,4 +1,4 @@
-import type { ContentStatus, TeacherCourse } from '../../../lib/api/types'
+import type { ContentStatus, LessonAudioFields, TeacherCourse } from '../../../lib/api/types'
 
 export function canEditContent(status: ContentStatus) {
   return status === 'DRAFT' || status === 'REJECTED'
@@ -35,4 +35,14 @@ export function findTeacherCourse(courses: TeacherCourse[], courseId: number | n
 
 export function findTeacherLesson(course: TeacherCourse, lessonId: number) {
   return course.topics.flatMap((topic) => topic.lessons).find((lesson) => lesson.id === lessonId) ?? null
+}
+
+export function mergeLessonAudio(course: TeacherCourse, lessonId: number, audio: LessonAudioFields): TeacherCourse {
+  return {
+    ...course,
+    topics: course.topics.map((topic) => ({
+      ...topic,
+      lessons: topic.lessons.map((item) => (item.id === lessonId ? { ...item, ...audio } : item)),
+    })),
+  }
 }

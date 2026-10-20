@@ -137,5 +137,6 @@ describe('TeacherLessonWorkspacePage', () => {
 
     expect(await screen.findByText('Tạo bản nháp chỉnh sửa để thay audio.')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Thay audio' })).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Audio bài nghe')).toHaveAttribute('src', audioUrl)
   })
 })

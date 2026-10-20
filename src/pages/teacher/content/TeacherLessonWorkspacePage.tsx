@@ -17,7 +17,7 @@ import { LessonForm } from './LessonForm'
 import { QuestionForm } from './QuestionForm'
 import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
 import { questionTypeLabels, skillTypeLabels } from './contentLabels'
-import { canEditContent, canEditCourseContent, findTeacherLesson } from './contentUtils'
+import { canEditContent, canEditCourseContent, findTeacherLesson, mergeLessonAudio } from './contentUtils'
 import { getLessonInitialValue, getQuestionInitialValue } from './teacherContentMappers'
 import { LessonAudioEditor } from './audio/LessonAudioEditor'
 
@@ -220,17 +220,7 @@ export function TeacherLessonWorkspacePage() {
   }
 
   const handleAudioChanged = (lessonId: number, audio: LessonAudioFields) => {
-    setCourse((current) =>
-      current
-        ? {
-            ...current,
-            topics: current.topics.map((topic) => ({
-              ...topic,
-              lessons: topic.lessons.map((item) => (item.id === lessonId ? { ...item, ...audio } : item)),
-            })),
-          }
-        : current,
-    )
+    setCourse((current) => (current ? mergeLessonAudio(current, lessonId, audio) : current))
   }
 
   const handleDeleteQuestion = async (question: TeacherQuestion) => {

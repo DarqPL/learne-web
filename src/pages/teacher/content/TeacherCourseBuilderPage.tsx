@@ -47,7 +47,7 @@ import { CourseImportExportPanel } from './CourseImportExportPanel'
 import { CourseBuilderWorkspace } from './CourseBuilderWorkspace'
 import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
 import { coursePricingTypeLabels, courseTypeLabels, formatVndAmount } from './contentLabels'
-import { canEditCourseContent, canSubmitCourse, countLessons, countQuestions, isPendingRevision } from './contentUtils'
+import { canEditCourseContent, canSubmitCourse, countLessons, countQuestions, isPendingRevision, mergeLessonAudio } from './contentUtils'
 
 const cardSoftClassName = 'border-indigo-100 bg-white/95 shadow-sm shadow-indigo-100/60'
 
@@ -129,17 +129,7 @@ export function TeacherCourseBuilderPage() {
   }
 
   const handleAudioChanged = (lessonId: number, audio: LessonAudioFields) => {
-    setCourse((current) =>
-      current
-        ? {
-            ...current,
-            topics: current.topics.map((topic) => ({
-              ...topic,
-              lessons: topic.lessons.map((item) => (item.id === lessonId ? { ...item, ...audio } : item)),
-            })),
-          }
-        : current,
-    )
+    setCourse((current) => (current ? mergeLessonAudio(current, lessonId, audio) : current))
   }
 
   const handleUpdateCourse = async (payload: TeacherCourseRequest) => {
