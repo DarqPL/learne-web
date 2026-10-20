@@ -76,8 +76,8 @@ const targets: { data: CourseAudioTargets } = {
     revisionStatus: 'DRAFT',
     lessons: [
       {
-        lessonRevisionId: 9,
-        sourceLessonId: null,
+        lessonRevisionId: 79,
+        sourceLessonId: 9,
         topicRevisionId: 15,
         topicTitle: 'Topic',
         title: 'Listening lesson',
@@ -85,6 +85,19 @@ const targets: { data: CourseAudioTargets } = {
         orderIndex: 1,
         audioUrl,
         audioPublicId: 'learne/course-audio/a',
+      },
+    ],
+  },
+}
+
+const revisionTargets: { data: CourseAudioTargets } = {
+  data: {
+    ...targets.data,
+    lessons: [
+      {
+        ...targets.data.lessons[0],
+        lessonRevisionId: 9,
+        sourceLessonId: 79,
       },
     ],
   },
@@ -119,6 +132,7 @@ describe('TeacherLessonWorkspacePage', () => {
     mockedGetTeacherCourse.mockResolvedValue({
       data: { ...draftCourse, status: 'APPROVED', hasEditableRevision: true, latestRevisionStatus: 'DRAFT' },
     } as never)
+    mockedGetTargets.mockResolvedValue(revisionTargets as never)
 
     renderPage()
 

@@ -17,7 +17,7 @@ import { LessonForm } from './LessonForm'
 import { QuestionForm } from './QuestionForm'
 import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
 import { questionTypeLabels, skillTypeLabels } from './contentLabels'
-import { canEditContent, canEditCourseContent, findTeacherLesson, mergeLessonAudio } from './contentUtils'
+import { canEditContent, canEditCourseContent, findTeacherLesson, isRevisionBackedCourse, mergeLessonAudio } from './contentUtils'
 import { getLessonInitialValue, getQuestionInitialValue } from './teacherContentMappers'
 import { LessonAudioEditor } from './audio/LessonAudioEditor'
 
@@ -246,6 +246,7 @@ export function TeacherLessonWorkspacePage() {
   const topic = currentCourse && parsedLessonId !== null ? findTeacherTopic(currentCourse, parsedLessonId) : null
   const editable = currentCourse ? canEditContent(currentCourse.status) : false
   const audioEditable = currentCourse ? canEditCourseContent(currentCourse) : false
+  const audioLessonIdNamespace = currentCourse && isRevisionBackedCourse(currentCourse) ? 'revision' : 'live'
   const invalidRoute = parsedCourseId === null || parsedLessonId === null
   const displayError = invalidRoute || (currentCourse !== null && lesson === null) ? 'Không tìm thấy bài học.' : error
 
@@ -316,10 +317,11 @@ export function TeacherLessonWorkspacePage() {
                   key={lesson.id}
                   courseId={currentCourse.id}
                   lesson={lesson}
+                  lessonIdNamespace={audioLessonIdNamespace}
                   editable={audioEditable}
                   onAudioChanged={(audio) => handleAudioChanged(lesson.id, audio)}
                 />
-                <LessonEditForm lesson={lesson} action={action} onSubmit={handleUpdateLesson} />
+                <LessonEditForm key={lesson.id} lesson={lesson} action={action} onSubmit={handleUpdateLesson} />
               </div>
             </section>
           ) : (
@@ -331,6 +333,7 @@ export function TeacherLessonWorkspacePage() {
                 key={lesson.id}
                 courseId={currentCourse.id}
                 lesson={lesson}
+                lessonIdNamespace={audioLessonIdNamespace}
                 editable={audioEditable}
                 onAudioChanged={(audio) => handleAudioChanged(lesson.id, audio)}
               />

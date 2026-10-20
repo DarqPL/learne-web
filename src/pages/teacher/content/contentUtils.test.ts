@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { TeacherCourse } from '../../../lib/api/types'
-import { mergeLessonAudio } from './contentUtils'
+import { isRevisionBackedCourse, mergeLessonAudio } from './contentUtils'
 
-function makeCourse(): TeacherCourse {
+function makeCourse(overrides: Partial<TeacherCourse> = {}): TeacherCourse {
   return {
     id: 1,
     name: 'Course',
@@ -19,6 +19,7 @@ function makeCourse(): TeacherCourse {
     priceAmountVnd: null,
     proposedPriceAmountVnd: null,
     priceStatus: 'NONE',
+    ...overrides,
     topics: [
       {
         id: 10,
@@ -86,6 +87,40 @@ function makeCourse(): TeacherCourse {
 }
 
 const audio = { audioUrl: 'https://cdn.example.com/new.mp3', audioPublicId: 'new-public-id' }
+
+describe('isRevisionBackedCourse', () => {
+  it('is false for a draft course', () => {
+    expect(isRevisionBackedCourse(makeCourse({ status: 'DRAFT' }))).toBe(false)
+  })
+
+  it('is false for a rejected course', () => {
+    expect(isRevisionBackedCourse(makeCourse({ status: 'REJECTED' }))).toBe(false)
+  })
+
+  it('is false for an unpublished course pending review', () => {
+    expect(isRevisionBackedCourse(makeCourse({ status: 'PENDING_REVIEW' }))).toBe(false)
+  })
+
+  it('is true for an approved course with an editable revision', () => {
+    expect(isRevisionBackedCourse(makeCourse({ status: 'APPROVED', hasEditableRevision: true }))).toBe(true)
+  })
+
+  it('is true for an approved course whose latest revision is pending review', () => {
+    expect(
+      isRevisionBackedCourse(
+        makeCourse({ status: 'APPROVED', hasEditableRevision: false, latestRevisionStatus: 'PENDING_REVIEW' }),
+      ),
+    ).toBe(true)
+  })
+
+  it('is false for an approved course whose latest revision is approved', () => {
+    expect(
+      isRevisionBackedCourse(
+        makeCourse({ status: 'APPROVED', hasEditableRevision: false, latestRevisionStatus: 'APPROVED' }),
+      ),
+    ).toBe(false)
+  })
+})
 
 describe('mergeLessonAudio', () => {
   it('updates only the matching lesson audio fields', () => {

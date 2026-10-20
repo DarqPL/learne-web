@@ -1,8 +1,8 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { getCourseAudioTargets } from '../../../../lib/api/teacherLessonAudioApi'
-import type { CourseAudioTargets, TeacherCourse, TeacherLesson } from '../../../../lib/api/types'
+import type { CourseAudioTargets, TeacherCourse, TeacherLesson, TeacherLessonRequest } from '../../../../lib/api/types'
 import { BuilderContentStep } from './BuilderContentStep'
 
 vi.mock('../../../../lib/api/teacherLessonAudioApi', () => ({
@@ -29,6 +29,11 @@ const lesson: TeacherLesson = {
   questions: [],
 }
 
+const secondLesson: TeacherLesson = {
+  ...lesson,
+  id: 11,
+}
+
 const course: TeacherCourse = {
   id: 1,
   name: 'Teacher course',
@@ -51,12 +56,12 @@ const course: TeacherCourse = {
       name: 'Listening topic',
       description: null,
       orderIndex: 1,
-      lessons: [lesson],
+      lessons: [lesson, secondLesson],
     },
   ],
 }
 
-const revisionAudioUrl = 'https://cdn.example.com/audio/revision.mp3'
+const targetAudioUrl = 'https://cdn.example.com/audio/revision.mp3'
 
 const targets: { data: CourseAudioTargets } = {
   data: {
@@ -65,18 +70,59 @@ const targets: { data: CourseAudioTargets } = {
     revisionStatus: 'DRAFT',
     lessons: [
       {
-        lessonRevisionId: 10,
-        sourceLessonId: null,
+        lessonRevisionId: 77,
+        sourceLessonId: lesson.id,
         topicRevisionId: 15,
         topicTitle: 'Listening topic',
         title: lesson.title,
         skillType: 'LISTENING',
         orderIndex: 1,
-        audioUrl: revisionAudioUrl,
+        audioUrl: targetAudioUrl,
         audioPublicId: lesson.audioPublicId,
       },
     ],
   },
+}
+
+function lessonRequestOf(item: TeacherLesson): TeacherLessonRequest {
+  return {
+    title: item.title,
+    description: item.description ?? '',
+    content: item.content ?? '',
+    skillType: item.skillType,
+    orderIndex: item.orderIndex,
+    xpReward: item.xpReward,
+    placementTest: item.placementTest,
+  }
+}
+
+function stepElement(selectedLesson: TeacherLesson, editable = false) {
+  return (
+    <MemoryRouter>
+      <BuilderContentStep
+        course={course}
+        action={null}
+        busy={false}
+        editable={editable}
+        selectedTopic={null}
+        selectedLesson={selectedLesson}
+        topicInitialValue={null}
+        lessonInitialValue={lessonRequestOf(selectedLesson)}
+        onSelectTopic={vi.fn()}
+        onSelectLesson={vi.fn()}
+        onAddTopic={vi.fn()}
+        onAddLesson={vi.fn()}
+        onUpdateTopic={vi.fn()}
+        onUpdateLesson={vi.fn()}
+        onDeleteRequest={vi.fn()}
+        onAudioChanged={vi.fn()}
+      />
+    </MemoryRouter>
+  )
+}
+
+function renderStep(selectedLesson: TeacherLesson, editable = false) {
+  return render(stepElement(selectedLesson, editable))
 }
 
 beforeEach(() => {
@@ -86,39 +132,23 @@ beforeEach(() => {
 
 describe('BuilderContentStep', () => {
   it('shows the audio editor for the selected listening lesson', async () => {
-    render(
-      <MemoryRouter>
-        <BuilderContentStep
-          course={course}
-          action={null}
-          busy={false}
-          editable={false}
-          selectedTopic={null}
-          selectedLesson={lesson}
-          topicInitialValue={null}
-          lessonInitialValue={{
-            title: lesson.title,
-            description: lesson.description ?? '',
-            content: lesson.content ?? '',
-            skillType: lesson.skillType,
-            orderIndex: lesson.orderIndex,
-            xpReward: lesson.xpReward,
-            placementTest: lesson.placementTest,
-          }}
-          onSelectTopic={vi.fn()}
-          onSelectLesson={vi.fn()}
-          onAddTopic={vi.fn()}
-          onAddLesson={vi.fn()}
-          onUpdateTopic={vi.fn()}
-          onUpdateLesson={vi.fn()}
-          onDeleteRequest={vi.fn()}
-          onAudioChanged={vi.fn()}
-        />
-      </MemoryRouter>,
-    )
+    renderStep(lesson)
 
     expect(screen.getByText('Audio bài học')).toBeInTheDocument()
-    expect(await screen.findByLabelText('Audio bài nghe')).toHaveAttribute('src', revisionAudioUrl)
+    expect(await screen.findByLabelText('Audio bài nghe')).toHaveAttribute('src', targetAudioUrl)
     expect(mockedGetTargets).toHaveBeenCalledWith(course.id)
+  })
+
+  it('does not carry unsaved edits to another lesson with identical saved values', async () => {
+    const { rerender } = renderStep(lesson, true)
+    await screen.findByLabelText('Audio bài nghe')
+
+    const titleInput = screen.getByLabelText('Tiêu đề bài học')
+    fireEvent.change(titleInput, { target: { value: 'Nháp chưa lưu' } })
+    expect(titleInput).toHaveValue('Nháp chưa lưu')
+
+    rerender(stepElement(secondLesson, true))
+
+    expect(screen.getByLabelText('Tiêu đề bài học')).toHaveValue(secondLesson.title)
   })
 })

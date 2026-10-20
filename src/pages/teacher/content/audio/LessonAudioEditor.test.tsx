@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import type { ComponentProps } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { deleteLessonAudio, getCourseAudioTargets, uploadLessonAudio } from '../../../../lib/api/teacherLessonAudioApi'
 import type { CourseAudioTargets, LessonAudioTarget, TeacherLesson } from '../../../../lib/api/types'
@@ -33,6 +34,12 @@ function targetsOf(lessons: LessonAudioTarget[]): { data: CourseAudioTargets } {
   return { data: { courseId: 10, revisionId: 21, revisionStatus: 'DRAFT', lessons } }
 }
 
+function renderEditor(props: Partial<ComponentProps<typeof LessonAudioEditor>> = {}) {
+  return render(
+    <LessonAudioEditor courseId={10} lesson={lessonOf()} editable lessonIdNamespace="revision" {...props} />,
+  )
+}
+
 const audioTarget: LessonAudioTarget = {
   lessonRevisionId: 31,
   sourceLessonId: 7,
@@ -56,7 +63,7 @@ afterEach(() => {
 
 describe('LessonAudioEditor', () => {
   it('renders nothing for a non-listening lesson and makes no request', () => {
-    const { container } = render(<LessonAudioEditor courseId={10} lesson={lessonOf({ skillType: 'GRAMMAR' })} editable />)
+    const { container } = renderEditor({ lesson: lessonOf({ skillType: 'GRAMMAR' }) })
 
     expect(container).toBeEmptyDOMElement()
     expect(mockedGetTargets).not.toHaveBeenCalled()
@@ -65,7 +72,7 @@ describe('LessonAudioEditor', () => {
   it('shows the player and management actions when audio exists', async () => {
     mockedGetTargets.mockResolvedValue(targetsOf([audioTarget]) as never)
 
-    render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable />)
+    renderEditor()
 
     expect(await screen.findByLabelText('Audio bài nghe')).toHaveAttribute('src', audioTarget.audioUrl)
     expect(screen.getByRole('button', { name: 'Thay audio' })).toBeInTheDocument()
@@ -75,7 +82,7 @@ describe('LessonAudioEditor', () => {
   it('shows the empty state when the lesson has no audio', async () => {
     mockedGetTargets.mockResolvedValue(targetsOf([{ ...audioTarget, audioUrl: null, audioPublicId: null }]) as never)
 
-    render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable />)
+    renderEditor()
 
     expect(await screen.findByText('Chưa có audio.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Tải audio lên' })).toBeInTheDocument()
@@ -84,7 +91,7 @@ describe('LessonAudioEditor', () => {
   it('is read-only when the lesson is not editable', async () => {
     mockedGetTargets.mockResolvedValue(targetsOf([audioTarget]) as never)
 
-    render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable={false} />)
+    renderEditor({ editable: false })
 
     expect(await screen.findByText('Tạo bản nháp chỉnh sửa để thay audio.')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Thay audio' })).not.toBeInTheDocument()
@@ -94,7 +101,7 @@ describe('LessonAudioEditor', () => {
   it('falls back to read-only when discovery returns a conflict', async () => {
     mockedGetTargets.mockRejectedValue(axiosError(409))
 
-    render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable />)
+    renderEditor()
 
     expect(await screen.findByText('Tạo bản nháp chỉnh sửa để thay audio.')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Tải audio lên' })).not.toBeInTheDocument()
@@ -103,7 +110,7 @@ describe('LessonAudioEditor', () => {
   it('shows an error and no actions when discovery fails unexpectedly', async () => {
     mockedGetTargets.mockRejectedValue(axiosError(500, 'boom'))
 
-    render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable />)
+    renderEditor()
 
     expect(await screen.findByText('Không tải được audio')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Tải audio lên' })).not.toBeInTheDocument()
@@ -116,7 +123,7 @@ describe('LessonAudioEditor', () => {
     } as never)
     const onAudioChanged = vi.fn()
 
-    render(<LessonAudioEditor courseId={10} lesson={lessonOf({ id: 7 })} editable onAudioChanged={onAudioChanged} />)
+    renderEditor({ lesson: lessonOf({ id: 7 }), lessonIdNamespace: 'live', onAudioChanged })
 
     const input = await screen.findByLabelText('Chọn file audio')
     fireEvent.change(input, { target: { files: [new File(['audio'], 'voice.mp3', { type: 'audio/mpeg' })] } })
@@ -141,7 +148,7 @@ describe('LessonAudioEditor', () => {
       data: { ...freshTarget, audioUrl: 'https://cdn.example.com/audio/fresh.mp3', audioPublicId: 'learne/course-audio/fresh' },
     } as never)
 
-    render(<LessonAudioEditor courseId={10} lesson={lessonOf({ id: 7 })} editable />)
+    renderEditor({ lesson: lessonOf({ id: 7 }), lessonIdNamespace: 'live' })
 
     const input = await screen.findByLabelText('Chọn file audio')
     fireEvent.change(input, { target: { files: [new File(['audio'], 'voice.mp3', { type: 'audio/mpeg' })] } })
@@ -157,7 +164,7 @@ describe('LessonAudioEditor', () => {
       .mockResolvedValueOnce(targetsOf([]) as never)
     mockedUpload.mockRejectedValue(axiosError(409))
 
-    render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable />)
+    renderEditor()
 
     const input = await screen.findByLabelText('Chọn file audio')
     fireEvent.change(input, { target: { files: [new File(['audio'], 'voice.mp3', { type: 'audio/mpeg' })] } })
@@ -172,7 +179,7 @@ describe('LessonAudioEditor', () => {
       .mockResolvedValueOnce(targetsOf([audioTarget]) as never)
       .mockResolvedValueOnce(targetsOf([]) as never)
 
-    render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable />)
+    renderEditor()
 
     const input = await screen.findByLabelText('Chọn file audio')
     fireEvent.change(input, { target: { files: [new File(['audio'], 'voice.mp3', { type: 'audio/mpeg' })] } })
@@ -201,7 +208,7 @@ describe('LessonAudioEditor', () => {
       .mockResolvedValueOnce(targetsOf([otherTarget]) as never)
     mockedUpload.mockResolvedValue({ data: uploaded } as never)
 
-    const { rerender } = render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable />)
+    const { rerender } = renderEditor()
 
     const input = await screen.findByLabelText('Chọn file audio')
     fireEvent.change(input, { target: { files: [new File(['audio'], 'voice.mp3', { type: 'audio/mpeg' })] } })
@@ -211,7 +218,14 @@ describe('LessonAudioEditor', () => {
     fireEvent.change(input, { target: { files: [new File([], 'empty.mp3', { type: 'audio/mpeg' })] } })
     expect(await screen.findByText('Vui lòng chọn file audio.')).toBeInTheDocument()
 
-    rerender(<LessonAudioEditor courseId={10} lesson={lessonOf({ id: 7, title: 'Other' })} editable />)
+    rerender(
+      <LessonAudioEditor
+        courseId={10}
+        lesson={lessonOf({ id: 7, title: 'Other' })}
+        editable
+        lessonIdNamespace="live"
+      />,
+    )
 
     await waitFor(() =>
       expect(screen.getByLabelText('Audio bài nghe')).toHaveAttribute('src', otherTarget.audioUrl),
@@ -222,7 +236,7 @@ describe('LessonAudioEditor', () => {
   it('rejects an empty file without calling the API', async () => {
     mockedGetTargets.mockResolvedValue(targetsOf([audioTarget]) as never)
 
-    render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable />)
+    renderEditor()
 
     const input = await screen.findByLabelText('Chọn file audio')
     fireEvent.change(input, { target: { files: [new File([], 'empty.mp3', { type: 'audio/mpeg' })] } })
@@ -234,7 +248,7 @@ describe('LessonAudioEditor', () => {
   it('rejects a file larger than 20MB without calling the API', async () => {
     mockedGetTargets.mockResolvedValue(targetsOf([audioTarget]) as never)
 
-    render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable />)
+    renderEditor()
 
     const input = await screen.findByLabelText('Chọn file audio')
     const big = new File(['x'], 'big.mp3', { type: 'audio/mpeg' })
@@ -248,7 +262,7 @@ describe('LessonAudioEditor', () => {
   it('rejects an unsupported file type without calling the API', async () => {
     mockedGetTargets.mockResolvedValue(targetsOf([audioTarget]) as never)
 
-    render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable />)
+    renderEditor()
 
     const input = await screen.findByLabelText('Chọn file audio')
     fireEvent.change(input, { target: { files: [new File(['x'], 'notes.txt', { type: 'text/plain' })] } })
@@ -261,7 +275,7 @@ describe('LessonAudioEditor', () => {
     mockedGetTargets.mockResolvedValue(targetsOf([audioTarget]) as never)
     mockedUpload.mockRejectedValue(axiosError(413, 'too large'))
 
-    render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable />)
+    renderEditor()
 
     const input = await screen.findByLabelText('Chọn file audio')
     fireEvent.change(input, { target: { files: [new File(['audio'], 'voice.mp3', { type: 'audio/mpeg' })] } })
@@ -277,7 +291,7 @@ describe('LessonAudioEditor', () => {
       .mockResolvedValueOnce(targetsOf([freshTarget]) as never)
     mockedDelete.mockResolvedValue({ data: { ...freshTarget, audioUrl: null, audioPublicId: null } } as never)
 
-    render(<LessonAudioEditor courseId={10} lesson={lessonOf({ id: 7 })} editable />)
+    renderEditor({ lesson: lessonOf({ id: 7 }), lessonIdNamespace: 'live' })
 
     fireEvent.click(await screen.findByRole('button', { name: 'Xóa audio' }))
 
@@ -292,7 +306,7 @@ describe('LessonAudioEditor', () => {
       .mockResolvedValueOnce(targetsOf([]) as never)
     mockedDelete.mockRejectedValue(axiosError(409))
 
-    render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable />)
+    renderEditor()
 
     fireEvent.click(await screen.findByRole('button', { name: 'Xóa audio' }))
 
@@ -308,7 +322,7 @@ describe('LessonAudioEditor', () => {
     mockedGetTargets.mockResolvedValue(targetsOf([audioTarget]) as never)
     mockedDelete.mockRejectedValue(axiosError(500, 'boom'))
 
-    render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable />)
+    renderEditor()
 
     fireEvent.click(await screen.findByRole('button', { name: 'Xóa audio' }))
 
@@ -320,7 +334,7 @@ describe('LessonAudioEditor', () => {
     vi.mocked(window.confirm).mockReturnValue(false)
     mockedGetTargets.mockResolvedValue(targetsOf([audioTarget]) as never)
 
-    render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable />)
+    renderEditor()
 
     fireEvent.click(await screen.findByRole('button', { name: 'Xóa audio' }))
 
@@ -334,12 +348,116 @@ describe('LessonAudioEditor', () => {
     mockedDelete.mockResolvedValue({ data: { ...audioTarget, audioUrl: null, audioPublicId: null } } as never)
     const onAudioChanged = vi.fn()
 
-    render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable onAudioChanged={onAudioChanged} />)
+    renderEditor({ onAudioChanged })
 
     fireEvent.click(await screen.findByRole('button', { name: 'Xóa audio' }))
 
     await waitFor(() => expect(mockedDelete).toHaveBeenCalledWith(31))
     expect(onAudioChanged).toHaveBeenCalledWith({ audioUrl: null, audioPublicId: null })
     await waitFor(() => expect(screen.queryByLabelText('Audio bài nghe')).not.toBeInTheDocument())
+  })
+
+  it('resolves a live lesson id against the live namespace when ids collide', async () => {
+    const unrelatedRevisionTarget: LessonAudioTarget = {
+      lessonRevisionId: 7,
+      sourceLessonId: null,
+      topicRevisionId: 15,
+      topicTitle: 'Unrelated topic',
+      title: 'Unrelated lesson',
+      skillType: 'LISTENING',
+      orderIndex: 1,
+      audioUrl: 'https://cdn.example.com/audio/unrelated.mp3',
+      audioPublicId: 'learne/course-audio/unrelated',
+    }
+    const selectedLiveTarget: LessonAudioTarget = {
+      ...audioTarget,
+      lessonRevisionId: 31,
+      sourceLessonId: 7,
+      audioUrl: 'https://cdn.example.com/audio/selected.mp3',
+      audioPublicId: 'learne/course-audio/selected',
+    }
+    mockedGetTargets.mockResolvedValue(
+      targetsOf([unrelatedRevisionTarget, selectedLiveTarget]) as never,
+    )
+    mockedUpload.mockResolvedValue({
+      data: { ...selectedLiveTarget, audioUrl: 'https://cdn.example.com/audio/new.mp3', audioPublicId: 'learne/course-audio/new' },
+    } as never)
+
+    renderEditor({ lesson: lessonOf({ id: 7 }), lessonIdNamespace: 'live' })
+
+    expect(await screen.findByLabelText('Audio bài nghe')).toHaveAttribute('src', selectedLiveTarget.audioUrl)
+
+    const input = screen.getByLabelText('Chọn file audio')
+    fireEvent.change(input, { target: { files: [new File(['audio'], 'voice.mp3', { type: 'audio/mpeg' })] } })
+
+    await waitFor(() => expect(mockedUpload).toHaveBeenCalledTimes(1))
+    expect(mockedUpload.mock.calls[0][0]).toBe(31)
+  })
+
+  it('resolves a revision lesson id against the revision namespace when ids collide', async () => {
+    const unrelatedRevisionTarget: LessonAudioTarget = {
+      lessonRevisionId: 7,
+      sourceLessonId: null,
+      topicRevisionId: 15,
+      topicTitle: 'Unrelated topic',
+      title: 'Unrelated lesson',
+      skillType: 'LISTENING',
+      orderIndex: 1,
+      audioUrl: 'https://cdn.example.com/audio/unrelated.mp3',
+      audioPublicId: 'learne/course-audio/unrelated',
+    }
+    const selectedLiveTarget: LessonAudioTarget = {
+      ...audioTarget,
+      lessonRevisionId: 31,
+      sourceLessonId: 7,
+      audioUrl: 'https://cdn.example.com/audio/selected.mp3',
+      audioPublicId: 'learne/course-audio/selected',
+    }
+    mockedGetTargets.mockResolvedValue(
+      targetsOf([unrelatedRevisionTarget, selectedLiveTarget]) as never,
+    )
+
+    renderEditor({ lesson: lessonOf({ id: 7 }), lessonIdNamespace: 'revision' })
+
+    expect(await screen.findByLabelText('Audio bài nghe')).toHaveAttribute('src', unrelatedRevisionTarget.audioUrl)
+  })
+
+  it('reports a connection error when the upload request has no response', async () => {
+    mockedGetTargets.mockResolvedValue(targetsOf([audioTarget]) as never)
+    mockedUpload.mockRejectedValue(Object.assign(new Error('network'), { isAxiosError: true }))
+
+    renderEditor()
+
+    const input = await screen.findByLabelText('Chọn file audio')
+    fireEvent.change(input, { target: { files: [new File(['audio'], 'voice.mp3', { type: 'audio/mpeg' })] } })
+
+    expect(await screen.findByText('Không thể kết nối máy chủ.')).toBeInTheDocument()
+  })
+
+  it('does not flash the empty state while discovery is loading', async () => {
+    let resolveTargets: ((value: unknown) => void) | undefined
+    mockedGetTargets.mockReturnValue(
+      new Promise((resolve) => {
+        resolveTargets = resolve
+      }) as never,
+    )
+
+    renderEditor()
+
+    expect(screen.queryByText('Chưa có audio.')).not.toBeInTheDocument()
+    expect(screen.getByText('Đang tải audio...')).toBeInTheDocument()
+
+    resolveTargets?.(targetsOf([audioTarget]))
+    expect(await screen.findByLabelText('Audio bài nghe')).toHaveAttribute('src', audioTarget.audioUrl)
+  })
+
+  it('keeps showing the fallback player while discovery is loading', () => {
+    mockedGetTargets.mockReturnValue(new Promise(() => {}) as never)
+    const fallbackAudioUrl = 'https://cdn.example.com/audio/fallback.mp3'
+
+    renderEditor({ lesson: lessonOf({ audioUrl: fallbackAudioUrl }) })
+
+    expect(screen.getByLabelText('Audio bài nghe')).toHaveAttribute('src', fallbackAudioUrl)
+    expect(screen.queryByText('Chưa có audio.')).not.toBeInTheDocument()
   })
 })

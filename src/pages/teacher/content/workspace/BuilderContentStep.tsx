@@ -13,6 +13,7 @@ import { LessonForm } from '../LessonForm'
 import { TeacherContentStatusBadge } from '../TeacherContentStatusBadge'
 import { TopicForm } from '../TopicForm'
 import { skillTypeLabels } from '../contentLabels'
+import { isRevisionBackedCourse } from '../contentUtils'
 import { cardSoftClassName, findLessonTopic, type DeleteTarget } from './builderModel'
 
 interface BuilderContentStepProps {
@@ -188,12 +189,14 @@ export function BuilderContentStep({
                 key={selectedLesson.id}
                 courseId={course.id}
                 lesson={selectedLesson}
+                lessonIdNamespace={isRevisionBackedCourse(course) ? 'revision' : 'live'}
                 editable={editable}
                 onAudioChanged={(audio) => onAudioChanged(selectedLesson.id, audio)}
               />
               {editable ? (
                 <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
                   <LessonForm
+                    key={selectedLesson.id}
                     initialValue={lessonInitialValue}
                     loading={action === `update-lesson-${selectedLesson.id}`}
                     disabled={action !== null && action !== `update-lesson-${selectedLesson.id}`}

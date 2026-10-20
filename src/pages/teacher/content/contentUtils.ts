@@ -13,6 +13,16 @@ export function isPendingRevision(course: TeacherCourse) {
   return course.latestRevisionStatus === 'PENDING_REVIEW'
 }
 
+export function isRevisionBackedCourse(course: TeacherCourse) {
+  if (course.status !== 'APPROVED') return false
+  return (
+    course.hasEditableRevision ||
+    course.latestRevisionStatus === 'DRAFT' ||
+    course.latestRevisionStatus === 'REJECTED' ||
+    course.latestRevisionStatus === 'PENDING_REVIEW'
+  )
+}
+
 export function countLessons(course: TeacherCourse) {
   return course.topics.reduce((total, topic) => total + topic.lessons.length, 0)
 }

@@ -17,6 +17,7 @@ const DELETE_ERROR_FALLBACK = 'Không thể xóa audio, vui lòng thử lại.'
 interface LessonAudioEditorProps {
   courseId: number
   lesson: Pick<TeacherLesson, 'id' | 'title' | 'skillType'> & LessonAudioFields
+  lessonIdNamespace: 'live' | 'revision'
   editable: boolean
   onAudioChanged?: (audio: LessonAudioFields) => void
 }
@@ -49,13 +50,15 @@ function getErrorStatus(error: unknown) {
   return axios.isAxiosError(error) ? (error.response?.status ?? null) : null
 }
 
-async function findAudioTarget(courseId: number, lessonId: number) {
+function findAudioTarget(lessons: LessonAudioTarget[], lessonId: number, namespace: 'live' | 'revision') {
+  return namespace === 'revision'
+    ? (lessons.find((item) => item.lessonRevisionId === lessonId) ?? null)
+    : (lessons.find((item) => item.sourceLessonId === lessonId) ?? null)
+}
+
+async function fetchAudioTarget(courseId: number, lessonId: number, namespace: 'live' | 'revision') {
   const response = await getCourseAudioTargets(courseId)
-  return (
-    response.data.lessons.find((item) => item.lessonRevisionId === lessonId) ??
-    response.data.lessons.find((item) => item.sourceLessonId === lessonId) ??
-    null
-  )
+  return findAudioTarget(response.data.lessons, lessonId, namespace)
 }
 
 function validateAudioFile(file: File) {
@@ -70,6 +73,7 @@ function validateAudioFile(file: File) {
 
 function mutationErrorMessage(error: unknown, fallback: string) {
   const status = getErrorStatus(error)
+  if (axios.isAxiosError(error) && !error.response) return 'Không thể kết nối máy chủ.'
   if (status === 409) return 'Nội dung đã thay đổi hoặc không còn cho sửa. Vui lòng tải lại trang.'
   if (status === 413) return 'File vượt quá 20MB cho phép.'
   if (status === 415) return 'Định dạng tải lên không hợp lệ.'
@@ -79,9 +83,9 @@ function mutationErrorMessage(error: unknown, fallback: string) {
   return getApiErrorMessage(error, fallback)
 }
 
-export function LessonAudioEditor({ courseId, lesson, editable, onAudioChanged }: LessonAudioEditorProps) {
+export function LessonAudioEditor({ courseId, lesson, lessonIdNamespace, editable, onAudioChanged }: LessonAudioEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const requestKey = `${courseId}:${lesson.id}:${lesson.skillType}:${editable ? 'editable' : 'readonly'}`
+  const requestKey = `${courseId}:${lesson.id}:${lessonIdNamespace}:${lesson.skillType}:${editable ? 'editable' : 'readonly'}`
   const requestKeyRef = useRef(requestKey)
   useLayoutEffect(() => {
     requestKeyRef.current = requestKey
@@ -98,7 +102,7 @@ export function LessonAudioEditor({ courseId, lesson, editable, onAudioChanged }
 
     void (async () => {
       try {
-        const found = await findAudioTarget(courseId, lesson.id)
+        const found = await fetchAudioTarget(courseId, lesson.id, lessonIdNamespace)
         if (cancelled) return
         setDiscovery({ key: requestKey, target: found, error: null })
         setAudioOverride(null)
@@ -119,7 +123,7 @@ export function LessonAudioEditor({ courseId, lesson, editable, onAudioChanged }
     return () => {
       cancelled = true
     }
-  }, [courseId, lesson.id, lesson.skillType, requestKey])
+  }, [courseId, lesson.id, lessonIdNamespace, lesson.skillType, requestKey])
 
   if (lesson.skillType !== 'LISTENING') return null
 
@@ -150,7 +154,7 @@ export function LessonAudioEditor({ courseId, lesson, editable, onAudioChanged }
 
   async function resolveTarget(capturedKey: string) {
     try {
-      const found = await findAudioTarget(courseId, lesson.id)
+      const found = await fetchAudioTarget(courseId, lesson.id, lessonIdNamespace)
       if (requestKeyRef.current !== capturedKey) return null
       setDiscovery({ key: capturedKey, target: found, error: null })
       setAudioOverride(null)
@@ -259,7 +263,7 @@ export function LessonAudioEditor({ courseId, lesson, editable, onAudioChanged }
 
       {audioUrl ? (
         <LessonAudioPlayer audioUrl={audioUrl} />
-      ) : (
+      ) : status === 'loading' ? null : (
         <p className="mt-3 text-sm text-muted-foreground">Chưa có audio.</p>
       )}
 
