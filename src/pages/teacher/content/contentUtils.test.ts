@@ -105,6 +105,30 @@ describe('isRevisionBackedCourse', () => {
     expect(isRevisionBackedCourse(makeCourse({ status: 'APPROVED', hasEditableRevision: true }))).toBe(true)
   })
 
+  it('is true for an approved course whose latest revision is a draft', () => {
+    expect(
+      isRevisionBackedCourse(
+        makeCourse({ status: 'APPROVED', hasEditableRevision: false, latestRevisionStatus: 'DRAFT' }),
+      ),
+    ).toBe(true)
+  })
+
+  it('is true for an approved course whose latest revision is rejected', () => {
+    expect(
+      isRevisionBackedCourse(
+        makeCourse({ status: 'APPROVED', hasEditableRevision: false, latestRevisionStatus: 'REJECTED' }),
+      ),
+    ).toBe(true)
+  })
+
+  it('is false for an approved course with no latest revision status', () => {
+    expect(
+      isRevisionBackedCourse(
+        makeCourse({ status: 'APPROVED', hasEditableRevision: false, latestRevisionStatus: null }),
+      ),
+    ).toBe(false)
+  })
+
   it('is true for an approved course whose latest revision is pending review', () => {
     expect(
       isRevisionBackedCourse(

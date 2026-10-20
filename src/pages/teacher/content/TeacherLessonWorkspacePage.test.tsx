@@ -1,9 +1,9 @@
-import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { getTeacherCourse } from '../../../lib/api/teacherContentApi'
 import { getCourseAudioTargets } from '../../../lib/api/teacherLessonAudioApi'
-import type { CourseAudioTargets, TeacherCourse } from '../../../lib/api/types'
+import type { CourseAudioTargets, TeacherCourse, TeacherLesson } from '../../../lib/api/types'
 import { TeacherLessonWorkspacePage } from './TeacherLessonWorkspacePage'
 
 vi.mock('../../../lib/api/teacherContentApi', () => ({
@@ -25,6 +25,27 @@ const mockedGetTeacherCourse = vi.mocked(getTeacherCourse)
 const mockedGetTargets = vi.mocked(getCourseAudioTargets)
 
 const audioUrl = 'https://cdn.example.com/audio/a.mp3'
+
+const draftLesson: TeacherLesson = {
+  id: 9,
+  title: 'Listening lesson',
+  description: null,
+  content: null,
+  audioUrl,
+  audioPublicId: 'learne/course-audio/a',
+  skillType: 'LISTENING',
+  orderIndex: 1,
+  xpReward: 0,
+  placementTest: false,
+  status: 'DRAFT',
+  rejectionReason: null,
+  questions: [],
+}
+
+const secondLesson: TeacherLesson = {
+  ...draftLesson,
+  id: 8,
+}
 
 const draftCourse: TeacherCourse = {
   id: 3,
@@ -48,23 +69,7 @@ const draftCourse: TeacherCourse = {
       name: 'Topic',
       description: null,
       orderIndex: 1,
-      lessons: [
-        {
-          id: 9,
-          title: 'Listening lesson',
-          description: null,
-          content: null,
-          audioUrl,
-          audioPublicId: 'learne/course-audio/a',
-          skillType: 'LISTENING',
-          orderIndex: 1,
-          xpReward: 0,
-          placementTest: false,
-          status: 'DRAFT',
-          rejectionReason: null,
-          questions: [],
-        },
-      ],
+      lessons: [draftLesson, secondLesson],
     },
   ],
 }
@@ -103,9 +108,20 @@ const revisionTargets: { data: CourseAudioTargets } = {
   },
 }
 
+function NavigateToSecondLesson() {
+  const navigate = useNavigate()
+
+  return (
+    <button type="button" onClick={() => navigate('/teacher/content/courses/3/lessons/8')}>
+      Chuyển bài
+    </button>
+  )
+}
+
 function renderPage() {
   render(
     <MemoryRouter initialEntries={['/teacher/content/courses/3/lessons/9']}>
+      <NavigateToSecondLesson />
       <Routes>
         <Route path="/teacher/content/courses/:courseId/lessons/:lessonId" element={<TeacherLessonWorkspacePage />} />
       </Routes>
@@ -152,5 +168,17 @@ describe('TeacherLessonWorkspacePage', () => {
     expect(await screen.findByText('Tạo bản nháp chỉnh sửa để thay audio.')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Thay audio' })).not.toBeInTheDocument()
     expect(screen.getByLabelText('Audio bài nghe')).toHaveAttribute('src', audioUrl)
+  })
+
+  it('resets the lesson edit form when switching to another lesson with identical saved values', async () => {
+    renderPage()
+
+    const titleInput = await screen.findByLabelText('Tiêu đề bài học')
+    fireEvent.change(titleInput, { target: { value: 'Nháp chưa lưu' } })
+    expect(titleInput).toHaveValue('Nháp chưa lưu')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Chuyển bài' }))
+
+    await waitFor(() => expect(screen.getByLabelText('Tiêu đề bài học')).toHaveValue(draftLesson.title))
   })
 })
