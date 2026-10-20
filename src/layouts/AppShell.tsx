@@ -14,11 +14,12 @@ const roleLabels: Record<UserRole, string> = {
 type AppShellProps = {
   children: ReactNode
   header?: ReactNode
+  headerActions?: ReactNode
   fullWidth?: boolean
   hideDefaultHeader?: boolean
 }
 
-export function AppShell({ children, header, fullWidth, hideDefaultHeader }: AppShellProps) {
+export function AppShell({ children, header, headerActions, fullWidth, hideDefaultHeader }: AppShellProps) {
   const { user, logout: clearAuth } = useAuth()
   const navigate = useNavigate()
 
@@ -71,6 +72,7 @@ export function AppShell({ children, header, fullWidth, hideDefaultHeader }: App
             </nav>
           </div>
           <div className="flex shrink-0 items-center gap-3">
+            {headerActions}
             <div className="min-w-0 text-right">
               <div className="max-w-28 truncate text-sm font-medium text-gray-900 sm:max-w-none">{user.fullName}</div>
               <div className="text-xs text-gray-500">{roleLabels[user.role]}</div>

@@ -19,7 +19,9 @@ import { CourseForm } from './CourseForm'
 import { CourseImportExportPanel } from './CourseImportExportPanel'
 import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
 import { contentStatusLabels, coursePriceStatusLabels, coursePricingTypeLabels, courseTypeLabels, formatVndAmount } from './contentLabels'
-import { canSubmitCourse, countLessons, countQuestions } from './contentUtils'
+import { getContentEditingState, canSubmitCourse, countLessons, countQuestions, type ContentEditingState } from './contentUtils'
+import { useCourseSubmission } from './useCourseSubmission'
+import { CourseSubmissionStatus } from './CourseSubmissionStatus'
 
 type StatusFilter = ContentStatus | 'ALL'
 
@@ -33,6 +35,11 @@ const PAGE_SIZE = 10
 
 function formatCourseContent(course: TeacherCourse) {
   return `${course.topics.length} chủ đề · ${countLessons(course)} bài học · ${countQuestions(course)} câu hỏi`
+}
+
+function SubmissionTracker({ course, onTerminal }: { course: TeacherCourse; onTerminal: () => Promise<void> }) {
+  const { submission } = useCourseSubmission(course.id, course.submission, onTerminal)
+  return <CourseSubmissionStatus submission={submission} />
 }
 
 export function TeacherContentPage() {
@@ -49,9 +56,14 @@ export function TeacherContentPage() {
   const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [hasNext, setHasNext] = useState(false)
   const requestVersion = useRef(0)
+  const currentFilters = useRef({ searchQuery: '', statusFilter: 'ALL' as StatusFilter })
+  const courseEditingStates = new Map((courses ?? []).map((course) => [course.id, getContentEditingState(course)]))
+  const currentDeleteTarget = courses?.find((course) => course.id === deleteTarget?.id)
+  const deleteEditingState: ContentEditingState = (currentDeleteTarget && courseEditingStates.get(currentDeleteTarget.id)) ?? { kind: 'read-only', reason: 'Khóa học không còn trong danh sách hiện tại.' }
 
   useEffect(() => {
     const version = ++requestVersion.current
+    const invalidatePendingLists = () => { ++requestVersion.current }
     let cancelled = false
     void (async () => {
       try {
@@ -68,7 +80,7 @@ export function TeacherContentPage() {
           setCursorStack([undefined])
         }
       } catch (err) {
-        if (!cancelled) {
+        if (!cancelled && version === requestVersion.current) {
           setError(getApiErrorMessage(err, 'Không thể tải thư viện khóa học.'))
           setCourses([])
         }
@@ -76,15 +88,19 @@ export function TeacherContentPage() {
     })()
     return () => {
       cancelled = true
+      invalidatePendingLists()
     }
   }, [searchQuery, statusFilter])
 
   const refreshCourses = async () => {
+    const version = ++requestVersion.current
+    const { searchQuery, statusFilter } = currentFilters.current
     const response = await listTeacherCourses({
       ...(statusFilter !== 'ALL' ? { status: statusFilter } : {}),
       ...(searchQuery.trim() ? { q: searchQuery.trim() } : {}),
       size: PAGE_SIZE,
     })
+    if (version !== requestVersion.current) return
     setCourses(response.data.content)
     setNextCursor(response.data.nextCursor)
     setHasNext(response.data.hasNext)
@@ -98,6 +114,7 @@ export function TeacherContentPage() {
     setInfo(null)
     try {
       const response = await createTeacherCourse(payload)
+      ++requestVersion.current
       setCourses((current) => (current ? [response.data, ...current.filter((course) => course.id !== response.data.id)] : [response.data]))
       setFormResetVersion((version) => version + 1)
       try {
@@ -123,21 +140,25 @@ export function TeacherContentPage() {
   }
 
   const handleSubmitCourse = async (course: TeacherCourse) => {
+    if (courseEditingStates.get(course.id)?.kind !== 'editable' || !canSubmitCourse(course) || action !== null) return
     setAction(`submit-${course.id}`)
     setError(null)
     setInfo(null)
     try {
       const response = await submitTeacherCourse(course.id)
-      setCourses((current) => current?.map((item) => (item.id === course.id ? response.data : item)) ?? current)
-      setInfo(`Đã gửi khóa học "${course.name}" để duyệt.`)
+      ++requestVersion.current
+      setCourses((current) => current?.map((item) => (item.id === course.id ? { ...item, submission: response.data, editingLocked: true } : item)) ?? current)
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể gửi duyệt khóa học.'))
+      if ((err as { response?: { status?: number } }).response?.status === 409) await refreshCourses().catch(() => undefined)
     } finally {
       setAction(null)
     }
   }
 
   const handleCreateEditRevision = async (course: TeacherCourse) => {
+    const editingState = courseEditingStates.get(course.id)
+    if (!editingState || editingState.kind === 'locked' || action !== null) return
     setAction(`revision-${course.id}`)
     setError(null)
     setInfo(null)
@@ -147,24 +168,27 @@ export function TeacherContentPage() {
       setInfo(`Đã tạo bản nháp chỉnh sửa cho khóa học "${course.name}".`)
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể tạo bản nháp chỉnh sửa.'))
+      if ((err as { response?: { status?: number } }).response?.status === 409) await refreshCourses().catch(() => undefined)
     } finally {
       setAction(null)
     }
   }
 
   const handleDeleteCourse = async () => {
-    if (!deleteTarget) return
-    const target = deleteTarget
+    if (!currentDeleteTarget || deleteEditingState.kind !== 'editable' || action !== null) return
+    const target = currentDeleteTarget
     setAction(`delete-${target.id}`)
     setError(null)
     setInfo(null)
     try {
       await deleteTeacherCourse(target.id)
+      ++requestVersion.current
       setCourses((current) => current?.filter((item) => item.id !== target.id) ?? current)
       setDeleteTarget(null)
       setInfo(`Đã xóa khóa học "${target.name}".`)
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể xóa khóa học.'))
+      if ((err as { response?: { status?: number } }).response?.status === 409) await refreshCourses().catch(() => undefined)
     } finally {
       setAction(null)
     }
@@ -174,7 +198,8 @@ export function TeacherContentPage() {
   const pagedCourses = filteredCourses
 
   async function loadTeacherPage(cursor: string | undefined, targetPage: number) {
-    const version = requestVersion.current
+    const version = ++requestVersion.current
+    const { searchQuery, statusFilter } = currentFilters.current
     const response = await listTeacherCourses({
       ...(statusFilter !== 'ALL' ? { status: statusFilter } : {}),
       ...(searchQuery.trim() ? { q: searchQuery.trim() } : {}),
@@ -191,9 +216,15 @@ export function TeacherContentPage() {
 
   const hasActiveFilter = searchQuery.trim().length > 0 || statusFilter !== 'ALL'
 
+  const changeFilters = (nextSearchQuery: string, nextStatusFilter: StatusFilter) => {
+    ++requestVersion.current
+    currentFilters.current = { searchQuery: nextSearchQuery, statusFilter: nextStatusFilter }
+    setSearchQuery(nextSearchQuery)
+    setStatusFilter(nextStatusFilter)
+  }
+
   const handleClearFilters = () => {
-    setSearchQuery('')
-    setStatusFilter('ALL')
+    changeFilters('', 'ALL')
   }
 
   const busy = action !== null
@@ -233,7 +264,7 @@ export function TeacherContentPage() {
         </Alert>
       ) : null}
 
-      <CourseImportExportPanel onImported={handleImportCourse} />
+      <CourseImportExportPanel onImported={handleImportCourse} onConflict={refreshCourses} />
 
       <Card id="tao-khoa-hoc" className={cardSoftClassName}>
         <CardHeader>
@@ -271,14 +302,14 @@ export function TeacherContentPage() {
                   type="search"
                   placeholder="Nhập tên khóa học..."
                   value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
+                  onChange={(event) => changeFilters(event.target.value, statusFilter)}
                   className="pl-9"
                 />
               </div>
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="teacher-content-status">Trạng thái</Label>
-              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as StatusFilter)}>
+              <Select value={statusFilter} onValueChange={(value) => changeFilters(searchQuery, value as StatusFilter)}>
                 <SelectTrigger id="teacher-content-status" className="w-full lg:w-56">
                   <SelectValue placeholder="Tất cả trạng thái" />
                 </SelectTrigger>
@@ -389,7 +420,8 @@ export function TeacherContentPage() {
               </TableHeader>
               <TableBody>
                 {pagedCourses.map((course) => {
-                  const submittable = canSubmitCourse(course)
+                  const editingState = courseEditingStates.get(course.id)!
+                  const submittable = editingState.kind === 'editable' && canSubmitCourse(course)
                   return (
                     <TableRow key={course.id}>
                       <TableCell className="whitespace-normal">
@@ -424,6 +456,7 @@ export function TeacherContentPage() {
                       </TableCell>
                       <TableCell>
                         <TeacherContentStatusBadge status={course.status} />
+                        <SubmissionTracker course={course} onTerminal={refreshCourses} />
                       </TableCell>
                       <TableCell className="whitespace-normal">
                         <span className="text-sm text-muted-foreground">{formatCourseContent(course)}</span>
@@ -445,7 +478,7 @@ export function TeacherContentPage() {
                               size="sm"
                               variant="outline"
                               title="Tạo bản nháp chỉnh sửa"
-                              disabled={busy}
+                              disabled={busy || editingState.kind === 'locked'}
                               loading={action === `revision-${course.id}`}
                               onClick={() => void handleCreateEditRevision(course)}
                             >
@@ -471,7 +504,7 @@ export function TeacherContentPage() {
                             variant="destructive"
                             title="Xóa"
                             aria-label={`Xóa khóa học ${course.name}`}
-                            disabled={busy}
+                            disabled={busy || editingState.kind !== 'editable'}
                             onClick={() => setDeleteTarget(course)}
                             className="size-8"
                           >
@@ -551,13 +584,14 @@ export function TeacherContentPage() {
               </div>
             </div>
           </DialogHeader>
+          {deleteEditingState.kind !== 'editable' ? <p role="status" className="text-sm text-muted-foreground">{deleteEditingState.reason}</p> : null}
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline" disabled={busy}>
                 Hủy
               </Button>
             </DialogClose>
-            <Button variant="destructive" loading={deleteActionKey !== null && action === deleteActionKey} onClick={() => void handleDeleteCourse()}>
+            <Button variant="destructive" disabled={busy || deleteEditingState.kind !== 'editable'} loading={deleteActionKey !== null && action === deleteActionKey} onClick={() => void handleDeleteCourse()}>
               <Trash2 data-icon="inline-start" aria-hidden="true" />
               Xóa khóa học
             </Button>

@@ -17,7 +17,9 @@ import { LessonForm } from './LessonForm'
 import { QuestionForm } from './QuestionForm'
 import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
 import { questionTypeLabels, skillTypeLabels } from './contentLabels'
-import { canEditContent, findTeacherLesson } from './contentUtils'
+import { getContentEditingState, findTeacherLesson } from './contentUtils'
+import { useCourseSubmission } from './useCourseSubmission'
+import { CourseSubmissionStatus } from './CourseSubmissionStatus'
 import { getLessonInitialValue, getQuestionInitialValue } from './teacherContentMappers'
 import { LessonAudioPlayer } from '../../student/learning/LessonAudioPlayer'
 
@@ -147,7 +149,14 @@ export function TeacherLessonWorkspacePage() {
   const refreshCourse = async () => {
     if (parsedCourseId === null) return
     const response = await getTeacherCourse(parsedCourseId)
-    setCourse(response.data)
+    setCourse((current) => current?.id === response.data.id ? response.data : current)
+  }
+
+  const { submission, active } = useCourseSubmission(parsedCourseId, course?.id === parsedCourseId ? course.submission : null, refreshCourse)
+  const editingState = course ? getContentEditingState({ ...course, editingLocked: course.editingLocked || active }) : { kind: 'read-only' as const, reason: 'Đang tải.' }
+  const mutationAllowed = editingState.kind === 'editable' && course?.id === parsedCourseId && action === null
+  const handleConflict = async (err: unknown) => {
+    if ((err as { response?: { status?: number } }).response?.status === 409) await refreshCourse().catch(() => undefined)
   }
 
   const refreshCourseAfterSuccess = async (message: string) => {
@@ -160,7 +169,7 @@ export function TeacherLessonWorkspacePage() {
   }
 
   const handleUpdateLesson = async (payload: TeacherLessonRequest) => {
-    if (!lesson) return
+    if (!lesson || !mutationAllowed) return
     setAction(`update-lesson-${lesson.id}`)
     setError(null)
     setInfo(null)
@@ -169,13 +178,14 @@ export function TeacherLessonWorkspacePage() {
       await refreshCourseAfterSuccess('Đã cập nhật bài học.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể cập nhật bài học.'))
+      await handleConflict(err)
     } finally {
       setAction(null)
     }
   }
 
   const handleDeleteLesson = async () => {
-    if (!currentCourse || !lesson || !window.confirm('Bạn có chắc muốn xóa bài học này?')) return
+    if (!mutationAllowed || !currentCourse || !lesson || !window.confirm('Bạn có chắc muốn xóa bài học này?')) return
     setAction(`delete-lesson-${lesson.id}`)
     setError(null)
     setInfo(null)
@@ -184,12 +194,13 @@ export function TeacherLessonWorkspacePage() {
       navigate(`/teacher/content/courses/${currentCourse.id}`)
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể xóa bài học.'))
+      await handleConflict(err)
       setAction(null)
     }
   }
 
   const handleCreateQuestion = async (payload: TeacherQuestionRequest) => {
-    if (!lesson) return
+    if (!lesson || !mutationAllowed) return
     setAction(`create-question-${lesson.id}`)
     setError(null)
     setInfo(null)
@@ -199,12 +210,14 @@ export function TeacherLessonWorkspacePage() {
       await refreshCourseAfterSuccess('Đã tạo câu hỏi.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể tạo câu hỏi.'))
+      await handleConflict(err)
     } finally {
       setAction(null)
     }
   }
 
   const handleUpdateQuestion = async (question: TeacherQuestion, payload: TeacherQuestionRequest) => {
+    if (!mutationAllowed) return
     setAction(`update-question-${question.id}`)
     setError(null)
     setInfo(null)
@@ -214,13 +227,14 @@ export function TeacherLessonWorkspacePage() {
       setEditingQuestionId(null)
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể cập nhật câu hỏi.'))
+      await handleConflict(err)
     } finally {
       setAction(null)
     }
   }
 
   const handleDeleteQuestion = async (question: TeacherQuestion) => {
-    if (!window.confirm('Bạn có chắc muốn xóa câu hỏi này?')) return
+    if (!mutationAllowed || !window.confirm('Bạn có chắc muốn xóa câu hỏi này?')) return
     setAction(`delete-question-${question.id}`)
     setError(null)
     setInfo(null)
@@ -232,6 +246,7 @@ export function TeacherLessonWorkspacePage() {
       }
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể xóa câu hỏi.'))
+      await handleConflict(err)
     } finally {
       setAction(null)
     }
@@ -240,7 +255,7 @@ export function TeacherLessonWorkspacePage() {
   const currentCourse = parsedCourseId !== null && course?.id === parsedCourseId ? course : null
   const lesson = currentCourse && parsedLessonId !== null ? findTeacherLesson(currentCourse, parsedLessonId) : null
   const topic = currentCourse && parsedLessonId !== null ? findTeacherTopic(currentCourse, parsedLessonId) : null
-  const editable = currentCourse ? canEditContent(currentCourse.status) : false
+  const editable = editingState.kind === 'editable'
   const invalidRoute = parsedCourseId === null || parsedLessonId === null
   const displayError = invalidRoute || (currentCourse !== null && lesson === null) ? 'Không tìm thấy bài học.' : error
 
@@ -278,6 +293,8 @@ export function TeacherLessonWorkspacePage() {
 
       {currentCourse && lesson ? (
         <>
+          <CourseSubmissionStatus submission={submission} />
+          {editingState.kind === 'locked' ? <p role="status">{editingState.reason}</p> : null}
           <header className={cardClassName}>
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>

@@ -66,7 +66,7 @@ export function RegisterPage() {
     setSubmitting(true)
     try {
       await requestRegistrationOtp(form)
-      setInfo('Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư (kể cả thư rác).')
+      setInfo('Yêu cầu gửi mã xác thực đã được tiếp nhận. Vui lòng kiểm tra hộp thư.')
       setStep(2)
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể gửi mã OTP. Vui lòng thử lại.'))
@@ -77,10 +77,11 @@ export function RegisterPage() {
 
   const handleResendOtp = async () => {
     setError(null)
+    setInfo(null)
     setSubmitting(true)
     try {
       await resendRegistrationOtp({ email: form.email })
-      setInfo('Mã OTP mới đã được gửi đến email của bạn.')
+      setInfo('Yêu cầu gửi mã xác thực đã được tiếp nhận. Vui lòng kiểm tra hộp thư.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể gửi lại mã OTP. Vui lòng thử lại.'))
     } finally {
@@ -121,7 +122,7 @@ export function RegisterPage() {
             </Badge>
             <CardTitle className="text-2xl font-bold text-gray-950">Nhập mã OTP</CardTitle>
             <CardDescription>
-              Mã xác thực đã được gửi đến <span className="font-medium text-gray-800">{form.email}</span>
+              Email xác thực: <span className="font-medium text-gray-800">{form.email}</span>
             </CardDescription>
           </CardHeader>
           <CardContent>

@@ -22,6 +22,34 @@ function blobResponse(data: Blob) {
 }
 
 describe('CourseImportExportPanel', () => {
+  it('closes pending import confirmation on lock, blocks submit, and still exports', async () => {
+    const props = { courseId: 42 }
+    const { rerender } = render(<CourseImportExportPanel {...props} />)
+    fireEvent.change(screen.getByLabelText('File gói nén'), { target: { files: [new File(['x'], 'course.zip')] } })
+    fireEvent.click(screen.getByRole('button', { name: 'Import gói nén' }))
+    expect(screen.getByRole('button', { name: 'Xác nhận import' })).toBeInTheDocument()
+    rerender(<CourseImportExportPanel {...props} editingState={{ kind: 'locked', reason: 'Đang xử lý' }} />)
+    expect(screen.queryByRole('button', { name: 'Xác nhận import' })).not.toBeInTheDocument()
+    const input = screen.getByLabelText('File gói nén')
+    const submit = screen.getByRole('button', { name: 'Import gói nén' })
+    expect(input).toBeDisabled(); expect(submit).toBeDisabled()
+    submit.focus(); expect(submit).not.toHaveFocus()
+    fireEvent.keyDown(submit, { key: 'Enter' }); fireEvent.click(submit)
+    fireEvent.submit(submit.closest('form')!)
+    expect(importTeacherCourse).not.toHaveBeenCalled()
+    vi.mocked(exportTeacherCourse).mockResolvedValue(blobResponse(new Blob(['zip'])))
+    const url = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:locked-export')
+    const revoke = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+    const exportButton = screen.getByRole('button', { name: 'Export khóa học' })
+    expect(exportButton).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Tải template Excel' })).toBeEnabled()
+    fireEvent.click(exportButton)
+    await waitFor(() => expect(exportTeacherCourse).toHaveBeenCalledWith(42))
+    expect(click).toHaveBeenCalledTimes(1)
+    url.mockRestore(); revoke.mockRestore(); click.mockRestore()
+  })
+
   it('accepts zip rar and 7z import packages', () => {
     render(<CourseImportExportPanel />)
 
