@@ -12,14 +12,14 @@ import {
   updateTeacherLesson,
   updateTeacherQuestion,
 } from '../../../lib/api/teacherContentApi'
-import type { TeacherCourse, TeacherLesson, TeacherLessonRequest, TeacherQuestion, TeacherQuestionRequest } from '../../../lib/api/types'
+import type { LessonAudioFields, TeacherCourse, TeacherLesson, TeacherLessonRequest, TeacherQuestion, TeacherQuestionRequest } from '../../../lib/api/types'
 import { LessonForm } from './LessonForm'
 import { QuestionForm } from './QuestionForm'
 import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
 import { questionTypeLabels, skillTypeLabels } from './contentLabels'
-import { canEditContent, findTeacherLesson } from './contentUtils'
+import { canEditContent, canEditCourseContent, findTeacherLesson } from './contentUtils'
 import { getLessonInitialValue, getQuestionInitialValue } from './teacherContentMappers'
-import { LessonAudioPlayer } from '../../student/learning/LessonAudioPlayer'
+import { LessonAudioEditor } from './audio/LessonAudioEditor'
 
 const cardClassName = 'rounded-2xl border border-gray-200 bg-white p-5 shadow-sm'
 
@@ -219,6 +219,20 @@ export function TeacherLessonWorkspacePage() {
     }
   }
 
+  const handleAudioChanged = (lessonId: number, audio: LessonAudioFields) => {
+    setCourse((current) =>
+      current
+        ? {
+            ...current,
+            topics: current.topics.map((topic) => ({
+              ...topic,
+              lessons: topic.lessons.map((item) => (item.id === lessonId ? { ...item, ...audio } : item)),
+            })),
+          }
+        : current,
+    )
+  }
+
   const handleDeleteQuestion = async (question: TeacherQuestion) => {
     if (!window.confirm('Bạn có chắc muốn xóa câu hỏi này?')) return
     setAction(`delete-question-${question.id}`)
@@ -241,6 +255,7 @@ export function TeacherLessonWorkspacePage() {
   const lesson = currentCourse && parsedLessonId !== null ? findTeacherLesson(currentCourse, parsedLessonId) : null
   const topic = currentCourse && parsedLessonId !== null ? findTeacherTopic(currentCourse, parsedLessonId) : null
   const editable = currentCourse ? canEditContent(currentCourse.status) : false
+  const audioEditable = currentCourse ? canEditCourseContent(currentCourse) : false
   const invalidRoute = parsedCourseId === null || parsedLessonId === null
   const displayError = invalidRoute || (currentCourse !== null && lesson === null) ? 'Không tìm thấy bài học.' : error
 
@@ -307,7 +322,13 @@ export function TeacherLessonWorkspacePage() {
                 </Button>
               </div>
               <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                <LessonAudioPlayer audioUrl={lesson.audioUrl} />
+                <LessonAudioEditor
+                  key={lesson.id}
+                  courseId={currentCourse.id}
+                  lesson={lesson}
+                  editable={audioEditable}
+                  onAudioChanged={(audio) => handleAudioChanged(lesson.id, audio)}
+                />
                 <LessonEditForm lesson={lesson} action={action} onSubmit={handleUpdateLesson} />
               </div>
             </section>
@@ -316,7 +337,13 @@ export function TeacherLessonWorkspacePage() {
               <h2 className="text-lg font-semibold text-gray-900">Nội dung bài học</h2>
               <p className="mt-3 text-sm font-medium text-gray-700">Mô tả</p>
               <p className="mt-1 whitespace-pre-wrap text-gray-600">{lesson.description || 'Chưa có mô tả bài học.'}</p>
-              <LessonAudioPlayer audioUrl={lesson.audioUrl} />
+              <LessonAudioEditor
+                key={lesson.id}
+                courseId={currentCourse.id}
+                lesson={lesson}
+                editable={audioEditable}
+                onAudioChanged={(audio) => handleAudioChanged(lesson.id, audio)}
+              />
               <p className="mt-4 text-sm font-medium text-gray-700">Nội dung</p>
               <p className="mt-1 whitespace-pre-wrap text-gray-600">{lesson.content || 'Chưa có nội dung bài học.'}</p>
             </section>
