@@ -441,6 +441,27 @@ describe('LessonAudioEditor', () => {
     expect(screen.getByLabelText('Audio bài nghe')).toHaveAttribute('src', fallbackAudioUrl)
   })
 
+  it('does not fall back to a revision target in the live namespace', async () => {
+    const revisionTarget: LessonAudioTarget = {
+      ...audioTarget,
+      lessonRevisionId: 7,
+      sourceLessonId: null,
+      audioUrl: 'https://cdn.example.com/audio/unrelated.mp3',
+      audioPublicId: 'learne/course-audio/unrelated',
+    }
+    const fallbackAudioUrl = 'https://cdn.example.com/audio/fallback.mp3'
+    mockedGetTargets.mockResolvedValue(targetsOf([revisionTarget]) as never)
+
+    renderEditor({ lesson: lessonOf({ id: 7, audioUrl: fallbackAudioUrl }), lessonIdNamespace: 'live' })
+
+    expect(await screen.findByText('Tạo bản nháp chỉnh sửa để thay audio.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Thay audio' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Tải audio lên' })).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Audio bài nghe')).toHaveAttribute('src', fallbackAudioUrl)
+    expect(mockedUpload).not.toHaveBeenCalled()
+    expect(mockedDelete).not.toHaveBeenCalled()
+  })
+
   it('reports a connection error when the upload request has no response', async () => {
     mockedGetTargets.mockResolvedValue(targetsOf([audioTarget]) as never)
     mockedUpload.mockRejectedValue(Object.assign(new Error('network'), { isAxiosError: true }))
