@@ -1,3 +1,4 @@
+import type { AxiosProgressEvent } from 'axios'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { http } from './client'
 import { deleteLessonAudio, getCourseAudioTargets, uploadLessonAudio } from './teacherLessonAudioApi'
@@ -26,14 +27,22 @@ describe('teacherLessonAudioApi', () => {
   it('uploads audio as multipart form data to the revision endpoint', async () => {
     mockedPost.mockResolvedValue({ data: { id: 31 } })
     const file = new File(['audio'], 'voice.mp3', { type: 'audio/mpeg' })
+    const onProgress = vi.fn()
 
-    await uploadLessonAudio(31, file)
+    await uploadLessonAudio(31, file, onProgress)
 
     expect(mockedPost).toHaveBeenCalledTimes(1)
-    const [url, body] = mockedPost.mock.calls[0]
+    const [url, body, config] = mockedPost.mock.calls[0]
     expect(url).toBe('/api/teacher/content/lesson-revisions/31/audio')
     expect(body).toBeInstanceOf(FormData)
     expect((body as FormData).get('file')).toBe(file)
+    expect(config?.headers).toMatchObject({ 'Content-Type': 'multipart/form-data' })
+
+    config?.onUploadProgress?.({ loaded: 5, total: 10 } as AxiosProgressEvent)
+    expect(onProgress).toHaveBeenCalledWith(50)
+
+    config?.onUploadProgress?.({ loaded: 5 } as AxiosProgressEvent)
+    expect(onProgress).toHaveBeenCalledTimes(1)
   })
 
   it('deletes audio from the revision endpoint', async () => {

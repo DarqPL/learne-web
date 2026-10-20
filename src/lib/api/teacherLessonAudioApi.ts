@@ -13,6 +13,7 @@ export function uploadLessonAudio(lessonRevisionId: number, file: File, onProgre
   formData.append('file', file)
 
   return http.post<TeacherLesson>(`${base}/lesson-revisions/${lessonRevisionId}/audio`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
     onUploadProgress: (event: AxiosProgressEvent) => {
       if (!onProgress || !event.total) return
       onProgress(Math.round((event.loaded / event.total) * 100))
