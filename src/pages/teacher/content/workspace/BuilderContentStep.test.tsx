@@ -56,6 +56,8 @@ const course: TeacherCourse = {
   ],
 }
 
+const revisionAudioUrl = 'https://cdn.example.com/audio/revision.mp3'
+
 const targets: { data: CourseAudioTargets } = {
   data: {
     courseId: 1,
@@ -70,7 +72,7 @@ const targets: { data: CourseAudioTargets } = {
         title: lesson.title,
         skillType: 'LISTENING',
         orderIndex: 1,
-        audioUrl: lesson.audioUrl,
+        audioUrl: revisionAudioUrl,
         audioPublicId: lesson.audioPublicId,
       },
     ],
@@ -116,6 +118,7 @@ describe('BuilderContentStep', () => {
     )
 
     expect(screen.getByText('Audio bài học')).toBeInTheDocument()
-    expect(await screen.findByLabelText('Audio bài nghe')).toHaveAttribute('src', lesson.audioUrl)
+    expect(await screen.findByLabelText('Audio bài nghe')).toHaveAttribute('src', revisionAudioUrl)
+    expect(mockedGetTargets).toHaveBeenCalledWith(course.id)
   })
 })

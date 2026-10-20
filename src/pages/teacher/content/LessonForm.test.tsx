@@ -44,4 +44,23 @@ describe('LessonForm simplified', () => {
     expect(onSubmit).toHaveBeenCalledTimes(1)
     expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ title: 'Bài cũ', xpReward: 25 }))
   })
+
+  it('keeps unsaved input when initialValue changes identity with the same fields', () => {
+    const initialValue = {
+      title: 'Bài cũ',
+      description: 'Mô tả cũ',
+      content: 'Nội dung cũ',
+      skillType: 'GRAMMAR' as const,
+      orderIndex: 0,
+      xpReward: 25,
+      placementTest: false,
+    }
+    const { rerender } = render(<LessonForm submitLabel="Lưu bài học" onSubmit={vi.fn()} initialValue={initialValue} />)
+
+    fireEvent.change(screen.getByLabelText('Tiêu đề bài học'), { target: { value: 'Bài mới' } })
+
+    rerender(<LessonForm submitLabel="Lưu bài học" onSubmit={vi.fn()} initialValue={{ ...initialValue }} />)
+
+    expect(screen.getByLabelText('Tiêu đề bài học')).toHaveValue('Bài mới')
+  })
 })
