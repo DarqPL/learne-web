@@ -26,6 +26,7 @@ import type {
 import { LessonForm } from './LessonForm'
 import { TopicForm } from './TopicForm'
 import { countLessons, countQuestions } from './contentUtils'
+import type { ContentEditingState } from './contentUtils'
 import { getCourseInitialValue, getLessonInitialValue, getTopicInitialValue } from './teacherContentMappers'
 import { BuilderContentStep } from './workspace/BuilderContentStep'
 import { BuilderInfoStep } from './workspace/BuilderInfoStep'
@@ -51,7 +52,7 @@ export type { BuilderStep }
 export interface CourseBuilderWorkspaceProps {
   course: TeacherCourse
   action: string | null
-  editable: boolean
+  editingState: ContentEditingState
   canSubmit: boolean
   formResetVersion: number
   importExportPanel: ReactNode
@@ -72,7 +73,7 @@ export interface CourseBuilderWorkspaceProps {
 export function CourseBuilderWorkspace({
   course,
   action,
-  editable,
+  editingState,
   canSubmit,
   formResetVersion,
   importExportPanel,
@@ -89,6 +90,7 @@ export function CourseBuilderWorkspace({
   onDeleteQuestion,
   onAudioChanged,
 }: CourseBuilderWorkspaceProps) {
+  const editable = editingState.kind === 'editable'
   const busy = action !== null
   const [searchParams, setSearchParams] = useSearchParams()
   const [step, setStep] = useState<BuilderStep>(() => {
@@ -206,7 +208,7 @@ export function CourseBuilderWorkspace({
   }
 
   const handleConfirmDelete = async () => {
-    if (!deleteTarget) return
+    if (!deleteTarget || !editable || busy) return
     if (deleteTarget.kind === 'topic') {
       const topic = findTopic(course, deleteTarget.id)
       if (!topic) {
@@ -237,6 +239,7 @@ export function CourseBuilderWorkspace({
   }
 
   const handleConfirmSubmit = async () => {
+    if (submitDisabled) return
     await onSubmitCourse()
     setSubmitDialogOpen(false)
   }
@@ -250,7 +253,7 @@ export function CourseBuilderWorkspace({
           course={course}
           courseInitialValue={courseInitialValue}
           action={action}
-          editable={editable}
+          editingState={editingState}
           lessonCount={lessonCount}
           questionCount={questionCount}
           submitDisabled={submitDisabled}
@@ -267,7 +270,7 @@ export function CourseBuilderWorkspace({
           course={course}
           action={action}
           busy={busy}
-          editable={editable}
+          editingState={editingState}
           selectedTopic={selectedTopic}
           selectedLesson={selectedLesson}
           topicInitialValue={topicInitialValue}
@@ -287,7 +290,7 @@ export function CourseBuilderWorkspace({
         <BuilderQuestionsStep
           course={course}
           busy={busy}
-          editable={editable}
+          editingState={editingState}
           action={action}
           formResetVersion={formResetVersion}
           activeLesson={activeQuestionLesson}
@@ -322,7 +325,7 @@ export function CourseBuilderWorkspace({
       ) : null}
 
       <Dialog
-        open={topicDialogOpen}
+        open={topicDialogOpen && editable}
         onOpenChange={(open) => {
           if (!open && busy) return
           setTopicDialogOpen(open)
@@ -344,7 +347,7 @@ export function CourseBuilderWorkspace({
       </Dialog>
 
       <Dialog
-        open={lessonDialogTopic !== null}
+        open={lessonDialogTopic !== null && editable}
         onOpenChange={(open) => {
           if (!open && busy) return
           if (!open) setLessonDialogTopicId(null)
@@ -370,7 +373,7 @@ export function CourseBuilderWorkspace({
       </Dialog>
 
       <AlertDialog
-        open={deleteTarget !== null}
+        open={deleteTarget !== null && editable}
         onOpenChange={(open) => {
           if (!open && busy) return
           if (!open) setDeleteTarget(null)
@@ -452,7 +455,7 @@ export function CourseBuilderWorkspace({
                 Hủy
               </Button>
             </DialogClose>
-            <Button loading={action === 'submit-course'} disabled={busy} onClick={() => void handleConfirmSubmit()}>
+            <Button loading={action === 'submit-course'} disabled={submitDisabled} onClick={() => void handleConfirmSubmit()}>
               <Send data-icon="inline-start" aria-hidden="true" />
               Gửi duyệt
             </Button>

@@ -1,4 +1,5 @@
 import { http } from './client'
+import type { TeacherInvitationDelivery } from './types'
 import type { AdminDashboard, AdminStudentDetail, AdminStudentSummary, AdminTeacher, ApiMessageResponse, NumberedPage } from './types'
 
 export function adminGetDashboard() {
@@ -15,6 +16,10 @@ export function adminGetStudent(userId: number) {
 
 export function adminListTeachers(params?: { page?: number; size?: number }) {
   return http.get<NumberedPage<AdminTeacher>>('/api/admin/teachers', { params })
+}
+
+export function adminResendTeacherInvitation(userId: number) {
+  return http.post<TeacherInvitationDelivery>(`/api/admin/teachers/${userId}/invitation/resend`)
 }
 
 export function adminLockTeacher(userId: number) {

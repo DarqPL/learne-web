@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
+import type { ContentEditingState } from '../contentUtils'
 import { Eye, EyeOff, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { Button } from '@/components/shadcn/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/shadcn/ui/card'
@@ -14,7 +15,7 @@ import { cardSoftClassName, findLesson, findQuestion, type DeleteTarget, type Qu
 interface BuilderQuestionsStepProps {
   course: TeacherCourse
   busy: boolean
-  editable: boolean
+  editingState: ContentEditingState
   action: string | null
   formResetVersion: number
   activeLesson: TeacherLesson | null
@@ -33,7 +34,7 @@ interface BuilderQuestionsStepProps {
 export function BuilderQuestionsStep({
   course,
   busy,
-  editable,
+  editingState,
   action,
   formResetVersion,
   activeLesson,
@@ -48,6 +49,7 @@ export function BuilderQuestionsStep({
   onUpdateQuestion,
   onDeleteRequest,
 }: BuilderQuestionsStepProps) {
+  const editable = editingState.kind === 'editable'
   const hasLessons = course.topics.some((topic) => topic.lessons.length > 0)
   const dialogCreateLesson = questionDialog?.mode === 'create' ? findLesson(course, questionDialog.lessonId) : null
   const dialogQuestion = questionDialog?.mode === 'edit' ? findQuestion(course, questionDialog.questionId) : null
@@ -55,9 +57,9 @@ export function BuilderQuestionsStep({
     () => (dialogQuestion ? getQuestionInitialValue(dialogQuestion) : null),
     [dialogQuestion],
   )
-  const editorOpen =
+  const editorOpen = editable && (
     (questionDialog?.mode === 'create' && dialogCreateLesson !== null) ||
-    (questionDialog?.mode === 'edit' && dialogQuestion !== null && questionInitialValue !== null)
+    (questionDialog?.mode === 'edit' && dialogQuestion !== null && questionInitialValue !== null))
   const editorRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {

@@ -35,7 +35,7 @@ export function ForgotPasswordPage() {
       navigate('/reset-password', {
         state: {
           email,
-          message: 'Nếu email tồn tại, mã đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư và nhập mã bên dưới.',
+          message: 'Nếu email hợp lệ, yêu cầu đặt lại mật khẩu đã được tiếp nhận. Vui lòng kiểm tra hộp thư và nhập mã bên dưới.',
         },
       })
     } catch (err) {

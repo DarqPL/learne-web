@@ -176,18 +176,21 @@ describe('AdminRevenueSection', () => {
 
     render(<AdminRevenueSection initialMonth="2026-03" />)
 
-    expect(await screen.findByText('Khóa học A')).toBeInTheDocument()
-    expect(screen.getByText('Khóa học B')).toBeInTheDocument()
-    expect(screen.getByText('VIP')).toBeInTheDocument()
-    expect(screen.getByText('Giảng viên A')).toBeInTheDocument()
+    // Chart labels intentionally repeat table content; exercise both being rendered.
+    expect(await screen.findByText('Khóa học B', { selector: 'tspan' })).toBeInTheDocument()
+
+    expect(screen.getByRole('cell', { name: 'Khóa học A' })).toBeInTheDocument()
+    expect(screen.getByRole('cell', { name: 'Khóa học B' })).toBeInTheDocument()
+    expect(screen.getByRole('cell', { name: 'VIP' })).toBeInTheDocument()
+    expect(screen.getByRole('cell', { name: 'Giảng viên A' })).toBeInTheDocument()
 
     expect(screen.getByText('Theo khóa học')).toBeInTheDocument()
     expect(screen.getByText('Theo gói')).toBeInTheDocument()
-    expect(screen.getByText('giảng viên')).toBeInTheDocument()
-    expect(screen.getByText('điểm hoạt động')).toBeInTheDocument()
-    expect(screen.getByText('doanh thu trực tiếp')).toBeInTheDocument()
-    expect(screen.getByText('chia từ gói')).toBeInTheDocument()
-    expect(screen.getByText('tổng đề xuất')).toBeInTheDocument()
+    expect(screen.getByRole('columnheader', { name: 'giảng viên' })).toBeInTheDocument()
+    expect(screen.getByRole('columnheader', { name: 'điểm hoạt động' })).toBeInTheDocument()
+    expect(screen.getByRole('columnheader', { name: 'doanh thu trực tiếp' })).toBeInTheDocument()
+    expect(screen.getByRole('columnheader', { name: 'chia từ gói' })).toBeInTheDocument()
+    expect(screen.getByRole('columnheader', { name: 'tổng đề xuất' })).toBeInTheDocument()
 
     // indigo table chrome reused from teacher-style tables
     const header = document.querySelector('[data-slot="table-header"]')

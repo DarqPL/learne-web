@@ -19,8 +19,11 @@ import { Input } from '@/components/shadcn/ui/input'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { downloadCourseTemplate, exportTeacherCourse, importTeacherCourse } from '../../../lib/api/teacherContentApi'
 import type { CourseImportError, CourseImportResponse } from '../../../lib/api/types'
+import type { ContentEditingState } from './contentUtils'
 
 interface CourseImportExportPanelProps {
+  editingState?: ContentEditingState
+  onConflict?: () => Promise<void>
   courseId?: number
   title?: string
   description?: string
@@ -50,6 +53,8 @@ export function CourseImportExportPanel({
   title = 'Import / Export khóa học',
   description = 'Tải template Excel, export khóa học hiện có hoặc import gói nén nội dung.',
   onImported,
+  editingState = { kind: 'editable' },
+  onConflict,
 }: CourseImportExportPanelProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [action, setAction] = useState<string | null>(null)
@@ -97,7 +102,7 @@ export function CourseImportExportPanel({
   }
 
   const handleImportCourse = async () => {
-    if (!selectedFile || action !== null) return
+    if (!selectedFile || action !== null || editingState.kind !== 'editable') return
     if (selectedFile.size > MAX_IMPORT_ARCHIVE_BYTES) {
       setConfirmOpen(false)
       setError('File vượt quá 100MB cho phép.')
@@ -115,6 +120,7 @@ export function CourseImportExportPanel({
       setInfo(`Đã import khóa học (bản nháp R${revisionId}, trạng thái ${status}). Dữ liệu đã xuất bản không đổi cho đến khi được duyệt.`)
       onImported?.(response.data)
     } catch (err) {
+      if ((err as { response?: { status?: number } }).response?.status === 409) await onConflict?.()
       setError(getApiErrorMessage(err, 'Không thể import gói nén khóa học.'))
     } finally {
       setAction(null)
@@ -123,7 +129,7 @@ export function CourseImportExportPanel({
 
   const handleImportSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!selectedFile || action !== null) return
+    if (!selectedFile || action !== null || editingState.kind !== 'editable') return
     if (selectedFile.size > MAX_IMPORT_ARCHIVE_BYTES) {
       setError('File vượt quá 100MB cho phép.')
       return
@@ -188,12 +194,13 @@ export function CourseImportExportPanel({
               id="teacher-course-import-file"
               className="bg-white file:mr-3 file:rounded-md file:border-0 file:bg-indigo-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-indigo-800"
               type="file"
+              disabled={editingState.kind !== 'editable'}
               accept=".zip,.rar,.7z,application/zip,application/x-zip-compressed,application/vnd.rar,application/x-rar-compressed,application/x-7z-compressed"
               onChange={handleFileChange}
             />
             <p className="text-xs text-indigo-900/70">Chấp nhận file .zip, .rar, .7z tối đa 100MB. Bên trong phải có đúng 1 file .xlsm từ template và audio (mp3/wav/m4a/ogg, mỗi file tối đa 20MB) đặt trong thư mục audio/.</p>
           </Field>
-          <Button type="submit" loading={action === 'import'} disabled={!selectedFile || action !== null}>
+          <Button type="submit" loading={action === 'import'} disabled={!selectedFile || action !== null || editingState.kind !== 'editable'}>
             <FileUp data-icon="inline-start" aria-hidden="true" />
             Import gói nén
           </Button>
@@ -221,7 +228,7 @@ export function CourseImportExportPanel({
         ) : null}
       </CardContent>
 
-      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+      <AlertDialog open={confirmOpen && editingState.kind === 'editable'} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <div className="flex items-start gap-3">
