@@ -99,6 +99,7 @@ describe('mergeLessonAudio', () => {
     const result = mergeLessonAudio(course, 100, audio)
 
     expect(result.topics[0].lessons[1]).toBe(course.topics[0].lessons[1])
+    expect(result.topics[1]).toBe(course.topics[1])
     expect(result.topics[1].lessons[0]).toBe(course.topics[1].lessons[0])
     expect(result.topics[1].name).toBe('Topic 2')
     expect(result.topics[0].lessons[0].title).toBe('First lesson')

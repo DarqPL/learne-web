@@ -40,9 +40,16 @@ export function findTeacherLesson(course: TeacherCourse, lessonId: number) {
 export function mergeLessonAudio(course: TeacherCourse, lessonId: number, audio: LessonAudioFields): TeacherCourse {
   return {
     ...course,
-    topics: course.topics.map((topic) => ({
-      ...topic,
-      lessons: topic.lessons.map((item) => (item.id === lessonId ? { ...item, ...audio } : item)),
-    })),
+    topics: course.topics.map((topic) => {
+      if (!topic.lessons.some((item) => item.id === lessonId)) return topic
+      return {
+        ...topic,
+        lessons: topic.lessons.map((item) =>
+          item.id === lessonId
+            ? { ...item, audioUrl: audio.audioUrl, audioPublicId: audio.audioPublicId }
+            : item,
+        ),
+      }
+    }),
   }
 }
