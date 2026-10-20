@@ -1053,3 +1053,25 @@ export interface TeacherShareResponse {
   totalActivityScore: number
   rows: RevenueTeacherShareRow[]
 }
+
+export interface LessonAudioFields {
+  audioUrl: string | null
+  audioPublicId: string | null
+}
+
+export interface LessonAudioTarget extends LessonAudioFields {
+  lessonRevisionId: number
+  sourceLessonId: number | null
+  topicRevisionId: number
+  topicTitle: string
+  title: string
+  skillType: SkillType
+  orderIndex: number
+}
+
+export interface CourseAudioTargets {
+  courseId: number
+  revisionId: number
+  revisionStatus: 'DRAFT' | 'REJECTED'
+  lessons: LessonAudioTarget[]
+}
