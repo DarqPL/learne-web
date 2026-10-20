@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ChangeEvent } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ChangeEvent } from 'react'
 import axios from 'axios'
 import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
 import { Button } from '@/components/shadcn/ui/button'
@@ -39,6 +39,12 @@ interface EditorMessage {
   text: string
 }
 
+interface OperationState {
+  key: string
+  action: 'upload' | 'delete'
+  progress: number
+}
+
 function getErrorStatus(error: unknown) {
   return axios.isAxiosError(error) ? (error.response?.status ?? null) : null
 }
@@ -76,10 +82,13 @@ function mutationErrorMessage(error: unknown, fallback: string) {
 export function LessonAudioEditor({ courseId, lesson, editable, onAudioChanged }: LessonAudioEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const requestKey = `${courseId}:${lesson.id}:${lesson.skillType}:${editable ? 'editable' : 'readonly'}`
+  const requestKeyRef = useRef(requestKey)
+  useLayoutEffect(() => {
+    requestKeyRef.current = requestKey
+  }, [requestKey])
   const [discovery, setDiscovery] = useState<DiscoveryState | null>(null)
   const [audioOverride, setAudioOverride] = useState<AudioOverride | null>(null)
-  const [action, setAction] = useState<'upload' | 'delete' | null>(null)
-  const [progress, setProgress] = useState(0)
+  const [operation, setOperation] = useState<OperationState | null>(null)
   const [message, setMessage] = useState<EditorMessage | null>(null)
 
   useEffect(() => {
@@ -130,19 +139,27 @@ export function LessonAudioEditor({ courseId, lesson, editable, onAudioChanged }
   const baseAudioUrl = target ? target.audioUrl : lesson.audioUrl
   const audioUrl = audioOverride?.key === requestKey ? audioOverride.url : baseAudioUrl
   const messageText = message?.key === requestKey ? message.text : null
-  const busy = action !== null
-  const statusText = action === 'upload' ? `Đang tải lên ${progress}%` : action === 'delete' ? 'Đang xóa audio...' : null
+  const currentOperation = operation?.key === requestKey ? operation : null
+  const busy = currentOperation !== null
+  const statusText =
+    currentOperation?.action === 'upload'
+      ? `Đang tải lên ${currentOperation.progress}%`
+      : currentOperation?.action === 'delete'
+        ? 'Đang xóa audio...'
+        : null
 
-  async function resolveTarget() {
+  async function resolveTarget(capturedKey: string) {
     try {
       const found = await findAudioTarget(courseId, lesson.id)
-      setDiscovery({ key: requestKey, target: found, error: null })
+      if (requestKeyRef.current !== capturedKey) return null
+      setDiscovery({ key: capturedKey, target: found, error: null })
       setAudioOverride(null)
       return found
     } catch (error) {
+      if (requestKeyRef.current !== capturedKey) return null
       const errorStatus = getErrorStatus(error)
       setDiscovery({
-        key: requestKey,
+        key: capturedKey,
         target: null,
         error: {
           status: errorStatus,
@@ -155,57 +172,77 @@ export function LessonAudioEditor({ courseId, lesson, editable, onAudioChanged }
 
   async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
+    const capturedKey = requestKey
     event.target.value = ''
     if (!file || busy) return
 
     const validation = validateAudioFile(file)
     if (validation) {
-      setMessage({ key: requestKey, text: validation })
+      setMessage({ key: capturedKey, text: validation })
       return
     }
 
     setMessage(null)
-    setAction('upload')
-    setProgress(0)
+    setOperation({ key: capturedKey, action: 'upload', progress: 0 })
+    let nextAudio: LessonAudioFields | null = null
     try {
-      const freshTarget = await resolveTarget()
+      const freshTarget = await resolveTarget(capturedKey)
+      if (requestKeyRef.current !== capturedKey) return
       if (!freshTarget) return
-      const response = await uploadLessonAudio(freshTarget.lessonRevisionId, file, setProgress)
-      const nextAudio: LessonAudioFields = { audioUrl: response.data.audioUrl, audioPublicId: response.data.audioPublicId }
-      setAudioOverride({ key: requestKey, url: nextAudio.audioUrl })
-      onAudioChanged?.(nextAudio)
+      const response = await uploadLessonAudio(freshTarget.lessonRevisionId, file, (percent) => {
+        if (requestKeyRef.current !== capturedKey) return
+        setOperation((current) =>
+          current?.key === capturedKey && current.action === 'upload' ? { ...current, progress: percent } : current,
+        )
+      })
+      if (requestKeyRef.current !== capturedKey) return
+      nextAudio = { audioUrl: response.data.audioUrl, audioPublicId: response.data.audioPublicId }
+      setAudioOverride({ key: capturedKey, url: nextAudio.audioUrl })
     } catch (error) {
-      setMessage({ key: requestKey, text: mutationErrorMessage(error, UPLOAD_ERROR_FALLBACK) })
+      if (requestKeyRef.current !== capturedKey) return
+      setMessage({ key: capturedKey, text: mutationErrorMessage(error, UPLOAD_ERROR_FALLBACK) })
       const errorStatus = getErrorStatus(error)
       if (errorStatus === 404 || errorStatus === 409) {
-        await resolveTarget()
+        await resolveTarget(capturedKey)
       }
     } finally {
-      setAction(null)
-      setProgress(0)
+      setOperation((current) => (current?.key === capturedKey ? null : current))
+    }
+
+    if (nextAudio && requestKeyRef.current === capturedKey) {
+      onAudioChanged?.(nextAudio)
     }
   }
 
   async function handleDelete() {
+    const capturedKey = requestKey
     if (busy) return
     if (!window.confirm('Bạn có chắc muốn xóa audio của bài học này?')) return
 
     setMessage(null)
-    setAction('delete')
+    setOperation({ key: capturedKey, action: 'delete', progress: 0 })
+    let deleted = false
     try {
-      const freshTarget = await resolveTarget()
+      const freshTarget = await resolveTarget(capturedKey)
+      if (requestKeyRef.current !== capturedKey) return
       if (!freshTarget) return
       await deleteLessonAudio(freshTarget.lessonRevisionId)
-      setAudioOverride({ key: requestKey, url: null })
-      onAudioChanged?.({ audioUrl: null, audioPublicId: null })
+      if (requestKeyRef.current !== capturedKey) return
+      setAudioOverride({ key: capturedKey, url: null })
+      deleted = true
     } catch (error) {
-      setMessage({ key: requestKey, text: mutationErrorMessage(error, DELETE_ERROR_FALLBACK) })
+      if (requestKeyRef.current !== capturedKey) return
+      setMessage({ key: capturedKey, text: mutationErrorMessage(error, DELETE_ERROR_FALLBACK) })
       const errorStatus = getErrorStatus(error)
       if (errorStatus === 404 || errorStatus === 409) {
-        await resolveTarget()
+        await resolveTarget(capturedKey)
       }
     } finally {
-      setAction(null)
+      setOperation((current) => (current?.key === capturedKey ? null : current))
+    }
+
+    if (deleted && requestKeyRef.current === capturedKey) {
+      onAudioChanged?.({ audioUrl: null, audioPublicId: null })
     }
   }
 
@@ -233,14 +270,14 @@ export function LessonAudioEditor({ courseId, lesson, editable, onAudioChanged }
         </Alert>
       ) : null}
 
-      {status === 'ready' && messageText ? (
+      {status === 'locked' ? (
+        <p className="mt-3 text-sm text-muted-foreground">Tạo bản nháp chỉnh sửa để thay audio.</p>
+      ) : null}
+
+      {messageText ? (
         <p role="status" className="mt-3 text-sm text-red-600">
           {messageText}
         </p>
-      ) : null}
-
-      {status === 'locked' ? (
-        <p className="mt-3 text-sm text-muted-foreground">Tạo bản nháp chỉnh sửa để thay audio.</p>
       ) : null}
 
       {status === 'ready' ? (

@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { deleteLessonAudio, getCourseAudioTargets, uploadLessonAudio } from '../../../../lib/api/teacherLessonAudioApi'
 import type { CourseAudioTargets, LessonAudioTarget, TeacherLesson } from '../../../../lib/api/types'
 import { LessonAudioEditor } from './LessonAudioEditor'
@@ -48,6 +48,10 @@ const audioTarget: LessonAudioTarget = {
 beforeEach(() => {
   vi.resetAllMocks()
   vi.spyOn(window, 'confirm').mockReturnValue(true)
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
 })
 
 describe('LessonAudioEditor', () => {
@@ -264,6 +268,40 @@ describe('LessonAudioEditor', () => {
 
     expect(await screen.findByText('File vượt quá 20MB cho phép.')).toBeInTheDocument()
     expect(screen.getByLabelText('Audio bài nghe')).toHaveAttribute('src', audioTarget.audioUrl)
+  })
+
+  it('re-resolves the revision id before deleting', async () => {
+    const freshTarget = { ...audioTarget, lessonRevisionId: 99 }
+    mockedGetTargets
+      .mockResolvedValueOnce(targetsOf([audioTarget]) as never)
+      .mockResolvedValueOnce(targetsOf([freshTarget]) as never)
+    mockedDelete.mockResolvedValue({ data: { ...freshTarget, audioUrl: null, audioPublicId: null } } as never)
+
+    render(<LessonAudioEditor courseId={10} lesson={lessonOf({ id: 7 })} editable />)
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Xóa audio' }))
+
+    await waitFor(() => expect(mockedDelete).toHaveBeenCalledTimes(1))
+    expect(mockedDelete).toHaveBeenCalledWith(99)
+  })
+
+  it('locks and shows the conflict message when delete can no longer resolve a target', async () => {
+    mockedGetTargets
+      .mockResolvedValueOnce(targetsOf([audioTarget]) as never)
+      .mockResolvedValueOnce(targetsOf([audioTarget]) as never)
+      .mockResolvedValueOnce(targetsOf([]) as never)
+    mockedDelete.mockRejectedValue(axiosError(409))
+
+    render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable />)
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Xóa audio' }))
+
+    expect(
+      await screen.findByText('Nội dung đã thay đổi hoặc không còn cho sửa. Vui lòng tải lại trang.'),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Tạo bản nháp chỉnh sửa để thay audio.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Thay audio' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Xóa audio' })).not.toBeInTheDocument()
   })
 
   it('keeps the audio and reports a delete-specific error when deletion fails', async () => {
