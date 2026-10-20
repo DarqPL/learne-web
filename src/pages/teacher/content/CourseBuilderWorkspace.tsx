@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/shadcn/ui/button'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/shadcn/ui/dialog'
 import type {
+  LessonAudioFields,
   TeacherCourse,
   TeacherCourseRequest,
   TeacherLesson,
@@ -65,6 +66,7 @@ export interface CourseBuilderWorkspaceProps {
   onCreateQuestion: (lessonId: number, payload: TeacherQuestionRequest) => Promise<void>
   onUpdateQuestion: (question: TeacherQuestion, payload: TeacherQuestionRequest) => Promise<void>
   onDeleteQuestion: (question: TeacherQuestion) => Promise<void>
+  onAudioChanged: (lessonId: number, audio: LessonAudioFields) => void
 }
 
 export function CourseBuilderWorkspace({
@@ -85,6 +87,7 @@ export function CourseBuilderWorkspace({
   onCreateQuestion,
   onUpdateQuestion,
   onDeleteQuestion,
+  onAudioChanged,
 }: CourseBuilderWorkspaceProps) {
   const busy = action !== null
   const [searchParams, setSearchParams] = useSearchParams()
@@ -276,6 +279,7 @@ export function CourseBuilderWorkspace({
           onUpdateTopic={onUpdateTopic}
           onUpdateLesson={onUpdateLesson}
           onDeleteRequest={setDeleteTarget}
+          onAudioChanged={onAudioChanged}
         />
       ) : null}
 

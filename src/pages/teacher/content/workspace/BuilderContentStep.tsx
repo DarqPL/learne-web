@@ -7,8 +7,8 @@ import { Button } from '@/components/shadcn/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shadcn/ui/card'
 import { ScrollArea } from '@/components/shadcn/ui/scroll-area'
 import { Separator } from '@/components/shadcn/ui/separator'
-import { LessonAudioPlayer } from '../../../student/learning/LessonAudioPlayer'
-import type { TeacherCourse, TeacherLesson, TeacherLessonRequest, TeacherTopic, TeacherTopicRequest } from '../../../../lib/api/types'
+import type { LessonAudioFields, TeacherCourse, TeacherLesson, TeacherLessonRequest, TeacherTopic, TeacherTopicRequest } from '../../../../lib/api/types'
+import { LessonAudioEditor } from '../audio/LessonAudioEditor'
 import { LessonForm } from '../LessonForm'
 import { TeacherContentStatusBadge } from '../TeacherContentStatusBadge'
 import { TopicForm } from '../TopicForm'
@@ -31,6 +31,7 @@ interface BuilderContentStepProps {
   onUpdateTopic: (topic: TeacherTopic, payload: TeacherTopicRequest) => Promise<void>
   onUpdateLesson: (lesson: TeacherLesson, payload: TeacherLessonRequest) => Promise<void>
   onDeleteRequest: (target: DeleteTarget) => void
+  onAudioChanged: (lessonId: number, audio: LessonAudioFields) => void
 }
 
 export function BuilderContentStep({
@@ -49,6 +50,7 @@ export function BuilderContentStep({
   onUpdateTopic,
   onUpdateLesson,
   onDeleteRequest,
+  onAudioChanged,
 }: BuilderContentStepProps) {
   return (
     <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
@@ -182,7 +184,13 @@ export function BuilderContentStep({
                   <AlertDescription>{selectedLesson.rejectionReason}</AlertDescription>
                 </Alert>
               ) : null}
-              <LessonAudioPlayer audioUrl={selectedLesson.audioUrl} />
+              <LessonAudioEditor
+                key={selectedLesson.id}
+                courseId={course.id}
+                lesson={selectedLesson}
+                editable={editable}
+                onAudioChanged={(audio) => onAudioChanged(selectedLesson.id, audio)}
+              />
               {editable ? (
                 <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
                   <LessonForm

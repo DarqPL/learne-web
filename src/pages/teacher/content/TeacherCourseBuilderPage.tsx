@@ -33,6 +33,7 @@ import {
 } from '../../../lib/api/teacherContentApi'
 import type {
   CourseImportResponse,
+  LessonAudioFields,
   TeacherCourse,
   TeacherCourseRequest,
   TeacherLesson,
@@ -121,6 +122,20 @@ export function TeacherCourseBuilderPage() {
             topics: current.topics.map((topic) => ({
               ...topic,
               lessons: topic.lessons.map((item) => (item.id === lesson.id ? lesson : item)),
+            })),
+          }
+        : current,
+    )
+  }
+
+  const handleAudioChanged = (lessonId: number, audio: LessonAudioFields) => {
+    setCourse((current) =>
+      current
+        ? {
+            ...current,
+            topics: current.topics.map((topic) => ({
+              ...topic,
+              lessons: topic.lessons.map((item) => (item.id === lessonId ? { ...item, ...audio } : item)),
             })),
           }
         : current,
@@ -486,6 +501,7 @@ export function TeacherCourseBuilderPage() {
             onCreateQuestion={handleCreateQuestion}
             onUpdateQuestion={handleUpdateQuestion}
             onDeleteQuestion={handleDeleteQuestion}
+            onAudioChanged={handleAudioChanged}
           />
 
           <AlertDialog
