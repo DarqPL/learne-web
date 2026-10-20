@@ -46,7 +46,7 @@ const audioTarget: LessonAudioTarget = {
 }
 
 beforeEach(() => {
-  vi.clearAllMocks()
+  vi.resetAllMocks()
   vi.spyOn(window, 'confirm').mockReturnValue(true)
 })
 
@@ -119,10 +119,100 @@ describe('LessonAudioEditor', () => {
 
     await waitFor(() => expect(mockedUpload).toHaveBeenCalledTimes(1))
     expect(mockedUpload.mock.calls[0][0]).toBe(31)
+    await waitFor(() =>
+      expect(screen.getByLabelText('Audio bài nghe')).toHaveAttribute('src', 'https://cdn.example.com/audio/new.mp3'),
+    )
     expect(onAudioChanged).toHaveBeenCalledWith({
       audioUrl: 'https://cdn.example.com/audio/new.mp3',
       audioPublicId: 'learne/course-audio/new',
     })
+  })
+
+  it('re-resolves the revision id before uploading', async () => {
+    const freshTarget = { ...audioTarget, lessonRevisionId: 99 }
+    mockedGetTargets
+      .mockResolvedValueOnce(targetsOf([audioTarget]) as never)
+      .mockResolvedValueOnce(targetsOf([freshTarget]) as never)
+    mockedUpload.mockResolvedValue({
+      data: { ...freshTarget, audioUrl: 'https://cdn.example.com/audio/fresh.mp3', audioPublicId: 'learne/course-audio/fresh' },
+    } as never)
+
+    render(<LessonAudioEditor courseId={10} lesson={lessonOf({ id: 7 })} editable />)
+
+    const input = await screen.findByLabelText('Chọn file audio')
+    fireEvent.change(input, { target: { files: [new File(['audio'], 'voice.mp3', { type: 'audio/mpeg' })] } })
+
+    await waitFor(() => expect(mockedUpload).toHaveBeenCalledTimes(1))
+    expect(mockedUpload.mock.calls[0][0]).toBe(99)
+  })
+
+  it('locks when a failed upload can no longer resolve a target', async () => {
+    mockedGetTargets
+      .mockResolvedValueOnce(targetsOf([audioTarget]) as never)
+      .mockResolvedValueOnce(targetsOf([audioTarget]) as never)
+      .mockResolvedValueOnce(targetsOf([]) as never)
+    mockedUpload.mockRejectedValue(axiosError(409))
+
+    render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable />)
+
+    const input = await screen.findByLabelText('Chọn file audio')
+    fireEvent.change(input, { target: { files: [new File(['audio'], 'voice.mp3', { type: 'audio/mpeg' })] } })
+
+    expect(await screen.findByText('Tạo bản nháp chỉnh sửa để thay audio.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Thay audio' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Tải audio lên' })).not.toBeInTheDocument()
+  })
+
+  it('does not upload when the fresh resolve finds no target', async () => {
+    mockedGetTargets
+      .mockResolvedValueOnce(targetsOf([audioTarget]) as never)
+      .mockResolvedValueOnce(targetsOf([]) as never)
+
+    render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable />)
+
+    const input = await screen.findByLabelText('Chọn file audio')
+    fireEvent.change(input, { target: { files: [new File(['audio'], 'voice.mp3', { type: 'audio/mpeg' })] } })
+
+    expect(await screen.findByText('Tạo bản nháp chỉnh sửa để thay audio.')).toBeInTheDocument()
+    expect(mockedUpload).not.toHaveBeenCalled()
+  })
+
+  it('resets message and override when the lesson changes', async () => {
+    const uploaded = {
+      ...audioTarget,
+      audioUrl: 'https://cdn.example.com/audio/first.mp3',
+      audioPublicId: 'learne/course-audio/first',
+    }
+    const otherTarget = {
+      ...audioTarget,
+      lessonRevisionId: 77,
+      sourceLessonId: 7,
+      title: 'Other',
+      audioUrl: 'https://cdn.example.com/audio/other.mp3',
+      audioPublicId: 'learne/course-audio/other',
+    }
+    mockedGetTargets
+      .mockResolvedValueOnce(targetsOf([audioTarget]) as never)
+      .mockResolvedValueOnce(targetsOf([audioTarget]) as never)
+      .mockResolvedValueOnce(targetsOf([otherTarget]) as never)
+    mockedUpload.mockResolvedValue({ data: uploaded } as never)
+
+    const { rerender } = render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable />)
+
+    const input = await screen.findByLabelText('Chọn file audio')
+    fireEvent.change(input, { target: { files: [new File(['audio'], 'voice.mp3', { type: 'audio/mpeg' })] } })
+
+    await waitFor(() => expect(screen.getByLabelText('Audio bài nghe')).toHaveAttribute('src', uploaded.audioUrl))
+
+    fireEvent.change(input, { target: { files: [new File([], 'empty.mp3', { type: 'audio/mpeg' })] } })
+    expect(await screen.findByText('Vui lòng chọn file audio.')).toBeInTheDocument()
+
+    rerender(<LessonAudioEditor courseId={10} lesson={lessonOf({ id: 7, title: 'Other' })} editable />)
+
+    await waitFor(() =>
+      expect(screen.getByLabelText('Audio bài nghe')).toHaveAttribute('src', otherTarget.audioUrl),
+    )
+    expect(screen.queryByText('Vui lòng chọn file audio.')).not.toBeInTheDocument()
   })
 
   it('rejects an empty file without calling the API', async () => {
@@ -173,6 +263,31 @@ describe('LessonAudioEditor', () => {
     fireEvent.change(input, { target: { files: [new File(['audio'], 'voice.mp3', { type: 'audio/mpeg' })] } })
 
     expect(await screen.findByText('File vượt quá 20MB cho phép.')).toBeInTheDocument()
+    expect(screen.getByLabelText('Audio bài nghe')).toHaveAttribute('src', audioTarget.audioUrl)
+  })
+
+  it('keeps the audio and reports a delete-specific error when deletion fails', async () => {
+    mockedGetTargets.mockResolvedValue(targetsOf([audioTarget]) as never)
+    mockedDelete.mockRejectedValue(axiosError(500, 'boom'))
+
+    render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable />)
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Xóa audio' }))
+
+    expect(await screen.findByText('Không thể xóa audio, vui lòng thử lại.')).toBeInTheDocument()
+    expect(screen.getByLabelText('Audio bài nghe')).toHaveAttribute('src', audioTarget.audioUrl)
+  })
+
+  it('does not delete when confirmation is cancelled', async () => {
+    vi.mocked(window.confirm).mockReturnValue(false)
+    mockedGetTargets.mockResolvedValue(targetsOf([audioTarget]) as never)
+
+    render(<LessonAudioEditor courseId={10} lesson={lessonOf()} editable />)
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Xóa audio' }))
+
+    await waitFor(() => expect(window.confirm).toHaveBeenCalled())
+    expect(mockedDelete).not.toHaveBeenCalled()
     expect(screen.getByLabelText('Audio bài nghe')).toHaveAttribute('src', audioTarget.audioUrl)
   })
 

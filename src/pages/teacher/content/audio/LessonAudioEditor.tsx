@@ -11,6 +11,8 @@ const MAX_AUDIO_BYTES = 20 * 1024 * 1024
 const ACCEPTED_AUDIO_TYPES = ['audio/mpeg', 'audio/wav', 'audio/x-wav', 'audio/mp4', 'audio/ogg']
 const ACCEPTED_AUDIO_EXTENSIONS = ['.mp3', '.wav', '.m4a', '.ogg']
 const ACCEPT_ATTRIBUTE = '.mp3,.wav,.m4a,.ogg,audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/ogg'
+const UPLOAD_ERROR_FALLBACK = 'Không thể tải audio lên, vui lòng thử lại.'
+const DELETE_ERROR_FALLBACK = 'Không thể xóa audio, vui lòng thử lại.'
 
 interface LessonAudioEditorProps {
   courseId: number
@@ -41,6 +43,15 @@ function getErrorStatus(error: unknown) {
   return axios.isAxiosError(error) ? (error.response?.status ?? null) : null
 }
 
+async function findAudioTarget(courseId: number, lessonId: number) {
+  const response = await getCourseAudioTargets(courseId)
+  return (
+    response.data.lessons.find((item) => item.lessonRevisionId === lessonId) ??
+    response.data.lessons.find((item) => item.sourceLessonId === lessonId) ??
+    null
+  )
+}
+
 function validateAudioFile(file: File) {
   if (file.size === 0) return 'Vui lòng chọn file audio.'
   if (file.size > MAX_AUDIO_BYTES) return 'File vượt quá 20MB cho phép.'
@@ -51,15 +62,15 @@ function validateAudioFile(file: File) {
   return null
 }
 
-function mutationErrorMessage(error: unknown) {
+function mutationErrorMessage(error: unknown, fallback: string) {
   const status = getErrorStatus(error)
   if (status === 409) return 'Nội dung đã thay đổi hoặc không còn cho sửa. Vui lòng tải lại trang.'
   if (status === 413) return 'File vượt quá 20MB cho phép.'
   if (status === 415) return 'Định dạng tải lên không hợp lệ.'
   if (status === 403) return 'Bạn không có quyền thực hiện thao tác này.'
   if (status === 404) return 'Không tìm thấy bài học.'
-  if (status === 502 || status === 500) return 'Không thể tải audio lên, vui lòng thử lại.'
-  return getApiErrorMessage(error, 'Không thể tải audio lên, vui lòng thử lại.')
+  if (status === 502 || status === 500) return fallback
+  return getApiErrorMessage(error, fallback)
 }
 
 export function LessonAudioEditor({ courseId, lesson, editable, onAudioChanged }: LessonAudioEditorProps) {
@@ -78,13 +89,10 @@ export function LessonAudioEditor({ courseId, lesson, editable, onAudioChanged }
 
     void (async () => {
       try {
-        const response = await getCourseAudioTargets(courseId)
+        const found = await findAudioTarget(courseId, lesson.id)
         if (cancelled) return
-        const found =
-          response.data.lessons.find((item) => item.lessonRevisionId === lesson.id) ??
-          response.data.lessons.find((item) => item.sourceLessonId === lesson.id) ??
-          null
         setDiscovery({ key: requestKey, target: found, error: null })
+        setAudioOverride(null)
       } catch (error) {
         if (cancelled) return
         const errorStatus = getErrorStatus(error)
@@ -125,10 +133,30 @@ export function LessonAudioEditor({ courseId, lesson, editable, onAudioChanged }
   const busy = action !== null
   const statusText = action === 'upload' ? `Đang tải lên ${progress}%` : action === 'delete' ? 'Đang xóa audio...' : null
 
+  async function resolveTarget() {
+    try {
+      const found = await findAudioTarget(courseId, lesson.id)
+      setDiscovery({ key: requestKey, target: found, error: null })
+      setAudioOverride(null)
+      return found
+    } catch (error) {
+      const errorStatus = getErrorStatus(error)
+      setDiscovery({
+        key: requestKey,
+        target: null,
+        error: {
+          status: errorStatus,
+          message: getApiErrorMessage(error, 'Không thể tải thông tin audio.'),
+        },
+      })
+      return null
+    }
+  }
+
   async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     event.target.value = ''
-    if (!file || !target || busy) return
+    if (!file || busy) return
 
     const validation = validateAudioFile(file)
     if (validation) {
@@ -140,12 +168,18 @@ export function LessonAudioEditor({ courseId, lesson, editable, onAudioChanged }
     setAction('upload')
     setProgress(0)
     try {
-      const response = await uploadLessonAudio(target.lessonRevisionId, file, setProgress)
+      const freshTarget = await resolveTarget()
+      if (!freshTarget) return
+      const response = await uploadLessonAudio(freshTarget.lessonRevisionId, file, setProgress)
       const nextAudio: LessonAudioFields = { audioUrl: response.data.audioUrl, audioPublicId: response.data.audioPublicId }
       setAudioOverride({ key: requestKey, url: nextAudio.audioUrl })
       onAudioChanged?.(nextAudio)
     } catch (error) {
-      setMessage({ key: requestKey, text: mutationErrorMessage(error) })
+      setMessage({ key: requestKey, text: mutationErrorMessage(error, UPLOAD_ERROR_FALLBACK) })
+      const errorStatus = getErrorStatus(error)
+      if (errorStatus === 404 || errorStatus === 409) {
+        await resolveTarget()
+      }
     } finally {
       setAction(null)
       setProgress(0)
@@ -153,17 +187,23 @@ export function LessonAudioEditor({ courseId, lesson, editable, onAudioChanged }
   }
 
   async function handleDelete() {
-    if (!target || busy) return
+    if (busy) return
     if (!window.confirm('Bạn có chắc muốn xóa audio của bài học này?')) return
 
     setMessage(null)
     setAction('delete')
     try {
-      await deleteLessonAudio(target.lessonRevisionId)
+      const freshTarget = await resolveTarget()
+      if (!freshTarget) return
+      await deleteLessonAudio(freshTarget.lessonRevisionId)
       setAudioOverride({ key: requestKey, url: null })
       onAudioChanged?.({ audioUrl: null, audioPublicId: null })
     } catch (error) {
-      setMessage({ key: requestKey, text: mutationErrorMessage(error) })
+      setMessage({ key: requestKey, text: mutationErrorMessage(error, DELETE_ERROR_FALLBACK) })
+      const errorStatus = getErrorStatus(error)
+      if (errorStatus === 404 || errorStatus === 409) {
+        await resolveTarget()
+      }
     } finally {
       setAction(null)
     }
