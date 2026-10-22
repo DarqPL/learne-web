@@ -3,8 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, MailCheck } from 'lucide-react'
 import { requestPasswordReset } from '../../lib/api/authApi'
 import { getApiErrorMessage } from '../../lib/api/client'
-import { readRateLimit, type RateLimitInfo } from '../../lib/api/rateLimit'
-import { useCountdown } from '../../lib/hooks/useCountdown'
+import { useRateLimit } from '../../lib/hooks/useRateLimit'
 import { RateLimitAlert } from '../../components/auth/RateLimitAlert'
 import { Field } from '../../components/ui/Field'
 import { Input } from '../../components/ui/Input'
@@ -22,8 +21,7 @@ export function ForgotPasswordPage() {
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
-  const rateLimit = useCountdown()
-  const [rateLimitInfo, setRateLimitInfo] = useState<RateLimitInfo | null>(null)
+  const rateLimit = useRateLimit()
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -34,7 +32,7 @@ export function ForgotPasswordPage() {
     }
     setFieldErrors({})
     setError(null)
-    setRateLimitInfo(null)
+    rateLimit.reset()
     setSubmitting(true)
     try {
       await requestPasswordReset({ email })
@@ -45,11 +43,7 @@ export function ForgotPasswordPage() {
         },
       })
     } catch (err) {
-      const info = readRateLimit(err)
-      if (info) {
-        setRateLimitInfo(info)
-        if (info.kind === 'limited') rateLimit.start(info.retryAfterSeconds)
-      } else {
+      if (!rateLimit.capture(err)) {
         setError(getApiErrorMessage(err, 'Không thể gửi yêu cầu đặt lại mật khẩu.'))
       }
     } finally {
@@ -71,7 +65,7 @@ export function ForgotPasswordPage() {
           <CardDescription>Nhập email tài khoản để nhận mã đặt lại mật khẩu.</CardDescription>
         </CardHeader>
         <CardContent>
-          {rateLimitInfo ? <RateLimitAlert info={rateLimitInfo} secondsLeft={rateLimit.secondsLeft} /> : null}
+          {rateLimit.info ? <RateLimitAlert info={rateLimit.info} secondsLeft={rateLimit.secondsLeft} /> : null}
           {error ? (
             <Alert variant="destructive" className="mb-4 border-red-200 bg-red-50">
               <AlertDescription className="text-red-700">{error}</AlertDescription>
@@ -89,7 +83,7 @@ export function ForgotPasswordPage() {
                 className="h-11 rounded-xl bg-white/90"
               />
             </Field>
-            <Button type="submit" loading={submitting} disabled={rateLimit.secondsLeft > 0} className="h-11 w-full rounded-xl">
+            <Button type="submit" loading={submitting} disabled={rateLimit.locked} className="h-11 w-full rounded-xl">
               Gửi mã đặt lại mật khẩu
             </Button>
           </form>
