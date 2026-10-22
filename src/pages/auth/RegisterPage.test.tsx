@@ -1,6 +1,6 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { requestRegistrationOtp, resendRegistrationOtp, verifyRegistrationOtp } from '../../lib/api/authApi'
 import { RegisterPage } from './RegisterPage'
 
@@ -17,14 +17,18 @@ const registration = {
   password: 'Password123',
   confirmPassword: 'Password123',
 }
+const OTP_STORAGE_KEY = 'learne.auth.registration-otp:v1'
+const OTP_TTL_SECONDS = 300
 
-function LoginLocation() {
-  const location = useLocation()
-  return <p>{(location.state as { message: string }).message}</p>
+async function flush() {
+  await act(async () => {
+    await Promise.resolve()
+    await Promise.resolve()
+  })
 }
 
-function submitRegistration() {
-  render(
+function renderRegister() {
+  return render(
     <MemoryRouter initialEntries={['/register']}>
       <Routes>
         <Route path="/register" element={<RegisterPage />} />
@@ -32,6 +36,15 @@ function submitRegistration() {
       </Routes>
     </MemoryRouter>,
   )
+}
+
+function LoginLocation() {
+  const location = useLocation()
+  return <p>{(location.state as { message: string }).message}</p>
+}
+
+function submitRegistration() {
+  renderRegister()
   fireEvent.change(screen.getByLabelText('Họ và tên'), { target: { value: registration.fullName } })
   fireEvent.change(screen.getByLabelText('Email'), { target: { value: registration.email } })
   fireEvent.change(screen.getByLabelText(/^Mật khẩu/), { target: { value: registration.password } })
@@ -39,14 +52,19 @@ function submitRegistration() {
   fireEvent.click(screen.getByRole('button', { name: 'Gửi mã xác thực' }))
 }
 
-describe('RegisterPage request acceptance', () => {
-  beforeEach(() => {
-    vi.resetAllMocks()
-    vi.mocked(requestRegistrationOtp).mockResolvedValue({ data: {} } as never)
-    vi.mocked(resendRegistrationOtp).mockResolvedValue({ data: {} } as never)
-    vi.mocked(verifyRegistrationOtp).mockResolvedValue({ data: {} } as never)
-  })
+beforeEach(() => {
+  vi.resetAllMocks()
+  window.sessionStorage.clear()
+  vi.mocked(requestRegistrationOtp).mockResolvedValue({ data: {} } as never)
+  vi.mocked(resendRegistrationOtp).mockResolvedValue({ data: {} } as never)
+  vi.mocked(verifyRegistrationOtp).mockResolvedValue({ data: {} } as never)
+})
 
+afterEach(() => {
+  vi.useRealTimers()
+})
+
+describe('RegisterPage request acceptance', () => {
   it('shows acceptance and the email without claiming delivery after requesting a code', async () => {
     submitRegistration()
 
@@ -57,15 +75,35 @@ describe('RegisterPage request acceptance', () => {
     expect(requestRegistrationOtp).toHaveBeenCalledWith(registration)
   })
 
-  it('shows acceptance without claiming delivery after resending a code', async () => {
-    submitRegistration()
-    const resend = await screen.findByRole('button', { name: 'Gửi lại mã OTP' })
-    fireEvent.click(resend)
+  it('keeps resend disabled until the code expires, then accepts a resend', async () => {
+    vi.useFakeTimers()
+    try {
+      submitRegistration()
+      await flush()
 
-    await waitFor(() => expect(resendRegistrationOtp).toHaveBeenCalledWith({ email: registration.email }))
-    await waitFor(() => expect(resend).toBeEnabled())
-    expect(screen.getByText(acceptedMessage)).toBeInTheDocument()
-    expect(screen.queryByText(/đã (được )?gửi/i)).not.toBeInTheDocument()
+      const resend = screen.getByRole('button', { name: 'Gửi lại mã OTP' })
+      expect(resend).toBeDisabled()
+
+      act(() => {
+        vi.advanceTimersByTime(OTP_TTL_SECONDS * 1000)
+      })
+
+      expect(screen.getByRole('status')).toHaveTextContent('Mã OTP đã hết hạn.')
+      expect(screen.getAllByText('Mã OTP đã hết hạn.')).toHaveLength(2)
+      expect(resend).toBeEnabled()
+      expect(screen.getByRole('button', { name: 'Xác nhận tài khoản' })).toBeDisabled()
+
+      fireEvent.click(resend)
+      await flush()
+
+      expect(resendRegistrationOtp).toHaveBeenCalledWith({ email: registration.email })
+      expect(screen.getByText(acceptedMessage)).toBeInTheDocument()
+      expect(screen.queryByText(/đã (được )?gửi/i)).not.toBeInTheDocument()
+      expect(screen.getByRole('timer')).toHaveTextContent('05:00')
+      expect(resend).toBeDisabled()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('keeps a failed request on the registration form without acceptance', async () => {
@@ -82,14 +120,25 @@ describe('RegisterPage request acceptance', () => {
   })
 
   it('shows a resend error without leaving stale acceptance for that attempt', async () => {
-    vi.mocked(resendRegistrationOtp).mockRejectedValue(new Error('Request failed'))
-    submitRegistration()
-    fireEvent.click(await screen.findByRole('button', { name: 'Gửi lại mã OTP' }))
+    vi.useFakeTimers()
+    try {
+      vi.mocked(resendRegistrationOtp).mockRejectedValue(new Error('Request failed'))
+      submitRegistration()
+      await flush()
 
-    expect(await screen.findByText('Không thể gửi lại mã OTP. Vui lòng thử lại.')).toBeInTheDocument()
-    expect(screen.getAllByRole('alert')).toHaveLength(1)
-    expect(screen.queryByText(acceptedMessage)).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Gửi lại mã OTP' })).toBeEnabled()
+      act(() => {
+        vi.advanceTimersByTime(OTP_TTL_SECONDS * 1000)
+      })
+      fireEvent.click(screen.getByRole('button', { name: 'Gửi lại mã OTP' }))
+      await flush()
+
+      expect(screen.getByText('Không thể gửi lại mã OTP. Vui lòng thử lại.')).toBeInTheDocument()
+      expect(screen.getAllByRole('alert')).toHaveLength(1)
+      expect(screen.queryByText(acceptedMessage)).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Gửi lại mã OTP' })).toBeEnabled()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('still reports successful registration only after verifying the code', async () => {
@@ -99,5 +148,198 @@ describe('RegisterPage request acceptance', () => {
 
     expect(await screen.findByText('Đăng ký thành công, vui lòng đăng nhập.')).toBeInTheDocument()
     expect(verifyRegistrationOtp).toHaveBeenCalledWith({ email: registration.email, otp: '123456' })
+  })
+})
+
+describe('RegisterPage OTP lifetime', () => {
+  it('starts a five-minute countdown and disables verify at zero', async () => {
+    vi.useFakeTimers()
+    try {
+      submitRegistration()
+      await flush()
+
+      expect(screen.getByText(/Mã có hiệu lực trong/)).toBeInTheDocument()
+      expect(screen.getByRole('timer')).toHaveTextContent('05:00')
+      expect(screen.getByRole('button', { name: 'Xác nhận tài khoản' })).toBeEnabled()
+
+      act(() => {
+        vi.advanceTimersByTime(1000)
+      })
+      expect(screen.getByRole('timer')).toHaveTextContent('04:59')
+
+      act(() => {
+        vi.advanceTimersByTime(OTP_TTL_SECONDS * 1000)
+      })
+
+      expect(screen.getByRole('status')).toHaveTextContent('Mã OTP đã hết hạn.')
+      expect(screen.getAllByText('Mã OTP đã hết hạn.')).toHaveLength(2)
+      expect(screen.getByRole('button', { name: 'Xác nhận tài khoản' })).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'Gửi lại mã OTP' })).toBeEnabled()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('writes the deadline to sessionStorage after requesting a code', async () => {
+    vi.useFakeTimers()
+    try {
+      vi.setSystemTime(new Date('2026-10-22T10:00:00Z'))
+      submitRegistration()
+      await flush()
+
+      const stored = JSON.parse(window.sessionStorage.getItem(OTP_STORAGE_KEY) ?? 'null') as {
+        email: string
+        expiresAt: number
+      }
+      expect(stored).toEqual({ email: registration.email, expiresAt: Date.now() + OTP_TTL_SECONDS * 1000 })
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('disables editing while a resend is in flight', async () => {
+    vi.useFakeTimers()
+    try {
+      submitRegistration()
+      await flush()
+
+      act(() => {
+        vi.advanceTimersByTime(OTP_TTL_SECONDS * 1000)
+      })
+
+      let resolveResend: (value: unknown) => void = () => {}
+      vi.mocked(resendRegistrationOtp).mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveResend = resolve
+          }) as never,
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: 'Gửi lại mã OTP' }))
+      await flush()
+
+      expect(screen.getByRole('button', { name: 'Sửa thông tin' })).toBeDisabled()
+
+      resolveResend({ data: {} })
+      await flush()
+
+      expect(screen.getByRole('button', { name: 'Sửa thông tin' })).toBeEnabled()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})
+
+function limitedError(seconds: number) {
+  return Object.assign(new Error('429'), {
+    isAxiosError: true,
+    response: {
+      status: 429,
+      headers: { 'retry-after': String(seconds) },
+      data: { code: 'RATE_LIMITED', message: 'Too many requests. Please try again later.' },
+    },
+  })
+}
+
+describe('RegisterPage rate limits', () => {
+  it('locks the request button for Retry-After seconds', async () => {
+    vi.useFakeTimers()
+    try {
+      vi.mocked(requestRegistrationOtp).mockRejectedValue(limitedError(30))
+      submitRegistration()
+      await flush()
+
+      expect(screen.getByText(/Quá nhiều lần thử/)).toBeInTheDocument()
+      expect(screen.getByRole('timer')).toHaveTextContent('00:30')
+      const submit = screen.getByRole('button', { name: 'Gửi mã xác thực' })
+      expect(submit).toBeDisabled()
+
+      act(() => {
+        vi.advanceTimersByTime(30_000)
+      })
+
+      expect(submit).toBeEnabled()
+      expect(screen.getByText('Bạn có thể thử lại.')).toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('shows the unavailable message without locking the request form', async () => {
+    vi.mocked(requestRegistrationOtp).mockRejectedValue(
+      Object.assign(new Error('503'), {
+        isAxiosError: true,
+        response: {
+          status: 503,
+          data: { code: 'ABUSE_PROTECTION_UNAVAILABLE', message: 'Service temporarily unavailable.' },
+        },
+      }),
+    )
+    submitRegistration()
+    await flush()
+
+    expect(screen.getByText(/Tạm thời không thể xác thực/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Gửi mã xác thực' })).toBeEnabled()
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+  })
+
+  it('locks resend for Retry-After seconds after the code expires', async () => {
+    vi.useFakeTimers()
+    try {
+      submitRegistration()
+      await flush()
+
+      act(() => {
+        vi.advanceTimersByTime(OTP_TTL_SECONDS * 1000)
+      })
+
+      vi.mocked(resendRegistrationOtp).mockRejectedValue(limitedError(20))
+      const resend = screen.getByRole('button', { name: 'Gửi lại mã OTP' })
+      fireEvent.click(resend)
+      await flush()
+
+      expect(screen.getByText(/Quá nhiều lần thử/)).toBeInTheDocument()
+      expect(screen.getByRole('timer')).toHaveTextContent('00:20')
+      expect(resend).toBeDisabled()
+
+      act(() => {
+        vi.advanceTimersByTime(20_000)
+      })
+
+      expect(resend).toBeEnabled()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('shows the unavailable message without locking resend', async () => {
+    vi.useFakeTimers()
+    try {
+      submitRegistration()
+      await flush()
+
+      act(() => {
+        vi.advanceTimersByTime(OTP_TTL_SECONDS * 1000)
+      })
+
+      vi.mocked(resendRegistrationOtp).mockRejectedValue(
+        Object.assign(new Error('503'), {
+          isAxiosError: true,
+          response: {
+            status: 503,
+            data: { code: 'ABUSE_PROTECTION_UNAVAILABLE', message: 'Service temporarily unavailable.' },
+          },
+        }),
+      )
+      const resend = screen.getByRole('button', { name: 'Gửi lại mã OTP' })
+      fireEvent.click(resend)
+      await flush()
+
+      expect(screen.getByText(/Tạm thời không thể xác thực/)).toBeInTheDocument()
+      expect(resend).toBeEnabled()
+      expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })
