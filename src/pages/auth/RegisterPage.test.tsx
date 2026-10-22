@@ -400,6 +400,172 @@ describe('RegisterPage OTP lifetime', () => {
       vi.useRealTimers()
     }
   })
+
+  it('starts the rate-limit countdown for a filtered verify 429', async () => {
+    vi.useFakeTimers()
+    try {
+      vi.mocked(verifyRegistrationOtp).mockRejectedValue(limitedError(42))
+      submitRegistration()
+      await flush()
+      fireEvent.change(screen.getByPlaceholderText('123456'), { target: { value: '123456' } })
+      fireEvent.click(screen.getByRole('button', { name: 'Xác nhận tài khoản' }))
+      await flush()
+
+      expect(screen.getByText(/Quá nhiều lần thử/)).toBeInTheDocument()
+      expect(screen.getAllByRole('timer').some((timer) => timer.textContent?.includes('00:42'))).toBe(true)
+      expect(screen.getByRole('button', { name: 'Xác nhận tài khoản' })).toBeDisabled()
+
+      act(() => {
+        vi.advanceTimersByTime(42_000)
+      })
+      expect(screen.getByRole('button', { name: 'Xác nhận tài khoản' })).toBeEnabled()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('treats a 429 without RATE_LIMITED as exhausted attempts and starts no countdown', async () => {
+    vi.useFakeTimers()
+    try {
+      submitRegistration()
+      await flush()
+      vi.mocked(verifyRegistrationOtp).mockRejectedValue(
+        Object.assign(new Error('429'), {
+          isAxiosError: true,
+          response: {
+            status: 429,
+            data: { message: 'Too many invalid OTP attempts. Please request a new code.' },
+          },
+        }),
+      )
+
+      fireEvent.change(screen.getByPlaceholderText('123456'), { target: { value: '123456' } })
+      fireEvent.click(screen.getByRole('button', { name: 'Xác nhận tài khoản' }))
+      await flush()
+
+      expect(
+        screen.getByText('Bạn đã nhập sai quá 5 lần. Vui lòng chờ mã hiện tại hết hạn rồi gửi lại.'),
+      ).toBeInTheDocument()
+      expect(screen.queryByText(/Quá nhiều lần thử/)).not.toBeInTheDocument()
+      expect(screen.getByText(/Mã hiện tại sẽ hết hạn sau/)).toBeInTheDocument()
+      expect(screen.getByRole('timer')).toHaveTextContent('05:00')
+      expect(screen.getByRole('button', { name: 'Xác nhận tài khoản' })).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'Gửi lại mã OTP' })).toBeDisabled()
+
+      act(() => {
+        vi.advanceTimersByTime(OTP_TTL_SECONDS * 1000)
+      })
+
+      expect(screen.getByRole('status')).toHaveTextContent('Mã OTP đã hết hạn.')
+      expect(screen.getAllByText('Mã OTP đã hết hạn.')).toHaveLength(2)
+      expect(screen.queryByText(/Mã hiện tại sẽ hết hạn sau/)).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Xác nhận tài khoản' })).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'Gửi lại mã OTP' })).toBeEnabled()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('treats exhaustion arriving after local expiry as expired', async () => {
+    vi.useFakeTimers()
+    try {
+      submitRegistration()
+      await flush()
+
+      let rejectVerify: (reason?: unknown) => void = () => {}
+      vi.mocked(verifyRegistrationOtp).mockImplementation(
+        () =>
+          new Promise((_resolve, reject) => {
+            rejectVerify = reject
+          }) as never,
+      )
+
+      fireEvent.change(screen.getByPlaceholderText('123456'), { target: { value: '123456' } })
+      fireEvent.click(screen.getByRole('button', { name: 'Xác nhận tài khoản' }))
+      await flush()
+
+      act(() => {
+        vi.advanceTimersByTime(OTP_TTL_SECONDS * 1000)
+      })
+
+      await act(async () => {
+        rejectVerify(
+          Object.assign(new Error('429'), {
+            isAxiosError: true,
+            response: {
+              status: 429,
+              data: { message: 'Too many invalid OTP attempts. Please request a new code.' },
+            },
+          }),
+        )
+        await Promise.resolve()
+      })
+      await flush()
+
+      expect(screen.queryByText(/Mã hiện tại sẽ hết hạn sau/)).not.toBeInTheDocument()
+      expect(screen.queryByText('Bạn đã nhập sai quá 5 lần. Vui lòng chờ mã hiện tại hết hạn rồi gửi lại.')).not.toBeInTheDocument()
+      expect(screen.getByRole('status')).toHaveTextContent('Mã OTP đã hết hạn.')
+      expect(screen.getAllByText('Mã OTP đã hết hạn.')).toHaveLength(2)
+      expect(screen.getByRole('button', { name: 'Gửi lại mã OTP' })).toBeEnabled()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('shows the generic verify fallback for a non-rate-limit error', async () => {
+    submitRegistration()
+    await flush()
+    vi.mocked(verifyRegistrationOtp).mockRejectedValue(new Error('Request failed'))
+
+    fireEvent.change(screen.getByPlaceholderText('123456'), { target: { value: '123456' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Xác nhận tài khoản' }))
+    await flush()
+
+    expect(screen.getByText('Mã OTP không hợp lệ.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Xác nhận tài khoản' })).toBeEnabled()
+  })
+
+  it('forces the expired state when the backend says the code expired', async () => {
+    submitRegistration()
+    await flush()
+    vi.mocked(verifyRegistrationOtp).mockRejectedValue(
+      Object.assign(new Error('400'), {
+        isAxiosError: true,
+        response: { status: 400, data: { message: 'OTP has expired.' } },
+      }),
+    )
+
+    fireEvent.change(screen.getByPlaceholderText('123456'), { target: { value: '123456' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Xác nhận tài khoản' }))
+    await flush()
+
+    expect(screen.getByRole('status')).toHaveTextContent('Mã OTP đã hết hạn.')
+    expect(screen.getAllByText('Mã OTP đã hết hạn.')).toHaveLength(2)
+    expect(screen.getByText('Mã OTP đã hết hạn. Vui lòng gửi lại mã mới.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Xác nhận tài khoản' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Gửi lại mã OTP' })).toBeEnabled()
+    expect(window.sessionStorage.getItem(OTP_STORAGE_KEY)).toBeNull()
+  })
+
+  it('keeps the UI unlocked when verify returns the abuse-protection 503', async () => {
+    submitRegistration()
+    await flush()
+    vi.mocked(verifyRegistrationOtp).mockRejectedValue(
+      Object.assign(new Error('503'), {
+        isAxiosError: true,
+        response: { status: 503, data: { code: 'ABUSE_PROTECTION_UNAVAILABLE', message: 'Unavailable.' } },
+      }),
+    )
+
+    fireEvent.change(screen.getByPlaceholderText('123456'), { target: { value: '123456' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Xác nhận tài khoản' }))
+    await flush()
+
+    expect(screen.getByText(/Tạm thời không thể xác thực/)).toBeInTheDocument()
+    expect(screen.queryByText(/Quá nhiều lần thử/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Mã hiện tại sẽ hết hạn sau/)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Xác nhận tài khoản' })).toBeEnabled()
+  })
 })
 
 function limitedError(seconds: number) {

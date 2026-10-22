@@ -3,7 +3,11 @@ import { Link, useNavigate } from 'react-router-dom'
 import { MailCheck, ShieldCheck, UserPlus } from 'lucide-react'
 import { requestRegistrationOtp, resendRegistrationOtp, verifyRegistrationOtp } from '../../lib/api/authApi'
 import { formatCountdown } from '../../lib/api/rateLimit'
-import { getRegistrationErrorMessage } from '../../lib/api/authErrorMessages'
+import {
+  getRegistrationErrorMessage,
+  isOtpAttemptsExhaustedError,
+  isOtpExpiredError,
+} from '../../lib/api/authErrorMessages'
 import { useCountdown } from '../../lib/hooks/useCountdown'
 import { useRateLimit } from '../../lib/hooks/useRateLimit'
 import { RateLimitAlert } from '../../components/auth/RateLimitAlert'
@@ -98,6 +102,7 @@ export function RegisterPage() {
   const rateLimit = useRateLimit()
   const otpLifetime = useCountdown()
   const otpStartedRef = useRef(false)
+  const otpSecondsLeftRef = useRef(otpLifetime.secondsLeft)
   const previousSecondsRef = useRef(otpLifetime.secondsLeft)
   const startOtpCountdown = otpLifetime.start
   const stopOtpCountdown = otpLifetime.stop
@@ -126,6 +131,7 @@ export function RegisterPage() {
   }
 
   useEffect(() => {
+    otpSecondsLeftRef.current = otpLifetime.secondsLeft
     const previous = previousSecondsRef.current
     previousSecondsRef.current = otpLifetime.secondsLeft
     if (!otpStartedRef.current || previous <= 0 || otpLifetime.secondsLeft > 0) return
@@ -221,7 +227,24 @@ export function RegisterPage() {
       endOtpLifetime()
       navigate('/login', { replace: true, state: { message: 'Đăng ký thành công, vui lòng đăng nhập.' } })
     } catch (err) {
-      if (!applyRateLimit(err)) setError(getRegistrationErrorMessage(err, 'Mã OTP không hợp lệ.'))
+      if (applyRateLimit(err)) return
+      if (isOtpAttemptsExhaustedError(err)) {
+        if (otpSecondsLeftRef.current > 0) {
+          setOtpState('exhausted')
+          setError(getRegistrationErrorMessage(err, 'Mã OTP không hợp lệ.'))
+        } else {
+          clearStoredOtp()
+          endOtpLifetime()
+          setOtpState('expired')
+        }
+        return
+      }
+      if (isOtpExpiredError(err)) {
+        clearStoredOtp()
+        endOtpLifetime()
+        setOtpState('expired')
+      }
+      setError(getRegistrationErrorMessage(err, 'Mã OTP không hợp lệ.'))
     } finally {
       setSubmitting(false)
     }
