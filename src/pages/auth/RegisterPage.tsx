@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MailCheck, ShieldCheck, UserPlus } from 'lucide-react'
 import { requestRegistrationOtp, resendRegistrationOtp, verifyRegistrationOtp } from '../../lib/api/authApi'
@@ -56,6 +56,35 @@ function clearStoredOtp() {
   }
 }
 
+function readStoredOtp(): { email: string; expiresAt: number } | null {
+  let raw: string | null
+  try {
+    raw = window.sessionStorage.getItem(OTP_STORAGE_KEY)
+  } catch {
+    return null
+  }
+  if (raw === null) return null
+
+  try {
+    const parsed = JSON.parse(raw) as { email?: unknown; expiresAt?: unknown } | null
+    if (
+      parsed &&
+      typeof parsed.email === 'string' &&
+      parsed.email.length > 0 &&
+      typeof parsed.expiresAt === 'number' &&
+      Number.isFinite(parsed.expiresAt)
+    ) {
+      return { email: parsed.email, expiresAt: parsed.expiresAt }
+    }
+  } catch {
+    clearStoredOtp()
+    return null
+  }
+
+  clearStoredOtp()
+  return null
+}
+
 export function RegisterPage() {
   const navigate = useNavigate()
   const [step, setStep] = useState<1 | 2>(1)
@@ -69,6 +98,7 @@ export function RegisterPage() {
   const rateLimit = useRateLimit()
   const otpLifetime = useCountdown()
   const otpStartedRef = useRef(false)
+  const previousSecondsRef = useRef(otpLifetime.secondsLeft)
   const startOtpCountdown = otpLifetime.start
   const stopOtpCountdown = otpLifetime.stop
 
@@ -96,13 +126,35 @@ export function RegisterPage() {
   }
 
   useEffect(() => {
-    if (!otpStartedRef.current || otpLifetime.secondsLeft > 0) return
+    const previous = previousSecondsRef.current
+    previousSecondsRef.current = otpLifetime.secondsLeft
+    if (!otpStartedRef.current || previous <= 0 || otpLifetime.secondsLeft > 0) return
     if (otpState === 'active' || otpState === 'exhausted') {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setOtpState('expired')
       setError(null)
     }
   }, [otpLifetime.secondsLeft, otpState])
+
+  useLayoutEffect(() => {
+    const stored = readStoredOtp()
+    if (!stored) return
+
+    const remaining = Math.ceil((stored.expiresAt - Date.now()) / 1000)
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setForm((prev) => ({ ...prev, email: stored.email }))
+    setStep(2)
+    if (remaining > 0) {
+      setInfo(ACCEPTED_MESSAGE)
+      setOtpState('active')
+      otpStartedRef.current = true
+      startOtpCountdown(remaining)
+    } else {
+      clearStoredOtp()
+      setOtpState('expired')
+    }
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [startOtpCountdown])
 
   const handleRequestOtp = async (event: FormEvent) => {
     event.preventDefault()
@@ -165,6 +217,8 @@ export function RegisterPage() {
     setSubmitting(true)
     try {
       await verifyRegistrationOtp({ email: form.email, otp })
+      clearStoredOtp()
+      endOtpLifetime()
       navigate('/login', { replace: true, state: { message: 'Đăng ký thành công, vui lòng đăng nhập.' } })
     } catch (err) {
       if (!applyRateLimit(err)) setError(getRegistrationErrorMessage(err, 'Mã OTP không hợp lệ.'))

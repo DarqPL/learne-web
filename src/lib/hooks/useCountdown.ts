@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 
 export interface Countdown {
   secondsLeft: number
@@ -50,7 +50,7 @@ export function useCountdown(): Countdown {
     if (isMountedRef.current) setSecondsLeft(0)
   }, [clearTimer])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     isMountedRef.current = true
     return () => {
       isMountedRef.current = false

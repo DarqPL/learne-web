@@ -129,5 +129,11 @@ describe('useCountdown', () => {
 
     expect(result.current.secondsLeft).toBe(10)
     expect(vi.getTimerCount()).toBe(1)
+
+    act(() => {
+      vi.advanceTimersByTime(1000)
+    })
+
+    expect(result.current.secondsLeft).toBe(9)
   })
 })
