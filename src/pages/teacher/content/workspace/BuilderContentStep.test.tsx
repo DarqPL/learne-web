@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { getCourseAudioTargets } from '../../../../lib/api/teacherLessonAudioApi'
 import type { CourseAudioTargets, TeacherCourse, TeacherLesson, TeacherLessonRequest } from '../../../../lib/api/types'
+import type { ContentEditingState } from '../contentUtils'
 import { BuilderContentStep } from './BuilderContentStep'
 
 vi.mock('../../../../lib/api/teacherLessonAudioApi', () => ({
@@ -96,14 +97,17 @@ function lessonRequestOf(item: TeacherLesson): TeacherLessonRequest {
   }
 }
 
-function stepElement(selectedLesson: TeacherLesson, editable = false) {
+function stepElement(
+  selectedLesson: TeacherLesson,
+  editingState: ContentEditingState = { kind: 'read-only', reason: 'Đã duyệt' },
+) {
   return (
     <MemoryRouter>
       <BuilderContentStep
         course={course}
         action={null}
         busy={false}
-        editingState={editable ? { kind: 'editable' } : { kind: 'read-only', reason: 'Đã duyệt' }}
+        editingState={editingState}
         selectedTopic={null}
         selectedLesson={selectedLesson}
         topicInitialValue={null}
@@ -121,8 +125,8 @@ function stepElement(selectedLesson: TeacherLesson, editable = false) {
   )
 }
 
-function renderStep(selectedLesson: TeacherLesson, editable = false) {
-  return render(stepElement(selectedLesson, editable))
+function renderStep(selectedLesson: TeacherLesson, editingState?: ContentEditingState) {
+  return render(stepElement(selectedLesson, editingState))
 }
 
 beforeEach(() => {
@@ -140,15 +144,22 @@ describe('BuilderContentStep', () => {
   })
 
   it('does not carry unsaved edits to another lesson with identical saved values', async () => {
-    const { rerender } = renderStep(lesson, true)
+    const { rerender } = renderStep(lesson, { kind: 'editable' })
     await screen.findByLabelText('Audio bài nghe')
 
     const titleInput = screen.getByLabelText('Tiêu đề bài học')
     fireEvent.change(titleInput, { target: { value: 'Nháp chưa lưu' } })
     expect(titleInput).toHaveValue('Nháp chưa lưu')
 
-    rerender(stepElement(secondLesson, true))
+    rerender(stepElement(secondLesson, { kind: 'editable' }))
 
     expect(screen.getByLabelText('Tiêu đề bài học')).toHaveValue(secondLesson.title)
+  })
+
+  it('shows the locked reason for audio while the course is being submitted', async () => {
+    renderStep(lesson, { kind: 'locked', reason: 'Khóa học đang được xử lý để gửi duyệt.' })
+
+    expect(await screen.findByText('Khóa học đang được xử lý để gửi duyệt.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Thay audio' })).not.toBeInTheDocument()
   })
 })
