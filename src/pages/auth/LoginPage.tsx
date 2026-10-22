@@ -3,8 +3,11 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ArrowRight, CheckCircle2, Sparkles } from 'lucide-react'
 import { login } from '../../lib/api/authApi'
 import { getApiErrorMessage } from '../../lib/api/client'
+import { readRateLimit, type RateLimitInfo } from '../../lib/api/rateLimit'
 import { useAuth } from '../../lib/auth/auth-context'
 import { homePathFor } from '../../lib/auth/routes'
+import { useCountdown } from '../../lib/hooks/useCountdown'
+import { RateLimitAlert } from '../../components/auth/RateLimitAlert'
 import { Field } from '../../components/ui/Field'
 import { Input } from '../../components/ui/Input'
 import { PasswordInput } from '../../components/ui/PasswordInput'
@@ -27,6 +30,8 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
+  const rateLimit = useCountdown()
+  const [rateLimitInfo, setRateLimitInfo] = useState<RateLimitInfo | null>(null)
 
   const message = (location.state as { message?: string } | null)?.message ?? null
 
@@ -45,6 +50,7 @@ export function LoginPage() {
     }
     setFieldErrors({})
     setError(null)
+    setRateLimitInfo(null)
     setSubmitting(true)
     try {
       const response = await login({ email, password })
@@ -52,7 +58,13 @@ export function LoginPage() {
       setAuth(accessToken, expiresInSeconds, user)
       navigate(user.mustChangePassword ? '/change-password?forced=1' : homePathFor(user.role), { replace: true })
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Đăng nhập thất bại. Vui lòng thử lại.'))
+      const info = readRateLimit(err)
+      if (info) {
+        setRateLimitInfo(info)
+        if (info.kind === 'limited') rateLimit.start(info.retryAfterSeconds)
+      } else {
+        setError(getApiErrorMessage(err, 'Đăng nhập thất bại. Vui lòng thử lại.'))
+      }
     } finally {
       setSubmitting(false)
     }
@@ -102,6 +114,7 @@ export function LoginPage() {
                 <AlertDescription className="text-green-800">{message}</AlertDescription>
               </Alert>
             ) : null}
+            {rateLimitInfo ? <RateLimitAlert info={rateLimitInfo} secondsLeft={rateLimit.secondsLeft} /> : null}
             {error ? (
               <Alert variant="destructive" className="mb-4 border-red-200 bg-red-50">
                 <AlertDescription className="text-red-700">{error}</AlertDescription>
@@ -128,7 +141,12 @@ export function LoginPage() {
                   autoComplete="current-password"
                 />
               </Field>
-              <Button type="submit" loading={submitting} className="h-11 w-full rounded-xl text-base shadow-lg shadow-indigo-200">
+              <Button
+                type="submit"
+                loading={submitting}
+                disabled={rateLimit.secondsLeft > 0}
+                className="h-11 w-full rounded-xl text-base shadow-lg shadow-indigo-200"
+              >
                 Đăng nhập
                 <ArrowRight className="h-4 w-4" />
               </Button>
