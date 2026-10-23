@@ -26,8 +26,22 @@ const defaultLesson: TeacherLessonRequest = {
   placementTest: false,
 }
 
+function sameLessonValue(current: TeacherLessonRequest | undefined, next: TeacherLessonRequest | undefined) {
+  const a = current ?? defaultLesson
+  const b = next ?? defaultLesson
+  return (
+    a.title === b.title &&
+    a.description === b.description &&
+    a.content === b.content &&
+    a.skillType === b.skillType &&
+    a.orderIndex === b.orderIndex &&
+    a.xpReward === b.xpReward &&
+    a.placementTest === b.placementTest
+  )
+}
+
 interface LessonValidation {
-  field: 'title' | 'xpReward'
+  field: 'title'
   message: string
 }
 
@@ -35,15 +49,13 @@ export function LessonForm({ initialValue, loading = false, disabled = false, su
   const initialForm = initialValue ?? defaultLesson
   const [previousInitialValue, setPreviousInitialValue] = useState(initialValue)
   const [form, setForm] = useState<TeacherLessonRequest>(initialForm)
-  const [xpRewardInput, setXpRewardInput] = useState(String(initialForm.xpReward))
   const [validation, setValidation] = useState<LessonValidation | null>(null)
   const fieldPrefix = useId()
 
-  if (initialValue !== previousInitialValue) {
+  if (!sameLessonValue(initialValue, previousInitialValue)) {
     const nextForm = initialValue ?? defaultLesson
     setPreviousInitialValue(initialValue)
     setForm(nextForm)
-    setXpRewardInput(String(nextForm.xpReward))
     setValidation(null)
   }
 
@@ -51,31 +63,17 @@ export function LessonForm({ initialValue, loading = false, disabled = false, su
     event.preventDefault()
     if (disabled) return
 
-    const xpReward = Number(xpRewardInput)
-
     if (!form.title.trim()) {
       setValidation({ field: 'title', message: 'Vui lòng nhập tiêu đề bài học.' })
       return
     }
 
-    if (!xpRewardInput.trim() || !Number.isFinite(xpReward)) {
-      setValidation({ field: 'xpReward', message: 'Vui lòng nhập XP hợp lệ.' })
-      return
-    }
-
-    if (xpReward < 0) {
-      setValidation({ field: 'xpReward', message: 'XP không được nhỏ hơn 0.' })
-      return
-    }
-
     setValidation(null)
-    onSubmit({ ...form, xpReward })
+    onSubmit({ ...form })
   }
 
   const titleError = validation?.field === 'title' ? validation.message : undefined
-  const xpRewardError = validation?.field === 'xpReward' ? validation.message : undefined
   const titleErrorId = `${fieldPrefix}-title-error`
-  const xpRewardErrorId = `${fieldPrefix}-xp-error`
 
   return (
     <form onSubmit={handleSubmit}>
@@ -113,41 +111,25 @@ export function LessonForm({ initialValue, loading = false, disabled = false, su
           />
         </Field>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Field>
-            <FieldLabel htmlFor={`${fieldPrefix}-skill-type`}>Kỹ năng</FieldLabel>
-            <Select
-              value={form.skillType}
-              disabled={disabled}
-              onValueChange={(value) => setForm((current) => ({ ...current, skillType: value as TeacherLessonRequest['skillType'] }))}
-            >
-              <SelectTrigger id={`${fieldPrefix}-skill-type`} className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {skillTypes.map((skillType) => (
-                  <SelectItem key={skillType} value={skillType}>
-                    {skillTypeLabels[skillType]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-
-          <Field data-invalid={xpRewardError ? true : undefined}>
-            <FieldLabel htmlFor={`${fieldPrefix}-xp`}>XP</FieldLabel>
-            <Input
-              id={`${fieldPrefix}-xp`}
-              type="number"
-              value={xpRewardInput}
-              disabled={disabled}
-              aria-invalid={xpRewardError ? true : undefined}
-              aria-describedby={xpRewardError ? xpRewardErrorId : undefined}
-              onChange={(event) => setXpRewardInput(event.target.value)}
-            />
-            {xpRewardError ? <FieldError id={xpRewardErrorId}>{xpRewardError}</FieldError> : null}
-          </Field>
-        </div>
+        <Field>
+          <FieldLabel htmlFor={`${fieldPrefix}-skill-type`}>Kỹ năng</FieldLabel>
+          <Select
+            value={form.skillType}
+            disabled={disabled}
+            onValueChange={(value) => setForm((current) => ({ ...current, skillType: value as TeacherLessonRequest['skillType'] }))}
+          >
+            <SelectTrigger id={`${fieldPrefix}-skill-type`} className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {skillTypes.map((skillType) => (
+                <SelectItem key={skillType} value={skillType}>
+                  {skillTypeLabels[skillType]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
 
         <Field orientation="horizontal">
           <input

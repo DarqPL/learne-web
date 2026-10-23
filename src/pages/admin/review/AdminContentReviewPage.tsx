@@ -222,7 +222,7 @@ export function AdminContentReviewPage() {
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[20rem_1fr]">
-        <aside className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <aside className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm lg:sticky lg:top-24 lg:self-start">
           <div className="sticky top-0 z-10 border-b border-gray-200 bg-white px-5 py-4">
             <h2 className="text-lg font-semibold text-gray-900">Khóa học chờ duyệt</h2>
             {courses !== null ? (
@@ -239,36 +239,30 @@ export function AdminContentReviewPage() {
             ) : courses.length === 0 ? (
               <p className="px-1 py-4 text-sm text-gray-600">Không có khóa học nào đang chờ duyệt.</p>
             ) : (
-              <div className="max-h-[65vh] overflow-y-auto">
-                <div className="flex flex-col gap-3">
+              <div className="max-h-[60vh] overflow-y-auto pr-1">
+                <div className="flex flex-col gap-2">
                   {courses.map((course) => {
                     const isSelected = selectedCourse?.id === course.id
                     return (
                       <button
                         key={course.id}
                         type="button"
-                        className={`w-full rounded-xl border p-4 text-left transition-colors ${
+                        className={`w-full rounded-lg border p-3 text-left transition-colors ${
                           isSelected ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200 bg-white hover:border-indigo-200 hover:bg-gray-50'
                         }`}
                         disabled={busy}
                         aria-current={isSelected ? 'true' : undefined}
                         onClick={() => handleSelectCourse(course.id)}
                       >
-                        <span className="block font-medium text-gray-900">{course.name}</span>
-                        <span className="mt-1 block text-sm text-gray-600">
-                          {course.teacherName} · {course.teacherEmail}
-                        </span>
-                        <span className="mt-2 block text-sm text-gray-600">
-                          {course.level} · {reviewCourseTypeLabels[course.type]}
-                        </span>
-                        <span className="mt-2 flex flex-wrap items-center gap-2">
+                        <span className="block truncate text-sm font-medium text-gray-900">{course.name}</span>
+                        <span className="mt-0.5 block truncate text-xs text-gray-500">{course.teacherName}</span>
+                        <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
                           <Badge variant={course.pricingType === 'PAID' ? 'default' : 'secondary'}>{pricingLabel(course.pricingType)}</Badge>
-                          {course.pricingType === 'PAID' ? <span className="text-sm text-gray-600">{formatVnd(course.proposedPriceAmountVnd)}</span> : null}
+                          <Badge variant="outline">{course.level}</Badge>
+                          <span className="text-xs text-gray-500">
+                            {course.topicCount} chủ đề · {course.lessonCount} bài · {course.questionCount} câu hỏi
+                          </span>
                         </span>
-                        <span className="mt-2 block text-xs text-gray-500">
-                          {course.topicCount} chủ đề · {course.lessonCount} bài học · {course.questionCount} câu hỏi
-                        </span>
-                        <span className="mt-1 block text-xs text-gray-500">Cập nhật: {formatReviewDate(course.updatedAt)}</span>
                       </button>
                     )
                   })}

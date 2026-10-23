@@ -14,7 +14,7 @@ const mockedListStudentEnrollments = vi.mocked(listStudentEnrollments)
 function enrollmentsApiResponse(
   data: StudentEnrollment[],
 ): Awaited<ReturnType<typeof listStudentEnrollments>> {
-  return { data } as Awaited<ReturnType<typeof listStudentEnrollments>>
+  return { data: { content: data, nextCursor: null, hasNext: false, size: data.length } } as Awaited<ReturnType<typeof listStudentEnrollments>>
 }
 
 function makeEnrollment(id: number): StudentEnrollment {
@@ -121,13 +121,11 @@ describe('StudentEnrollmentsPage redesign sync with course catalog', () => {
 
     expect(await screen.findByText('Course 1')).toBeInTheDocument()
 
-    expect(screen.getByRole('link', { name: /Trang trước/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Trang sau/i })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Trang trước/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Trang sau/i })).not.toBeInTheDocument()
     expect(screen.queryByText('Previous')).not.toBeInTheDocument()
     expect(screen.queryByText('Next')).not.toBeInTheDocument()
 
-    const prevLink = screen.getByRole('link', { name: 'Trang trước' })
-    expect(prevLink).toHaveAttribute('aria-disabled', 'true')
   })
 })
 
@@ -136,10 +134,10 @@ describe('StudentEnrollmentsPage pagination', () => {
     mockedListStudentEnrollments.mockReset()
   })
 
-  it('renders 6 cards with pagination control and shows remaining courses on page 2', async () => {
-    mockedListStudentEnrollments.mockResolvedValue(
-      enrollmentsApiResponse([1, 2, 3, 4, 5, 6, 7, 8].map((id) => makeEnrollment(id))),
-    )
+  it('replaces results via cursor pager instead of appending with load-more', async () => {
+    mockedListStudentEnrollments
+      .mockResolvedValueOnce({ data: { content: [1, 2, 3, 4, 5, 6].map((id) => makeEnrollment(id)), nextCursor: 'next', hasNext: true, size: 6 } } as Awaited<ReturnType<typeof listStudentEnrollments>>)
+      .mockResolvedValueOnce(enrollmentsApiResponse([7, 8].map((id) => makeEnrollment(id))))
 
     renderEnrollmentsPage()
 
@@ -147,12 +145,8 @@ describe('StudentEnrollmentsPage pagination', () => {
     for (const id of [1, 2, 3, 4, 5, 6]) {
       expect(screen.getByText(`Course ${id}`)).toBeInTheDocument()
     }
-    expect(screen.queryByText('Course 7')).not.toBeInTheDocument()
-    expect(screen.queryByText('Course 8')).not.toBeInTheDocument()
-
-    expect(screen.getByRole('navigation', { name: /pagination/i })).toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('link', { name: '2' }))
+    expect(screen.queryByRole('button', { name: 'Tải thêm khóa học' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Trang tiếp' }))
 
     await waitFor(() => {
       expect(screen.getByText('Course 7')).toBeInTheDocument()
@@ -171,5 +165,86 @@ describe('StudentEnrollmentsPage pagination', () => {
     expect(discoverLink).toBeInTheDocument()
     expect(discoverLink).toHaveAttribute('href', '/student/courses')
     expect(screen.queryByRole('navigation', { name: /pagination/i })).not.toBeInTheDocument()
+  })
+})
+
+describe('StudentEnrollmentsPage cursor pager', () => {
+  beforeEach(() => {
+    mockedListStudentEnrollments.mockReset()
+  })
+
+  it('renders prev/next nav with Trang 1 indicator instead of load-more button', async () => {
+    mockedListStudentEnrollments.mockResolvedValue({
+      data: {
+        content: [makeEnrollment(1)],
+        nextCursor: 'cursor-2',
+        hasNext: true,
+        size: 1,
+      },
+    } as Awaited<ReturnType<typeof listStudentEnrollments>>)
+
+    renderEnrollmentsPage()
+
+    expect(await screen.findByText('Course 1')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Tải thêm khóa học' })).not.toBeInTheDocument()
+
+    expect(screen.getByRole('navigation', { name: 'Phân trang khóa học' })).toBeInTheDocument()
+    expect(screen.getByText('Trang 1 · 1 khóa học')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Trang trước' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Trang tiếp' })).toBeEnabled()
+  })
+
+  it('navigates to page 2 via Tiep and back via Truoc replacing results', async () => {
+    mockedListStudentEnrollments
+      .mockResolvedValueOnce({
+        data: {
+          content: [makeEnrollment(1)],
+          nextCursor: 'cursor-2',
+          hasNext: true,
+          size: 1,
+        },
+      } as Awaited<ReturnType<typeof listStudentEnrollments>>)
+      .mockResolvedValueOnce({
+        data: {
+          content: [makeEnrollment(2)],
+          nextCursor: null,
+          hasNext: false,
+          size: 1,
+        },
+      } as Awaited<ReturnType<typeof listStudentEnrollments>>)
+      .mockResolvedValueOnce({
+        data: {
+          content: [makeEnrollment(1)],
+          nextCursor: 'cursor-2',
+          hasNext: true,
+          size: 1,
+        },
+      } as Awaited<ReturnType<typeof listStudentEnrollments>>)
+
+    renderEnrollmentsPage()
+
+    expect(await screen.findByText('Course 1')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Trang tiếp' }))
+
+    expect(await screen.findByText('Course 2')).toBeInTheDocument()
+    expect(screen.queryByText('Course 1')).not.toBeInTheDocument()
+    expect(screen.getByText('Trang 2 · 1 khóa học')).toBeInTheDocument()
+    expect(mockedListStudentEnrollments).toHaveBeenLastCalledWith(
+      expect.objectContaining({ cursor: 'cursor-2', size: 6 }),
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Trang trước' }))
+
+    expect(await screen.findByText('Course 1')).toBeInTheDocument()
+    expect(screen.queryByText('Course 2')).not.toBeInTheDocument()
+    expect(screen.getByText('Trang 1 · 1 khóa học')).toBeInTheDocument()
+  })
+
+  it('keeps error state without pager nav', async () => {
+    mockedListStudentEnrollments.mockRejectedValueOnce(new Error('network down'))
+    renderEnrollmentsPage()
+    expect(await screen.findByText('Không thể tải khóa học đã đăng ký')).toBeInTheDocument()
+    expect(screen.queryByRole('navigation', { name: 'Phân trang khóa học' })).not.toBeInTheDocument()
   })
 })

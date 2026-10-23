@@ -1,6 +1,7 @@
 import { http } from './client'
 import type {
   ApiMessageResponse,
+  CourseSubmission,
   CourseImportResponse,
   TeacherCourse,
   TeacherCourseRequest,
@@ -10,12 +11,13 @@ import type {
   TeacherQuestionRequest,
   TeacherTopic,
   TeacherTopicRequest,
+  CursorPage,
 } from './types'
 
 const base = '/api/teacher/content'
 
-export function listTeacherCourses() {
-  return http.get<TeacherCourse[]>(`${base}/courses`)
+export function listTeacherCourses(params?: { status?: string; q?: string; size?: number; cursor?: string }) {
+  return http.get<CursorPage<TeacherCourse>>(`${base}/courses`, { params })
 }
 
 export function createTeacherCourse(payload: TeacherCourseRequest) {
@@ -71,7 +73,19 @@ export function deleteTeacherQuestion(questionId: number) {
 }
 
 export function submitTeacherCourse(courseId: number) {
-  return http.post<TeacherCourse>(`${base}/courses/${courseId}/submit`, {})
+  return http.post<CourseSubmission>(`${base}/courses/${courseId}/submit`, {})
+}
+
+export function getCourseSubmission(courseId: number, submissionId: string, signal?: AbortSignal) {
+  return http.get<CourseSubmission>(`${base}/courses/${courseId}/submissions/${submissionId}`, { signal })
+}
+
+export function getLatestCourseSubmission(courseId: number, signal?: AbortSignal) {
+  return http.get<CourseSubmission>(`${base}/courses/${courseId}/submission`, { signal })
+}
+
+export function createEditRevision(courseId: number) {
+  return http.post<TeacherCourse>(`${base}/courses/${courseId}/edit-revision`)
 }
 
 export function downloadCourseTemplate() {

@@ -2,13 +2,14 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AdminTeacherListPage } from './AdminTeacherListPage'
-import { adminListTeachers, adminLockTeacher, adminUnlockTeacher } from '../../lib/api/adminApi'
+import { adminListTeachers, adminLockTeacher, adminUnlockTeacher, adminResendTeacherInvitation } from '../../lib/api/adminApi'
 import type { AdminTeacher } from '../../lib/api/types'
 
 vi.mock('../../lib/api/adminApi', () => ({
   adminListTeachers: vi.fn(),
   adminLockTeacher: vi.fn(),
   adminUnlockTeacher: vi.fn(),
+  adminResendTeacherInvitation: vi.fn(),
 }))
 
 const mockedList = vi.mocked(adminListTeachers)
@@ -16,7 +17,7 @@ const mockedLock = vi.mocked(adminLockTeacher)
 const mockedUnlock = vi.mocked(adminUnlockTeacher)
 
 function apiResponse(data: AdminTeacher[]): Awaited<ReturnType<typeof adminListTeachers>> {
-  return { data } as Awaited<ReturnType<typeof adminListTeachers>>
+  return { data: { content: data, page: 0, size: data.length, totalElements: data.length, totalPages: 1 } } as Awaited<ReturnType<typeof adminListTeachers>>
 }
 
 function makeTeacher(overrides: Partial<AdminTeacher> = {}): AdminTeacher {
@@ -75,6 +76,7 @@ describe('AdminTeacherListPage shadcn sync', () => {
     mockedList.mockReset()
     mockedLock.mockReset()
     mockedUnlock.mockReset()
+    vi.mocked(adminResendTeacherInvitation).mockReset()
     mockedLock.mockResolvedValue({ data: { message: 'ok' } } as never)
     mockedUnlock.mockResolvedValue({ data: { message: 'ok' } } as never)
     vi.restoreAllMocks()
@@ -87,6 +89,70 @@ describe('AdminTeacherListPage shadcn sync', () => {
 
     expect(document.querySelector('[data-slot="skeleton"]')).not.toBeNull()
     expect(screen.queryByRole('table')).not.toBeInTheDocument()
+  })
+
+  const failedDelivery = { status: 'FAILED' as const, requestedAt: null, completedAt: null, failureCode: 'SMTP_ERROR', canResend: true }
+  const queuedDelivery = { ...failedDelivery, status: 'QUEUED' as const, failureCode: null, canResend: false }
+
+  async function openResendOnPageTwo(refresh?: ReturnType<typeof apiResponse>) {
+    const first = apiResponse([makeTeacher()])
+    first.data.totalPages = 2
+    const second = apiResponse([makeTeacher({ userId: 7, invitationDelivery: failedDelivery })])
+    second.data.page = 1
+    second.data.totalPages = 2
+    mockedList.mockResolvedValueOnce(first).mockResolvedValueOnce(second)
+    if (refresh) mockedList.mockResolvedValue(refresh)
+    else mockedList.mockRejectedValue(new Error('offline'))
+    renderPage()
+    fireEvent.click(await screen.findByRole('link', { name: 'Trang sau' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Gửi lại email cấp tài khoản' }))
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Xác nhận gửi lại' }))
+    return dialog
+  }
+
+  it('applies accepted delivery before a failed GET, keeps acceptance and allows manual refresh without duplicate POST', async () => {
+    vi.mocked(adminResendTeacherInvitation).mockResolvedValue({ data: queuedDelivery } as never)
+    const dialog = await openResendOnPageTwo()
+    await waitFor(() => expect(dialog).not.toBeInTheDocument())
+    expect(screen.getByText('Yêu cầu gửi email cấp tài khoản đã được tiếp nhận.')).toBeInTheDocument()
+    expect(screen.getByText('Đang chờ gửi')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Gửi lại email cấp tài khoản' })).not.toBeInTheDocument()
+    expect(mockedList).toHaveBeenLastCalledWith({ page: 1, size: 6 })
+    expect(adminResendTeacherInvitation).toHaveBeenCalledExactlyOnceWith(7)
+    expect(screen.getByRole('button', { name: 'Làm mới danh sách' })).toBeInTheDocument()
+    const recovered = apiResponse([makeTeacher({ userId: 7, invitationDelivery: queuedDelivery })])
+    recovered.data.page = 1
+    mockedList.mockResolvedValue(recovered)
+    fireEvent.click(screen.getByRole('button', { name: 'Làm mới danh sách' }))
+    await waitFor(() => expect(screen.queryByText('Không thể tải danh sách giảng viên.')).not.toBeInTheDocument())
+    expect(adminResendTeacherInvitation).toHaveBeenCalledTimes(1)
+  })
+
+  it('updates accepted queued status and refreshes page two after successful resend', async () => {
+    vi.mocked(adminResendTeacherInvitation).mockResolvedValue({ status: 202, data: queuedDelivery } as never)
+    const refreshed = apiResponse([makeTeacher({ userId: 7, invitationDelivery: queuedDelivery })])
+    refreshed.data.page = 1
+    refreshed.data.totalPages = 2
+    await openResendOnPageTwo(refreshed)
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(screen.getByText('Đang chờ gửi')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Gửi lại email cấp tài khoản' })).not.toBeInTheDocument()
+    expect(mockedList).toHaveBeenLastCalledWith({ page: 1, size: 6 })
+    expect(adminResendTeacherInvitation).toHaveBeenCalledExactlyOnceWith(7)
+  })
+
+  it('refreshes current page on 409 and keeps dialog error after eligibility changes without false acceptance or retry', async () => {
+    vi.mocked(adminResendTeacherInvitation).mockRejectedValue({ isAxiosError: true, response: { status: 409, data: { message: 'Yêu cầu đang được xử lý' } } })
+    const refreshed = apiResponse([makeTeacher({ userId: 7, invitationDelivery: queuedDelivery })])
+    refreshed.data.page = 1
+    refreshed.data.totalPages = 2
+    const dialog = await openResendOnPageTwo(refreshed)
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent('Yêu cầu đang được xử lý')
+    await waitFor(() => expect(mockedList).toHaveBeenLastCalledWith({ page: 1, size: 6 }))
+    expect(screen.queryByText('Yêu cầu gửi email cấp tài khoản đã được tiếp nhận.')).not.toBeInTheDocument()
+    expect(adminResendTeacherInvitation).toHaveBeenCalledTimes(1)
+    expect(within(dialog).getByRole('button', { name: 'Xác nhận gửi lại' })).toBeDisabled()
   })
 
   it('shows a shadcn error alert when the list request fails', async () => {
@@ -120,13 +186,12 @@ describe('AdminTeacherListPage shadcn sync', () => {
 
     await screen.findByRole('table')
 
-    expect(tableRows()).toHaveLength(6)
+    expect(tableRows()).toHaveLength(8)
     expect(screen.getByText('Giang Vien 1')).toBeInTheDocument()
-    expect(screen.queryByText('Giang Vien 7')).not.toBeInTheDocument()
-    expect(screen.queryByText('Giang Vien 8')).not.toBeInTheDocument()
+    expect(screen.getByText('Giang Vien 7')).toBeInTheDocument()
+    expect(screen.getByText('Giang Vien 8')).toBeInTheDocument()
 
-    expect(screen.getByRole('link', { name: 'Trang trước' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Trang sau' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Trang trước' })).not.toBeInTheDocument()
     expect(screen.queryByText('Previous')).not.toBeInTheDocument()
     expect(screen.queryByText('Next')).not.toBeInTheDocument()
   })
@@ -137,12 +202,7 @@ describe('AdminTeacherListPage shadcn sync', () => {
     renderPage()
 
     await screen.findByRole('table')
-    fireEvent.click(screen.getByRole('link', { name: '2' }))
-
-    expect(tableRows()).toHaveLength(2)
-    expect(screen.getByText('Giang Vien 7')).toBeInTheDocument()
-    expect(screen.getByText('Giang Vien 8')).toBeInTheDocument()
-    expect(screen.queryByText('Giang Vien 1')).not.toBeInTheDocument()
+    expect(tableRows()).toHaveLength(8)
   })
 
   it('renders status badges for account and profile states', async () => {

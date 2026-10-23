@@ -122,6 +122,9 @@ const StudentPaymentPage = lazy(() =>
 const StudentSubscriptionPlansPage = lazy(() =>
   import('./pages/student/payment/StudentSubscriptionPlansPage').then((module) => ({ default: module.StudentSubscriptionPlansPage })),
 )
+const StudentProfilePage = lazy(() =>
+  import('./pages/student/profile/StudentProfilePage').then((module) => ({ default: module.StudentProfilePage })),
+)
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then((module) => ({ default: module.NotFoundPage })))
 
 function RouteFallback() {
@@ -151,6 +154,7 @@ export default function App() {
             <Route element={<RequireRole role="STUDENT" />}>
               <Route element={<StudentLayout />}>
                 <Route path="/student" element={<StudentDashboardPage />} />
+                <Route path="/profile" element={<StudentProfilePage />} />
                 <Route path="/student/learning-path" element={<StudentLearningPathPage />} />
                 <Route path="/student/placement-test" element={<StudentPlacementTestPage />} />
                 <Route path="/student/course-recommendations" element={<StudentCourseRecommendationsPage />} />

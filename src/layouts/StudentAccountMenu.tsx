@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronDown, Crown, LogOut } from 'lucide-react'
+import { ChevronDown, Crown, KeyRound, LogOut, UserRound } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback } from '@/components/shadcn/ui/avatar'
 import {
@@ -68,6 +68,18 @@ export function StudentAccountMenu({ userName, userEmail, onLogout }: StudentAcc
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
+            <DropdownMenuItem asChild className={cn('cursor-pointer')}>
+              <Link to="/profile" className={cn('flex w-full items-center gap-2')}>
+                <UserRound data-icon="inline-start" aria-hidden="true" />
+                Hồ sơ của tôi
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild className={cn('cursor-pointer')}>
+              <Link to="/change-password" className={cn('flex w-full items-center gap-2')}>
+                <KeyRound data-icon="inline-start" aria-hidden="true" />
+                Đổi mật khẩu
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem asChild className={cn('cursor-pointer')}>
               <Link to="/student/subscription" className={cn('flex w-full items-center gap-2')}>
                 <Crown data-icon="inline-start" aria-hidden="true" />

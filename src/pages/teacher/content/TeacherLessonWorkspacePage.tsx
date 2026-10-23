@@ -12,13 +12,16 @@ import {
   updateTeacherLesson,
   updateTeacherQuestion,
 } from '../../../lib/api/teacherContentApi'
-import type { TeacherCourse, TeacherLesson, TeacherLessonRequest, TeacherQuestion, TeacherQuestionRequest } from '../../../lib/api/types'
+import type { LessonAudioFields, TeacherCourse, TeacherLesson, TeacherLessonRequest, TeacherQuestion, TeacherQuestionRequest } from '../../../lib/api/types'
 import { LessonForm } from './LessonForm'
 import { QuestionForm } from './QuestionForm'
 import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
 import { questionTypeLabels, skillTypeLabels } from './contentLabels'
-import { canEditContent, findTeacherLesson } from './contentUtils'
+import { findTeacherLesson, getContentEditingState, isRevisionBackedCourse, mergeLessonAudio } from './contentUtils'
+import { useCourseSubmission } from './useCourseSubmission'
+import { CourseSubmissionStatus } from './CourseSubmissionStatus'
 import { getLessonInitialValue, getQuestionInitialValue } from './teacherContentMappers'
+import { LessonAudioEditor } from './audio/LessonAudioEditor'
 
 const cardClassName = 'rounded-2xl border border-gray-200 bg-white p-5 shadow-sm'
 
@@ -98,13 +101,6 @@ function ReadOnlyQuestionDetails({ question }: { question: TeacherQuestion }) {
           <p className="mt-1 whitespace-pre-wrap text-gray-600">{question.explanation}</p>
         </div>
       ) : null}
-
-      {question.knowledgePoint ? (
-        <div>
-          <p className="font-medium text-gray-700">Kiến thức liên quan</p>
-          <p className="mt-1 whitespace-pre-wrap text-gray-600">{question.knowledgePoint}</p>
-        </div>
-      ) : null}
     </div>
   )
 }
@@ -153,7 +149,14 @@ export function TeacherLessonWorkspacePage() {
   const refreshCourse = async () => {
     if (parsedCourseId === null) return
     const response = await getTeacherCourse(parsedCourseId)
-    setCourse(response.data)
+    setCourse((current) => current?.id === response.data.id ? response.data : current)
+  }
+
+  const { submission, active } = useCourseSubmission(parsedCourseId, course?.id === parsedCourseId ? course.submission : null, refreshCourse)
+  const editingState = course ? getContentEditingState({ ...course, editingLocked: course.editingLocked || active }) : { kind: 'read-only' as const, reason: 'Đang tải.' }
+  const mutationAllowed = editingState.kind === 'editable' && course?.id === parsedCourseId && action === null
+  const handleConflict = async (err: unknown) => {
+    if ((err as { response?: { status?: number } }).response?.status === 409) await refreshCourse().catch(() => undefined)
   }
 
   const refreshCourseAfterSuccess = async (message: string) => {
@@ -166,7 +169,7 @@ export function TeacherLessonWorkspacePage() {
   }
 
   const handleUpdateLesson = async (payload: TeacherLessonRequest) => {
-    if (!lesson) return
+    if (!lesson || !mutationAllowed) return
     setAction(`update-lesson-${lesson.id}`)
     setError(null)
     setInfo(null)
@@ -175,13 +178,14 @@ export function TeacherLessonWorkspacePage() {
       await refreshCourseAfterSuccess('Đã cập nhật bài học.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể cập nhật bài học.'))
+      await handleConflict(err)
     } finally {
       setAction(null)
     }
   }
 
   const handleDeleteLesson = async () => {
-    if (!currentCourse || !lesson || !window.confirm('Bạn có chắc muốn xóa bài học này?')) return
+    if (!mutationAllowed || !currentCourse || !lesson || !window.confirm('Bạn có chắc muốn xóa bài học này?')) return
     setAction(`delete-lesson-${lesson.id}`)
     setError(null)
     setInfo(null)
@@ -190,12 +194,13 @@ export function TeacherLessonWorkspacePage() {
       navigate(`/teacher/content/courses/${currentCourse.id}`)
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể xóa bài học.'))
+      await handleConflict(err)
       setAction(null)
     }
   }
 
   const handleCreateQuestion = async (payload: TeacherQuestionRequest) => {
-    if (!lesson) return
+    if (!lesson || !mutationAllowed) return
     setAction(`create-question-${lesson.id}`)
     setError(null)
     setInfo(null)
@@ -205,12 +210,14 @@ export function TeacherLessonWorkspacePage() {
       await refreshCourseAfterSuccess('Đã tạo câu hỏi.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể tạo câu hỏi.'))
+      await handleConflict(err)
     } finally {
       setAction(null)
     }
   }
 
   const handleUpdateQuestion = async (question: TeacherQuestion, payload: TeacherQuestionRequest) => {
+    if (!mutationAllowed) return
     setAction(`update-question-${question.id}`)
     setError(null)
     setInfo(null)
@@ -220,13 +227,18 @@ export function TeacherLessonWorkspacePage() {
       setEditingQuestionId(null)
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể cập nhật câu hỏi.'))
+      await handleConflict(err)
     } finally {
       setAction(null)
     }
   }
 
+  const handleAudioChanged = (lessonId: number, audio: LessonAudioFields) => {
+    setCourse((current) => (current ? mergeLessonAudio(current, lessonId, audio) : current))
+  }
+
   const handleDeleteQuestion = async (question: TeacherQuestion) => {
-    if (!window.confirm('Bạn có chắc muốn xóa câu hỏi này?')) return
+    if (!mutationAllowed || !window.confirm('Bạn có chắc muốn xóa câu hỏi này?')) return
     setAction(`delete-question-${question.id}`)
     setError(null)
     setInfo(null)
@@ -238,6 +250,7 @@ export function TeacherLessonWorkspacePage() {
       }
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể xóa câu hỏi.'))
+      await handleConflict(err)
     } finally {
       setAction(null)
     }
@@ -246,7 +259,9 @@ export function TeacherLessonWorkspacePage() {
   const currentCourse = parsedCourseId !== null && course?.id === parsedCourseId ? course : null
   const lesson = currentCourse && parsedLessonId !== null ? findTeacherLesson(currentCourse, parsedLessonId) : null
   const topic = currentCourse && parsedLessonId !== null ? findTeacherTopic(currentCourse, parsedLessonId) : null
-  const editable = currentCourse ? canEditContent(currentCourse.status) : false
+  const editable = editingState.kind === 'editable'
+  const audioEditable = editable
+  const audioLessonIdNamespace = currentCourse && isRevisionBackedCourse(currentCourse) ? 'revision' : 'live'
   const invalidRoute = parsedCourseId === null || parsedLessonId === null
   const displayError = invalidRoute || (currentCourse !== null && lesson === null) ? 'Không tìm thấy bài học.' : error
 
@@ -284,6 +299,8 @@ export function TeacherLessonWorkspacePage() {
 
       {currentCourse && lesson ? (
         <>
+          <CourseSubmissionStatus submission={submission} />
+          {editingState.kind === 'locked' ? <p role="status">{editingState.reason}</p> : null}
           <header className={cardClassName}>
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
@@ -313,7 +330,15 @@ export function TeacherLessonWorkspacePage() {
                 </Button>
               </div>
               <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                <LessonEditForm lesson={lesson} action={action} onSubmit={handleUpdateLesson} />
+                <LessonAudioEditor
+                  key={lesson.id}
+                  courseId={currentCourse.id}
+                  lesson={lesson}
+                  lessonIdNamespace={audioLessonIdNamespace}
+                  editable={audioEditable}
+                  onAudioChanged={(audio) => handleAudioChanged(lesson.id, audio)}
+                />
+                <LessonEditForm key={lesson.id} lesson={lesson} action={action} onSubmit={handleUpdateLesson} />
               </div>
             </section>
           ) : (
@@ -321,6 +346,14 @@ export function TeacherLessonWorkspacePage() {
               <h2 className="text-lg font-semibold text-gray-900">Nội dung bài học</h2>
               <p className="mt-3 text-sm font-medium text-gray-700">Mô tả</p>
               <p className="mt-1 whitespace-pre-wrap text-gray-600">{lesson.description || 'Chưa có mô tả bài học.'}</p>
+              <LessonAudioEditor
+                key={lesson.id}
+                courseId={currentCourse.id}
+                lesson={lesson}
+                lessonIdNamespace={audioLessonIdNamespace}
+                editable={audioEditable}
+                onAudioChanged={(audio) => handleAudioChanged(lesson.id, audio)}
+              />
               <p className="mt-4 text-sm font-medium text-gray-700">Nội dung</p>
               <p className="mt-1 whitespace-pre-wrap text-gray-600">{lesson.content || 'Chưa có nội dung bài học.'}</p>
             </section>
@@ -357,7 +390,7 @@ export function TeacherLessonWorkspacePage() {
                       <div>
                         <h3 className="font-semibold text-gray-900">{question.questionText}</h3>
                         <p className="mt-1 text-sm text-gray-600">
-                          {questionTypeLabels[question.type]}{question.difficulty ? ` · ${question.difficulty}` : ''} · {question.xpReward} XP
+                          {questionTypeLabels[question.type]} · {question.xpReward} XP
                         </p>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">

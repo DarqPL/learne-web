@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { BookOpen, ChevronLeft, ChevronRight, Info, Pencil, Plus, Search, Send, Trash2, TriangleAlert } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
@@ -13,13 +13,15 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Skeleton } from '@/components/shadcn/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/shadcn/ui/table'
 import { getApiErrorMessage } from '../../../lib/api/client'
-import { createTeacherCourse, deleteTeacherCourse, listTeacherCourses, submitTeacherCourse } from '../../../lib/api/teacherContentApi'
+import { createEditRevision, createTeacherCourse, deleteTeacherCourse, listTeacherCourses, submitTeacherCourse } from '../../../lib/api/teacherContentApi'
 import type { ContentStatus, TeacherCourse, TeacherCourseRequest } from '../../../lib/api/types'
 import { CourseForm } from './CourseForm'
 import { CourseImportExportPanel } from './CourseImportExportPanel'
 import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
 import { contentStatusLabels, coursePriceStatusLabels, coursePricingTypeLabels, courseTypeLabels, formatVndAmount } from './contentLabels'
-import { canSubmitCourse, countLessons, countQuestions } from './contentUtils'
+import { getContentEditingState, canSubmitCourse, countLessons, countQuestions, type ContentEditingState } from './contentUtils'
+import { useCourseSubmission } from './useCourseSubmission'
+import { CourseSubmissionStatus } from './CourseSubmissionStatus'
 
 type StatusFilter = ContentStatus | 'ALL'
 
@@ -35,6 +37,11 @@ function formatCourseContent(course: TeacherCourse) {
   return `${course.topics.length} chủ đề · ${countLessons(course)} bài học · ${countQuestions(course)} câu hỏi`
 }
 
+function SubmissionTracker({ course, onTerminal }: { course: TeacherCourse; onTerminal: () => Promise<void> }) {
+  const { submission } = useCourseSubmission(course.id, course.submission, onTerminal)
+  return <CourseSubmissionStatus submission={submission} />
+}
+
 export function TeacherContentPage() {
   const [courses, setCourses] = useState<TeacherCourse[] | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -45,17 +52,35 @@ export function TeacherContentPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL')
   const [deleteTarget, setDeleteTarget] = useState<TeacherCourse | null>(null)
   const [page, setPage] = useState(0)
+  const [cursorStack, setCursorStack] = useState<(string | undefined)[]>([undefined])
+  const [nextCursor, setNextCursor] = useState<string | null>(null)
+  const [hasNext, setHasNext] = useState(false)
+  const requestVersion = useRef(0)
+  const currentFilters = useRef({ searchQuery: '', statusFilter: 'ALL' as StatusFilter })
+  const courseEditingStates = new Map((courses ?? []).map((course) => [course.id, getContentEditingState(course)]))
+  const currentDeleteTarget = courses?.find((course) => course.id === deleteTarget?.id)
+  const deleteEditingState: ContentEditingState = (currentDeleteTarget && courseEditingStates.get(currentDeleteTarget.id)) ?? { kind: 'read-only', reason: 'Khóa học không còn trong danh sách hiện tại.' }
 
   useEffect(() => {
+    const version = ++requestVersion.current
+    const invalidatePendingLists = () => { ++requestVersion.current }
     let cancelled = false
     void (async () => {
       try {
-        const response = await listTeacherCourses()
-        if (!cancelled) {
-          setCourses(response.data)
+        const response = await listTeacherCourses({
+          ...(statusFilter !== 'ALL' ? { status: statusFilter } : {}),
+          ...(searchQuery.trim() ? { q: searchQuery.trim() } : {}),
+          size: PAGE_SIZE,
+        })
+        if (!cancelled && version === requestVersion.current) {
+          setCourses(response.data.content)
+          setNextCursor(response.data.nextCursor)
+          setHasNext(response.data.hasNext)
+          setPage(0)
+          setCursorStack([undefined])
         }
       } catch (err) {
-        if (!cancelled) {
+        if (!cancelled && version === requestVersion.current) {
           setError(getApiErrorMessage(err, 'Không thể tải thư viện khóa học.'))
           setCourses([])
         }
@@ -63,12 +88,24 @@ export function TeacherContentPage() {
     })()
     return () => {
       cancelled = true
+      invalidatePendingLists()
     }
-  }, [])
+  }, [searchQuery, statusFilter])
 
   const refreshCourses = async () => {
-    const response = await listTeacherCourses()
-    setCourses(response.data)
+    const version = ++requestVersion.current
+    const { searchQuery, statusFilter } = currentFilters.current
+    const response = await listTeacherCourses({
+      ...(statusFilter !== 'ALL' ? { status: statusFilter } : {}),
+      ...(searchQuery.trim() ? { q: searchQuery.trim() } : {}),
+      size: PAGE_SIZE,
+    })
+    if (version !== requestVersion.current) return
+    setCourses(response.data.content)
+    setNextCursor(response.data.nextCursor)
+    setHasNext(response.data.hasNext)
+    setPage(0)
+    setCursorStack([undefined])
   }
 
   const handleCreateCourse = async (payload: TeacherCourseRequest) => {
@@ -77,6 +114,7 @@ export function TeacherContentPage() {
     setInfo(null)
     try {
       const response = await createTeacherCourse(payload)
+      ++requestVersion.current
       setCourses((current) => (current ? [response.data, ...current.filter((course) => course.id !== response.data.id)] : [response.data]))
       setFormResetVersion((version) => version + 1)
       try {
@@ -102,61 +140,91 @@ export function TeacherContentPage() {
   }
 
   const handleSubmitCourse = async (course: TeacherCourse) => {
+    if (courseEditingStates.get(course.id)?.kind !== 'editable' || !canSubmitCourse(course) || action !== null) return
     setAction(`submit-${course.id}`)
     setError(null)
     setInfo(null)
     try {
       const response = await submitTeacherCourse(course.id)
-      setCourses((current) => current?.map((item) => (item.id === course.id ? response.data : item)) ?? current)
-      setInfo(`Đã gửi khóa học "${course.name}" để duyệt.`)
+      ++requestVersion.current
+      setCourses((current) => current?.map((item) => (item.id === course.id ? { ...item, submission: response.data, editingLocked: true } : item)) ?? current)
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể gửi duyệt khóa học.'))
+      if ((err as { response?: { status?: number } }).response?.status === 409) await refreshCourses().catch(() => undefined)
+    } finally {
+      setAction(null)
+    }
+  }
+
+  const handleCreateEditRevision = async (course: TeacherCourse) => {
+    const editingState = courseEditingStates.get(course.id)
+    if (!editingState || editingState.kind === 'locked' || action !== null) return
+    setAction(`revision-${course.id}`)
+    setError(null)
+    setInfo(null)
+    try {
+      await createEditRevision(course.id)
+      await refreshCourses()
+      setInfo(`Đã tạo bản nháp chỉnh sửa cho khóa học "${course.name}".`)
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Không thể tạo bản nháp chỉnh sửa.'))
+      if ((err as { response?: { status?: number } }).response?.status === 409) await refreshCourses().catch(() => undefined)
     } finally {
       setAction(null)
     }
   }
 
   const handleDeleteCourse = async () => {
-    if (!deleteTarget) return
-    const target = deleteTarget
+    if (!currentDeleteTarget || deleteEditingState.kind !== 'editable' || action !== null) return
+    const target = currentDeleteTarget
     setAction(`delete-${target.id}`)
     setError(null)
     setInfo(null)
     try {
       await deleteTeacherCourse(target.id)
+      ++requestVersion.current
       setCourses((current) => current?.filter((item) => item.id !== target.id) ?? current)
       setDeleteTarget(null)
       setInfo(`Đã xóa khóa học "${target.name}".`)
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể xóa khóa học.'))
+      if ((err as { response?: { status?: number } }).response?.status === 409) await refreshCourses().catch(() => undefined)
     } finally {
       setAction(null)
     }
   }
 
-  const filteredCourses = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase()
-    return (courses ?? []).filter((course) => {
-      const matchesQuery = query.length === 0 || course.name.toLowerCase().includes(query)
-      const matchesStatus = statusFilter === 'ALL' || course.status === statusFilter
-      return matchesQuery && matchesStatus
+  const filteredCourses = courses ?? []
+  const pagedCourses = filteredCourses
+
+  async function loadTeacherPage(cursor: string | undefined, targetPage: number) {
+    const version = ++requestVersion.current
+    const { searchQuery, statusFilter } = currentFilters.current
+    const response = await listTeacherCourses({
+      ...(statusFilter !== 'ALL' ? { status: statusFilter } : {}),
+      ...(searchQuery.trim() ? { q: searchQuery.trim() } : {}),
+      size: PAGE_SIZE,
+      ...(cursor ? { cursor } : {}),
     })
-  }, [courses, searchQuery, statusFilter])
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setPage(0)
-  }, [searchQuery, statusFilter])
-
-  const pageCount = Math.max(1, Math.ceil(filteredCourses.length / PAGE_SIZE))
-  const safePage = Math.min(page, pageCount - 1)
-  const pagedCourses = filteredCourses.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE)
+    if (version === requestVersion.current) {
+      setCourses(response.data.content)
+      setNextCursor(response.data.nextCursor)
+      setHasNext(response.data.hasNext)
+      setPage(targetPage)
+    }
+  }
 
   const hasActiveFilter = searchQuery.trim().length > 0 || statusFilter !== 'ALL'
 
+  const changeFilters = (nextSearchQuery: string, nextStatusFilter: StatusFilter) => {
+    ++requestVersion.current
+    currentFilters.current = { searchQuery: nextSearchQuery, statusFilter: nextStatusFilter }
+    setSearchQuery(nextSearchQuery)
+    setStatusFilter(nextStatusFilter)
+  }
+
   const handleClearFilters = () => {
-    setSearchQuery('')
-    setStatusFilter('ALL')
+    changeFilters('', 'ALL')
   }
 
   const busy = action !== null
@@ -196,7 +264,7 @@ export function TeacherContentPage() {
         </Alert>
       ) : null}
 
-      <CourseImportExportPanel onImported={handleImportCourse} />
+      <CourseImportExportPanel onImported={handleImportCourse} onConflict={refreshCourses} />
 
       <Card id="tao-khoa-hoc" className={cardSoftClassName}>
         <CardHeader>
@@ -234,14 +302,14 @@ export function TeacherContentPage() {
                   type="search"
                   placeholder="Nhập tên khóa học..."
                   value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
+                  onChange={(event) => changeFilters(event.target.value, statusFilter)}
                   className="pl-9"
                 />
               </div>
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="teacher-content-status">Trạng thái</Label>
-              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as StatusFilter)}>
+              <Select value={statusFilter} onValueChange={(value) => changeFilters(searchQuery, value as StatusFilter)}>
                 <SelectTrigger id="teacher-content-status" className="w-full lg:w-56">
                   <SelectValue placeholder="Tất cả trạng thái" />
                 </SelectTrigger>
@@ -352,7 +420,8 @@ export function TeacherContentPage() {
               </TableHeader>
               <TableBody>
                 {pagedCourses.map((course) => {
-                  const submittable = canSubmitCourse(course)
+                  const editingState = courseEditingStates.get(course.id)!
+                  const submittable = editingState.kind === 'editable' && canSubmitCourse(course)
                   return (
                     <TableRow key={course.id}>
                       <TableCell className="whitespace-normal">
@@ -387,6 +456,7 @@ export function TeacherContentPage() {
                       </TableCell>
                       <TableCell>
                         <TeacherContentStatusBadge status={course.status} />
+                        <SubmissionTracker course={course} onTerminal={refreshCourses} />
                       </TableCell>
                       <TableCell className="whitespace-normal">
                         <span className="text-sm text-muted-foreground">{formatCourseContent(course)}</span>
@@ -398,6 +468,23 @@ export function TeacherContentPage() {
                               <Pencil aria-hidden="true" />
                             </Link>
                           </Button>
+                          {course.hasEditableRevision ? (
+                            <Button asChild size="sm" variant="outline" title="Tiếp tục sửa bản nháp">
+                              <Link to={`/teacher/content/courses/${course.id}`}>Tiếp tục sửa bản nháp</Link>
+                            </Button>
+                          ) : null}
+                          {course.status === 'APPROVED' && !course.hasEditableRevision ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              title="Tạo bản nháp chỉnh sửa"
+                              disabled={busy || editingState.kind === 'locked'}
+                              loading={action === `revision-${course.id}`}
+                              onClick={() => void handleCreateEditRevision(course)}
+                            >
+                              Tạo bản nháp chỉnh sửa
+                            </Button>
+                          ) : null}
                           {submittable ? (
                             <Button
                               size="icon"
@@ -417,7 +504,7 @@ export function TeacherContentPage() {
                             variant="destructive"
                             title="Xóa"
                             aria-label={`Xóa khóa học ${course.name}`}
-                            disabled={busy}
+                            disabled={busy || editingState.kind !== 'editable'}
                             onClick={() => setDeleteTarget(course)}
                             className="size-8"
                           >
@@ -435,46 +522,32 @@ export function TeacherContentPage() {
           {filteredCourses.length > 0 ? (
             <nav aria-label="Phân trang khóa học" className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p aria-live="polite" className="text-sm text-muted-foreground">
-                Trang {safePage + 1} / {pageCount} · {filteredCourses.length} khóa học
+                Trang {page + 1} · {filteredCourses.length} khóa học
               </p>
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   aria-label="Trang trước"
-                  disabled={safePage === 0}
-                  onClick={() => setPage(safePage - 1)}
+                  disabled={page === 0}
+                  onClick={() => void loadTeacherPage(cursorStack[page - 1], page - 1)}
                 >
                   <ChevronLeft aria-hidden="true" />
                   Trước
                 </Button>
-                {pageCount <= 7 ? (
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: pageCount }, (_, i) => (
-                      <Button
-                        key={i}
-                        variant={safePage === i ? 'default' : 'outline'}
-                        size="icon"
-                        className="size-8"
-                        aria-label={`Trang ${i + 1}`}
-                        aria-current={safePage === i ? 'page' : undefined}
-                        onClick={() => setPage(i)}
-                      >
-                        {i + 1}
-                      </Button>
-                    ))}
-                  </div>
-                ) : (
-                  <span className="text-sm text-muted-foreground" aria-live="polite">
-                    {safePage + 1} / {pageCount}
-                  </span>
-                )}
+                <span className="text-sm text-muted-foreground" aria-live="polite">
+                  {page + 1}
+                </span>
                 <Button
                   variant="outline"
                   size="sm"
                   aria-label="Trang tiếp"
-                  disabled={safePage >= pageCount - 1}
-                  onClick={() => setPage(safePage + 1)}
+                  disabled={!hasNext || !nextCursor}
+                  onClick={() => {
+                    if (!nextCursor) return
+                    setCursorStack((current) => [...current.slice(0, page + 1), nextCursor])
+                    void loadTeacherPage(nextCursor, page + 1)
+                  }}
                 >
                   Tiếp
                   <ChevronRight aria-hidden="true" />
@@ -511,13 +584,14 @@ export function TeacherContentPage() {
               </div>
             </div>
           </DialogHeader>
+          {deleteEditingState.kind !== 'editable' ? <p role="status" className="text-sm text-muted-foreground">{deleteEditingState.reason}</p> : null}
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline" disabled={busy}>
                 Hủy
               </Button>
             </DialogClose>
-            <Button variant="destructive" loading={deleteActionKey !== null && action === deleteActionKey} onClick={() => void handleDeleteCourse()}>
+            <Button variant="destructive" disabled={busy || deleteEditingState.kind !== 'editable'} loading={deleteActionKey !== null && action === deleteActionKey} onClick={() => void handleDeleteCourse()}>
               <Trash2 data-icon="inline-start" aria-hidden="true" />
               Xóa khóa học
             </Button>

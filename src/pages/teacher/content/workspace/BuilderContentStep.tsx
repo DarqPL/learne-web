@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import type { ContentEditingState } from '../contentUtils'
 import { Pencil, Plus, Trash2, TriangleAlert } from 'lucide-react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/shadcn/ui/accordion'
 import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
@@ -7,18 +8,20 @@ import { Button } from '@/components/shadcn/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shadcn/ui/card'
 import { ScrollArea } from '@/components/shadcn/ui/scroll-area'
 import { Separator } from '@/components/shadcn/ui/separator'
-import type { TeacherCourse, TeacherLesson, TeacherLessonRequest, TeacherTopic, TeacherTopicRequest } from '../../../../lib/api/types'
+import type { LessonAudioFields, TeacherCourse, TeacherLesson, TeacherLessonRequest, TeacherTopic, TeacherTopicRequest } from '../../../../lib/api/types'
+import { LessonAudioEditor } from '../audio/LessonAudioEditor'
 import { LessonForm } from '../LessonForm'
 import { TeacherContentStatusBadge } from '../TeacherContentStatusBadge'
 import { TopicForm } from '../TopicForm'
 import { skillTypeLabels } from '../contentLabels'
+import { isRevisionBackedCourse } from '../contentUtils'
 import { cardSoftClassName, findLessonTopic, type DeleteTarget } from './builderModel'
 
 interface BuilderContentStepProps {
   course: TeacherCourse
   action: string | null
   busy: boolean
-  editable: boolean
+  editingState: ContentEditingState
   selectedTopic: TeacherTopic | null
   selectedLesson: TeacherLesson | null
   topicInitialValue: TeacherTopicRequest | null
@@ -30,13 +33,14 @@ interface BuilderContentStepProps {
   onUpdateTopic: (topic: TeacherTopic, payload: TeacherTopicRequest) => Promise<void>
   onUpdateLesson: (lesson: TeacherLesson, payload: TeacherLessonRequest) => Promise<void>
   onDeleteRequest: (target: DeleteTarget) => void
+  onAudioChanged: (lessonId: number, audio: LessonAudioFields) => void
 }
 
 export function BuilderContentStep({
   course,
   action,
   busy,
-  editable,
+  editingState,
   selectedTopic,
   selectedLesson,
   topicInitialValue,
@@ -48,7 +52,9 @@ export function BuilderContentStep({
   onUpdateTopic,
   onUpdateLesson,
   onDeleteRequest,
+  onAudioChanged,
 }: BuilderContentStepProps) {
+  const editable = editingState.kind === 'editable'
   return (
     <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
       <Card className={`${cardSoftClassName} min-w-0 self-start xl:sticky xl:top-24`}>
@@ -181,9 +187,18 @@ export function BuilderContentStep({
                   <AlertDescription>{selectedLesson.rejectionReason}</AlertDescription>
                 </Alert>
               ) : null}
+              <LessonAudioEditor
+                key={selectedLesson.id}
+                courseId={course.id}
+                lesson={selectedLesson}
+                lessonIdNamespace={isRevisionBackedCourse(course) ? 'revision' : 'live'}
+                editable={editable}
+                onAudioChanged={(audio) => onAudioChanged(selectedLesson.id, audio)}
+              />
               {editable ? (
                 <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
                   <LessonForm
+                    key={selectedLesson.id}
                     initialValue={lessonInitialValue}
                     loading={action === `update-lesson-${selectedLesson.id}`}
                     disabled={action !== null && action !== `update-lesson-${selectedLesson.id}`}

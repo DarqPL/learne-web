@@ -18,6 +18,21 @@ export interface ApiMessageResponse {
   message: string
 }
 
+export interface CursorPage<T> {
+  content: T[]
+  nextCursor: string | null
+  hasNext: boolean
+  size: number
+}
+
+export interface NumberedPage<T> {
+  content: T[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
+
 export type OrderStatus = 'PENDING_PAYMENT' | 'PAID' | 'EXPIRED' | 'CANCELLED' | 'REFUNDED'
 
 export type OrderType = 'COURSE_PURCHASE' | 'PLAN_SUBSCRIPTION'
@@ -235,6 +250,52 @@ export interface UpdateTeacherProfileRequest {
   yearsOfExperience: number
 }
 
+export type StudentCurrentLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'
+
+export type StudentPreferredSkill = 'VOCABULARY' | 'GRAMMAR' | 'READING' | 'WRITING' | 'LISTENING' | 'SPEAKING'
+
+export interface StudentProfile {
+  studentId: number
+  fullName: string
+  email: string
+  phoneNumber: string | null
+  dateOfBirth: string | null
+  bio: string | null
+  learningGoal: string | null
+  currentLevel: StudentCurrentLevel | null
+  dailyLearningMinutes: number | null
+  // Backend may return null for new profiles.
+  preferredSkills: StudentPreferredSkill[] | null
+  avatarUrl: string | null
+  publicProfileEnabled: boolean
+  showEmail: boolean
+  showPhoneNumber: boolean
+  showDateOfBirth: boolean
+}
+
+export interface UpdateStudentProfileRequest {
+  fullName: string
+  phoneNumber: string | null
+  dateOfBirth: string | null
+  bio: string | null
+  learningGoal: string | null
+  currentLevel: StudentCurrentLevel | null
+  dailyLearningMinutes: number | null
+  preferredSkills: StudentPreferredSkill[]
+  publicProfileEnabled: boolean
+  showEmail: boolean
+  showPhoneNumber: boolean
+  showDateOfBirth: boolean
+}
+
+export interface TeacherInvitationDelivery {
+  status: 'NOT_REQUESTED' | 'HISTORY_UNAVAILABLE' | 'QUEUED' | 'SENDING' | 'RETRYING' | 'SENT' | 'FAILED' | 'SKIPPED'
+  requestedAt: string | null
+  completedAt: string | null
+  failureCode: string | null
+  canResend: boolean
+}
+
 export interface AdminTeacher {
   userId: number
   fullName: string
@@ -243,6 +304,7 @@ export interface AdminTeacher {
   mustChangePassword: boolean
   profileStatus: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | null
   completed: boolean
+  invitationDelivery?: TeacherInvitationDelivery | null
 }
 
 export type ContentStatus = 'DRAFT' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'HIDDEN'
@@ -296,6 +358,8 @@ export interface TeacherLesson {
   title: string
   description: string | null
   content: string | null
+  audioUrl: string | null
+  audioPublicId: string | null
   skillType: SkillType
   orderIndex: number
   xpReward: number
@@ -313,7 +377,22 @@ export interface TeacherTopic {
   lessons: TeacherLesson[]
 }
 
+export interface CourseSubmission {
+  id: string
+  courseId: number
+  revisionId: number
+  status: 'QUEUED' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED'
+  processedQuestions: number
+  totalQuestions: number
+  createdAt: string
+  completedAt: string | null
+  failureCode: string | null
+  message: string | null
+}
+
 export interface TeacherCourse {
+  submission?: CourseSubmission | null
+  editingLocked?: boolean
   id: number
   name: string
   description: string | null
@@ -953,3 +1032,70 @@ export type CouponProductScope = 'COURSE_PURCHASE' | 'VIP' | 'PRO' | 'PRO_PLUS'
 export interface AdminCoupon { id: number; code: string; discountType: CouponDiscountType; discountValue: number; minOrderAmountVnd: number; maxDiscountAmountVnd: number | null; minimumFinalAmountVnd: number; usageLimitTotal: number | null; usageLimitPerUser: number | null; validFrom: string; validUntil: string; active: boolean; productScopes: CouponProductScope[]; courseIds: number[]; teacherIds: number[] }
 export interface AdminCouponCreatePayload { code: string; discountType: CouponDiscountType; discountValue: number; minOrderAmountVnd?: number | null; maxDiscountAmountVnd?: number | null; minimumFinalAmountVnd?: number | null; usageLimitTotal?: number | null; usageLimitPerUser?: number | null; validFrom: string; validUntil: string; active?: boolean; productScopes: CouponProductScope[]; courseIds?: number[]; teacherIds?: number[] }
 export type AdminCouponUpdatePayload = Partial<AdminCouponCreatePayload>
+
+export interface RevenueCourseSalesRow {
+  courseId: number
+  courseName: string
+  teacherId: number
+  teacherName: string
+  paidOrderCount: number
+  grossRevenueVnd: number
+  discountAmountVnd: number
+  netRevenueVnd: number
+}
+
+export interface RevenuePlanSalesRow {
+  planCode: string
+  paidOrderCount: number
+  grossRevenueVnd: number
+  discountAmountVnd: number
+  netRevenueVnd: number
+}
+
+export interface RevenueTeacherShareRow {
+  teacherId: number
+  teacherName: string
+  activityScore: number
+  directCourseNetRevenueVnd: number
+  suggestedPlanShareVnd: number
+  suggestedTotalShareVnd: number
+}
+
+export interface RevenueCourseSalesResponse {
+  month: string
+  rows: RevenueCourseSalesRow[]
+}
+
+export interface RevenuePlanSalesResponse {
+  month: string
+  rows: RevenuePlanSalesRow[]
+}
+
+export interface TeacherShareResponse {
+  month: string
+  planRevenuePoolVnd: number
+  totalActivityScore: number
+  rows: RevenueTeacherShareRow[]
+}
+
+export interface LessonAudioFields {
+  audioUrl: string | null
+  audioPublicId: string | null
+}
+
+export interface LessonAudioTarget extends LessonAudioFields {
+  lessonRevisionId: number
+  sourceLessonId: number | null
+  topicRevisionId: number
+  topicTitle: string
+  title: string
+  skillType: SkillType
+  orderIndex: number
+}
+
+export interface CourseAudioTargets {
+  courseId: number
+  revisionId: number
+  revisionStatus: 'DRAFT' | 'REJECTED'
+  lessons: LessonAudioTarget[]
+}

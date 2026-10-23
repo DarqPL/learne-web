@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { ContentEditingState } from '../contentUtils'
 import { Send, TriangleAlert } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
 import { Badge } from '@/components/shadcn/ui/badge'
@@ -13,7 +14,7 @@ interface BuilderInfoStepProps {
   course: TeacherCourse
   courseInitialValue: TeacherCourseRequest
   action: string | null
-  editable: boolean
+  editingState: ContentEditingState
   lessonCount: number
   questionCount: number
   submitDisabled: boolean
@@ -28,7 +29,7 @@ export function BuilderInfoStep({
   course,
   courseInitialValue,
   action,
-  editable,
+  editingState,
   lessonCount,
   questionCount,
   submitDisabled,
@@ -38,6 +39,7 @@ export function BuilderInfoStep({
   onOpenSubmit,
   onGoReview,
 }: BuilderInfoStepProps) {
+  const editable = editingState.kind === 'editable'
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-6 lg:grid-cols-2">

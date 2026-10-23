@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react'
+import { useCourseSubmission } from './useCourseSubmission'
+import { CourseSubmissionStatus } from './CourseSubmissionStatus'
+import { getContentEditingState } from './contentUtils'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ChevronRight, Info, Trash2, TriangleAlert } from 'lucide-react'
 import {
@@ -33,6 +36,7 @@ import {
 } from '../../../lib/api/teacherContentApi'
 import type {
   CourseImportResponse,
+  LessonAudioFields,
   TeacherCourse,
   TeacherCourseRequest,
   TeacherLesson,
@@ -46,7 +50,7 @@ import { CourseImportExportPanel } from './CourseImportExportPanel'
 import { CourseBuilderWorkspace } from './CourseBuilderWorkspace'
 import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
 import { coursePricingTypeLabels, courseTypeLabels, formatVndAmount } from './contentLabels'
-import { canEditContent, canSubmitCourse, countLessons, countQuestions } from './contentUtils'
+import { canSubmitCourse, countLessons, countQuestions, isPendingRevision, mergeLessonAudio } from './contentUtils'
 
 const cardSoftClassName = 'border-indigo-100 bg-white/95 shadow-sm shadow-indigo-100/60'
 
@@ -97,7 +101,14 @@ export function TeacherCourseBuilderPage() {
   const refreshCourse = async () => {
     if (parsedCourseId === null) return
     const response = await getTeacherCourse(parsedCourseId)
-    setCourse(response.data)
+    setCourse((current) => current?.id === response.data.id ? response.data : current)
+  }
+
+  const { submission, acceptSubmission, active } = useCourseSubmission(parsedCourseId, course?.id === parsedCourseId ? course.submission : null, refreshCourse)
+  const editingState = course ? getContentEditingState({ ...course, editingLocked: course.editingLocked || active }) : { kind: 'read-only' as const, reason: 'Đang tải khóa học.' }
+  const mutationAllowed = editingState.kind === 'editable' && course?.id === parsedCourseId && action === null
+  const handleConflict = async (err: unknown) => {
+    if ((err as { response?: { status?: number } }).response?.status === 409) await refreshCourse().catch(() => undefined)
   }
 
   const refreshCourseAfterSuccess = async (message: string) => {
@@ -127,8 +138,12 @@ export function TeacherCourseBuilderPage() {
     )
   }
 
+  const handleAudioChanged = (lessonId: number, audio: LessonAudioFields) => {
+    setCourse((current) => (current ? mergeLessonAudio(current, lessonId, audio) : current))
+  }
+
   const handleUpdateCourse = async (payload: TeacherCourseRequest) => {
-    if (!course) return
+    if (!course || !mutationAllowed) return
     setAction('update-course')
     setError(null)
     setInfo(null)
@@ -138,13 +153,14 @@ export function TeacherCourseBuilderPage() {
       setInfo('Đã cập nhật khóa học.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể cập nhật khóa học.'))
+      await handleConflict(err)
     } finally {
       setAction(null)
     }
   }
 
   const handleDeleteCourse = async () => {
-    if (!course) return
+    if (!course || !mutationAllowed) return
     setAction('delete-course')
     setError(null)
     setInfo(null)
@@ -154,28 +170,30 @@ export function TeacherCourseBuilderPage() {
       navigate('/teacher/content')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể xóa khóa học.'))
+      await handleConflict(err)
       setAction(null)
     }
   }
 
   const handleSubmitCourse = async () => {
-    if (!course || !canSubmitCourse(course)) return
+    if (!course || !mutationAllowed || !canSubmitCourse(course)) return
     setAction('submit-course')
     setError(null)
     setInfo(null)
     try {
       const response = await submitTeacherCourse(course.id)
-      setCourse(response.data)
-      setInfo('Đã gửi khóa học để duyệt.')
+      acceptSubmission(response.data)
+      setCourse((current) => current?.id === response.data.courseId ? { ...current, submission: response.data, editingLocked: true } : current)
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể gửi khóa học để duyệt.'))
+      await handleConflict(err)
     } finally {
       setAction(null)
     }
   }
 
   const handleCreateTopic = async (payload: TeacherTopicRequest) => {
-    if (!course) return
+    if (!course || !mutationAllowed) return
     setAction('create-topic')
     setError(null)
     setInfo(null)
@@ -186,12 +204,14 @@ export function TeacherCourseBuilderPage() {
       await refreshCourseAfterSuccess('Đã tạo chủ đề.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể tạo chủ đề.'))
+      await handleConflict(err)
     } finally {
       setAction(null)
     }
   }
 
   const handleUpdateTopic = async (topic: TeacherTopic, payload: TeacherTopicRequest) => {
+    if (!mutationAllowed) return
     setAction(`update-topic-${topic.id}`)
     setError(null)
     setInfo(null)
@@ -201,12 +221,14 @@ export function TeacherCourseBuilderPage() {
       await refreshCourseAfterSuccess('Đã cập nhật chủ đề.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể cập nhật chủ đề.'))
+      await handleConflict(err)
     } finally {
       setAction(null)
     }
   }
 
   const handleDeleteTopic = async (topic: TeacherTopic) => {
+    if (!mutationAllowed) return
     setAction(`delete-topic-${topic.id}`)
     setError(null)
     setInfo(null)
@@ -216,12 +238,14 @@ export function TeacherCourseBuilderPage() {
       await refreshCourseAfterSuccess('Đã xóa chủ đề.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể xóa chủ đề.'))
+      await handleConflict(err)
     } finally {
       setAction(null)
     }
   }
 
   const handleCreateLesson = async (topic: TeacherTopic, payload: TeacherLessonRequest) => {
+    if (!mutationAllowed) return
     setAction(`create-lesson-${topic.id}`)
     setError(null)
     setInfo(null)
@@ -239,12 +263,14 @@ export function TeacherCourseBuilderPage() {
       await refreshCourseAfterSuccess('Đã tạo bài học.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể tạo bài học.'))
+      await handleConflict(err)
     } finally {
       setAction(null)
     }
   }
 
   const handleUpdateLesson = async (lesson: TeacherLesson, payload: TeacherLessonRequest) => {
+    if (!mutationAllowed) return
     setAction(`update-lesson-${lesson.id}`)
     setError(null)
     setInfo(null)
@@ -254,12 +280,14 @@ export function TeacherCourseBuilderPage() {
       await refreshCourseAfterSuccess('Đã cập nhật bài học.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể cập nhật bài học.'))
+      await handleConflict(err)
     } finally {
       setAction(null)
     }
   }
 
   const handleDeleteLesson = async (lesson: TeacherLesson) => {
+    if (!mutationAllowed) return
     setAction(`delete-lesson-${lesson.id}`)
     setError(null)
     setInfo(null)
@@ -276,12 +304,14 @@ export function TeacherCourseBuilderPage() {
       await refreshCourseAfterSuccess('Đã xóa bài học.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể xóa bài học.'))
+      await handleConflict(err)
     } finally {
       setAction(null)
     }
   }
 
   const handleCreateQuestion = async (lessonId: number, payload: TeacherQuestionRequest) => {
+    if (!mutationAllowed) return
     setAction(`create-question-${lessonId}`)
     setError(null)
     setInfo(null)
@@ -291,12 +321,14 @@ export function TeacherCourseBuilderPage() {
       await refreshCourseAfterSuccess('Đã tạo câu hỏi.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể tạo câu hỏi.'))
+      await handleConflict(err)
     } finally {
       setAction(null)
     }
   }
 
   const handleUpdateQuestion = async (question: TeacherQuestion, payload: TeacherQuestionRequest) => {
+    if (!mutationAllowed) return
     setAction(`update-question-${question.id}`)
     setError(null)
     setInfo(null)
@@ -305,12 +337,14 @@ export function TeacherCourseBuilderPage() {
       await refreshCourseAfterSuccess('Đã cập nhật câu hỏi.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể cập nhật câu hỏi.'))
+      await handleConflict(err)
     } finally {
       setAction(null)
     }
   }
 
   const handleDeleteQuestion = async (question: TeacherQuestion) => {
+    if (!mutationAllowed) return
     setAction(`delete-question-${question.id}`)
     setError(null)
     setInfo(null)
@@ -319,14 +353,15 @@ export function TeacherCourseBuilderPage() {
       await refreshCourseAfterSuccess('Đã xóa câu hỏi.')
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể xóa câu hỏi.'))
+      await handleConflict(err)
     } finally {
       setAction(null)
     }
   }
 
   const currentCourse = parsedCourseId !== null && course?.id === parsedCourseId ? course : null
-  const editable = currentCourse ? canEditContent(currentCourse.status) : false
-  const canSubmit = currentCourse ? canSubmitCourse(currentCourse) : false
+  const editable = editingState.kind === 'editable'
+  const canSubmit = editable && currentCourse ? canSubmitCourse(currentCourse) : false
   const displayError = parsedCourseId === null ? 'Không tìm thấy khóa học.' : error
   const busy = action !== null
 
@@ -393,6 +428,7 @@ export function TeacherCourseBuilderPage() {
 
       {currentCourse ? (
         <>
+          <CourseSubmissionStatus submission={submission} />
           <Card className={cardSoftClassName}>
             <CardHeader>
               <div className="flex flex-wrap items-start justify-between gap-4">
@@ -441,16 +477,39 @@ export function TeacherCourseBuilderPage() {
             ) : null}
           </Card>
 
+          {isPendingRevision(currentCourse) ? (
+            <Alert className="border-amber-200 bg-amber-50/60">
+              <Info aria-hidden="true" className="text-amber-600" />
+              <AlertTitle>Thông báo</AlertTitle>
+              <AlertDescription>Bản nháp đang chờ duyệt.</AlertDescription>
+            </Alert>
+          ) : null}
+          {currentCourse.status === 'APPROVED' &&
+          (currentCourse.hasEditableRevision ||
+            currentCourse.latestRevisionStatus === 'DRAFT' ||
+            currentCourse.latestRevisionStatus === 'REJECTED') ? (
+            <Alert className="border-indigo-200 bg-indigo-50/60">
+              <Info aria-hidden="true" className="text-indigo-600" />
+              <AlertTitle>Thông báo</AlertTitle>
+              <AlertDescription>
+                Đang sửa bản nháp R{currentCourse.latestRevisionId} — nội dung đã xuất bản không đổi cho đến khi được
+                duyệt.
+              </AlertDescription>
+            </Alert>
+          ) : null}
+
           <CourseBuilderWorkspace
             course={currentCourse}
             action={action}
-            editable={editable}
+            editingState={editingState}
             canSubmit={canSubmit}
             formResetVersion={formResetVersion}
             importExportPanel={
               <CourseImportExportPanel
                 courseId={currentCourse.id}
-                description="Export khóa học hiện tại hoặc import ZIP để cập nhật cấu trúc nội dung."
+                editingState={editingState}
+                onConflict={refreshCourse}
+                description="Export khóa học hiện tại hoặc import gói nén để cập nhật cấu trúc nội dung."
                 onImported={handleImportCourse}
               />
             }
@@ -465,6 +524,7 @@ export function TeacherCourseBuilderPage() {
             onCreateQuestion={handleCreateQuestion}
             onUpdateQuestion={handleUpdateQuestion}
             onDeleteQuestion={handleDeleteQuestion}
+            onAudioChanged={handleAudioChanged}
           />
 
           <AlertDialog

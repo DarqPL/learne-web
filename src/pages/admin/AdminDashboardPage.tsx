@@ -16,6 +16,7 @@ import { adminGetDashboard } from '../../lib/api/adminApi'
 import { getApiErrorMessage } from '../../lib/api/client'
 import type { AdminDashboard } from '../../lib/api/types'
 import { useAuth } from '../../lib/auth/auth-context'
+import { AdminRevenueSection } from './AdminRevenueSection'
 
 const statusLabels: Record<string, string> = {
   DRAFT: 'Bản nháp',
@@ -192,6 +193,8 @@ export function AdminDashboardPage() {
           })}
         </section>
       )}
+
+      <AdminRevenueSection />
 
       <section className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
         <Card>

@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Lock, LockOpen, Plus, TriangleAlert, XCircle } from 'lucide-react'
 import { getApiErrorMessage } from '../../lib/api/client'
-import { adminListTeachers, adminLockTeacher, adminUnlockTeacher } from '../../lib/api/adminApi'
+import { adminListTeachers, adminLockTeacher, adminUnlockTeacher, adminResendTeacherInvitation } from '../../lib/api/adminApi'
+import { isAxiosError } from 'axios'
+import { TeacherInvitationDelivery } from './TeacherInvitationDelivery'
 import type { AdminTeacher } from '../../lib/api/types'
 import {
   AlertDialog,
@@ -73,11 +75,14 @@ export function AdminTeacherListPage() {
   const [lockTarget, setLockTarget] = useState<AdminTeacher | null>(null)
   const [dialogError, setDialogError] = useState<string | null>(null)
   const [processing, setProcessing] = useState(false)
+  const [totalPages, setTotalPages] = useState(1)
 
-  const loadTeachers = useCallback(async () => {
+  const loadTeachers = useCallback(async (targetPage: number) => {
     try {
-      const response = await adminListTeachers()
-      setTeachers(response.data)
+      const response = await adminListTeachers({ page: Math.max(0, targetPage - 1), size: PAGE_SIZE })
+      setTeachers(response.data.content)
+      setPage(response.data.page + 1)
+      setTotalPages(Math.max(1, response.data.totalPages))
       setError(null)
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể tải danh sách giảng viên.'))
@@ -88,9 +93,11 @@ export function AdminTeacherListPage() {
     let cancelled = false
     void (async () => {
       try {
-        const response = await adminListTeachers()
+        const response = await adminListTeachers({ page: 0, size: PAGE_SIZE })
         if (!cancelled) {
-          setTeachers(response.data)
+          setTeachers(response.data.content)
+          setPage(response.data.page + 1)
+          setTotalPages(Math.max(1, response.data.totalPages))
           setError(null)
         }
       } catch (err) {
@@ -102,9 +109,8 @@ export function AdminTeacherListPage() {
     }
   }, [])
 
-  const totalPages = teachers ? Math.max(1, Math.ceil(teachers.length / PAGE_SIZE)) : 1
   const safePage = Math.min(Math.max(1, page), totalPages)
-  const pagedTeachers = teachers?.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+  const pagedTeachers = teachers
 
   const handleOpenLock = useCallback((teacher: AdminTeacher) => {
     setDialogError(null)
@@ -123,7 +129,7 @@ export function AdminTeacherListPage() {
           await adminLockTeacher(lockTarget.userId)
         }
         setInfo(lockTarget.locked ? 'Đã mở khóa tài khoản.' : 'Đã khóa tài khoản.')
-        await loadTeachers()
+        await loadTeachers(page)
         setLockTarget(null)
       } catch (err) {
         setDialogError(getApiErrorMessage(err, 'Không thể cập nhật trạng thái tài khoản.'))
@@ -131,7 +137,23 @@ export function AdminTeacherListPage() {
         setProcessing(false)
       }
     })()
-  }, [lockTarget, processing, loadTeachers])
+  }, [lockTarget, processing, loadTeachers, page])
+
+  async function resendInvitation(userId: number) {
+    setInfo(null)
+    let delivery
+    try {
+      delivery = (await adminResendTeacherInvitation(userId)).data
+    } catch (err) {
+      if (isAxiosError(err) && err.response?.status === 409) await loadTeachers(page)
+      throw err
+    }
+    setTeachers((current) => current?.map((teacher) => teacher.userId === userId
+      ? { ...teacher, invitationDelivery: delivery } : teacher) ?? null)
+    setInfo('Yêu cầu gửi email cấp tài khoản đã được tiếp nhận.')
+    // GET failure is independent of the already accepted POST.
+    await loadTeachers(page)
+  }
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
@@ -157,6 +179,8 @@ export function AdminTeacherListPage() {
         </div>
       </section>
 
+      <Button variant="outline" className="self-start" onClick={() => void loadTeachers(page)}>Làm mới danh sách</Button>
+
       {info ? (
         <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800">
           <AlertTitle>Thành công</AlertTitle>
@@ -170,7 +194,9 @@ export function AdminTeacherListPage() {
           <AlertTitle>Không thể tải danh sách giảng viên</AlertTitle>
           <AlertDescription className="text-red-700">{error}</AlertDescription>
         </Alert>
-      ) : teachers === null ? (
+      ) : null}
+
+      {teachers === null ? (error ? null : (
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
           <div className="flex flex-col gap-3">
             {Array.from({ length: 4 }, (_, index) => (
@@ -178,7 +204,7 @@ export function AdminTeacherListPage() {
             ))}
           </div>
         </div>
-      ) : teachers.length === 0 ? (
+      )) : teachers.length === 0 ? (
         <div className="rounded-xl border border-dashed border-gray-200 bg-white p-8 text-center text-sm text-gray-600 shadow-sm">
           Chưa có giảng viên nào.
         </div>
@@ -193,6 +219,7 @@ export function AdminTeacherListPage() {
                   <TableHead>Trạng thái tài khoản</TableHead>
                   <TableHead>Trạng thái hồ sơ</TableHead>
                   <TableHead>Hồ sơ công khai</TableHead>
+                  <TableHead>Email cấp tài khoản</TableHead>
                   <TableHead className="text-right">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
@@ -232,6 +259,9 @@ export function AdminTeacherListPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>
+                        <TeacherInvitationDelivery delivery={teacher.invitationDelivery} onResend={() => resendInvitation(teacher.userId)} />
+                      </TableCell>
+                      <TableCell>
                         <div className="flex items-center justify-end gap-2">
                           <Button
                             variant="outline"
@@ -263,7 +293,7 @@ export function AdminTeacherListPage() {
                     aria-label="Trang trước"
                     onClick={(event) => {
                       event.preventDefault()
-                      setPage((prev) => Math.max(1, Math.min(prev, totalPages) - 1))
+                      void loadTeachers(Math.max(1, safePage - 1))
                     }}
                     aria-disabled={safePage === 1}
                   >
@@ -278,7 +308,7 @@ export function AdminTeacherListPage() {
                       isActive={pageNumber === safePage}
                       onClick={(event) => {
                         event.preventDefault()
-                        setPage(pageNumber)
+                        void loadTeachers(pageNumber)
                       }}
                     >
                       {pageNumber}
@@ -293,7 +323,7 @@ export function AdminTeacherListPage() {
                     aria-label="Trang sau"
                     onClick={(event) => {
                       event.preventDefault()
-                      setPage((prev) => Math.min(totalPages, Math.max(1, prev) + 1))
+                      void loadTeachers(Math.min(totalPages, safePage + 1))
                     }}
                     aria-disabled={safePage === totalPages}
                   >

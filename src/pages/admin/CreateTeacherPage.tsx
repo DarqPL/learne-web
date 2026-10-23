@@ -45,7 +45,7 @@ export function CreateTeacherPage() {
     try {
       const response = await adminCreateTeacher({ email, fullName })
       setInfo(
-        `Đã tạo tài khoản giảng viên ${response.data.fullName} (${response.data.email}). Mật khẩu tạm đã được gửi qua email.`,
+        `Đã tạo tài khoản giảng viên ${response.data.fullName} (${response.data.email}). Yêu cầu gửi email cấp tài khoản đã được tiếp nhận. Có thể theo dõi trạng thái trong danh sách giảng viên.`,
       )
       setEmail('')
       setFullName('')

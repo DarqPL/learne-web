@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { StudentCourseListPage } from './StudentCourseListPage'
@@ -12,7 +12,7 @@ vi.mock('../../../lib/api/studentLearningApi', () => ({
 const mockedListStudentCourses = vi.mocked(listStudentCourses)
 
 function coursesApiResponse(data: StudentCourseSummary[]): Awaited<ReturnType<typeof listStudentCourses>> {
-  return { data } as Awaited<ReturnType<typeof listStudentCourses>>
+  return { data: { content: data, nextCursor: null, hasNext: false, size: data.length } } as Awaited<ReturnType<typeof listStudentCourses>>
 }
 
 function makeCourse(overrides: Partial<StudentCourseSummary> = {}): StudentCourseSummary {
@@ -183,7 +183,7 @@ describe('StudentCourseListPage redesign', () => {
     expect(icons[2]).toHaveClass('text-amber-600', 'size-3.5')
   })
 
-  it('paginates client-side with 6 per page and resets to page 1 on search', async () => {
+  it('renders backend cursor results and resets the cursor on search', async () => {
     const eightCourses = Array.from({ length: 8 }, (_, index) =>
       makeCourse({ id: index + 1, name: `Course ${index + 1}` }),
     )
@@ -192,42 +192,186 @@ describe('StudentCourseListPage redesign', () => {
     renderListPage()
 
     expect(await screen.findByRole('heading', { name: 'Course 1' })).toBeInTheDocument()
-    expect(screen.getAllByRole('heading', { name: /Course \d/ })).toHaveLength(6)
-    expect(screen.queryByRole('heading', { name: 'Course 7' })).not.toBeInTheDocument()
+    expect(screen.getAllByRole('heading', { name: /Course \d/ })).toHaveLength(8)
+    expect(screen.getByRole('heading', { name: 'Course 7' })).toBeInTheDocument()
 
-    expect(screen.getByRole('link', { name: /Trang trước/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: '2' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Trang sau/i })).toBeInTheDocument()
-
-    expect(screen.getByText('Trang trước')).toBeInTheDocument()
-    expect(screen.getByText('Trang sau')).toBeInTheDocument()
-    expect(screen.queryByText('Previous')).not.toBeInTheDocument()
-    expect(screen.queryByText('Next')).not.toBeInTheDocument()
-
-    const prevLink = screen.getByRole('link', { name: 'Trang trước' })
-    const nextLink = screen.getByRole('link', { name: 'Trang sau' })
-    expect(prevLink).toHaveAttribute('aria-disabled', 'true')
-    expect(prevLink).toHaveClass('aria-disabled:opacity-50')
-    expect(prevLink).toHaveClass('aria-disabled:pointer-events-none')
-    expect(nextLink).toHaveAttribute('aria-disabled', 'false')
-
-    fireEvent.click(screen.getByRole('link', { name: '2' }))
-
-    expect(await screen.findByRole('heading', { name: 'Course 7' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Course 8' })).toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: 'Course 1' })).not.toBeInTheDocument()
-
-    expect(screen.getByRole('link', { name: 'Trang trước' })).toHaveAttribute('aria-disabled', 'false')
-    const lastPageNextLink = screen.getByRole('link', { name: 'Trang sau' })
-    expect(lastPageNextLink).toHaveAttribute('aria-disabled', 'true')
-    expect(lastPageNextLink).toHaveClass('aria-disabled:opacity-50')
-    expect(lastPageNextLink).toHaveClass('aria-disabled:pointer-events-none')
+    expect(screen.queryByRole('link', { name: /Trang trước|Trang sau/i })).not.toBeInTheDocument()
 
     fireEvent.change(screen.getByPlaceholderText(/Tìm theo tên khóa học hoặc giảng viên/i), {
       target: { value: 'Course' },
     })
 
+    await waitFor(() =>
+      expect(mockedListStudentCourses).toHaveBeenLastCalledWith(expect.objectContaining({ q: 'Course', size: 6 })),
+    )
+  })
+
+  it('replaces results via cursor pager instead of appending with load-more', async () => {
+    mockedListStudentCourses
+      .mockResolvedValueOnce({
+        data: {
+          content: [makeCourse({ id: 1, name: 'Course 1' })],
+          nextCursor: 'next-page',
+          hasNext: true,
+          size: 1,
+        },
+      } as Awaited<ReturnType<typeof listStudentCourses>>)
+      .mockResolvedValueOnce({
+        data: {
+          content: [makeCourse({ id: 2, name: 'Course 2' })],
+          nextCursor: null,
+          hasNext: false,
+          size: 1,
+        },
+      } as Awaited<ReturnType<typeof listStudentCourses>>)
+
+    renderListPage()
+
     expect(await screen.findByRole('heading', { name: 'Course 1' })).toBeInTheDocument()
-    expect(screen.getAllByRole('heading', { name: /Course \d/ })).toHaveLength(6)
+    expect(screen.queryByRole('button', { name: 'Tải thêm khóa học' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Trang tiếp' }))
+
+    expect(await screen.findByRole('heading', { name: 'Course 2' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Course 1' })).not.toBeInTheDocument()
+    expect(mockedListStudentCourses).toHaveBeenLastCalledWith(expect.objectContaining({ cursor: 'next-page', size: 6 }))
+  })
+
+  it('ignores a stale response after the search context changes', async () => {
+    let resolveInitial!: (value: Awaited<ReturnType<typeof listStudentCourses>>) => void
+    let resolveSearch!: (value: Awaited<ReturnType<typeof listStudentCourses>>) => void
+    mockedListStudentCourses
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveInitial = resolve }))
+      .mockImplementationOnce(() => new Promise((resolve) => { resolveSearch = resolve }))
+
+    renderListPage()
+    await waitFor(() => expect(mockedListStudentCourses).toHaveBeenCalledTimes(1))
+    fireEvent.change(screen.getByPlaceholderText(/Tìm theo tên khóa học hoặc giảng viên/i), {
+      target: { value: 'new search' },
+    })
+    await waitFor(() => expect(mockedListStudentCourses).toHaveBeenCalledTimes(2))
+
+    resolveInitial(coursesApiResponse([makeCourse({ id: 1, name: 'Stale course' })]))
+    resolveSearch(coursesApiResponse([makeCourse({ id: 2, name: 'Fresh course' })]))
+
+    expect(await screen.findByRole('heading', { name: 'Fresh course' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Stale course' })).not.toBeInTheDocument()
+  })
+})
+
+describe('StudentCourseListPage cursor pager', () => {
+  beforeEach(() => {
+    mockedListStudentCourses.mockReset()
+  })
+
+  it('renders prev/next nav with Trang 1 indicator instead of load-more button', async () => {
+    mockedListStudentCourses.mockResolvedValue({
+      data: {
+        content: [makeCourse({ id: 1, name: 'Course 1' })],
+        nextCursor: 'cursor-2',
+        hasNext: true,
+        size: 1,
+      },
+    } as Awaited<ReturnType<typeof listStudentCourses>>)
+
+    renderListPage()
+
+    expect(await screen.findByRole('heading', { name: 'Course 1' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Tải thêm khóa học' })).not.toBeInTheDocument()
+
+    expect(screen.getByRole('navigation', { name: 'Phân trang khóa học' })).toBeInTheDocument()
+    expect(screen.getByText('Trang 1 · 1 khóa học')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Trang trước' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Trang tiếp' })).toBeEnabled()
+  })
+
+  it('navigates to page 2 via Tiep and back via Truoc replacing results', async () => {
+    mockedListStudentCourses
+      .mockResolvedValueOnce({
+        data: {
+          content: [makeCourse({ id: 1, name: 'Course 1' })],
+          nextCursor: 'cursor-2',
+          hasNext: true,
+          size: 1,
+        },
+      } as Awaited<ReturnType<typeof listStudentCourses>>)
+      .mockResolvedValueOnce({
+        data: {
+          content: [makeCourse({ id: 2, name: 'Course 2' })],
+          nextCursor: null,
+          hasNext: false,
+          size: 1,
+        },
+      } as Awaited<ReturnType<typeof listStudentCourses>>)
+      .mockResolvedValueOnce({
+        data: {
+          content: [makeCourse({ id: 1, name: 'Course 1' })],
+          nextCursor: 'cursor-2',
+          hasNext: true,
+          size: 1,
+        },
+      } as Awaited<ReturnType<typeof listStudentCourses>>)
+
+    renderListPage()
+
+    expect(await screen.findByRole('heading', { name: 'Course 1' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Trang tiếp' }))
+
+    expect(await screen.findByRole('heading', { name: 'Course 2' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Course 1' })).not.toBeInTheDocument()
+    expect(screen.getByText('Trang 2 · 1 khóa học')).toBeInTheDocument()
+    expect(mockedListStudentCourses).toHaveBeenLastCalledWith(
+      expect.objectContaining({ cursor: 'cursor-2', size: 6 }),
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Trang trước' }))
+
+    expect(await screen.findByRole('heading', { name: 'Course 1' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Course 2' })).not.toBeInTheDocument()
+    expect(screen.getByText('Trang 1 · 1 khóa học')).toBeInTheDocument()
+  })
+
+  it('resets to Trang 1 when search changes', async () => {
+    mockedListStudentCourses
+      .mockResolvedValueOnce({
+        data: {
+          content: [makeCourse({ id: 1, name: 'Course 1' })],
+          nextCursor: 'cursor-2',
+          hasNext: true,
+          size: 1,
+        },
+      } as Awaited<ReturnType<typeof listStudentCourses>>)
+      .mockResolvedValueOnce({
+        data: {
+          content: [makeCourse({ id: 2, name: 'Course 2' })],
+          nextCursor: null,
+          hasNext: false,
+          size: 1,
+        },
+      } as Awaited<ReturnType<typeof listStudentCourses>>)
+      .mockResolvedValueOnce(coursesApiResponse([makeCourse({ id: 3, name: 'Fresh course' })]))
+
+    renderListPage()
+
+    expect(await screen.findByRole('heading', { name: 'Course 1' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Trang tiếp' }))
+    expect(await screen.findByRole('heading', { name: 'Course 2' })).toBeInTheDocument()
+
+    fireEvent.change(screen.getByPlaceholderText(/Tìm theo tên khóa học hoặc giảng viên/i), {
+      target: { value: 'Fresh' },
+    })
+
+    expect(await screen.findByRole('heading', { name: 'Fresh course' })).toBeInTheDocument()
+    expect(screen.getByText('Trang 1 · 1 khóa học')).toBeInTheDocument()
+    expect(mockedListStudentCourses).toHaveBeenLastCalledWith(
+      expect.objectContaining({ q: 'Fresh', size: 6 }),
+    )
+  })
+
+  it('keeps error and empty states without pager nav', async () => {
+    mockedListStudentCourses.mockRejectedValueOnce(new Error('network down'))
+    renderListPage()
+    expect(await screen.findByText('Không thể tải khóa học')).toBeInTheDocument()
+    expect(screen.queryByRole('navigation', { name: 'Phân trang khóa học' })).not.toBeInTheDocument()
   })
 })

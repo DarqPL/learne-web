@@ -94,6 +94,8 @@ describe('CreateTeacherPage shadcn sync', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Tạo tài khoản' }))
 
     expect(await screen.findByText(/Đã tạo tài khoản giảng viên Nguyen Van A/)).toBeInTheDocument()
+    expect(screen.getByText(/Yêu cầu gửi email cấp tài khoản đã được tiếp nhận\. Có thể theo dõi trạng thái trong danh sách giảng viên\./)).toBeInTheDocument()
+    expect(screen.queryByText(/Mật khẩu tạm đã được gửi/)).not.toBeInTheDocument()
     expect(mockedCreate).toHaveBeenCalledWith({ email: 'gv@example.com', fullName: 'Nguyen Van A' })
   })
 

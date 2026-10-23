@@ -17,6 +17,7 @@ import type {
   SubmitPlacementRequest,
   SubmitQuizRequest,
   SubmitQuizResponse,
+  CursorPage,
 } from './types'
 
 const base = '/api/student'
@@ -24,10 +25,13 @@ const base = '/api/student'
 export interface StudentCourseFilters {
   level?: string
   teacherId?: number
+  q?: string
+  size?: number
+  cursor?: string
 }
 
 export function listStudentCourses(params?: StudentCourseFilters) {
-  return http.get<StudentCourseSummary[]>(`${base}/courses`, { params })
+  return http.get<CursorPage<StudentCourseSummary>>(`${base}/courses`, { params })
 }
 
 export function getStudentCourse(courseId: number) {
@@ -38,8 +42,8 @@ export function enrollStudentCourse(courseId: number) {
   return http.post<StudentEnrollment>(`${base}/courses/${courseId}/enroll`, {})
 }
 
-export function listStudentEnrollments() {
-  return http.get<StudentEnrollment[]>(`${base}/enrollments`)
+export function listStudentEnrollments(params?: { size?: number; cursor?: string }) {
+  return http.get<CursorPage<StudentEnrollment>>(`${base}/enrollments`, { params })
 }
 
 export function getStudentEnrollment(enrollmentId: number) {
