@@ -5,6 +5,8 @@ import { login } from '../../lib/api/authApi'
 import { getApiErrorMessage } from '../../lib/api/client'
 import { useAuth } from '../../lib/auth/auth-context'
 import { homePathFor } from '../../lib/auth/routes'
+import { useRateLimit } from '../../lib/hooks/useRateLimit'
+import { RateLimitAlert } from '../../components/auth/RateLimitAlert'
 import { Field } from '../../components/ui/Field'
 import { Input } from '../../components/ui/Input'
 import { PasswordInput } from '../../components/ui/PasswordInput'
@@ -27,6 +29,7 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
+  const rateLimit = useRateLimit()
 
   const message = (location.state as { message?: string } | null)?.message ?? null
 
@@ -45,6 +48,7 @@ export function LoginPage() {
     }
     setFieldErrors({})
     setError(null)
+    rateLimit.reset()
     setSubmitting(true)
     try {
       const response = await login({ email, password })
@@ -52,7 +56,9 @@ export function LoginPage() {
       setAuth(accessToken, expiresInSeconds, user)
       navigate(user.mustChangePassword ? '/change-password?forced=1' : homePathFor(user.role), { replace: true })
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Đăng nhập thất bại. Vui lòng thử lại.'))
+      if (!rateLimit.capture(err)) {
+        setError(getApiErrorMessage(err, 'Đăng nhập thất bại. Vui lòng thử lại.'))
+      }
     } finally {
       setSubmitting(false)
     }
@@ -102,6 +108,7 @@ export function LoginPage() {
                 <AlertDescription className="text-green-800">{message}</AlertDescription>
               </Alert>
             ) : null}
+            {rateLimit.info ? <RateLimitAlert info={rateLimit.info} secondsLeft={rateLimit.secondsLeft} /> : null}
             {error ? (
               <Alert variant="destructive" className="mb-4 border-red-200 bg-red-50">
                 <AlertDescription className="text-red-700">{error}</AlertDescription>
@@ -128,7 +135,12 @@ export function LoginPage() {
                   autoComplete="current-password"
                 />
               </Field>
-              <Button type="submit" loading={submitting} className="h-11 w-full rounded-xl text-base shadow-lg shadow-indigo-200">
+              <Button
+                type="submit"
+                loading={submitting}
+                disabled={rateLimit.locked}
+                className="h-11 w-full rounded-xl text-base shadow-lg shadow-indigo-200"
+              >
                 Đăng nhập
                 <ArrowRight className="h-4 w-4" />
               </Button>

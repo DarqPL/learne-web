@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { TeacherCourse } from '../../../lib/api/types'
-import { isRevisionBackedCourse, mergeLessonAudio } from './contentUtils'
+import { getAudioLockedHint, isRevisionBackedCourse, mergeLessonAudio } from './contentUtils'
 
 function makeCourse(overrides: Partial<TeacherCourse> = {}): TeacherCourse {
   return {
@@ -171,5 +171,31 @@ describe('mergeLessonAudio', () => {
     expect(result).not.toBe(course)
     expect(course.topics[0].lessons[0].audioUrl).toBe('https://cdn.example.com/old-1.mp3')
     expect(course.topics[0].lessons[0].audioPublicId).toBe('old-1')
+  })
+})
+
+describe('getAudioLockedHint', () => {
+  it('uses the editing lock reason while a submission is processing', () => {
+    expect(
+      getAudioLockedHint(makeCourse(), { kind: 'locked', reason: 'Khóa học đang được xử lý.' }),
+    ).toBe('Khóa học đang được xử lý.')
+  })
+
+  it('explains that a pending revision must be approved first', () => {
+    expect(
+      getAudioLockedHint(
+        makeCourse({ status: 'APPROVED', latestRevisionStatus: 'PENDING_REVIEW' }),
+        { kind: 'read-only', reason: 'Khóa học đang ở trạng thái chỉ đọc.' },
+      ),
+    ).toBe('Bản nháp đang chờ duyệt. Bạn có thể thay audio sau khi bản nháp được duyệt.')
+  })
+
+  it('keeps the create-draft hint for a read-only course', () => {
+    expect(
+      getAudioLockedHint(
+        makeCourse({ status: 'APPROVED', hasEditableRevision: false, latestRevisionStatus: 'APPROVED' }),
+        { kind: 'read-only', reason: 'Khóa học đang ở trạng thái chỉ đọc.' },
+      ),
+    ).toBe('Tạo bản nháp chỉnh sửa để thay audio.')
   })
 })

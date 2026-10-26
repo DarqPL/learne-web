@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ArrowLeft, KeyRound, ShieldCheck } from 'lucide-react'
 import { confirmPasswordReset } from '../../lib/api/authApi'
 import { getApiErrorMessage } from '../../lib/api/client'
+import { useRateLimit } from '../../lib/hooks/useRateLimit'
+import { RateLimitAlert } from '../../components/auth/RateLimitAlert'
 import { Field } from '../../components/ui/Field'
 import { Input } from '../../components/ui/Input'
 import { PasswordInput } from '../../components/ui/PasswordInput'
@@ -26,6 +28,7 @@ export function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const rateLimit = useRateLimit()
   const effectiveEmail = lockedEmail ?? email
 
   const handleSubmit = async (event: FormEvent) => {
@@ -45,12 +48,15 @@ export function ResetPasswordPage() {
     }
     setFieldErrors({})
     setError(null)
+    rateLimit.reset()
     setSubmitting(true)
     try {
       await confirmPasswordReset({ email: effectiveEmail, token, newPassword, confirmNewPassword })
       navigate('/login', { replace: true, state: { message: 'Đặt lại mật khẩu thành công, vui lòng đăng nhập.' } })
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Không thể đặt lại mật khẩu.'))
+      if (!rateLimit.capture(err)) {
+        setError(getApiErrorMessage(err, 'Không thể đặt lại mật khẩu.'))
+      }
     } finally {
       setSubmitting(false)
     }
@@ -76,6 +82,7 @@ export function ResetPasswordPage() {
               <AlertDescription className="text-green-800">{resetState.message}</AlertDescription>
             </Alert>
           ) : null}
+          {rateLimit.info ? <RateLimitAlert info={rateLimit.info} secondsLeft={rateLimit.secondsLeft} /> : null}
           {error ? (
             <Alert variant="destructive" className="mb-4 border-red-200 bg-red-50">
               <AlertDescription className="text-red-700">{error}</AlertDescription>
@@ -122,7 +129,7 @@ export function ResetPasswordPage() {
                 autoComplete="new-password"
               />
             </Field>
-            <Button type="submit" loading={submitting} className="h-11 w-full rounded-xl">
+            <Button type="submit" loading={submitting} disabled={rateLimit.locked} className="h-11 w-full rounded-xl">
               Cập nhật mật khẩu
             </Button>
           </form>

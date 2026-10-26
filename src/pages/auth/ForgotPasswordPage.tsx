@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, MailCheck } from 'lucide-react'
 import { requestPasswordReset } from '../../lib/api/authApi'
 import { getApiErrorMessage } from '../../lib/api/client'
+import { useRateLimit } from '../../lib/hooks/useRateLimit'
+import { RateLimitAlert } from '../../components/auth/RateLimitAlert'
 import { Field } from '../../components/ui/Field'
 import { Input } from '../../components/ui/Input'
 import { Alert, AlertDescription } from '../../components/shadcn/ui/alert'
@@ -19,6 +21,7 @@ export function ForgotPasswordPage() {
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
+  const rateLimit = useRateLimit()
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -29,6 +32,7 @@ export function ForgotPasswordPage() {
     }
     setFieldErrors({})
     setError(null)
+    rateLimit.reset()
     setSubmitting(true)
     try {
       await requestPasswordReset({ email })
@@ -39,7 +43,9 @@ export function ForgotPasswordPage() {
         },
       })
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Không thể gửi yêu cầu đặt lại mật khẩu.'))
+      if (!rateLimit.capture(err)) {
+        setError(getApiErrorMessage(err, 'Không thể gửi yêu cầu đặt lại mật khẩu.'))
+      }
     } finally {
       setSubmitting(false)
     }
@@ -59,6 +65,7 @@ export function ForgotPasswordPage() {
           <CardDescription>Nhập email tài khoản để nhận mã đặt lại mật khẩu.</CardDescription>
         </CardHeader>
         <CardContent>
+          {rateLimit.info ? <RateLimitAlert info={rateLimit.info} secondsLeft={rateLimit.secondsLeft} /> : null}
           {error ? (
             <Alert variant="destructive" className="mb-4 border-red-200 bg-red-50">
               <AlertDescription className="text-red-700">{error}</AlertDescription>
@@ -76,7 +83,7 @@ export function ForgotPasswordPage() {
                 className="h-11 rounded-xl bg-white/90"
               />
             </Field>
-            <Button type="submit" loading={submitting} className="h-11 w-full rounded-xl">
+            <Button type="submit" loading={submitting} disabled={rateLimit.locked} className="h-11 w-full rounded-xl">
               Gửi mã đặt lại mật khẩu
             </Button>
           </form>

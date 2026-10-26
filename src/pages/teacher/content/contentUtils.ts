@@ -43,6 +43,16 @@ export function canSubmitCourse(course: TeacherCourse) {
 
 export type ContentEditingState = { kind: 'editable' } | { kind: 'locked'; reason: string } | { kind: 'read-only'; reason: string }
 
+export type LessonIdNamespace = 'live' | 'revision'
+
+export function getAudioLockedHint(course: TeacherCourse, editingState: ContentEditingState): string {
+  if (editingState.kind === 'locked') return editingState.reason
+  if (isPendingRevision(course)) {
+    return 'Bản nháp đang chờ duyệt. Bạn có thể thay audio sau khi bản nháp được duyệt.'
+  }
+  return 'Tạo bản nháp chỉnh sửa để thay audio.'
+}
+
 export function getContentEditingState(course: TeacherCourse): ContentEditingState {
   if (course.editingLocked) return { kind: 'locked', reason: 'Khóa học đang được xử lý để gửi duyệt. Tạm khóa chỉnh sửa nội dung.' }
   return canEditCourseContent(course) ? { kind: 'editable' } : { kind: 'read-only', reason: 'Khóa học đang ở trạng thái chỉ đọc.' }
