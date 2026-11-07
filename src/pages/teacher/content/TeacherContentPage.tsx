@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { BookOpen, ChevronLeft, ChevronRight, Info, Pencil, Plus, Search, Send, Trash2, TriangleAlert } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
-import { Badge } from '@/components/shadcn/ui/badge'
 import { Button } from '@/components/shadcn/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shadcn/ui/card'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/shadcn/ui/dialog'
@@ -15,10 +14,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { createEditRevision, createTeacherCourse, deleteTeacherCourse, listTeacherCourses, submitTeacherCourse } from '../../../lib/api/teacherContentApi'
 import type { ContentStatus, TeacherCourse, TeacherCourseRequest } from '../../../lib/api/types'
+import { CourseBadge } from '../../../components/course/CourseBadge'
 import { CourseForm } from './CourseForm'
 import { CourseImportExportPanel } from './CourseImportExportPanel'
-import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
-import { contentStatusLabels, coursePriceStatusLabels, coursePricingTypeLabels, courseTypeLabels, formatVndAmount } from './contentLabels'
+import { contentStatusLabels, coursePriceStatusLabels, formatVndAmount } from './contentLabels'
 import { getContentEditingState, canSubmitCourse, countLessons, countQuestions, type ContentEditingState } from './contentUtils'
 import { useCourseSubmission } from './useCourseSubmission'
 import { CourseSubmissionStatus } from './CourseSubmissionStatus'
@@ -434,18 +433,14 @@ export function TeacherContentPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700">
-                          {courseTypeLabels[course.type]}
-                        </span>
+                        <CourseBadge kind="type" value={course.type} />
                       </TableCell>
                       <TableCell>
-                        <span className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-700">{course.level}</span>
+                        <CourseBadge kind="level" value={course.level} />
                       </TableCell>
                       <TableCell>
                         <div className="flex min-w-32 flex-col items-start gap-1">
-                          <Badge variant={course.pricingType === 'PAID' ? 'default' : 'secondary'}>
-                            {coursePricingTypeLabels[course.pricingType]}
-                          </Badge>
+                          <CourseBadge kind="payment" value={course.pricingType} />
                           <span className="text-sm text-muted-foreground">
                             {course.pricingType === 'FREE'
                               ? 'Không thu phí'
@@ -455,7 +450,7 @@ export function TeacherContentPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <TeacherContentStatusBadge status={course.status} />
+                        <CourseBadge kind="status" value={course.status} />
                         <SubmissionTracker course={course} onTerminal={refreshCourses} />
                       </TableCell>
                       <TableCell className="whitespace-normal">
