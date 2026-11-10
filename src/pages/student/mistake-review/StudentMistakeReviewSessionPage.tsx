@@ -111,7 +111,6 @@ export function StudentMistakeReviewSessionPage() {
     mountedRef.current = true
     return () => {
       mountedRef.current = false
-      ++requestVersion.current
     }
   }, [])
 
