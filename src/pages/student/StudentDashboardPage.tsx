@@ -11,6 +11,7 @@ import {
   Loader2,
   Map as MapIcon,
   PlayCircle,
+  RotateCcw,
   Sparkles,
   Target,
   Trophy,
@@ -55,6 +56,13 @@ const quickActions = [
     to: "/student/enrollments",
     icon: GraduationCap,
     className: "border-emerald-100 bg-emerald-50 text-emerald-700",
+  },
+  {
+    title: "Ôn tập lỗi sai",
+    description: "Làm lại các câu đã sai để củng cố kiến thức.",
+    to: "/student/mistake-review",
+    icon: RotateCcw,
+    className: "border-rose-100 bg-rose-50 text-rose-700",
   },
   {
     title: "Lộ trình học",

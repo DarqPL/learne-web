@@ -27,6 +27,7 @@ const aiToolLinks: StudentTopNavLink[] = [
   { label: 'AI Tutor', to: '/student/ai-tutor' },
   { label: 'Kiểm tra ngữ pháp', to: '/student/grammar-check', end: true },
   { label: 'Lịch sử kiểm tra', to: '/student/grammar-check/history' },
+  { label: 'Ôn tập lỗi sai', to: '/student/mistake-review' },
 ]
 
 const mobileLinks: StudentTopNavLink[] = [
