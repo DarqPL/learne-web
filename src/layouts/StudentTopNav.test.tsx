@@ -36,6 +36,7 @@ describe('StudentTopNav', () => {
     expect(screen.getByRole('menuitem', { name: 'AI Tutor' })).toHaveAttribute('href', '/student/ai-tutor')
     expect(screen.getByRole('menuitem', { name: 'Kiểm tra ngữ pháp' })).toHaveAttribute('href', '/student/grammar-check')
     expect(screen.getByRole('menuitem', { name: 'Lịch sử kiểm tra' })).toHaveAttribute('href', '/student/grammar-check/history')
+    expect(screen.getByRole('menuitem', { name: 'Ôn tập lỗi sai' })).toHaveAttribute('href', '/student/mistake-review')
     expect(screen.getByRole('menuitem', { name: 'AI Tutor' })).toBeInTheDocument()
   })
 

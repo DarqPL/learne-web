@@ -113,6 +113,16 @@ const StudentLessonDetailPage = lazy(() =>
 const StudentLessonQuizPage = lazy(() =>
   import('./pages/student/learning/StudentLessonQuizPage').then((module) => ({ default: module.StudentLessonQuizPage })),
 )
+const StudentMistakeReviewPage = lazy(() =>
+  import('./pages/student/mistake-review/StudentMistakeReviewPage').then((module) => ({
+    default: module.StudentMistakeReviewPage,
+  })),
+)
+const StudentMistakeReviewSessionPage = lazy(() =>
+  import('./pages/student/mistake-review/StudentMistakeReviewSessionPage').then((module) => ({
+    default: module.StudentMistakeReviewSessionPage,
+  })),
+)
 const StudentQuizResultPage = lazy(() =>
   import('./pages/student/learning/StudentQuizResultPage').then((module) => ({ default: module.StudentQuizResultPage })),
 )
@@ -170,6 +180,8 @@ export default function App() {
                 <Route path="/student/enrollments/:enrollmentId/lessons/:lessonId" element={<StudentLessonDetailPage />} />
                 <Route path="/student/enrollments/:enrollmentId/lessons/:lessonId/quiz" element={<StudentLessonQuizPage />} />
                 <Route path="/student/quiz-attempts/:attemptId" element={<StudentQuizResultPage />} />
+                <Route path="/student/mistake-review" element={<StudentMistakeReviewPage />} />
+                <Route path="/student/mistake-review/sessions/:sessionId" element={<StudentMistakeReviewSessionPage />} />
                 <Route path="/student/subscription" element={<StudentSubscriptionPlansPage />} />
                 <Route path="/student/payment/orders/:orderId" element={<StudentPaymentPage />} />
               </Route>
