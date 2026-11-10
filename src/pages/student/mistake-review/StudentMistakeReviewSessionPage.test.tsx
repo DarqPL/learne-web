@@ -1,5 +1,5 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { StudentMistakeReviewSessionPage } from './StudentMistakeReviewSessionPage'
 import {
@@ -73,6 +73,30 @@ function submitResponse(
 function renderSession(path = '/student/mistake-review/sessions/42') {
   return render(
     <MemoryRouter initialEntries={[path]}>
+      <Routes>
+        <Route path="/student/mistake-review/sessions/:sessionId" element={<StudentMistakeReviewSessionPage />} />
+        <Route path="/student/mistake-review" element={<div>Review list</div>} />
+      </Routes>
+    </MemoryRouter>,
+  )
+}
+
+function NavigationButton({ to, label }: { to: string; label: string }) {
+  const navigate = useNavigate()
+  return (
+    <button type="button" onClick={() => navigate(to)}>
+      {label}
+    </button>
+  )
+}
+
+function renderSessionWithNavigation(initialId: number, nextId: number) {
+  return render(
+    <MemoryRouter initialEntries={[`/student/mistake-review/sessions/${initialId}`]}>
+      <NavigationButton
+        to={`/student/mistake-review/sessions/${nextId}`}
+        label={`Đi tới phiên ${nextId}`}
+      />
       <Routes>
         <Route path="/student/mistake-review/sessions/:sessionId" element={<StudentMistakeReviewSessionPage />} />
         <Route path="/student/mistake-review" element={<div>Review list</div>} />
@@ -306,6 +330,54 @@ describe('StudentMistakeReviewSessionPage', () => {
       await screen.findByText('Vui lòng trả lời tất cả câu hỏi trước khi nộp bài.'),
     ).toBeInTheDocument()
     expect(screen.getByText(firstQuestion.questionText)).toBeInTheDocument()
+  })
+
+  it('ignores a stale submit failure after the route session id changes', async () => {
+    mockedGet.mockImplementation(async (sessionId) =>
+      sessionId === 43
+        ? sessionResponse(
+            makeSession({
+              sessionId: 43,
+              questions: [
+                makeQuestion({
+                  questionId: 2,
+                  questionText: 'What is the capital of Spain?',
+                  options: [
+                    { id: 21, text: 'Paris', order: 1 },
+                    { id: 22, text: 'Madrid', order: 2 },
+                  ],
+                }),
+              ],
+            }),
+          )
+        : sessionResponse(makeSession()),
+    )
+
+    let rejectSubmit: ((reason?: unknown) => void) | null = null
+    mockedSubmit.mockImplementation(
+      () =>
+        new Promise<Awaited<ReturnType<typeof submitMistakeReviewSession>>>((_resolve, reject) => {
+          rejectSubmit = reject
+        }),
+    )
+
+    renderSessionWithNavigation(42, 43)
+
+    fireEvent.click(await screen.findByLabelText('Paris'))
+    fireEvent.click(screen.getByRole('button', { name: 'Nộp bài' }))
+    await waitFor(() => expect(mockedSubmit).toHaveBeenCalledTimes(1))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Đi tới phiên 43' }))
+
+    expect(await screen.findByText('What is the capital of Spain?')).toBeInTheDocument()
+
+    await act(async () => {
+      rejectSubmit?.(new Error('network'))
+      await Promise.resolve()
+    })
+
+    expect(screen.queryByText('Không thể nộp bài ôn tập.')).not.toBeInTheDocument()
+    expect(screen.getByText('What is the capital of Spain?')).toBeInTheDocument()
   })
 
   it('renders the result score as an h1 and the detail heading as an h2', async () => {

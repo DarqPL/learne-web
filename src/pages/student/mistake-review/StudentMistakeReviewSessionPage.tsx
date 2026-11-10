@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, CheckCircle2, XCircle } from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
@@ -116,7 +116,7 @@ export function StudentMistakeReviewSessionPage() {
     }
   }, [])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     routeSessionIdRef.current = sessionId
   }, [sessionId])
 
@@ -161,6 +161,7 @@ export function StudentMistakeReviewSessionPage() {
   }, [applySession, sessionId])
 
   async function loadSession(targetSessionId: number, requireResult: boolean) {
+    if (targetSessionId !== routeSessionIdRef.current) return
     if (retryingRef.current) return
     retryingRef.current = true
     setLoading(true)
@@ -185,6 +186,7 @@ export function StudentMistakeReviewSessionPage() {
       applySession(response.data)
     } catch (err) {
       if (!mountedRef.current) return
+      if (targetSessionId !== routeSessionIdRef.current) return
       setMode('error')
       setError(
         requireResult
@@ -193,7 +195,7 @@ export function StudentMistakeReviewSessionPage() {
       )
     } finally {
       retryingRef.current = false
-      if (mountedRef.current) setLoading(false)
+      if (mountedRef.current && targetSessionId === routeSessionIdRef.current) setLoading(false)
     }
   }
 
@@ -244,6 +246,7 @@ export function StudentMistakeReviewSessionPage() {
       setMode('result')
     } catch (err) {
       if (!mountedRef.current) return
+      if (routeSessionIdRef.current !== sessionId) return
       if (getHttpStatus(err) === 409) {
         await loadSession(session.sessionId, true)
         return
