@@ -226,4 +226,100 @@ describe('StudentMistakeReviewSessionPage', () => {
     expect(await screen.findByText('Không tìm thấy phiên ôn tập.')).toBeInTheDocument()
     expect(mockedGet).not.toHaveBeenCalled()
   })
+
+  it('shows an error for a session without questions', async () => {
+    mockedGet.mockResolvedValue(
+      sessionResponse(makeSession({ questionCount: 0, questions: [], answers: [] })),
+    )
+
+    renderSession()
+
+    expect(await screen.findByText('Phiên ôn tập không có câu hỏi.')).toBeInTheDocument()
+  })
+
+  it('shows an error for an inconsistent session response', async () => {
+    mockedGet.mockResolvedValue(
+      sessionResponse(makeSession({ scorePercent: 100, answers: [] })),
+    )
+
+    renderSession()
+
+    expect(await screen.findByText('Dữ liệu phiên ôn tập không nhất quán.')).toBeInTheDocument()
+  })
+
+  it('falls back to a generic message when submission fails for a non-409 reason', async () => {
+    mockedGet.mockResolvedValue(sessionResponse(makeSession()))
+    mockedSubmit.mockRejectedValue(new Error('network'))
+
+    renderSession()
+
+    fireEvent.click(await screen.findByLabelText('Paris'))
+    fireEvent.click(screen.getByRole('button', { name: 'Nộp bài' }))
+
+    expect(await screen.findByText('Không thể nộp bài ôn tập.')).toBeInTheDocument()
+  })
+
+  it('shows an error for an incomplete submit response', async () => {
+    mockedGet.mockResolvedValue(sessionResponse(makeSession()))
+    mockedSubmit.mockResolvedValue(
+      submitResponse({ sessionId: 42, questionCount: 2, scorePercent: 50, answers: [makeAnswer()] }),
+    )
+
+    renderSession()
+
+    fireEvent.click(await screen.findByLabelText('Paris'))
+    fireEvent.click(screen.getByRole('button', { name: 'Nộp bài' }))
+
+    expect(await screen.findByText('Dữ liệu kết quả ôn tập không nhất quán.')).toBeInTheDocument()
+  })
+
+  it('jumps back to the first unanswered question when submitting a multi-question session', async () => {
+    const firstQuestion = makeQuestion()
+    const secondQuestion = makeQuestion({
+      questionId: 2,
+      questionText: 'What is the capital of Spain?',
+      options: [
+        { id: 21, text: 'Paris', order: 1 },
+        { id: 22, text: 'Madrid', order: 2 },
+      ],
+    })
+    mockedGet.mockResolvedValue(
+      sessionResponse(
+        makeSession({
+          questionCount: 2,
+          questions: [firstQuestion, secondQuestion],
+          scorePercent: null,
+          answers: [],
+        }),
+      ),
+    )
+
+    renderSession()
+
+    expect(await screen.findByText(firstQuestion.questionText)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Tiếp' }))
+    expect(await screen.findByText(secondQuestion.questionText)).toBeInTheDocument()
+    fireEvent.click(screen.getByLabelText('Paris'))
+    fireEvent.click(screen.getByRole('button', { name: 'Nộp bài' }))
+
+    expect(
+      await screen.findByText('Vui lòng trả lời tất cả câu hỏi trước khi nộp bài.'),
+    ).toBeInTheDocument()
+    expect(screen.getByText(firstQuestion.questionText)).toBeInTheDocument()
+  })
+
+  it('renders the result score as an h1 and the detail heading as an h2', async () => {
+    mockedGet.mockResolvedValue(sessionResponse(makeSession()))
+    mockedSubmit.mockResolvedValue(
+      submitResponse({ sessionId: 42, questionCount: 1, scorePercent: 100, answers: [makeAnswer()] }),
+    )
+
+    renderSession()
+
+    fireEvent.click(await screen.findByLabelText('Paris'))
+    fireEvent.click(screen.getByRole('button', { name: 'Nộp bài' }))
+
+    expect(await screen.findByRole('heading', { level: 1, name: '100%' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 2, name: 'Chi tiết từng câu' })).toBeInTheDocument()
+  })
 })

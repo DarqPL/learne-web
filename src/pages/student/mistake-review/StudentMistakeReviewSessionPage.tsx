@@ -21,7 +21,7 @@ import {
   BreadcrumbSeparator,
 } from '../../../components/shadcn/ui/breadcrumb'
 import { Button } from '../../../components/shadcn/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/shadcn/ui/card'
+import { Card, CardContent, CardHeader } from '../../../components/shadcn/ui/card'
 import { Spinner } from '../../../components/shadcn/ui/spinner'
 import { MistakeReviewQuestionCard } from './MistakeReviewQuestionCard'
 import { MistakeReviewResultList } from './MistakeReviewResultList'
@@ -77,6 +77,8 @@ export function StudentMistakeReviewSessionPage() {
   const [mode, setMode] = useState<'answering' | 'result' | 'error'>('answering')
   const requestVersion = useRef(0)
   const mountedRef = useRef(false)
+  const retryingRef = useRef(false)
+  const routeSessionIdRef = useRef(sessionId)
 
   const applySession = useCallback((nextSession: MistakeReviewSessionResponse) => {
     setSession(nextSession)
@@ -115,6 +117,10 @@ export function StudentMistakeReviewSessionPage() {
   }, [])
 
   useEffect(() => {
+    routeSessionIdRef.current = sessionId
+  }, [sessionId])
+
+  useEffect(() => {
     const version = ++requestVersion.current
     let cancelled = false
 
@@ -123,12 +129,15 @@ export function StudentMistakeReviewSessionPage() {
         await Promise.resolve()
         if (cancelled || version !== requestVersion.current) return
         setLoading(false)
+        setSession(null)
         setMode('error')
         setError('Không tìm thấy phiên ôn tập.')
         return
       }
 
       setLoading(true)
+      setSession(null)
+      setMode('answering')
       setError(null)
       setResult(null)
       setAnswers({})
@@ -152,11 +161,15 @@ export function StudentMistakeReviewSessionPage() {
   }, [applySession, sessionId])
 
   async function loadSession(targetSessionId: number, requireResult: boolean) {
+    if (retryingRef.current) return
+    retryingRef.current = true
     setLoading(true)
+    setMode('answering')
     setError(null)
     try {
       const response = await getMistakeReviewSession(targetSessionId)
       if (!mountedRef.current) return
+      if (targetSessionId !== routeSessionIdRef.current) return
       if (requireResult) {
         const nextResult = buildResult(response.data)
         setSession(response.data)
@@ -179,6 +192,7 @@ export function StudentMistakeReviewSessionPage() {
           : getSessionErrorMessage(err),
       )
     } finally {
+      retryingRef.current = false
       if (mountedRef.current) setLoading(false)
     }
   }
@@ -195,7 +209,7 @@ export function StudentMistakeReviewSessionPage() {
   }
 
   async function handleSubmit() {
-    if (!session || submitting) return
+    if (!session || submitting || sessionId === null || session.sessionId !== sessionId) return
 
     const invalidQuestion = session.questions.find(hasInvalidQuestionData)
     if (invalidQuestion) {
@@ -220,6 +234,7 @@ export function StudentMistakeReviewSessionPage() {
         answers: buildSubmitAnswers(session.questions, answers),
       })
       if (!mountedRef.current) return
+      if (routeSessionIdRef.current !== sessionId) return
       if (!hasCompleteResult(session.questions, response.data.answers, response.data.questionCount)) {
         setMode('error')
         setError('Dữ liệu kết quả ôn tập không nhất quán.')
@@ -267,7 +282,9 @@ export function StudentMistakeReviewSessionPage() {
             <Link to="/student/mistake-review">Về danh sách ôn tập</Link>
           </Button>
           {sessionId !== null ? (
-            <Button onClick={retrySession}>Thử lại</Button>
+            <Button onClick={retrySession} disabled={loading}>
+              Thử lại
+            </Button>
           ) : null}
         </div>
       </div>
@@ -300,7 +317,9 @@ export function StudentMistakeReviewSessionPage() {
         <Card className="border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-indigo-50">
           <CardHeader>
             <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Kết quả ôn tập</p>
-            <CardTitle className="text-3xl text-slate-950">{formatScorePercent(result.scorePercent)}</CardTitle>
+            <h1 className="text-3xl font-semibold leading-none tracking-tight text-slate-950">
+              {formatScorePercent(result.scorePercent)}
+            </h1>
             <p className="text-sm text-slate-600">
               {result.answers.filter((answer) => answer.correct).length}/{result.questionCount} câu đúng
             </p>
@@ -312,6 +331,8 @@ export function StudentMistakeReviewSessionPage() {
             </Button>
           </CardContent>
         </Card>
+
+        <h2 className="text-xl font-semibold tracking-tight text-slate-950">Chi tiết từng câu</h2>
 
         <MistakeReviewResultList questions={session.questions} answers={result.answers} />
       </div>
