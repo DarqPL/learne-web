@@ -1,3 +1,4 @@
+import { StrictMode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -49,15 +50,17 @@ function createResponse(sessionId: number | null): Awaited<ReturnType<typeof cre
   >
 }
 
-function renderPage() {
-  return render(
+function renderPage(strict = false) {
+  const tree = (
     <MemoryRouter initialEntries={['/student/mistake-review']}>
       <Routes>
         <Route path="/student/mistake-review" element={<StudentMistakeReviewPage />} />
         <Route path="/student/mistake-review/sessions/:sessionId" element={<div>Session route</div>} />
       </Routes>
-    </MemoryRouter>,
+    </MemoryRouter>
   )
+
+  return render(strict ? <StrictMode>{tree}</StrictMode> : tree)
 }
 
 describe('StudentMistakeReviewPage', () => {
@@ -113,11 +116,60 @@ describe('StudentMistakeReviewPage', () => {
     expect(mockedList).toHaveBeenLastCalledWith({ size: 20, cursor: 'next-page' })
   })
 
+  it('returns to the previous page without a cursor', async () => {
+    mockedList
+      .mockResolvedValueOnce(listResponse([makeQuestion()], 'next-page', true))
+      .mockResolvedValueOnce(
+        listResponse([makeQuestion({ questionId: 2, questionText: 'Second question' })], 'next-page-2', true),
+      )
+      .mockResolvedValueOnce(listResponse([makeQuestion()], 'next-page', true))
+
+    renderPage()
+
+    await screen.findByText('What is the capital of France?')
+    fireEvent.click(screen.getByRole('button', { name: 'Trang tiếp' }))
+    await screen.findByText('Second question')
+    fireEvent.click(screen.getByRole('button', { name: 'Trang trước' }))
+
+    expect(await screen.findByText('What is the capital of France?')).toBeInTheDocument()
+    expect(mockedList).toHaveBeenLastCalledWith({ size: 20 })
+  })
+
+  it('retries the failed page instead of resetting to the first page', async () => {
+    mockedList
+      .mockResolvedValueOnce(listResponse([makeQuestion()], 'next-page', true))
+      .mockRejectedValueOnce(new Error('network'))
+      .mockResolvedValueOnce(listResponse([makeQuestion({ questionId: 2, questionText: 'Second question' })]))
+
+    renderPage()
+
+    await screen.findByText('What is the capital of France?')
+    fireEvent.click(screen.getByRole('button', { name: 'Trang tiếp' }))
+
+    expect(await screen.findByText('Không thể tải danh sách câu hỏi cần ôn.')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Thử lại' }))
+
+    expect(await screen.findByText('Second question')).toBeInTheDocument()
+    expect(mockedList).toHaveBeenLastCalledWith({ size: 20, cursor: 'next-page' })
+  })
+
   it('creates a session and navigates to it', async () => {
     mockedList.mockResolvedValue(listResponse([makeQuestion()]))
     mockedCreate.mockResolvedValue(createResponse(42))
 
     renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Ôn tập ngay' }))
+
+    expect(await screen.findByText('Session route')).toBeInTheDocument()
+    expect(mockedCreate).toHaveBeenCalledTimes(1)
+  })
+
+  it('creates a session and navigates under StrictMode', async () => {
+    mockedList.mockResolvedValue(listResponse([makeQuestion()]))
+    mockedCreate.mockResolvedValue(createResponse(42))
+
+    renderPage(true)
 
     fireEvent.click(await screen.findByRole('button', { name: 'Ôn tập ngay' }))
 
@@ -171,5 +223,7 @@ describe('StudentMistakeReviewPage', () => {
 
     await waitFor(() => expect(mockedCreate).toHaveBeenCalledTimes(1))
     resolveCreate(createResponse(42))
+
+    expect(await screen.findByText('Session route')).toBeInTheDocument()
   })
 })

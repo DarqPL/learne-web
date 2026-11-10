@@ -18,7 +18,7 @@ import {
   BreadcrumbSeparator,
 } from '../../../components/shadcn/ui/breadcrumb'
 import { Button } from '../../../components/shadcn/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/shadcn/ui/card'
+import { Card, CardContent, CardHeader } from '../../../components/shadcn/ui/card'
 import { studentQuestionTypeLabels } from '../learning/studentLearningLabels'
 
 const PAGE_SIZE = 20
@@ -36,21 +36,24 @@ export function StudentMistakeReviewPage() {
   const [hasNext, setHasNext] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
   const requestVersion = useRef(0)
-  const createVersion = useRef(0)
   const creatingRef = useRef(false)
-  const mountedRef = useRef(true)
+  const mountedRef = useRef(false)
+  const failedRequestRef = useRef<{ cursor: string | undefined; page: number } | null>(null)
 
-  useEffect(() => () => {
-    mountedRef.current = false
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
   }, [])
 
   useEffect(() => {
     const version = ++requestVersion.current
     let cancelled = false
-    setLoading(true)
-    setError(null)
 
     void (async () => {
+      setLoading(true)
+      setError(null)
       try {
         const response = await listMistakeReviewQuestions({ size: PAGE_SIZE })
         if (!cancelled && version === requestVersion.current) {
@@ -84,21 +87,29 @@ export function StudentMistakeReviewPage() {
         size: PAGE_SIZE,
         ...(cursor ? { cursor } : {}),
       })
-      if (version !== requestVersion.current) return
+      if (!mountedRef.current || version !== requestVersion.current) return
+      failedRequestRef.current = null
       setQuestions(response.data.content)
       setNextCursor(response.data.nextCursor)
       setHasNext(response.data.hasNext)
       setPage(targetPage)
     } catch (err) {
-      if (version === requestVersion.current) {
-        setError(getApiErrorMessage(err, 'Không thể tải danh sách câu hỏi cần ôn.'))
-      }
+      if (!mountedRef.current || version !== requestVersion.current) return
+      failedRequestRef.current = { cursor, page: targetPage }
+      setError(getApiErrorMessage(err, 'Không thể tải danh sách câu hỏi cần ôn.'))
     } finally {
-      if (version === requestVersion.current) setLoading(false)
+      if (mountedRef.current && version === requestVersion.current) setLoading(false)
     }
   }
 
   function retryList() {
+    const failed = failedRequestRef.current
+    if (failed) {
+      setError(null)
+      setLoading(true)
+      void loadQuestionsPage(failed.cursor, failed.page)
+      return
+    }
     setQuestions(null)
     setError(null)
     setLoading(true)
@@ -110,11 +121,10 @@ export function StudentMistakeReviewPage() {
     creatingRef.current = true
     setCreating(true)
     setCreateError(null)
-    const version = ++createVersion.current
 
     try {
       const response = await createMistakeReviewSession()
-      if (!mountedRef.current || version !== createVersion.current) return
+      if (!mountedRef.current) return
       if (response.data.sessionId === null) {
         setQuestions([])
         setNextCursor(null)
@@ -125,12 +135,12 @@ export function StudentMistakeReviewPage() {
       }
       navigate(`/student/mistake-review/sessions/${response.data.sessionId}`)
     } catch (err) {
-      if (mountedRef.current && version === createVersion.current) {
+      if (mountedRef.current) {
         setCreateError(getApiErrorMessage(err, 'Không thể bắt đầu phiên ôn tập.'))
       }
     } finally {
       creatingRef.current = false
-      if (mountedRef.current && version === createVersion.current) setCreating(false)
+      if (mountedRef.current) setCreating(false)
     }
   }
 
@@ -198,7 +208,7 @@ export function StudentMistakeReviewPage() {
 
       {loading && questions === null ? (
         <Card className="border-slate-200 bg-white">
-          <CardContent className="flex items-center justify-center gap-3 p-10 text-slate-600">
+          <CardContent role="status" className="flex items-center justify-center gap-3 p-10 text-slate-600">
             <Loader2 className="size-5 animate-spin" aria-hidden="true" />
             Đang tải câu hỏi cần ôn...
           </CardContent>
@@ -236,9 +246,9 @@ export function StudentMistakeReviewPage() {
                       </span>
                     ) : null}
                   </div>
-                  <CardTitle className="whitespace-pre-wrap text-base leading-7 text-slate-950">
+                  <h2 className="whitespace-pre-wrap text-base leading-7 text-slate-950">
                     {question.questionText}
-                  </CardTitle>
+                  </h2>
                 </CardHeader>
               </Card>
             ))}
