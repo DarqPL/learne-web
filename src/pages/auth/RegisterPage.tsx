@@ -1,8 +1,16 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MailCheck, ShieldCheck, UserPlus } from 'lucide-react'
 import { requestRegistrationOtp, resendRegistrationOtp, verifyRegistrationOtp } from '../../lib/api/authApi'
-import { getApiErrorMessage } from '../../lib/api/client'
+import { formatCountdown } from '../../lib/api/rateLimit'
+import {
+  getRegistrationErrorMessage,
+  isOtpAttemptsExhaustedError,
+  isOtpExpiredError,
+} from '../../lib/api/authErrorMessages'
+import { useCountdown } from '../../lib/hooks/useCountdown'
+import { useRateLimit } from '../../lib/hooks/useRateLimit'
+import { RateLimitAlert } from '../../components/auth/RateLimitAlert'
 import { Field } from '../../components/ui/Field'
 import { Input } from '../../components/ui/Input'
 import { PasswordInput } from '../../components/ui/PasswordInput'
@@ -30,6 +38,57 @@ const initialForm: RegistrationForm = {
 
 const emptyFieldErrors = {}
 
+const OTP_STORAGE_KEY = 'learne.auth.registration-otp:v1'
+const OTP_TTL_SECONDS = 5 * 60
+const ACCEPTED_MESSAGE = 'Yêu cầu gửi mã xác thực đã được tiếp nhận. Vui lòng kiểm tra hộp thư.'
+
+type OtpLifecycle = 'active' | 'expired' | 'exhausted'
+
+function writeStoredOtp(value: { email: string; expiresAt: number }) {
+  try {
+    window.sessionStorage.setItem(OTP_STORAGE_KEY, JSON.stringify(value))
+  } catch {
+    return
+  }
+}
+
+function clearStoredOtp() {
+  try {
+    window.sessionStorage.removeItem(OTP_STORAGE_KEY)
+  } catch {
+    return
+  }
+}
+
+function readStoredOtp(): { email: string; expiresAt: number } | null {
+  let raw: string | null
+  try {
+    raw = window.sessionStorage.getItem(OTP_STORAGE_KEY)
+  } catch {
+    return null
+  }
+  if (raw === null) return null
+
+  try {
+    const parsed = JSON.parse(raw) as { email?: unknown; expiresAt?: unknown } | null
+    if (
+      parsed &&
+      typeof parsed.email === 'string' &&
+      parsed.email.length > 0 &&
+      typeof parsed.expiresAt === 'number' &&
+      Number.isFinite(parsed.expiresAt)
+    ) {
+      return { email: parsed.email, expiresAt: parsed.expiresAt }
+    }
+  } catch {
+    clearStoredOtp()
+    return null
+  }
+
+  clearStoredOtp()
+  return null
+}
+
 export function RegisterPage() {
   const navigate = useNavigate()
   const [step, setStep] = useState<1 | 2>(1)
@@ -39,11 +98,69 @@ export function RegisterPage() {
   const [info, setInfo] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>(emptyFieldErrors)
+  const [otpState, setOtpState] = useState<OtpLifecycle>('active')
+  const rateLimit = useRateLimit()
+  const otpLifetime = useCountdown()
+  const otpStartedRef = useRef(false)
+  const otpSecondsLeftRef = useRef(otpLifetime.secondsLeft)
+  const previousSecondsRef = useRef(otpLifetime.secondsLeft)
+  const startOtpCountdown = otpLifetime.start
+  const stopOtpCountdown = otpLifetime.stop
 
   const setField = (name: keyof RegistrationForm, value: string) => {
     setForm((prev) => ({ ...prev, [name]: value }))
     setFieldErrors((prev) => ({ ...prev, [name]: '' }))
   }
+
+  const applyRateLimit = (err: unknown) => {
+    const captured = rateLimit.capture(err)
+    if (captured) setError(null)
+    return captured
+  }
+
+  const beginOtpLifetime = () => {
+    writeStoredOtp({ email: form.email, expiresAt: Date.now() + OTP_TTL_SECONDS * 1000 })
+    otpStartedRef.current = true
+    setOtpState('active')
+    startOtpCountdown(OTP_TTL_SECONDS)
+  }
+
+  const endOtpLifetime = () => {
+    otpStartedRef.current = false
+    stopOtpCountdown()
+  }
+
+  useEffect(() => {
+    otpSecondsLeftRef.current = otpLifetime.secondsLeft
+    const previous = previousSecondsRef.current
+    previousSecondsRef.current = otpLifetime.secondsLeft
+    if (!otpStartedRef.current || previous <= 0 || otpLifetime.secondsLeft > 0) return
+    if (otpState === 'active' || otpState === 'exhausted') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setOtpState('expired')
+      setError(null)
+    }
+  }, [otpLifetime.secondsLeft, otpState])
+
+  useLayoutEffect(() => {
+    const stored = readStoredOtp()
+    if (!stored) return
+
+    const remaining = Math.ceil((stored.expiresAt - Date.now()) / 1000)
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setForm((prev) => ({ ...prev, email: stored.email }))
+    setStep(2)
+    if (remaining > 0) {
+      setInfo(ACCEPTED_MESSAGE)
+      setOtpState('active')
+      otpStartedRef.current = true
+      startOtpCountdown(remaining)
+    } else {
+      clearStoredOtp()
+      setOtpState('expired')
+    }
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [startOtpCountdown])
 
   const handleRequestOtp = async (event: FormEvent) => {
     event.preventDefault()
@@ -63,13 +180,15 @@ export function RegisterPage() {
     setFieldErrors(emptyFieldErrors)
     setError(null)
     setInfo(null)
+    rateLimit.reset()
     setSubmitting(true)
     try {
       await requestRegistrationOtp(form)
-      setInfo('Yêu cầu gửi mã xác thực đã được tiếp nhận. Vui lòng kiểm tra hộp thư.')
+      beginOtpLifetime()
+      setInfo(ACCEPTED_MESSAGE)
       setStep(2)
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Không thể gửi mã OTP. Vui lòng thử lại.'))
+      if (!applyRateLimit(err)) setError(getRegistrationErrorMessage(err, 'Không thể gửi mã OTP. Vui lòng thử lại.'))
     } finally {
       setSubmitting(false)
     }
@@ -78,12 +197,14 @@ export function RegisterPage() {
   const handleResendOtp = async () => {
     setError(null)
     setInfo(null)
+    rateLimit.reset()
     setSubmitting(true)
     try {
       await resendRegistrationOtp({ email: form.email })
-      setInfo('Yêu cầu gửi mã xác thực đã được tiếp nhận. Vui lòng kiểm tra hộp thư.')
+      beginOtpLifetime()
+      setInfo(ACCEPTED_MESSAGE)
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Không thể gửi lại mã OTP. Vui lòng thử lại.'))
+      if (!applyRateLimit(err)) setError(getRegistrationErrorMessage(err, 'Không thể gửi lại mã OTP. Vui lòng thử lại.'))
     } finally {
       setSubmitting(false)
     }
@@ -98,15 +219,46 @@ export function RegisterPage() {
     }
     setFieldErrors(emptyFieldErrors)
     setError(null)
+    rateLimit.reset()
     setSubmitting(true)
     try {
       await verifyRegistrationOtp({ email: form.email, otp })
+      clearStoredOtp()
+      endOtpLifetime()
       navigate('/login', { replace: true, state: { message: 'Đăng ký thành công, vui lòng đăng nhập.' } })
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Mã OTP không hợp lệ.'))
+      if (applyRateLimit(err)) return
+      if (isOtpAttemptsExhaustedError(err)) {
+        if (otpSecondsLeftRef.current > 0) {
+          setOtpState('exhausted')
+          setError(getRegistrationErrorMessage(err, 'Mã OTP không hợp lệ.'))
+        } else {
+          clearStoredOtp()
+          endOtpLifetime()
+          setOtpState('expired')
+        }
+        return
+      }
+      if (isOtpExpiredError(err)) {
+        clearStoredOtp()
+        endOtpLifetime()
+        setOtpState('expired')
+      }
+      setError(getRegistrationErrorMessage(err, 'Mã OTP không hợp lệ.'))
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const handleEditInfo = () => {
+    clearStoredOtp()
+    endOtpLifetime()
+    setOtpState('active')
+    setOtp('')
+    setInfo(null)
+    setError(null)
+    rateLimit.reset()
+    setStep(1)
   }
 
   if (step === 2) {
@@ -126,6 +278,29 @@ export function RegisterPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {rateLimit.info ? <RateLimitAlert info={rateLimit.info} secondsLeft={rateLimit.secondsLeft} /> : null}
+            <p className="mb-4 text-center text-sm text-gray-600">
+              {otpState === 'expired' ? (
+                'Mã OTP đã hết hạn.'
+              ) : otpState === 'exhausted' ? (
+                <>
+                  Mã hiện tại sẽ hết hạn sau{' '}
+                  <span role="timer" aria-live="off" className="font-medium tabular-nums">
+                    {formatCountdown(otpLifetime.secondsLeft)}
+                  </span>
+                </>
+              ) : (
+                <>
+                  Mã có hiệu lực trong{' '}
+                  <span role="timer" aria-live="off" className="font-medium tabular-nums">
+                    {formatCountdown(otpLifetime.secondsLeft)}
+                  </span>
+                </>
+              )}
+            </p>
+            <p role="status" className="sr-only">
+              {otpState === 'expired' ? 'Mã OTP đã hết hạn.' : otpState === 'exhausted' ? 'Bạn đã nhập sai quá 5 lần.' : ''}
+            </p>
             {info ? (
               <Alert className="mb-4 border-green-200 bg-green-50 text-green-800">
                 <ShieldCheck className="h-4 w-4" />
@@ -149,7 +324,12 @@ export function RegisterPage() {
                   className="h-11 rounded-xl bg-white/90 text-center tracking-[0.45em]"
                 />
               </Field>
-              <Button type="submit" loading={submitting} className="h-11 w-full rounded-xl">
+              <Button
+                type="submit"
+                loading={submitting}
+                disabled={rateLimit.locked || otpLifetime.secondsLeft <= 0 || otpState !== 'active'}
+                className="h-11 w-full rounded-xl"
+              >
                 Xác nhận tài khoản
               </Button>
             </form>
@@ -157,16 +337,19 @@ export function RegisterPage() {
           <CardFooter className="flex-col gap-4">
             <Separator />
             <div className="flex w-full justify-between text-sm">
-              <button type="button" onClick={handleResendOtp} disabled={submitting} className="font-medium text-indigo-600 hover:text-indigo-700 hover:underline disabled:opacity-60">
+              <button
+                type="button"
+                onClick={handleResendOtp}
+                disabled={submitting || rateLimit.locked || otpLifetime.secondsLeft > 0}
+                className="font-medium text-indigo-600 hover:text-indigo-700 hover:underline disabled:opacity-60"
+              >
                 Gửi lại mã OTP
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setStep(1)
-                  setOtp('')
-                }}
-                className="font-medium text-gray-600 hover:text-gray-800 hover:underline"
+                onClick={handleEditInfo}
+                disabled={submitting}
+                className="font-medium text-gray-600 hover:text-gray-800 hover:underline disabled:opacity-60"
               >
                 Sửa thông tin
               </button>
@@ -191,6 +374,7 @@ export function RegisterPage() {
           <CardDescription>Hoàn tất thông tin cơ bản, sau đó xác thực email bằng OTP.</CardDescription>
         </CardHeader>
         <CardContent>
+          {rateLimit.info ? <RateLimitAlert info={rateLimit.info} secondsLeft={rateLimit.secondsLeft} /> : null}
           {error ? (
             <Alert variant="destructive" className="mb-4 border-red-200 bg-red-50">
               <AlertDescription className="text-red-700">{error}</AlertDescription>
@@ -223,7 +407,7 @@ export function RegisterPage() {
               />
             </Field>
             <p className="rounded-xl bg-indigo-50 px-3 py-2 text-xs text-indigo-700">Mật khẩu phải có ít nhất 8 ký tự, gồm cả chữ và số.</p>
-            <Button type="submit" loading={submitting} className="h-11 w-full rounded-xl">
+            <Button type="submit" loading={submitting} disabled={rateLimit.locked} className="h-11 w-full rounded-xl">
               Gửi mã xác thực
             </Button>
           </form>

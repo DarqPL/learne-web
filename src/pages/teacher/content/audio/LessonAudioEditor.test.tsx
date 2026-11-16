@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import type { ComponentProps } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { deleteLessonAudio, getCourseAudioTargets, uploadLessonAudio } from '../../../../lib/api/teacherLessonAudioApi'
@@ -499,5 +499,56 @@ describe('LessonAudioEditor', () => {
 
     expect(screen.getByLabelText('Audio bài nghe')).toHaveAttribute('src', fallbackAudioUrl)
     expect(screen.queryByText('Chưa có audio.')).not.toBeInTheDocument()
+  })
+
+  it('renders a custom locked hint instead of the default copy', async () => {
+    mockedGetTargets.mockResolvedValue(targetsOf([audioTarget]) as never)
+
+    renderEditor({ editable: false, lockedHint: 'Bản nháp đang chờ duyệt.' })
+
+    expect(await screen.findByText('Bản nháp đang chờ duyệt.')).toBeInTheDocument()
+    expect(screen.queryByText('Tạo bản nháp chỉnh sửa để thay audio.')).not.toBeInTheDocument()
+  })
+
+  it('keeps the default locked hint when no hint is provided', async () => {
+    mockedGetTargets.mockResolvedValue(targetsOf([audioTarget]) as never)
+
+    renderEditor({ editable: false })
+
+    expect(await screen.findByText('Tạo bản nháp chỉnh sửa để thay audio.')).toBeInTheDocument()
+  })
+
+  it('clamps upload progress above 100', async () => {
+    mockedGetTargets.mockResolvedValue(targetsOf([audioTarget]) as never)
+    let resolveUpload: ((value: unknown) => void) | undefined
+    mockedUpload.mockImplementationOnce((_id, _file, onProgress) => {
+      onProgress?.(150)
+      return new Promise((resolve) => {
+        resolveUpload = resolve
+      }) as never
+    })
+
+    renderEditor()
+
+    const input = await screen.findByLabelText('Chọn file audio')
+    fireEvent.change(input, { target: { files: [new File(['audio'], 'voice.mp3', { type: 'audio/mpeg' })] } })
+
+    expect(await screen.findByText('Đang tải lên 100%')).toBeInTheDocument()
+
+    await act(async () => {
+      resolveUpload?.({
+        data: { ...audioTarget, audioUrl: 'https://cdn.example.com/audio/new.mp3', audioPublicId: 'new' },
+      })
+    })
+  })
+
+  it('names the lesson in the section label', async () => {
+    mockedGetTargets.mockResolvedValue(targetsOf([audioTarget]) as never)
+
+    renderEditor()
+
+    expect(
+      await screen.findByRole('region', { name: 'Quản lý audio bài học: Morning routine' }),
+    ).toBeInTheDocument()
   })
 })

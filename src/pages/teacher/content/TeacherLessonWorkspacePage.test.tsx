@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useNavigate } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { getTeacherCourse } from '../../../lib/api/teacherContentApi'
@@ -165,9 +165,24 @@ describe('TeacherLessonWorkspacePage', () => {
 
     renderPage()
 
-    expect(await screen.findByText('Tạo bản nháp chỉnh sửa để thay audio.')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Bản nháp đang chờ duyệt. Bạn có thể thay audio sau khi bản nháp được duyệt.'),
+    ).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Thay audio' })).not.toBeInTheDocument()
     expect(screen.getByLabelText('Audio bài nghe')).toHaveAttribute('src', audioUrl)
+  })
+
+  it('shows the submission lock reason for audio while the course is locked', async () => {
+    mockedGetTeacherCourse.mockResolvedValue({
+      data: { ...draftCourse, editingLocked: true },
+    } as never)
+
+    renderPage()
+
+    const audioRegion = await screen.findByRole('region', { name: /Quản lý audio bài học/ })
+    expect(
+      await within(audioRegion).findByText('Khóa học đang được xử lý để gửi duyệt. Tạm khóa chỉnh sửa nội dung.'),
+    ).toBeInTheDocument()
   })
 
   it('resets the lesson edit form when switching to another lesson with identical saved values', async () => {

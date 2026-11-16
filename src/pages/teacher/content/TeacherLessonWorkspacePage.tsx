@@ -17,7 +17,14 @@ import { LessonForm } from './LessonForm'
 import { QuestionForm } from './QuestionForm'
 import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
 import { questionTypeLabels, skillTypeLabels } from './contentLabels'
-import { findTeacherLesson, getContentEditingState, isRevisionBackedCourse, mergeLessonAudio } from './contentUtils'
+import {
+  findTeacherLesson,
+  getAudioLockedHint,
+  getContentEditingState,
+  isRevisionBackedCourse,
+  mergeLessonAudio,
+  type LessonIdNamespace,
+} from './contentUtils'
 import { useCourseSubmission } from './useCourseSubmission'
 import { CourseSubmissionStatus } from './CourseSubmissionStatus'
 import { getLessonInitialValue, getQuestionInitialValue } from './teacherContentMappers'
@@ -261,7 +268,7 @@ export function TeacherLessonWorkspacePage() {
   const topic = currentCourse && parsedLessonId !== null ? findTeacherTopic(currentCourse, parsedLessonId) : null
   const editable = editingState.kind === 'editable'
   const audioEditable = editable
-  const audioLessonIdNamespace = currentCourse && isRevisionBackedCourse(currentCourse) ? 'revision' : 'live'
+  const audioLessonIdNamespace: LessonIdNamespace = currentCourse && isRevisionBackedCourse(currentCourse) ? 'revision' : 'live'
   const invalidRoute = parsedCourseId === null || parsedLessonId === null
   const displayError = invalidRoute || (currentCourse !== null && lesson === null) ? 'Không tìm thấy bài học.' : error
 
@@ -336,6 +343,7 @@ export function TeacherLessonWorkspacePage() {
                   lesson={lesson}
                   lessonIdNamespace={audioLessonIdNamespace}
                   editable={audioEditable}
+                  lockedHint={currentCourse ? getAudioLockedHint(currentCourse, editingState) : undefined}
                   onAudioChanged={(audio) => handleAudioChanged(lesson.id, audio)}
                 />
                 <LessonEditForm key={lesson.id} lesson={lesson} action={action} onSubmit={handleUpdateLesson} />
@@ -352,6 +360,7 @@ export function TeacherLessonWorkspacePage() {
                 lesson={lesson}
                 lessonIdNamespace={audioLessonIdNamespace}
                 editable={audioEditable}
+                lockedHint={currentCourse ? getAudioLockedHint(currentCourse, editingState) : undefined}
                 onAudioChanged={(audio) => handleAudioChanged(lesson.id, audio)}
               />
               <p className="mt-4 text-sm font-medium text-gray-700">Nội dung</p>

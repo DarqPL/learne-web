@@ -1099,3 +1099,60 @@ export interface CourseAudioTargets {
   revisionStatus: 'DRAFT' | 'REJECTED'
   lessons: LessonAudioTarget[]
 }
+
+export interface MistakeReviewOption {
+  id: number
+  text: string
+  order: number
+}
+
+export interface MistakeReviewQuestion {
+  questionId: number
+  questionText: string
+  questionType: QuestionType
+  options: MistakeReviewOption[]
+  courseId: number | null
+  courseName: string | null
+  lessonId: number | null
+  lessonTitle: string | null
+}
+
+export interface MistakeReviewCreateResponse {
+  sessionId: number | null
+  questionCount: number
+  questions: MistakeReviewQuestion[]
+}
+
+export interface MistakeReviewSubmitAnswerRequest {
+  questionId: number
+  answerText?: string | null
+  selectedOptionId?: number | null
+}
+
+export interface MistakeReviewSubmitRequest {
+  answers: MistakeReviewSubmitAnswerRequest[]
+}
+
+export interface MistakeReviewAnswerResult {
+  questionId: number
+  correct: boolean
+  scorePercent: number
+  feedback: string | null
+  correctAnswer: string | null
+  explanation: string | null
+}
+
+export interface MistakeReviewResult {
+  sessionId: number
+  questionCount: number
+  scorePercent: number
+  answers: MistakeReviewAnswerResult[]
+}
+
+export interface MistakeReviewSessionResponse {
+  sessionId: number
+  questionCount: number
+  questions: MistakeReviewQuestion[]
+  scorePercent: number | null
+  answers: MistakeReviewAnswerResult[]
+}

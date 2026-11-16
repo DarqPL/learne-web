@@ -5,6 +5,7 @@ import { Button } from '@/components/shadcn/ui/button'
 import { getApiErrorMessage } from '../../../../lib/api/client'
 import { deleteLessonAudio, getCourseAudioTargets, uploadLessonAudio } from '../../../../lib/api/teacherLessonAudioApi'
 import type { LessonAudioFields, LessonAudioTarget, TeacherLesson } from '../../../../lib/api/types'
+import type { LessonIdNamespace } from '../contentUtils'
 import { LessonAudioPlayer } from '../../../student/learning/LessonAudioPlayer'
 
 const MAX_AUDIO_BYTES = 20 * 1024 * 1024
@@ -17,8 +18,9 @@ const DELETE_ERROR_FALLBACK = 'Không thể xóa audio, vui lòng thử lại.'
 interface LessonAudioEditorProps {
   courseId: number
   lesson: Pick<TeacherLesson, 'id' | 'title' | 'skillType'> & LessonAudioFields
-  lessonIdNamespace: 'live' | 'revision'
+  lessonIdNamespace: LessonIdNamespace
   editable: boolean
+  lockedHint?: string
   onAudioChanged?: (audio: LessonAudioFields) => void
 }
 
@@ -50,13 +52,13 @@ function getErrorStatus(error: unknown) {
   return axios.isAxiosError(error) ? (error.response?.status ?? null) : null
 }
 
-function findAudioTarget(lessons: LessonAudioTarget[], lessonId: number, namespace: 'live' | 'revision') {
+function findAudioTarget(lessons: LessonAudioTarget[], lessonId: number, namespace: LessonIdNamespace) {
   return namespace === 'revision'
     ? (lessons.find((item) => item.lessonRevisionId === lessonId) ?? null)
     : (lessons.find((item) => item.sourceLessonId === lessonId) ?? null)
 }
 
-async function fetchAudioTarget(courseId: number, lessonId: number, namespace: 'live' | 'revision') {
+async function fetchAudioTarget(courseId: number, lessonId: number, namespace: LessonIdNamespace) {
   const response = await getCourseAudioTargets(courseId)
   return findAudioTarget(response.data.lessons, lessonId, namespace)
 }
@@ -72,8 +74,9 @@ function validateAudioFile(file: File) {
 }
 
 function mutationErrorMessage(error: unknown, fallback: string) {
-  const status = getErrorStatus(error)
-  if (axios.isAxiosError(error) && !error.response) return 'Không thể kết nối máy chủ.'
+  const isAxiosError = axios.isAxiosError(error)
+  const status = isAxiosError ? (error.response?.status ?? null) : null
+  if (isAxiosError && !error.response) return 'Không thể kết nối máy chủ.'
   if (status === 409) return 'Nội dung đã thay đổi hoặc không còn cho sửa. Vui lòng tải lại trang.'
   if (status === 413) return 'File vượt quá 20MB cho phép.'
   if (status === 415) return 'Định dạng tải lên không hợp lệ.'
@@ -83,7 +86,15 @@ function mutationErrorMessage(error: unknown, fallback: string) {
   return getApiErrorMessage(error, fallback)
 }
 
-export function LessonAudioEditor({ courseId, lesson, lessonIdNamespace, editable, onAudioChanged }: LessonAudioEditorProps) {
+export function LessonAudioEditor({
+  courseId,
+  lesson,
+  lessonIdNamespace,
+  editable,
+  lockedHint,
+  onAudioChanged,
+}: LessonAudioEditorProps) {
+  const lockedMessage = lockedHint ?? 'Tạo bản nháp chỉnh sửa để thay audio.'
   const fileInputRef = useRef<HTMLInputElement>(null)
   const requestKey = `${courseId}:${lesson.id}:${lessonIdNamespace}:${lesson.skillType}:${editable ? 'editable' : 'readonly'}`
   const requestKeyRef = useRef(requestKey)
@@ -195,8 +206,9 @@ export function LessonAudioEditor({ courseId, lesson, lessonIdNamespace, editabl
       if (!freshTarget) return
       const response = await uploadLessonAudio(freshTarget.lessonRevisionId, file, (percent) => {
         if (requestKeyRef.current !== capturedKey) return
+        const clamped = Math.min(100, Math.max(0, percent))
         setOperation((current) =>
-          current?.key === capturedKey && current.action === 'upload' ? { ...current, progress: percent } : current,
+          current?.key === capturedKey && current.action === 'upload' ? { ...current, progress: clamped } : current,
         )
       })
       if (requestKeyRef.current !== capturedKey) return
@@ -251,7 +263,10 @@ export function LessonAudioEditor({ courseId, lesson, lessonIdNamespace, editabl
   }
 
   return (
-    <section className="rounded-2xl border border-indigo-100 bg-white p-4 shadow-sm" aria-label="Quản lý audio bài học">
+    <section
+      className="rounded-2xl border border-indigo-100 bg-white p-4 shadow-sm"
+      aria-label={`Quản lý audio bài học: ${lesson.title}`}
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-gray-900">Audio bài học</h3>
         {status === 'loading' ? (
@@ -274,9 +289,7 @@ export function LessonAudioEditor({ courseId, lesson, lessonIdNamespace, editabl
         </Alert>
       ) : null}
 
-      {status === 'locked' ? (
-        <p className="mt-3 text-sm text-muted-foreground">Tạo bản nháp chỉnh sửa để thay audio.</p>
-      ) : null}
+      {status === 'locked' ? <p className="mt-3 text-sm text-muted-foreground">{lockedMessage}</p> : null}
 
       {messageText ? (
         <p role="status" className="mt-3 text-sm text-red-600">

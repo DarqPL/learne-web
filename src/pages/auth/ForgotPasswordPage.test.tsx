@@ -1,6 +1,6 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { requestPasswordReset } from '../../lib/api/authApi'
 import { ForgotPasswordPage } from './ForgotPasswordPage'
 
@@ -63,6 +63,65 @@ describe('ForgotPasswordPage request acceptance', () => {
     expect(await screen.findByText('Không thể tiếp nhận yêu cầu.')).toBeInTheDocument()
     expect(screen.queryByText(acceptedMessage)).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: '/reset-password' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Gửi mã đặt lại mật khẩu' })).toBeEnabled()
+  })
+})
+
+function limitedError(seconds: number) {
+  return Object.assign(new Error('429'), {
+    isAxiosError: true,
+    response: {
+      status: 429,
+      headers: { 'retry-after': String(seconds) },
+      data: { code: 'RATE_LIMITED', message: 'Too many requests. Please try again later.' },
+    },
+  })
+}
+
+async function flush() {
+  await act(async () => {
+    await Promise.resolve()
+    await Promise.resolve()
+  })
+}
+
+afterEach(() => {
+  vi.useRealTimers()
+})
+
+describe('ForgotPasswordPage rate limits', () => {
+  it('locks the request button for Retry-After seconds', async () => {
+    vi.useFakeTimers()
+    vi.mocked(requestPasswordReset).mockRejectedValue(limitedError(30))
+    submitReset('student@example.com')
+
+    await flush()
+
+    expect(screen.getByText(/Quá nhiều lần thử/)).toBeInTheDocument()
+    expect(screen.getByRole('timer')).toHaveTextContent('00:30')
+    const submit = screen.getByRole('button', { name: 'Gửi mã đặt lại mật khẩu' })
+    expect(submit).toBeDisabled()
+
+    act(() => {
+      vi.advanceTimersByTime(30_000)
+    })
+
+    expect(submit).toBeEnabled()
+    expect(screen.getByText('Bạn có thể thử lại.')).toBeInTheDocument()
+  })
+
+  it('shows the unavailable message without locking the form', async () => {
+    vi.mocked(requestPasswordReset).mockRejectedValue(
+      Object.assign(new Error('503'), {
+        isAxiosError: true,
+        response: { status: 503, data: { code: 'ABUSE_PROTECTION_UNAVAILABLE', message: 'Unavailable.' } },
+      }),
+    )
+    submitReset('student@example.com')
+
+    await flush()
+
+    expect(screen.getByText(/Tạm thời không thể xác thực/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Gửi mã đặt lại mật khẩu' })).toBeEnabled()
   })
 })

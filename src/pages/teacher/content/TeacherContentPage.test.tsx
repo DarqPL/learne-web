@@ -236,4 +236,24 @@ describe('TeacherContentPage edit revisions', () => {
     expect(screen.queryByText('Không thể tải thư viện khóa học.')).not.toBeInTheDocument()
     expect(screen.getByText(/Trang 1 ·/)).toBeInTheDocument()
   })
+
+  it('renders shared course badge styles for status, type, level, and payment', async () => {
+    mockedListTeacherCourses.mockResolvedValue(
+      listResponse([
+        makeCourse({
+          type: 'GRAMMAR',
+          level: 'B1',
+          pricingType: 'PAID',
+          status: 'PENDING_REVIEW',
+        }),
+      ]),
+    )
+
+    renderContentPage()
+
+    expect(await screen.findByText('Chờ duyệt', { selector: '[data-slot="course-badge"]' })).toHaveClass('bg-amber-50', 'text-amber-700', 'rounded', 'text-[12px]')
+    expect(screen.getByText('Ngữ pháp', { selector: '[data-slot="course-badge"]' })).toHaveClass('bg-violet-50', 'text-violet-700')
+    expect(screen.getByText('B1', { selector: '[data-slot="course-badge"]' })).toHaveClass('bg-cyan-50', 'text-cyan-700')
+    expect(screen.getByText('Trả phí', { selector: '[data-slot="course-badge"]' })).toHaveClass('bg-teal-50', 'text-teal-700')
+  })
 })
