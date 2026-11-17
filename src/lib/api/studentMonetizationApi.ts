@@ -13,8 +13,8 @@ export function checkoutPlan(planCode: PlanCode, request?: CheckoutCouponRequest
   return http.post<OrderResponse>(`/api/student/checkout/plans/${planCode}`, request ?? {})
 }
 
-export function getStudentOrder(orderId: number) {
-  return http.get<OrderResponse>(`/api/student/orders/${orderId}`)
+export function getStudentOrder(publicId: string) {
+  return http.get<OrderResponse>(`/api/student/orders/${publicId}`)
 }
 
 export function getStudentSubscription() {

@@ -54,6 +54,7 @@ function makeCourse(overrides: Partial<StudentCourseDetail> = {}): StudentCourse
 function makeOrder(overrides: Partial<OrderResponse> = {}): OrderResponse {
   return {
     id: 42,
+    publicId: '33333333-3333-4333-8333-333333333333',
     orderType: 'COURSE_PURCHASE',
     status: 'PENDING_PAYMENT',
     originalAmountVnd: 300000,
@@ -76,7 +77,7 @@ function renderCourseDetail() {
       <Routes>
         <Route path="/student/courses/:id" element={<StudentCourseDetailPage />} />
         <Route path="/student/courses" element={<div>Courses list route</div>} />
-        <Route path="/student/payment/orders/:orderId" element={<div>Payment order route</div>} />
+        <Route path="/student/payment/orders/33333333-3333-4333-8333-333333333333" element={<div>Payment order route</div>} />
       </Routes>
     </MemoryRouter>,
   )
