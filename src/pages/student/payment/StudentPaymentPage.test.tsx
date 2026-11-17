@@ -18,6 +18,7 @@ function apiOrder(data: OrderResponse): Awaited<ReturnType<typeof getStudentOrde
 function makeOrder(overrides: Partial<OrderResponse> = {}): OrderResponse {
   return {
     id: 42,
+    publicId: '11111111-1111-4111-8111-111111111111',
     orderType: 'COURSE_PURCHASE',
     status: 'PENDING_PAYMENT',
     originalAmountVnd: 250000,
@@ -53,11 +54,11 @@ function makeOrder(overrides: Partial<OrderResponse> = {}): OrderResponse {
   }
 }
 
-function renderPaymentPage(orderId = 42) {
+function renderPaymentPage(publicId = '11111111-1111-4111-8111-111111111111') {
   return render(
-    <MemoryRouter initialEntries={[`/student/payment/orders/${orderId}`]}>
+    <MemoryRouter initialEntries={[`/student/payment/orders/${publicId}`]}>
       <Routes>
-        <Route path="/student/payment/orders/:orderId" element={<StudentPaymentPage />} />
+        <Route path="/student/payment/orders/:publicId" element={<StudentPaymentPage />} />
       </Routes>
     </MemoryRouter>,
   )
@@ -85,7 +86,10 @@ describe('StudentPaymentPage', () => {
 
     renderPaymentPage()
 
+    await waitFor(() => expect(mockedGetStudentOrder).toHaveBeenCalledWith('11111111-1111-4111-8111-111111111111'))
     expect(await screen.findByAltText('Mã QR thanh toán SEPAY')).toHaveAttribute('src', expect.stringContaining('vietqr.app'))
+    expect(screen.getByText('Đơn 11111111-1111-4111-8111-111111111111')).toBeInTheDocument()
+    expect(screen.queryByText('Đơn #42')).not.toBeInTheDocument()
     expect(screen.getByText('Vietcombank')).toBeInTheDocument()
     expect(screen.getByText('CONG TY LEARNE')).toBeInTheDocument()
     expect(screen.getByText('0010000000355')).toBeInTheDocument()
@@ -183,9 +187,9 @@ describe('StudentPaymentPage', () => {
     mockedGetStudentOrder.mockResolvedValue(apiOrder(planOrder))
 
     render(
-      <MemoryRouter initialEntries={['/student/payment/orders/42']}>
+      <MemoryRouter initialEntries={['/student/payment/orders/11111111-1111-4111-8111-111111111111']}>
         <Routes>
-          <Route path="/student/payment/orders/:orderId" element={<StudentPaymentPage />} />
+          <Route path="/student/payment/orders/:publicId" element={<StudentPaymentPage />} />
           <Route path="/student/subscription" element={<p>Subscription page</p>} />
         </Routes>
       </MemoryRouter>,

@@ -98,7 +98,7 @@ export function StudentSubscriptionPlansPage() {
       if (!mountedRef.current || requestSeq.current !== seq) return
       const order = response.data
       if (order.status === 'PENDING_PAYMENT' && order.paymentProvider === 'SEPAY') {
-        navigate(`/student/payment/orders/${order.id}`)
+        navigate(`/student/payment/orders/${order.publicId}`)
         return
       }
       if (order.status === 'PAID') {
