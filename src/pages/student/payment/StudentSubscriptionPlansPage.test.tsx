@@ -20,6 +20,7 @@ function checkoutApiResponse(data: OrderResponse): Awaited<ReturnType<typeof che
 function makeOrder(overrides: Partial<OrderResponse> = {}): OrderResponse {
   return {
     id: 77,
+    publicId: '22222222-2222-4222-8222-222222222222',
     orderType: 'PLAN_SUBSCRIPTION',
     status: 'PENDING_PAYMENT',
     originalAmountVnd: 500000,
@@ -56,7 +57,7 @@ function renderPlansPage() {
     <MemoryRouter initialEntries={['/student/subscription']}>
       <Routes>
         <Route path="/student/subscription" element={<StudentSubscriptionPlansPage />} />
-        <Route path="/student/payment/orders/:orderId" element={<div>Payment order route</div>} />
+        <Route path="/student/payment/orders/22222222-2222-4222-8222-222222222222" element={<div>Payment order route</div>} />
       </Routes>
     </MemoryRouter>,
   )

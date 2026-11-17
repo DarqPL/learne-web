@@ -70,6 +70,7 @@ export interface OrderItemResponse {
 
 export interface OrderResponse {
   id: number
+  publicId: string
   orderType: OrderType
   status: OrderStatus
   originalAmountVnd: number

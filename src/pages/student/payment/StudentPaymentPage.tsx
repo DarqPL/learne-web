@@ -13,9 +13,8 @@ import { formatCountdown, formatVnd, getRemainingMs } from './paymentUtils'
 
 const pollIntervalMs = 3000
 
-function parseOrderId(value: string | undefined) {
-  const id = Number(value)
-  return Number.isInteger(id) && id > 0 ? id : null
+function parsePublicId(value: string | undefined) {
+  return value && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value) ? value : null
 }
 
 function statusLabel(order: OrderResponse, expiredLocally: boolean) {
@@ -60,9 +59,9 @@ function CopyableValue({ label, value }: { label: string; value: string }) {
 }
 
 export function StudentPaymentPage() {
-  const { orderId } = useParams()
+  const { publicId } = useParams()
   const navigate = useNavigate()
-  const parsedOrderId = parseOrderId(orderId)
+  const parsedPublicId = parsePublicId(publicId)
   const [order, setOrder] = useState<OrderResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [refreshing, setRefreshing] = useState(false)
@@ -71,12 +70,12 @@ export function StudentPaymentPage() {
   const requestSeq = useRef(0)
 
   const loadOrder = useCallback(async (options: { silent?: boolean } = {}) => {
-    if (parsedOrderId === null) return
+    if (parsedPublicId === null) return
     const seq = requestSeq.current + 1
     requestSeq.current = seq
     if (!options.silent) setRefreshing(true)
     try {
-      const response = await getStudentOrder(parsedOrderId)
+      const response = await getStudentOrder(parsedPublicId)
       if (seq !== requestSeq.current) return
       setOrder(response.data)
       setRemainingMs(getRemainingMs(response.data.expiresAt))
@@ -87,17 +86,17 @@ export function StudentPaymentPage() {
     } finally {
       if (!options.silent) setRefreshing(false)
     }
-  }, [parsedOrderId])
+  }, [parsedPublicId])
 
   useEffect(() => {
     let cancelled = false
-    if (parsedOrderId === null) return
+    if (parsedPublicId === null) return
 
     void (async () => {
       const seq = requestSeq.current + 1
       requestSeq.current = seq
       try {
-        const response = await getStudentOrder(parsedOrderId)
+        const response = await getStudentOrder(parsedPublicId)
         if (cancelled || seq !== requestSeq.current) return
         setOrder(response.data)
         setRemainingMs(getRemainingMs(response.data.expiresAt))
@@ -110,7 +109,7 @@ export function StudentPaymentPage() {
     return () => {
       cancelled = true
     }
-  }, [parsedOrderId])
+  }, [parsedPublicId])
 
   useEffect(() => {
     if (!order?.expiresAt) return
@@ -138,7 +137,7 @@ export function StudentPaymentPage() {
     return () => window.clearInterval(id)
   }, [loadOrder, shouldPoll, order?.id])
 
-  if (parsedOrderId === null) {
+  if (parsedPublicId === null) {
     return (
       <Card className="border-dashed border-gray-200 bg-white">
         <CardContent>
@@ -151,7 +150,7 @@ export function StudentPaymentPage() {
     )
   }
 
-  if (!order || order.id !== parsedOrderId) {
+  if (!order || order.publicId !== parsedPublicId) {
     if (error) {
       return (
         <Card className="border-red-100 bg-red-50/40">
@@ -191,7 +190,7 @@ export function StudentPaymentPage() {
           <div className="max-w-2xl">
             <Badge variant="outline" className="border-indigo-200 bg-white/85 text-indigo-700 shadow-sm">
               <ReceiptText aria-hidden="true" />
-              Đơn #{order.id}
+              Đơn {order.publicId}
             </Badge>
             <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">Thanh toán chuyển khoản SEPAY</h1>
             <p className="mt-3 text-base leading-7 text-gray-600">
