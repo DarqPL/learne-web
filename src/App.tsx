@@ -183,7 +183,7 @@ export default function App() {
                 <Route path="/student/mistake-review" element={<StudentMistakeReviewPage />} />
                 <Route path="/student/mistake-review/sessions/:sessionId" element={<StudentMistakeReviewSessionPage />} />
                 <Route path="/student/subscription" element={<StudentSubscriptionPlansPage />} />
-                <Route path="/student/payment/orders/:orderId" element={<StudentPaymentPage />} />
+                <Route path="/student/payment/orders/:publicId" element={<StudentPaymentPage />} />
               </Route>
             </Route>
             <Route element={<RequireRole role="TEACHER" />}>
