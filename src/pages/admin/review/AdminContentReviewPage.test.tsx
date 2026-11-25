@@ -3,24 +3,41 @@ import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AdminContentReviewPage } from './AdminContentReviewPage'
 import {
+  approveCourseCoverReview,
   approveReviewCourse,
+  getCourseCoverReview,
   getReviewCourse,
+  listPendingCourseCoverReviews,
   listPendingReviewCourses,
+  rejectCourseCoverReview,
   rejectReviewCourse,
 } from '../../../lib/api/adminReviewApi'
-import type { AdminReviewCourseDetail, AdminReviewCourseSummary } from '../../../lib/api/types'
+import type {
+  AdminCourseCoverReviewDetail,
+  AdminCourseCoverReviewSummary,
+  AdminReviewCourseDetail,
+  AdminReviewCourseSummary,
+} from '../../../lib/api/types'
 
 vi.mock('../../../lib/api/adminReviewApi', () => ({
   listPendingReviewCourses: vi.fn(),
   getReviewCourse: vi.fn(),
   approveReviewCourse: vi.fn(),
   rejectReviewCourse: vi.fn(),
+  listPendingCourseCoverReviews: vi.fn(),
+  getCourseCoverReview: vi.fn(),
+  approveCourseCoverReview: vi.fn(),
+  rejectCourseCoverReview: vi.fn(),
 }))
 
 const mockedList = vi.mocked(listPendingReviewCourses)
 const mockedDetail = vi.mocked(getReviewCourse)
 const mockedApprove = vi.mocked(approveReviewCourse)
 const mockedReject = vi.mocked(rejectReviewCourse)
+const mockedCoverList = vi.mocked(listPendingCourseCoverReviews)
+const mockedCoverDetail = vi.mocked(getCourseCoverReview)
+const mockedCoverApprove = vi.mocked(approveCourseCoverReview)
+const mockedCoverReject = vi.mocked(rejectCourseCoverReview)
 
 function makeSummary(overrides: Partial<AdminReviewCourseSummary> = {}): AdminReviewCourseSummary {
   return {
@@ -70,6 +87,8 @@ function makeDetail(overrides: Partial<AdminReviewCourseDetail> = {}): AdminRevi
     priceAmountVnd: 100000,
     proposedPriceAmountVnd: 199000,
     priceStatus: 'PENDING_REVIEW',
+    currentCoverImageUrl: null,
+    proposedCoverImageUrl: null,
     topics: [],
     ...overrides,
   }
@@ -81,6 +100,44 @@ function apiList(data: AdminReviewCourseSummary[]) {
 
 function apiDetail(data: AdminReviewCourseDetail) {
   return { data } as Awaited<ReturnType<typeof getReviewCourse>>
+}
+
+function makeCoverSummary(overrides: Partial<AdminCourseCoverReviewSummary> = {}): AdminCourseCoverReviewSummary {
+  return {
+    id: 21,
+    courseId: 7,
+    courseName: 'Khoa hoc co anh moi',
+    teacherId: 10,
+    teacherName: 'Nguyen Van A',
+    teacherEmail: 'a@example.com',
+    currentCoverImageUrl: 'https://example.test/old.jpg',
+    proposedCoverImageUrl: 'https://example.test/new.jpg',
+    submittedAt: '2026-01-02T00:00:00Z',
+    ...overrides,
+  }
+}
+
+function makeCoverDetail(overrides: Partial<AdminCourseCoverReviewDetail> = {}): AdminCourseCoverReviewDetail {
+  return {
+    ...makeCoverSummary(),
+    status: 'PENDING_REVIEW',
+    rejectionReason: null,
+    reviewedAt: null,
+    ...overrides,
+  }
+}
+
+function apiCoverList(
+  content: AdminCourseCoverReviewSummary[],
+  nextCursor: string | null = null,
+) {
+  return {
+    data: { content, nextCursor, hasNext: nextCursor !== null, size: content.length },
+  } as Awaited<ReturnType<typeof listPendingCourseCoverReviews>>
+}
+
+function apiCoverDetail(data: AdminCourseCoverReviewDetail) {
+  return { data } as Awaited<ReturnType<typeof getCourseCoverReview>>
 }
 
 function renderPage() {
@@ -153,8 +210,14 @@ describe('AdminContentReviewPage shadcn sync', () => {
     mockedDetail.mockReset()
     mockedApprove.mockReset()
     mockedReject.mockReset()
+    mockedCoverList.mockReset()
+    mockedCoverDetail.mockReset()
+    mockedCoverApprove.mockReset()
+    mockedCoverReject.mockReset()
     mockedApprove.mockResolvedValue(apiDetail(makeDetail()) as never)
     mockedReject.mockResolvedValue(apiDetail(makeDetail()) as never)
+    mockedCoverApprove.mockResolvedValue(apiCoverDetail(makeCoverDetail({ status: 'APPROVED' })))
+    mockedCoverReject.mockResolvedValue(apiCoverDetail(makeCoverDetail({ status: 'REJECTED' })))
   })
 
   it('shows shadcn skeletons while loading the pending list', () => {
@@ -238,6 +301,78 @@ describe('AdminContentReviewPage shadcn sync', () => {
     expect(screen.getByText('Giá hiện tại')).toBeInTheDocument()
     expect(screen.getByText('Giá đề xuất')).toBeInTheDocument()
     expect(screen.getByText('Trạng thái giá')).toBeInTheDocument()
+  })
+
+  it('distinguishes the current approved cover from a revision cover proposal', async () => {
+    mockedList.mockResolvedValue(apiList([makeSummary()]))
+    mockedDetail.mockResolvedValue(apiDetail(Object.assign(makeDetail(), {
+      currentCoverImageUrl: 'https://example.test/current.jpg',
+      proposedCoverImageUrl: 'https://example.test/proposed.jpg',
+    }) as AdminReviewCourseDetail))
+
+    renderPage()
+
+    expect(await screen.findByRole('img', { name: 'Ảnh bìa khóa học hiện tại cho Khoa hoc A1 co ban' }))
+      .toHaveAttribute('src', 'https://example.test/current.jpg')
+    expect(screen.getByRole('img', { name: 'Ảnh bìa đề xuất cho Khoa hoc A1 co ban' }))
+      .toHaveAttribute('src', 'https://example.test/proposed.jpg')
+  })
+
+  it('provides a separate route section for standalone cover reviews', async () => {
+    mockedList.mockResolvedValue(apiList([]))
+    mockedCoverList.mockResolvedValue(apiCoverList([makeCoverSummary()]))
+    mockedCoverDetail.mockResolvedValue(apiCoverDetail(makeCoverDetail()))
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Kiểm duyệt ảnh bìa' }))
+
+    expect(await screen.findByRole('heading', { name: 'Ảnh bìa khóa học chờ duyệt' })).toBeInTheDocument()
+    expect(await screen.findByRole('img', { name: 'Ảnh bìa đề xuất cho Khoa hoc co anh moi' }))
+      .toHaveAttribute('src', 'https://example.test/new.jpg')
+    expect(screen.getByRole('img', { name: 'Ảnh bìa khóa học hiện tại cho Khoa hoc co anh moi' }))
+      .toHaveAttribute('src', 'https://example.test/old.jpg')
+  })
+
+  it('loads additional cover proposals using the server cursor', async () => {
+    mockedList.mockResolvedValue(apiList([]))
+    mockedCoverList
+      .mockResolvedValueOnce({
+        ...apiCoverList([makeCoverSummary()], 'next-page'),
+      })
+      .mockResolvedValueOnce({
+        ...apiCoverList([makeCoverSummary({ id: 22, courseName: 'Khoa hoc tiep theo' })]),
+      })
+    mockedCoverDetail.mockResolvedValue(apiCoverDetail(makeCoverDetail()))
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Kiểm duyệt ảnh bìa' }))
+    expect(await screen.findByRole('button', { name: /Khoa hoc co anh moi/ })).toBeInTheDocument()
+    fireEvent.click(await screen.findByRole('button', { name: 'Tải thêm ảnh bìa' }))
+
+    expect(await screen.findByRole('button', { name: /Khoa hoc tiep theo/ })).toBeInTheDocument()
+    expect(mockedCoverList).toHaveBeenNthCalledWith(2, { cursor: 'next-page' })
+  })
+
+  it('requires a rejection reason and submits the cover review decision', async () => {
+    mockedList.mockResolvedValue(apiList([]))
+    mockedCoverList.mockResolvedValue(apiCoverList([makeCoverSummary()]))
+    mockedCoverDetail.mockResolvedValue(apiCoverDetail(makeCoverDetail()))
+
+    renderPage()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Kiểm duyệt ảnh bìa' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Từ chối ảnh bìa' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Xác nhận từ chối' }))
+
+    expect(await screen.findByText('Vui lòng nhập lý do từ chối.')).toBeInTheDocument()
+    expect(mockedCoverReject).not.toHaveBeenCalled()
+
+    fireEvent.change(screen.getByLabelText('Lý do từ chối ảnh bìa'), { target: { value: 'Ảnh không phù hợp' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Xác nhận từ chối' }))
+
+    await waitFor(() => expect(mockedCoverReject).toHaveBeenCalledWith(21, { reason: 'Ảnh không phù hợp' }))
   })
 
   it('opens an AlertDialog naming the course for approve and confirms via approve API without window.confirm', async () => {

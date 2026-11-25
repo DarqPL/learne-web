@@ -1,0 +1,283 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/shadcn/ui/alert'
+import { Badge } from '@/components/shadcn/ui/badge'
+import { Button } from '@/components/shadcn/ui/button'
+import { CourseCoverImage } from '../../../components/course/CourseCoverImage'
+import { getApiErrorMessage } from '../../../lib/api/client'
+import {
+  approveCourseCoverReview,
+  getCourseCoverReview,
+  listPendingCourseCoverReviews,
+  rejectCourseCoverReview,
+} from '../../../lib/api/adminReviewApi'
+import type { AdminCourseCoverReviewDetail, AdminCourseCoverReviewSummary } from '../../../lib/api/types'
+
+function isConflict(error: unknown) {
+  return (error as { response?: { status?: number } }).response?.status === 409
+}
+
+export function AdminCourseCoverReviewPanel() {
+  const [reviews, setReviews] = useState<AdminCourseCoverReviewSummary[] | null>(null)
+  const [nextCursor, setNextCursor] = useState<string | null>(null)
+  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [detail, setDetail] = useState<AdminCourseCoverReviewDetail | null>(null)
+  const [loadingDetail, setLoadingDetail] = useState(false)
+  const [action, setAction] = useState<'approve' | 'reject' | 'load-more' | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [info, setInfo] = useState<string | null>(null)
+  const [showRejectForm, setShowRejectForm] = useState(false)
+  const [reason, setReason] = useState('')
+  const [reasonError, setReasonError] = useState<string | null>(null)
+  const mountedRef = useRef(false)
+  const detailRequestIdRef = useRef(0)
+
+  const loadDetail = useCallback(async (reviewId: number) => {
+    const requestId = detailRequestIdRef.current + 1
+    detailRequestIdRef.current = requestId
+    setSelectedId(reviewId)
+    setDetail(null)
+    setLoadingDetail(true)
+    try {
+      const response = await getCourseCoverReview(reviewId)
+      if (mountedRef.current && detailRequestIdRef.current === requestId) setDetail(response.data)
+    } catch (loadError) {
+      if (mountedRef.current && detailRequestIdRef.current === requestId) {
+        setError(getApiErrorMessage(loadError, 'Không thể tải thông tin ảnh bìa cần duyệt.'))
+      }
+    } finally {
+      if (mountedRef.current && detailRequestIdRef.current === requestId) setLoadingDetail(false)
+    }
+  }, [])
+
+  const loadQueue = async (cursor?: string | null, selectFirst = false) => {
+    try {
+      const response = await listPendingCourseCoverReviews(
+        cursor ? { cursor } : undefined,
+      )
+      if (!mountedRef.current) return
+      setReviews((current) => cursor ? [...(current ?? []), ...response.data.content] : response.data.content)
+      setNextCursor(response.data.nextCursor)
+      setError(null)
+      if (selectFirst && response.data.content[0]) {
+        await loadDetail(response.data.content[0].id)
+      } else if (selectFirst) {
+        setSelectedId(null)
+        setDetail(null)
+      }
+    } catch (loadError) {
+      if (mountedRef.current) {
+        setError(getApiErrorMessage(loadError, 'Không thể tải ảnh bìa chờ duyệt.'))
+        if (!cursor) setReviews([])
+      }
+    }
+  }
+
+  useEffect(() => {
+    mountedRef.current = true
+    void listPendingCourseCoverReviews()
+      .then((response) => {
+        if (!mountedRef.current) return
+        setReviews(response.data.content)
+        setNextCursor(response.data.nextCursor)
+        setError(null)
+        const firstReview = response.data.content[0]
+        if (firstReview) {
+          return loadDetail(firstReview.id)
+        }
+        setSelectedId(null)
+        setDetail(null)
+      })
+      .catch((loadError: unknown) => {
+        if (!mountedRef.current) return
+        setError(getApiErrorMessage(loadError, 'Không thể tải ảnh bìa chờ duyệt.'))
+        setReviews([])
+      })
+    return () => {
+      mountedRef.current = false
+      detailRequestIdRef.current += 1
+    }
+  }, [loadDetail])
+
+  const handleApprove = async () => {
+    if (!detail || action) return
+    setAction('approve')
+    setError(null)
+    setInfo(null)
+    try {
+      await approveCourseCoverReview(detail.id)
+      setInfo('Đã duyệt ảnh bìa khóa học.')
+      await loadQueue(null, true)
+    } catch (approveError) {
+      setError(getApiErrorMessage(approveError, 'Không thể duyệt ảnh bìa khóa học.'))
+      if (isConflict(approveError)) await loadQueue(null, true)
+    } finally {
+      setAction(null)
+    }
+  }
+
+  const handleReject = async () => {
+    if (!detail || action) return
+    if (!reason.trim()) {
+      setReasonError('Vui lòng nhập lý do từ chối.')
+      return
+    }
+    setAction('reject')
+    setError(null)
+    setInfo(null)
+    setReasonError(null)
+    try {
+      await rejectCourseCoverReview(detail.id, { reason: reason.trim() })
+      setInfo('Đã từ chối ảnh bìa khóa học.')
+      setReason('')
+      setShowRejectForm(false)
+      await loadQueue(null, true)
+    } catch (rejectError) {
+      setError(getApiErrorMessage(rejectError, 'Không thể từ chối ảnh bìa khóa học.'))
+      if (isConflict(rejectError)) await loadQueue(null, true)
+    } finally {
+      setAction(null)
+    }
+  }
+
+  const busy = action !== null
+
+  return (
+    <div className="flex flex-col gap-5">
+      <div>
+        <h2 className="text-xl font-semibold text-gray-900">Ảnh bìa khóa học chờ duyệt</h2>
+        {reviews !== null ? <p className="mt-1 text-sm text-gray-600">{reviews.length} đề xuất đang tải</p> : null}
+      </div>
+      {error ? (
+        <Alert variant="destructive">
+          <AlertTitle>Không thể xử lý ảnh bìa</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : null}
+      {info ? (
+        <Alert>
+          <AlertTitle>Thành công</AlertTitle>
+          <AlertDescription>{info}</AlertDescription>
+        </Alert>
+      ) : null}
+      <div className="grid gap-5 lg:grid-cols-[20rem_1fr]">
+        <aside className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-white p-4">
+          {reviews === null ? (
+            <p className="py-4 text-sm text-gray-600">Đang tải ảnh bìa chờ duyệt...</p>
+          ) : reviews.length === 0 ? (
+            <p className="py-4 text-sm text-gray-600">Không có ảnh bìa nào đang chờ duyệt.</p>
+          ) : (
+            reviews.map((review) => (
+              <button
+                key={review.id}
+                type="button"
+                aria-current={selectedId === review.id ? 'true' : undefined}
+                disabled={busy}
+                className={`rounded-lg border p-3 text-left ${
+                  selectedId === review.id ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200 hover:bg-gray-50'
+                }`}
+                onClick={() => {
+                  setError(null)
+                  setInfo(null)
+                  setShowRejectForm(false)
+                  void loadDetail(review.id)
+                }}
+              >
+                <span className="block truncate text-sm font-medium text-gray-900">{review.courseName}</span>
+                <span className="mt-1 block truncate text-xs text-gray-600">{review.teacherName}</span>
+                <span className="mt-2 block text-xs text-gray-500">{new Date(review.submittedAt).toLocaleString('vi-VN')}</span>
+              </button>
+            ))
+          )}
+          {nextCursor ? (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={busy}
+              onClick={() => {
+                setAction('load-more')
+                void loadQueue(nextCursor).finally(() => setAction(null))
+              }}
+            >
+              Tải thêm ảnh bìa
+            </Button>
+          ) : null}
+        </aside>
+
+        <section className="flex min-w-0 flex-col gap-4 rounded-xl border border-gray-200 bg-white p-5">
+          {loadingDetail ? (
+            <p className="text-sm text-gray-600">Đang tải đề xuất ảnh bìa...</p>
+          ) : detail ? (
+            <>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-lg font-semibold text-gray-900">{detail.courseName}</h3>
+                  <Badge variant="outline">Chờ duyệt</Badge>
+                </div>
+                <p className="mt-1 text-sm text-gray-600">{detail.teacherName} · {detail.teacherEmail}</p>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="flex flex-col gap-2">
+                  <h4 className="text-sm font-semibold text-gray-800">Ảnh bìa hiện tại</h4>
+                  <CourseCoverImage
+                    courseName={detail.courseName}
+                    imageUrl={detail.currentCoverImageUrl}
+                    imageAlt={`Ảnh bìa khóa học hiện tại cho ${detail.courseName}`}
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <h4 className="text-sm font-semibold text-gray-800">Ảnh bìa đề xuất</h4>
+                  <CourseCoverImage
+                    courseName={detail.courseName}
+                    imageUrl={detail.proposedCoverImageUrl}
+                    imageAlt={`Ảnh bìa đề xuất cho ${detail.courseName}`}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 border-y border-gray-200 py-3">
+                <Button type="button" disabled={busy} onClick={() => void handleApprove()}>
+                  Duyệt ảnh bìa
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={busy}
+                  aria-expanded={showRejectForm}
+                  onClick={() => {
+                    setShowRejectForm((current) => !current)
+                    setReasonError(null)
+                  }}
+                >
+                  Từ chối ảnh bìa
+                </Button>
+              </div>
+              {showRejectForm ? (
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="cover-rejection-reason" className="text-sm font-medium">Lý do từ chối ảnh bìa</label>
+                  <textarea
+                    id="cover-rejection-reason"
+                    rows={3}
+                    value={reason}
+                    disabled={busy}
+                    onChange={(event) => {
+                      setReason(event.target.value)
+                      setReasonError(null)
+                    }}
+                    className="rounded-md border border-gray-300 p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                  />
+                  {reasonError ? <p role="alert" className="text-sm text-red-700">{reasonError}</p> : null}
+                  <div className="flex justify-end">
+                    <Button type="button" variant="destructive" disabled={busy} onClick={() => void handleReject()}>
+                      {action === 'reject' ? 'Đang từ chối...' : 'Xác nhận từ chối'}
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+            </>
+          ) : (
+            <p className="text-sm text-gray-600">Chọn một đề xuất để xem ảnh cần duyệt.</p>
+          )}
+        </section>
+      </div>
+    </div>
+  )
+}

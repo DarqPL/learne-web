@@ -11,7 +11,7 @@ import { getQuestionInitialValue } from './teacherContentMappers'
 import { CourseBuilderWorkspace, type CourseBuilderWorkspaceProps } from './CourseBuilderWorkspace'
 
 vi.mock('../../../lib/api/teacherContentApi', () => ({
-  getTeacherCourse: vi.fn(), getCourseSubmission: vi.fn(),
+  getTeacherCourse: vi.fn(), getCourseSubmission: vi.fn(), getCourseCoverState: vi.fn(),
   createTeacherCourse: vi.fn(), updateTeacherCourse: vi.fn(), deleteTeacherCourse: vi.fn(), submitTeacherCourse: vi.fn(),
   createTeacherTopic: vi.fn(), updateTeacherTopic: vi.fn(), deleteTeacherTopic: vi.fn(),
   createTeacherLesson: vi.fn(), updateTeacherLesson: vi.fn(), deleteTeacherLesson: vi.fn(),
@@ -38,7 +38,14 @@ function mount(path: string) {
     <Route path="/away" element={<p>Away</p>} />
   </Routes></MemoryRouter>)
 }
-beforeEach(() => { vi.resetAllMocks(); HTMLElement.prototype.scrollIntoView = vi.fn(); vi.mocked(api.getTeacherCourse).mockResolvedValue({ data: course } as AxiosResponse) })
+beforeEach(() => {
+  vi.resetAllMocks()
+  HTMLElement.prototype.scrollIntoView = vi.fn()
+  vi.mocked(api.getTeacherCourse).mockResolvedValue({ data: course } as AxiosResponse)
+  vi.mocked(api.getCourseCoverState).mockResolvedValue({
+    data: { publicImageUrl: null, pendingSnapshot: null, latestCoverReview: null, revisionCandidate: null },
+  } as AxiosResponse)
+})
 
 describe('terminal submission refresh determines editing permissions', () => {
   it.each([

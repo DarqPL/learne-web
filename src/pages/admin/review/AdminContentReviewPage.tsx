@@ -3,6 +3,7 @@ import { BadgeCheck, XCircle } from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { approveReviewCourse, getReviewCourse, listPendingReviewCourses, rejectReviewCourse } from '../../../lib/api/adminReviewApi'
 import type { AdminReviewCourseDetail, AdminReviewCourseSummary, AdminReviewLesson, CoursePricingType } from '../../../lib/api/types'
+import { CourseCoverImage } from '../../../components/course/CourseCoverImage'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -25,6 +26,7 @@ import { Button } from '@/components/shadcn/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/shadcn/ui/dialog'
 import { Skeleton } from '@/components/shadcn/ui/skeleton'
 import { RejectCourseForm } from './RejectCourseForm'
+import { AdminCourseCoverReviewPanel } from './AdminCourseCoverReviewPanel'
 import { reviewCourseTypeLabels, reviewQuestionTypeLabels, reviewSkillTypeLabels, reviewStatusLabels, reviewStatusStyles } from './adminReviewLabels'
 import { countReviewLessons, countReviewQuestions, formatReviewDate } from './adminReviewUtils'
 
@@ -56,6 +58,7 @@ export function AdminContentReviewPage() {
   const [approveProcessing, setApproveProcessing] = useState(false)
   const [showRejectForm, setShowRejectForm] = useState(false)
   const [lessonDetail, setLessonDetail] = useState<AdminReviewLesson | null>(null)
+  const [activeQueue, setActiveQueue] = useState<'courses' | 'covers'>('courses')
   const mountedRef = useRef(false)
   const detailRequestIdRef = useRef(0)
 
@@ -221,6 +224,26 @@ export function AdminContentReviewPage() {
         </Alert>
       ) : null}
 
+      <div role="group" aria-label="Loại nội dung cần kiểm duyệt" className="flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant={activeQueue === 'courses' ? 'default' : 'outline'}
+          aria-pressed={activeQueue === 'courses'}
+          onClick={() => setActiveQueue('courses')}
+        >
+          Khóa học
+        </Button>
+        <Button
+          type="button"
+          variant={activeQueue === 'covers' ? 'default' : 'outline'}
+          aria-pressed={activeQueue === 'covers'}
+          onClick={() => setActiveQueue('covers')}
+        >
+          Kiểm duyệt ảnh bìa
+        </Button>
+      </div>
+
+      {activeQueue === 'covers' ? <AdminCourseCoverReviewPanel /> : (
       <div className="grid gap-6 lg:grid-cols-[20rem_1fr]">
         <aside className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm lg:sticky lg:top-24 lg:self-start">
           <div className="sticky top-0 z-10 border-b border-gray-200 bg-white px-5 py-4">
@@ -317,6 +340,24 @@ export function AdminContentReviewPage() {
                   </span>
                 </div>
                 {selectedCourse.description ? <p className="text-sm leading-6 text-gray-700">{selectedCourse.description}</p> : null}
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="flex flex-col gap-2">
+                    <h3 className="text-sm font-semibold text-gray-900">Ảnh bìa hiện tại</h3>
+                    <CourseCoverImage
+                      courseName={selectedCourse.name}
+                      imageUrl={selectedCourse.currentCoverImageUrl}
+                      imageAlt={`Ảnh bìa khóa học hiện tại cho ${selectedCourse.name}`}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <h3 className="text-sm font-semibold text-gray-900">Ảnh bìa đề xuất trong bản gửi duyệt</h3>
+                    <CourseCoverImage
+                      courseName={selectedCourse.name}
+                      imageUrl={selectedCourse.proposedCoverImageUrl}
+                      imageAlt={`Ảnh bìa đề xuất cho ${selectedCourse.name}`}
+                    />
+                  </div>
+                </div>
                 <div className="flex flex-col gap-1">
                   <h3 className="text-sm font-semibold text-gray-900">Thông tin giá</h3>
                   <dl className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-600">
@@ -408,6 +449,7 @@ export function AdminContentReviewPage() {
           )}
         </section>
       </div>
+      )}
 
       <Dialog
         open={lessonDetail !== null}

@@ -19,16 +19,23 @@ import { Button } from '@/components/shadcn/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shadcn/ui/card'
 import { Skeleton } from '@/components/shadcn/ui/skeleton'
 import { getApiErrorMessage } from '../../../lib/api/client'
+import { CourseCoverEditorDialog } from '../../../components/course/CourseCoverEditorDialog'
 import {
   createTeacherLesson,
   createTeacherQuestion,
   createTeacherTopic,
+  cancelCourseCoverProposal,
   deleteTeacherCourse,
   deleteTeacherLesson,
   deleteTeacherQuestion,
   deleteTeacherTopic,
   getTeacherCourse,
+  getCourseCoverState,
   submitTeacherCourse,
+  uploadCourseCover,
+  removeCourseCover,
+  uploadCourseRevisionCover,
+  removeCourseRevisionCover,
   updateTeacherCourse,
   updateTeacherLesson,
   updateTeacherQuestion,
@@ -38,6 +45,7 @@ import type {
   CourseImportResponse,
   LessonAudioFields,
   TeacherCourse,
+  TeacherCourseCoverState,
   TeacherCourseRequest,
   TeacherLesson,
   TeacherLessonRequest,
@@ -46,6 +54,7 @@ import type {
   TeacherTopic,
   TeacherTopicRequest,
 } from '../../../lib/api/types'
+import { CourseCoverImage } from '../../../components/course/CourseCoverImage'
 import { CourseImportExportPanel } from './CourseImportExportPanel'
 import { CourseBuilderWorkspace } from './CourseBuilderWorkspace'
 import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
@@ -64,11 +73,14 @@ export function TeacherCourseBuilderPage() {
   const { courseId } = useParams()
   const parsedCourseId = parsePositiveInteger(courseId)
   const [course, setCourse] = useState<TeacherCourse | null>(null)
+  const [coverState, setCoverState] = useState<TeacherCourseCoverState | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [action, setAction] = useState<string | null>(null)
   const [formResetVersion, setFormResetVersion] = useState(0)
   const [deleteCourseDialogOpen, setDeleteCourseDialogOpen] = useState(false)
+  const [coverEditorOpen, setCoverEditorOpen] = useState(false)
+  const [coverSourceFile, setCoverSourceFile] = useState<File | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -78,17 +90,23 @@ export function TeacherCourseBuilderPage() {
       if (cancelled) return
 
       setCourse(null)
+      setCoverState(null)
       if (parsedCourseId === null) return
 
       try {
-        const response = await getTeacherCourse(parsedCourseId)
+        const [response, coverResponse] = await Promise.all([
+          getTeacherCourse(parsedCourseId),
+          getCourseCoverState(parsedCourseId),
+        ])
         if (!cancelled) {
           setCourse(response.data)
+          setCoverState(coverResponse.data)
           setError(null)
         }
       } catch (err) {
         if (!cancelled) {
           setCourse(null)
+          setCoverState(null)
           setError(getApiErrorMessage(err, 'Không thể tải khóa học.'))
         }
       }
@@ -100,8 +118,18 @@ export function TeacherCourseBuilderPage() {
 
   const refreshCourse = async () => {
     if (parsedCourseId === null) return
-    const response = await getTeacherCourse(parsedCourseId)
+    const [response, coverResponse] = await Promise.all([
+      getTeacherCourse(parsedCourseId),
+      getCourseCoverState(parsedCourseId),
+    ])
     setCourse((current) => current?.id === response.data.id ? response.data : current)
+    setCoverState(coverResponse.data)
+  }
+
+  const refreshCoverState = async () => {
+    if (parsedCourseId === null) return
+    const response = await getCourseCoverState(parsedCourseId)
+    setCoverState(response.data)
   }
 
   const { submission, acceptSubmission, active } = useCourseSubmission(parsedCourseId, course?.id === parsedCourseId ? course.submission : null, refreshCourse)
@@ -171,6 +199,81 @@ export function TeacherCourseBuilderPage() {
     } catch (err) {
       setError(getApiErrorMessage(err, 'Không thể xóa khóa học.'))
       await handleConflict(err)
+      setAction(null)
+    }
+  }
+
+  const handleUploadCover = async (file: File) => {
+    if (!course || action !== null || action === 'delete-course') return
+    setAction('upload-cover')
+    setError(null)
+    setInfo(null)
+    try {
+      const revisionCover = course.hasEditableRevision || course.latestRevisionStatus === 'PENDING_REVIEW'
+      if (revisionCover) {
+        await uploadCourseRevisionCover(course.id, file)
+        setInfo('Đã gửi ảnh bìa cùng bản sửa để duyệt.')
+      } else {
+        await uploadCourseCover(course.id, file)
+        setInfo('Đã gửi ảnh bìa để duyệt.')
+      }
+      try {
+        await refreshCoverState()
+      } catch {
+        setError('Đã gửi ảnh bìa nhưng chưa thể tải lại trạng thái duyệt.')
+      }
+    } catch (err) {
+      const message = getApiErrorMessage(err, 'Không thể tải ảnh bìa khóa học.')
+      throw new Error(message, { cause: err })
+    } finally {
+      setAction(null)
+    }
+  }
+
+  const handleCancelCoverProposal = async () => {
+    if (!course || action !== null) return
+    setAction('cancel-cover')
+    setError(null)
+    setInfo(null)
+    try {
+      await cancelCourseCoverProposal(course.id)
+      await refreshCoverState()
+      setInfo('Đã hủy đề xuất ảnh bìa đang chờ duyệt.')
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Không thể hủy đề xuất ảnh bìa.'))
+    } finally {
+      setAction(null)
+    }
+  }
+
+  const handleRemoveRevisionCover = async () => {
+    if (!course || action !== null) return
+    setAction('remove-revision-cover')
+    setError(null)
+    setInfo(null)
+    try {
+      await removeCourseRevisionCover(course.id)
+      await refreshCoverState()
+      setInfo('Đã xóa ảnh bìa đề xuất trong bản sửa.')
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Không thể xóa ảnh bìa đề xuất.'))
+    } finally {
+      setAction(null)
+    }
+  }
+
+  const handleRemoveCover = async () => {
+    if (!course || action !== null || action === 'delete-course') return
+    setAction('remove-cover')
+    setError(null)
+    setInfo(null)
+    try {
+      await removeCourseCover(course.id)
+      setCourse((current) => current ? { ...current, imageUrl: null } : current)
+      setInfo('Đã xóa ảnh bìa khóa học.')
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Không thể xóa ảnh bìa khóa học.'))
+    } finally {
       setAction(null)
     }
   }
@@ -466,6 +569,96 @@ export function TeacherCourseBuilderPage() {
                 ) : null}
               </div>
             </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-[minmax(0,240px)_minmax(0,1fr)] sm:items-center">
+                <CourseCoverImage courseName={currentCourse.name} imageUrl={currentCourse.imageUrl} />
+                <div className="flex flex-wrap gap-2">
+                  <label className={`inline-flex h-9 cursor-pointer items-center rounded-md bg-indigo-600 px-4 text-sm font-medium text-white ${action !== null ? 'pointer-events-none opacity-50' : ''}`}>
+                    {action === 'upload-cover' ? 'Đang tải...' : currentCourse.imageUrl ? 'Thay ảnh bìa' : 'Tải ảnh bìa'}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      disabled={action !== null}
+                      onChange={(event) => {
+                        const file = event.target.files?.[0]
+                        event.target.value = ''
+                        if (file) {
+                          setCoverSourceFile(file)
+                          setCoverEditorOpen(true)
+                        }
+                      }}
+                    />
+                  </label>
+                  {currentCourse.imageUrl ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={action !== null}
+                      onClick={() => void handleRemoveCover()}
+                    >
+                      {action === 'remove-cover' ? 'Đang xóa...' : 'Xóa ảnh bìa'}
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Ảnh công khai chỉ thay đổi sau khi được duyệt. Xóa ảnh công khai có hiệu lực ngay.
+              </p>
+              {!currentCourse.imageUrl ? (
+                <p className="mt-2 text-sm text-muted-foreground">Chưa có ảnh bìa công khai.</p>
+              ) : null}
+              {coverState?.pendingSnapshot?.kind === 'COVER_ONLY' &&
+              coverState.pendingSnapshot.status === 'PENDING_REVIEW' &&
+              coverState.pendingSnapshot.proposedImageUrl ? (
+                <div className="mt-4 grid gap-3 rounded-lg border border-amber-200 bg-amber-50/50 p-3 sm:grid-cols-[minmax(0,240px)_1fr] sm:items-center">
+                  <CourseCoverImage
+                    courseName={currentCourse.name}
+                    imageUrl={coverState.pendingSnapshot.proposedImageUrl}
+                    imageAlt={`Ảnh bìa đề xuất đang chờ duyệt cho ${currentCourse.name}`}
+                  />
+                  <div className="flex flex-col items-start gap-2">
+                    <p className="text-sm font-medium text-amber-900">Ảnh bìa mới đang chờ duyệt.</p>
+                    <Button type="button" variant="outline" disabled={action !== null} onClick={() => void handleCancelCoverProposal()}>
+                      {action === 'cancel-cover' ? 'Đang hủy...' : 'Hủy đề xuất ảnh bìa'}
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+              {coverState?.revisionCandidate ? (
+                <div className="mt-4 grid gap-3 rounded-lg border border-indigo-200 bg-indigo-50/50 p-3 sm:grid-cols-[minmax(0,240px)_1fr] sm:items-center">
+                  <CourseCoverImage
+                    courseName={currentCourse.name}
+                    imageUrl={coverState.revisionCandidate.proposedImageUrl}
+                    imageAlt={`Ảnh bìa đề xuất trong bản sửa cho ${currentCourse.name}`}
+                  />
+                  <div className="flex flex-col items-start gap-2">
+                    <p className="text-sm font-medium text-indigo-900">
+                      Ảnh bìa đề xuất trong bản sửa · {coverState.revisionCandidate.status}
+                    </p>
+                      {coverState.revisionCandidate.status === 'DRAFT' ||
+                      coverState.revisionCandidate.status === 'REJECTED' ? (
+                        <Button type="button" variant="outline" disabled={action !== null} onClick={() => void handleRemoveRevisionCover()}>
+                          {action === 'remove-revision-cover' ? 'Đang xóa...' : 'Xóa ảnh bìa đề xuất'}
+                        </Button>
+                      ) : null}
+                  </div>
+                </div>
+              ) : null}
+              {coverState?.latestCoverReview?.status === 'REJECTED' ? (
+                <Alert variant="destructive" className="mt-4">
+                  <TriangleAlert aria-hidden="true" />
+                  <AlertTitle>Ảnh bìa bị từ chối</AlertTitle>
+                  <AlertDescription>{coverState.latestCoverReview.rejectionReason || 'Không có lý do được cung cấp.'}</AlertDescription>
+                </Alert>
+              ) : null}
+              {coverState?.latestCoverReview?.status === 'SUPERSEDED' ? (
+                <Alert className="mt-4">
+                  <AlertTitle>Đề xuất ảnh bìa đã được thay thế</AlertTitle>
+                  <AlertDescription>Đề xuất cũ không còn trong hàng chờ duyệt.</AlertDescription>
+                </Alert>
+              ) : null}
+            </CardContent>
             {currentCourse.rejectionReason ? (
               <CardContent>
                 <Alert variant="destructive">
@@ -525,6 +718,17 @@ export function TeacherCourseBuilderPage() {
             onUpdateQuestion={handleUpdateQuestion}
             onDeleteQuestion={handleDeleteQuestion}
             onAudioChanged={handleAudioChanged}
+          />
+
+          <CourseCoverEditorDialog
+            open={coverEditorOpen}
+            sourceFile={coverSourceFile}
+            submitting={action === 'upload-cover'}
+            onOpenChange={(open) => {
+              setCoverEditorOpen(open)
+              if (!open) setCoverSourceFile(null)
+            }}
+            onSubmit={handleUploadCover}
           />
 
           <AlertDialog

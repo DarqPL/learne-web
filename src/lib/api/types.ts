@@ -409,6 +409,7 @@ export interface TeacherCourse {
   priceAmountVnd: number | null
   proposedPriceAmountVnd: number | null
   priceStatus: CoursePriceStatus
+  imageUrl?: string | null
   topics: TeacherTopic[]
 }
 
@@ -423,6 +424,29 @@ export interface CourseImportResponse {
   revisionId: number
   status: string
   errors: CourseImportError[]
+}
+
+export type CourseCoverReviewStatus = 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'SUPERSEDED' | 'CANCELLED'
+export type CoursePendingReviewSnapshotKind = 'COURSE_REVISION' | 'COVER_ONLY'
+
+export interface TeacherCourseCoverState {
+  publicImageUrl: string | null
+  pendingSnapshot: {
+    kind: CoursePendingReviewSnapshotKind
+    id: number
+    status: string
+    proposedImageUrl: string | null
+  } | null
+  latestCoverReview: {
+    id: number
+    status: CourseCoverReviewStatus
+    rejectionReason: string | null
+  } | null
+  revisionCandidate: {
+    id: number
+    status: CourseRevisionStatus
+    proposedImageUrl: string
+  } | null
 }
 
 export interface TeacherCourseRequest {
@@ -489,6 +513,24 @@ export interface AdminReviewCourseSummary {
   priceAmountVnd: number | null
   proposedPriceAmountVnd: number | null
   priceStatus: CoursePriceStatus
+}
+
+export interface AdminCourseCoverReviewSummary {
+  id: number
+  courseId: number
+  courseName: string
+  teacherId: number
+  teacherName: string
+  teacherEmail: string
+  currentCoverImageUrl: string | null
+  proposedCoverImageUrl: string
+  submittedAt: string
+}
+
+export interface AdminCourseCoverReviewDetail extends AdminCourseCoverReviewSummary {
+  status: CourseCoverReviewStatus
+  rejectionReason: string | null
+  reviewedAt: string | null
 }
 
 export interface AdminReviewQuestionOption {
@@ -564,6 +606,8 @@ export interface AdminReviewCourseDetail {
   priceAmountVnd: number | null
   proposedPriceAmountVnd: number | null
   priceStatus: CoursePriceStatus
+  currentCoverImageUrl: string | null
+  proposedCoverImageUrl: string | null
   topics: AdminReviewTopic[]
 }
 
@@ -585,6 +629,7 @@ export interface StudentCourseSummary {
   teacherName: string
   teacherEmail: string
   teacherAvatarUrl: string | null
+  imageUrl?: string | null
   topicCount: number
   lessonCount: number
   questionCount: number
@@ -638,6 +683,7 @@ export interface StudentCourseDetail {
   teacherName: string
   teacherEmail: string
   teacherAvatarUrl: string | null
+  imageUrl?: string | null
   publishedAt: string | null
   pricingType: CoursePricingType
   priceAmountVnd: number | null

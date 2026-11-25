@@ -4,6 +4,7 @@ import type {
   CourseSubmission,
   CourseImportResponse,
   TeacherCourse,
+  TeacherCourseCoverState,
   TeacherCourseRequest,
   TeacherLesson,
   TeacherLessonRequest,
@@ -34,6 +35,42 @@ export function updateTeacherCourse(courseId: number, payload: TeacherCourseRequ
 
 export function deleteTeacherCourse(courseId: number) {
   return http.delete<ApiMessageResponse>(`${base}/courses/${courseId}`)
+}
+
+export interface CourseCoverImageResponse {
+  imageUrl: string | null
+}
+
+export function uploadCourseCover(courseId: number, file: File) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return http.post<CourseCoverImageResponse>(`${base}/courses/${courseId}/cover-image`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+}
+
+export function removeCourseCover(courseId: number) {
+  return http.delete<CourseCoverImageResponse>(`${base}/courses/${courseId}/cover-image`)
+}
+
+export function getCourseCoverState(courseId: number) {
+  return http.get<TeacherCourseCoverState>(`${base}/courses/${courseId}/cover-image`)
+}
+
+export function cancelCourseCoverProposal(courseId: number) {
+  return http.delete<CourseCoverImageResponse>(`${base}/courses/${courseId}/cover-image/pending`)
+}
+
+export function uploadCourseRevisionCover(courseId: number, file: File) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return http.post<CourseCoverImageResponse>(`${base}/courses/${courseId}/cover-image/revision`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+}
+
+export function removeCourseRevisionCover(courseId: number) {
+  return http.delete<CourseCoverImageResponse>(`${base}/courses/${courseId}/cover-image/revision`)
 }
 
 export function createTeacherTopic(courseId: number, payload: TeacherTopicRequest) {
