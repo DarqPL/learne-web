@@ -283,7 +283,7 @@ describe('StudentCourseDetailPage compact redesign', () => {
     mockedCheckoutCourse.mockReset()
   })
 
-  function makeCompactCourse() {
+  function makeCompactCourse(overrides: Partial<StudentCourseDetail> = {}) {
     return makeCourse({
       accessStatus: 'OWNED',
       enrolled: true,
@@ -321,8 +321,22 @@ describe('StudentCourseDetailPage compact redesign', () => {
           ],
         },
       ],
+      ...overrides,
     })
   }
+
+  it('renders cover image or fallback on the course detail', async () => {
+    mockedGetStudentCourse.mockResolvedValue(courseApiResponse(
+      makeCompactCourse({ imageUrl: 'https://example.test/detail.jpg' }),
+    ))
+
+    renderCourseDetail()
+
+    expect(await screen.findByRole('img', { name: 'Ảnh bìa khóa học Premium English' })).toHaveAttribute(
+      'src',
+      'https://example.test/detail.jpg',
+    )
+  })
 
   it('shows breadcrumb and back link to course list', async () => {
     mockedGetStudentCourse.mockResolvedValue(courseApiResponse(makeCompactCourse()))

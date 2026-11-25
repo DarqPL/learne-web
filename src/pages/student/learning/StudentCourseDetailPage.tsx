@@ -25,6 +25,7 @@ import { Input } from '../../../components/shadcn/ui/input'
 import { lessonProgressStatusLabels, studentCourseTypeLabels, studentQuestionTypeLabels, studentSkillTypeLabels } from './studentLearningLabels'
 import { countStudentLessons, countStudentQuestions, flattenProgressLessons } from './studentLearningUtils'
 import { formatVnd } from '../payment/paymentUtils'
+import { CourseCoverImage } from '../../../components/course/CourseCoverImage'
 
 function parseCourseId(value: string | undefined) {
   const id = Number(value)
@@ -290,6 +291,7 @@ export function StudentCourseDetailPage() {
       </div>
 
       <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+        <CourseCoverImage courseName={course.name} imageUrl={course.imageUrl} className="mb-5" />
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1">
             <h1 className="text-2xl font-bold tracking-tight text-gray-950 sm:text-3xl">{course.name}</h1>

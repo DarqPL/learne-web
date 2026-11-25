@@ -52,6 +52,21 @@ describe('StudentCourseListPage redesign', () => {
     mockedListStudentCourses.mockReset()
   })
 
+  it('renders course cover images and fallback for courses without covers', async () => {
+    mockedListStudentCourses.mockResolvedValue(coursesApiResponse([
+      makeCourse({ id: 1, name: 'Covered Course', imageUrl: 'https://example.test/cover.jpg' }),
+      makeCourse({ id: 2, name: 'Fallback Course', imageUrl: null }),
+    ]))
+
+    renderListPage()
+
+    expect(await screen.findByRole('img', { name: 'Ảnh bìa khóa học Covered Course' })).toHaveAttribute(
+      'src',
+      'https://example.test/cover.jpg',
+    )
+    expect(screen.getByRole('img', { name: 'Ảnh bìa mặc định cho khóa học Fallback Course' })).toBeInTheDocument()
+  })
+
   it('shows slim hero with heading and one-line description plus breadcrumb', async () => {
     mockedListStudentCourses.mockResolvedValue(coursesApiResponse([]))
 

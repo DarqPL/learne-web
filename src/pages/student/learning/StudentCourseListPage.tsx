@@ -19,6 +19,7 @@ import {
 import { Button } from '../../../components/shadcn/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '../../../components/shadcn/ui/card'
 import { studentCourseTypeLabels } from './studentLearningLabels'
+import { CourseCoverImage } from '../../../components/course/CourseCoverImage'
 
 const levelOptions = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
 
@@ -256,6 +257,7 @@ export function StudentCourseListPage() {
               className="group block min-w-0 rounded-3xl outline-none transition focus-visible:ring-4 focus-visible:ring-indigo-200"
             >
               <Card className="h-full flex flex-col gap-3 overflow-hidden border-gray-200 bg-white p-5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:border-indigo-200 group-hover:shadow-sm">
+                <CourseCoverImage courseName={course.name} imageUrl={course.imageUrl} />
                 <CardHeader className="flex flex-col gap-3 p-0">
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline" className={cn(courseTypeClass(course.type))}>
