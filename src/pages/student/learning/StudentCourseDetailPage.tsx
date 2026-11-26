@@ -291,9 +291,12 @@ export function StudentCourseDetailPage() {
       </div>
 
       <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
-        <CourseCoverImage courseName={course.name} imageUrl={course.imageUrl} className="mb-5" />
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0 flex-1">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.5fr)_minmax(15rem,0.9fr)] xl:items-start">
+          <div className="min-w-0">
+            <CourseCoverImage courseName={course.name} imageUrl={course.imageUrl} className="w-full" />
+          </div>
+
+          <div className="min-w-0">
             <h1 className="text-2xl font-bold tracking-tight text-gray-950 sm:text-3xl">{course.name}</h1>
             {course.description ? <p className="mt-2 max-w-2xl whitespace-pre-wrap text-sm leading-6 text-gray-600">{course.description}</p> : null}
             <div className="mt-3 flex items-center gap-2">
@@ -339,7 +342,7 @@ export function StudentCourseDetailPage() {
             ) : null}
           </div>
 
-          <div className="flex w-full shrink-0 flex-col gap-3 sm:w-auto sm:min-w-60">
+          <div className="flex w-full min-w-0 flex-col gap-3 sm:w-auto sm:min-w-60">
             {course.enrolled && course.activeEnrollmentId ? (
               <Button size="default" className="w-auto" onClick={() => navigate(`/student/enrollments/${course.activeEnrollmentId}`)}>
                 Tiếp tục học
