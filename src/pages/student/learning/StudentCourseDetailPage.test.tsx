@@ -325,6 +325,25 @@ describe('StudentCourseDetailPage compact redesign', () => {
     })
   }
 
+  it('keeps the course cover and summary responsive to browser zoom', async () => {
+    mockedGetStudentCourse.mockResolvedValue(courseApiResponse(
+      makeCompactCourse({ imageUrl: 'https://example.test/detail.jpg' }),
+    ))
+
+    renderCourseDetail()
+
+    const title = await screen.findByRole('heading', { name: 'Premium English' })
+    const summary = title.closest('section')
+    const layout = summary?.querySelector(':scope > .grid')
+
+    expect(screen.getByRole('img', { name: 'Ảnh bìa khóa học Premium English' })).toBeInTheDocument()
+    expect(layout).toBeInTheDocument()
+    expect(layout).toHaveClass(
+      'grid-cols-1',
+      'xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.5fr)_minmax(15rem,0.9fr)]',
+    )
+  })
+
   it('renders cover image or fallback on the course detail', async () => {
     mockedGetStudentCourse.mockResolvedValue(courseApiResponse(
       makeCompactCourse({ imageUrl: 'https://example.test/detail.jpg' }),
