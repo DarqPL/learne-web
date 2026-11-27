@@ -117,12 +117,12 @@ export function StudentSubscriptionPlansPage() {
   return (
     <div className="space-y-6">
       <section className="rounded-3xl border border-indigo-100 bg-gradient-to-br from-white via-indigo-50 to-violet-50 p-6 shadow-sm sm:p-8">
-        <Badge variant="outline" className="border-indigo-200 bg-white text-indigo-700">
+        <Badge variant="outline" className="border-indigo-200 bg-card text-indigo-700">
           <Crown aria-hidden="true" />
           Gói học
         </Badge>
-        <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">Chọn gói học phù hợp</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
+        <h1 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Chọn gói học phù hợp</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
           Tạo đơn thanh toán SEPAY và hoàn tất chuyển khoản trên trang hướng dẫn thanh toán.
         </p>
       </section>
@@ -144,9 +144,9 @@ export function StudentSubscriptionPlansPage() {
 
       <section aria-label="Gói hiện tại">
         {subscriptionLoading ? (
-          <Card className="border-indigo-100 bg-white shadow-sm">
+          <Card className="border-indigo-100 bg-card shadow-sm">
             <CardContent className="space-y-3">
-              <Badge variant="outline" className="border-indigo-200 bg-white text-indigo-700">
+              <Badge variant="outline" className="border-indigo-200 bg-card text-indigo-700">
                 Gói hiện tại
               </Badge>
               <Skeleton className="h-5 w-40" />
@@ -154,28 +154,28 @@ export function StudentSubscriptionPlansPage() {
             </CardContent>
           </Card>
         ) : subscription?.planCode ? (
-          <Card className="border-indigo-100 bg-white shadow-sm">
+          <Card className="border-indigo-100 bg-card shadow-sm">
             <CardContent className="space-y-3">
               <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
                 <CheckCircle2 aria-hidden="true" />
                 Gói hiện tại
               </Badge>
-              <p className="text-lg font-bold text-gray-950">{plans.find((item) => item.code === subscription.planCode)?.name ?? subscription.planCode}</p>
-              <p className="text-sm text-gray-600">
+              <p className="text-lg font-bold text-foreground">{plans.find((item) => item.code === subscription.planCode)?.name ?? subscription.planCode}</p>
+              <p className="text-sm text-muted-foreground">
                 Mã gói: {subscription.planCode} · Hiệu lực: {subscription.startsAt ?? '—'} – {subscription.endsAt ?? '—'}
               </p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 AI đã dùng hôm nay: {subscription.aiUsedToday}/{subscription.aiDailyLimit}
               </p>
             </CardContent>
           </Card>
         ) : (
-          <Card className="border-indigo-100 bg-white shadow-sm">
+          <Card className="border-indigo-100 bg-card shadow-sm">
             <CardContent className="space-y-2">
-              <Badge variant="outline" className="border-indigo-200 bg-white text-indigo-700">
+              <Badge variant="outline" className="border-indigo-200 bg-card text-indigo-700">
                 Gói hiện tại
               </Badge>
-              <p className="text-sm text-gray-600">Chưa có gói đang hoạt động</p>
+              <p className="text-sm text-muted-foreground">Chưa có gói đang hoạt động</p>
             </CardContent>
           </Card>
         )}
@@ -189,7 +189,7 @@ export function StudentSubscriptionPlansPage() {
           const couponDisabled = isActive || checkoutPlanCode !== null
 
           return (
-            <Card key={plan.code} className="border-indigo-100 bg-white shadow-sm">
+            <Card key={plan.code} className="border-indigo-100 bg-card shadow-sm">
               <CardHeader>
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
                   <Icon aria-hidden="true" className="h-6 w-6" />
@@ -198,10 +198,10 @@ export function StudentSubscriptionPlansPage() {
                   <span>{plan.name}</span>
                   <span className="text-xl font-bold text-indigo-700">{formatVnd(plan.priceVnd)}</span>
                 </CardTitle>
-                <p className="text-sm leading-6 text-gray-600">{plan.description}</p>
+                <p className="text-sm leading-6 text-muted-foreground">{plan.description}</p>
               </CardHeader>
               <CardContent className="space-y-5">
-                <ul className="space-y-3 text-sm text-gray-700">
+                <ul className="space-y-3 text-sm text-foreground">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex gap-2">
                       <CheckCircle2 aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />

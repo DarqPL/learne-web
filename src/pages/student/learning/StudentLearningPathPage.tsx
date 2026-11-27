@@ -109,8 +109,8 @@ export function StudentLearningPathPage() {
       <section className="flex min-w-0 flex-col gap-2">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">Lộ trình học cá nhân</h1>
-            <p className="mt-1 text-base leading-7 text-gray-600">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Lộ trình học cá nhân</h1>
+            <p className="mt-1 text-base leading-7 text-muted-foreground">
               AI phân tích kết quả học tập để ưu tiên các bài học nên ôn lại, giúp bạn tập trung vào kỹ năng còn yếu trước khi tiếp tục.
             </p>
             {path ? (
@@ -149,22 +149,22 @@ export function StudentLearningPathPage() {
       ) : null}
 
       {loading ? (
-        <Card className="border-dashed border-indigo-200 bg-white/90 shadow-sm">
-          <CardContent className="flex items-center gap-4 p-6 text-gray-600">
+        <Card className="border-dashed border-indigo-200 bg-card/90 shadow-sm">
+          <CardContent className="flex items-center gap-4 p-6 text-muted-foreground">
             <span className="flex size-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
               <Loader2 aria-hidden="true" className="size-5 animate-spin" />
             </span>
             <div>
-              <p className="font-medium text-gray-900">Đang tải lộ trình học</p>
-              <p className="text-sm text-gray-500">Hệ thống đang lấy các bài học AI đề xuất cho bạn.</p>
+              <p className="font-medium text-foreground">Đang tải lộ trình học</p>
+              <p className="text-sm text-muted-foreground">Hệ thống đang lấy các bài học AI đề xuất cho bạn.</p>
             </div>
           </CardContent>
         </Card>
       ) : path === null ? (
-        <Card className="border-dashed border-gray-200 bg-white text-center shadow-sm">
+        <Card className="border-dashed border-border bg-card text-center shadow-sm">
           <CardContent className="flex flex-col items-center gap-0 p-8">
-            <h2 className="mt-4 text-lg font-semibold text-gray-950">Chưa có lộ trình để hiển thị</h2>
-            <p className="mt-2 max-w-md text-sm leading-6 text-gray-600">
+            <h2 className="mt-4 text-lg font-semibold text-foreground">Chưa có lộ trình để hiển thị</h2>
+            <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
               Khi bạn tạo lộ trình, các bài học ưu tiên sẽ xuất hiện tại đây.
             </p>
             <Button loading={generating} disabled={generating} onClick={() => void handleGenerate()} className="mt-5">
@@ -179,32 +179,32 @@ export function StudentLearningPathPage() {
               <span className="flex size-8 items-center justify-center rounded-xl bg-violet-600 text-white">
                 <Sparkles aria-hidden="true" className="size-4" />
               </span>
-              <h2 className="text-base font-semibold text-gray-950">Nên tập trung luyện tập</h2>
+              <h2 className="text-base font-semibold text-foreground">Nên tập trung luyện tập</h2>
             </div>
             {path.weaknesses.length > 0 ? (
               <div className="flex flex-wrap gap-1.5">
                 {path.weaknesses.map((weakness) => (
-                  <Badge key={weakness} variant="outline" className="border-violet-200 bg-white/80 text-violet-700">
+                  <Badge key={weakness} variant="outline" className="border-violet-200 bg-card/80 text-violet-700">
                     {weakness}
                   </Badge>
                 ))}
               </div>
             ) : (
-              <p className="text-sm leading-6 text-gray-600">AI chưa ghi nhận điểm yếu cụ thể. Hãy tiếp tục làm quiz để dữ liệu đề xuất chính xác hơn.</p>
+              <p className="text-sm leading-6 text-muted-foreground">AI chưa ghi nhận điểm yếu cụ thể. Hãy tiếp tục làm quiz để dữ liệu đề xuất chính xác hơn.</p>
             )}
-            <p className="text-xs leading-5 text-gray-500">Dựa trên {path.source || 'kết quả học tập gần đây'}.</p>
+            <p className="text-xs leading-5 text-muted-foreground">Dựa trên {path.source || 'kết quả học tập gần đây'}.</p>
           </div>
 
           <section className="flex min-w-0 flex-col gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Thứ tự đề xuất</p>
-              <h2 className="mt-1 text-xl font-semibold text-gray-950">Bài học trong lộ trình</h2>
+              <h2 className="mt-1 text-xl font-semibold text-foreground">Bài học trong lộ trình</h2>
             </div>
 
             {sortedItems.length === 0 ? (
-              <Card className="border-dashed border-gray-200 bg-white shadow-sm">
+              <Card className="border-dashed border-border bg-card shadow-sm">
                 <CardContent className="p-6">
-                  <p className="text-sm leading-6 text-gray-600">Lộ trình hiện chưa có bài học đề xuất. Hãy tạo lại sau khi có thêm kết quả học tập.</p>
+                  <p className="text-sm leading-6 text-muted-foreground">Lộ trình hiện chưa có bài học đề xuất. Hãy tạo lại sau khi có thêm kết quả học tập.</p>
                 </CardContent>
               </Card>
             ) : (
@@ -215,7 +215,7 @@ export function StudentLearningPathPage() {
                   return (
                     <Card
                       key={item.id}
-                      className="h-full flex flex-col gap-2.5 overflow-hidden border-gray-200 bg-white p-4 transition-colors hover:border-indigo-200 hover:shadow-sm"
+                      className="h-full flex flex-col gap-2.5 overflow-hidden border-border bg-card p-4 transition-colors hover:border-indigo-200 hover:shadow-sm"
                     >
                       <CardHeader className="flex flex-col gap-2.5 p-0">
                         <div className="flex items-center justify-start gap-2">
@@ -228,9 +228,9 @@ export function StudentLearningPathPage() {
                           )}
                         </div>
                         <div className="flex min-w-0 flex-col gap-1">
-                          <h3 className="text-lg font-semibold tracking-tight text-gray-950">{item.lessonTitle}</h3>
-                          <p className="text-sm text-gray-600">{item.courseTitle}</p>
-                          <p className="text-xs leading-5 text-gray-500">Giảng viên: {item.teacherName}</p>
+                          <h3 className="text-lg font-semibold tracking-tight text-foreground">{item.lessonTitle}</h3>
+                          <p className="text-sm text-muted-foreground">{item.courseTitle}</p>
+                          <p className="text-xs leading-5 text-muted-foreground">Giảng viên: {item.teacherName}</p>
                         </div>
                         <Badge variant="outline" className="w-fit border-violet-200 bg-violet-50 text-violet-700">
                           <span>Độ phù hợp</span>
@@ -239,7 +239,7 @@ export function StudentLearningPathPage() {
                         </Badge>
                       </CardHeader>
                       <CardContent className="p-0">
-                        <p className="line-clamp-2 text-sm leading-6 text-gray-600">
+                        <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
                           {item.reason || 'AI đề xuất bài học này dựa trên tiến độ học tập gần đây.'}
                         </p>
                       </CardContent>
@@ -249,7 +249,7 @@ export function StudentLearningPathPage() {
                             Đã hoàn thành
                           </span>
                         ) : item.enrollmentId === null ? (
-                          <span className="inline-flex items-center gap-1 text-sm font-medium text-gray-400">
+                          <span className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground">
                             Chưa có enrollment hợp lệ
                           </span>
                         ) : (

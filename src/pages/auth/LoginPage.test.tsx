@@ -3,6 +3,8 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { login } from '../../lib/api/authApi'
 import { LoginPage } from './LoginPage'
+import { ThemeProvider } from '../../lib/theme/ThemeProvider'
+import { AuthLayout } from '../../layouts/AuthLayout'
 
 vi.mock('../../lib/api/authApi', () => ({ login: vi.fn() }))
 vi.mock('../../lib/auth/auth-context', () => ({ useAuth: () => ({ login: vi.fn() }) }))
@@ -37,9 +39,9 @@ async function flush() {
 
 function renderAndSubmit() {
   render(
-    <MemoryRouter initialEntries={['/login']}>
+    <ThemeProvider><MemoryRouter initialEntries={['/login']}>
       <LoginPage />
-    </MemoryRouter>,
+    </MemoryRouter></ThemeProvider>,
   )
   fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'student01@learne.local' } })
   fireEvent.change(screen.getByLabelText('Mật khẩu'), { target: { value: 'Admin123' } })
@@ -55,6 +57,14 @@ afterEach(() => {
 })
 
 describe('LoginPage rate limits', () => {
+  it('renders the authentication surface in each resolved theme', () => {
+    const { rerender } = render(<ThemeProvider><MemoryRouter><AuthLayout /></MemoryRouter></ThemeProvider>)
+    const surface = document.querySelector('.auth-background')
+    expect(surface).toBeInTheDocument()
+    expect(surface).toHaveClass('auth-background')
+    rerender(<ThemeProvider><MemoryRouter><AuthLayout /></MemoryRouter></ThemeProvider>)
+    expect(surface).toHaveClass('auth-background')
+  })
   it('locks the form for Retry-After seconds and unlocks at zero', async () => {
     vi.useFakeTimers()
     vi.mocked(login).mockRejectedValue(limitedError(42))

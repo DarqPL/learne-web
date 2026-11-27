@@ -61,7 +61,7 @@ import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
 import { coursePricingTypeLabels, courseTypeLabels, formatVndAmount } from './contentLabels'
 import { canSubmitCourse, countLessons, countQuestions, isPendingRevision, mergeLessonAudio } from './contentUtils'
 
-const cardSoftClassName = 'border-indigo-100 bg-white/95 shadow-sm shadow-indigo-100/60'
+const cardSoftClassName = 'border-indigo-100 bg-card/95 shadow-sm shadow-indigo-100/60'
 
 function parsePositiveInteger(value: string | undefined) {
   const parsed = Number(value)
@@ -747,7 +747,7 @@ export function TeacherCourseBuilderPage() {
                   <div className="flex flex-col gap-1">
                     <AlertDialogTitle>Xóa khóa học</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Xóa vĩnh viễn khóa học <span className="font-semibold text-gray-900">{currentCourse.name}</span> cùng toàn bộ chủ đề, bài học và câu hỏi?
+                      Xóa vĩnh viễn khóa học <span className="font-semibold text-foreground">{currentCourse.name}</span> cùng toàn bộ chủ đề, bài học và câu hỏi?
                       <span className="mt-2 block rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
                         Hành động này không thể hoàn tác.
                       </span>

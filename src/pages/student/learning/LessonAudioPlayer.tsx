@@ -11,8 +11,8 @@ export function LessonAudioPlayer({ audioUrl, title = 'Audio bài nghe' }: Lesso
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-sky-700">Luyện nghe</p>
-          <h2 className="mt-1 text-base font-semibold text-gray-900">{title}</h2>
-          <p className="mt-1 text-sm leading-6 text-gray-600">Nghe đoạn audio trước khi đọc nội dung hoặc trả lời câu hỏi.</p>
+          <h2 className="mt-1 text-base font-semibold text-foreground">{title}</h2>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">Nghe đoạn audio trước khi đọc nội dung hoặc trả lời câu hỏi.</p>
         </div>
       </div>
       <audio aria-label={title} className="mt-4 w-full" controls preload="metadata" src={audioUrl}>

@@ -173,7 +173,7 @@ describe('AdminTeacherListPage shadcn sync', () => {
     const table = await screen.findByRole('table')
     expect(table).toHaveAttribute('data-slot', 'table')
     expect(table.className).toContain('border-indigo-100/70')
-    expect(document.querySelector('[data-slot="table-header"]')?.className).toContain('bg-indigo-50')
+    expect(document.querySelector('[data-slot="table-header"]')?.className).toContain('bg-muted')
     expect(table.closest('[data-slot="table-container"]')?.parentElement?.className).toContain('border-indigo-100')
     expect(screen.getByText('Họ và tên')).toBeInTheDocument()
     expect(screen.getByText('Email')).toBeInTheDocument()

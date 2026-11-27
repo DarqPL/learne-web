@@ -57,13 +57,13 @@ export function ChangePasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-muted px-4">
       <Card>
-        <h1 className="mb-2 text-center text-2xl font-bold text-gray-900">
+        <h1 className="mb-2 text-center text-2xl font-bold text-foreground">
           {forced ? 'Bắt buộc đổi mật khẩu' : 'Đổi mật khẩu'}
         </h1>
         {forced ? (
-          <p className="mb-4 text-center text-sm text-gray-600">
+          <p className="mb-4 text-center text-sm text-muted-foreground">
             Bạn cần đổi mật khẩu trước khi sử dụng hệ thống.
           </p>
         ) : null}
@@ -92,7 +92,7 @@ export function ChangePasswordPage() {
               autoComplete="new-password"
             />
           </Field>
-          <p className="text-xs text-gray-500">Mật khẩu phải có ít nhất 8 ký tự, gồm cả chữ và số.</p>
+          <p className="text-xs text-muted-foreground">Mật khẩu phải có ít nhất 8 ký tự, gồm cả chữ và số.</p>
           <Button type="submit" loading={submitting} className="w-full">
             {forced ? 'Đổi mật khẩu' : 'Cập nhật mật khẩu'}
           </Button>

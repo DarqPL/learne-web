@@ -35,10 +35,10 @@ function getCorrectAnswerDisplay(answer: StudentQuizAnswerResult) {
 
 function StatCard({ label, value, detail }: { label: string; value: string | number; detail?: string }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{label}</p>
-      <p className="mt-2 text-2xl font-bold text-gray-900">{value}</p>
-      {detail ? <p className="mt-1 text-xs font-medium text-gray-500">{detail}</p> : null}
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="mt-2 text-2xl font-bold text-foreground">{value}</p>
+      {detail ? <p className="mt-1 text-xs font-medium text-muted-foreground">{detail}</p> : null}
     </div>
   )
 }
@@ -104,16 +104,16 @@ export function StudentQuizResultPage() {
 
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
         <div className="bg-gradient-to-br from-indigo-50 via-white to-emerald-50 p-6">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Kết quả bài học</p>
-              <h1 className="mt-2 text-3xl font-bold text-gray-900">{formatScorePercent(result.scorePercent)}</h1>
+              <h1 className="mt-2 text-3xl font-bold text-foreground">{formatScorePercent(result.scorePercent)}</h1>
               <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold">
                 <span className={`rounded-full px-3 py-1 ${tone.className}`}>{tone.label}</span>
               </div>
-              <p className="mt-4 max-w-2xl text-sm leading-6 text-gray-600">{tone.message}</p>
+              <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground">{tone.message}</p>
             </div>
 
             <div className="flex shrink-0 flex-col gap-2 sm:flex-row lg:flex-col">
@@ -129,11 +129,11 @@ export function StudentQuizResultPage() {
 
           <div className="mt-6">
             <div className="mb-2 flex items-center justify-between gap-3 text-sm">
-              <span className="font-medium text-gray-700">Tiến độ khóa học</span>
-              <span className="font-semibold text-gray-900">{progressPercent}%</span>
+              <span className="font-medium text-foreground">Tiến độ khóa học</span>
+              <span className="font-semibold text-foreground">{progressPercent}%</span>
             </div>
             <div
-              className="h-2 overflow-hidden rounded-full bg-white"
+              className="h-2 overflow-hidden rounded-full bg-card"
               role="progressbar"
               aria-valuemin={0}
               aria-valuemax={100}
@@ -160,50 +160,50 @@ export function StudentQuizResultPage() {
         </div>
       ) : null}
 
-      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Xem lại câu trả lời</p>
-            <h2 className="mt-2 text-2xl font-bold text-gray-900">Chi tiết chấm điểm</h2>
+            <h2 className="mt-2 text-2xl font-bold text-foreground">Chi tiết chấm điểm</h2>
           </div>
-          <span className="text-sm font-medium text-gray-500">{result.answers.length} câu hỏi</span>
+          <span className="text-sm font-medium text-muted-foreground">{result.answers.length} câu hỏi</span>
         </div>
 
         <div className="mt-6 space-y-4">
           {result.answers.length === 0 ? (
-            <p className="text-sm text-gray-600">Chưa có câu trả lời nào để hiển thị.</p>
+            <p className="text-sm text-muted-foreground">Chưa có câu trả lời nào để hiển thị.</p>
           ) : (
             result.answers.map((answer, index) => {
               const answerDisplay = getAnswerDisplay(answer)
               const correctAnswerDisplay = getCorrectAnswerDisplay(answer)
               return (
-                <article key={answer.questionId} className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
+                <article key={answer.questionId} className="rounded-2xl border border-border bg-muted p-5">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
                         <span className={answer.correct ? 'rounded-full bg-green-100 px-3 py-1 text-green-700' : 'rounded-full bg-red-100 px-3 py-1 text-red-700'}>
                           {answer.correct ? 'Đúng' : 'Chưa đúng'}
                         </span>
-                        <span className="rounded-full bg-white px-3 py-1 text-gray-700">{studentQuestionTypeLabels[answer.type]}</span>
-                        <span className="rounded-full bg-white px-3 py-1 text-gray-700">Câu {index + 1}</span>
+                        <span className="rounded-full bg-card px-3 py-1 text-foreground">{studentQuestionTypeLabels[answer.type]}</span>
+                        <span className="rounded-full bg-card px-3 py-1 text-foreground">Câu {index + 1}</span>
                       </div>
-                      <h3 className="mt-4 whitespace-pre-wrap text-lg font-semibold text-gray-900">{answer.questionText}</h3>
+                      <h3 className="mt-4 whitespace-pre-wrap text-lg font-semibold text-foreground">{answer.questionText}</h3>
                     </div>
-                    <div className="shrink-0 rounded-xl bg-white px-3 py-2 text-right shadow-sm">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Điểm</p>
-                      <p className="text-sm font-bold text-gray-900">{formatScorePercent(answer.scorePercent)}</p>
-                      <p className="text-xs font-medium text-gray-500">+{answer.earnedXp} XP</p>
+                    <div className="shrink-0 rounded-xl bg-card px-3 py-2 text-right shadow-sm">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Điểm</p>
+                      <p className="text-sm font-bold text-foreground">{formatScorePercent(answer.scorePercent)}</p>
+                      <p className="text-xs font-medium text-muted-foreground">+{answer.earnedXp} XP</p>
                     </div>
                   </div>
 
                   <div className="mt-5 grid gap-4 lg:grid-cols-2">
-                    <div className="rounded-xl bg-white p-4">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Câu trả lời của bạn</p>
-                      <p className="mt-2 whitespace-pre-wrap text-sm font-medium text-gray-900">{answerDisplay}</p>
+                    <div className="rounded-xl bg-card p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Câu trả lời của bạn</p>
+                      <p className="mt-2 whitespace-pre-wrap text-sm font-medium text-foreground">{answerDisplay}</p>
                     </div>
-                    <div className="rounded-xl bg-white p-4">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Đáp án đúng</p>
-                      <p className="mt-2 whitespace-pre-wrap text-sm font-medium text-gray-900">{correctAnswerDisplay}</p>
+                    <div className="rounded-xl bg-card p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Đáp án đúng</p>
+                      <p className="mt-2 whitespace-pre-wrap text-sm font-medium text-foreground">{correctAnswerDisplay}</p>
                     </div>
                   </div>
 

@@ -25,17 +25,17 @@ export function MistakeReviewQuestionCard({ question, answer, onChange }: Mistak
   const promptId = `mistake-review-question-prompt-${question.questionId}`
 
   return (
-    <Card className="border-slate-200 bg-white">
+    <Card className="border-border bg-card">
       <CardHeader className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="secondary">{studentQuestionTypeLabels[question.questionType] ?? question.questionType}</Badge>
-          {context ? <span className="text-sm text-slate-500">{context}</span> : null}
+          {context ? <span className="text-sm text-muted-foreground">{context}</span> : null}
         </div>
-        <h2 id={titleId} className="whitespace-pre-wrap text-xl font-semibold leading-8 text-slate-950">
+        <h2 id={titleId} className="whitespace-pre-wrap text-xl font-semibold leading-8 text-foreground">
           {question.questionText}
         </h2>
         {invalid ? null : (
-          <p id={promptId} className="text-sm text-slate-600">
+          <p id={promptId} className="text-sm text-muted-foreground">
             {getQuestionTypePrompt(question.questionType, question.options.length)}
           </p>
         )}
@@ -58,7 +58,7 @@ export function MistakeReviewQuestionCard({ question, answer, onChange }: Mistak
                   className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${
                     selected
                       ? 'border-indigo-500 bg-indigo-50'
-                      : 'border-slate-200 bg-white hover:border-indigo-200 hover:bg-indigo-50/30'
+                      : 'border-border bg-card hover:border-indigo-200 hover:bg-indigo-50/30'
                   }`}
                 >
                   <input
@@ -69,14 +69,14 @@ export function MistakeReviewQuestionCard({ question, answer, onChange }: Mistak
                     onChange={() => onChange({ answerText: '', selectedOptionId: option.id })}
                     className="mt-1 size-4 rounded-full accent-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                   />
-                  <span className="text-sm leading-6 text-slate-800">{option.text}</span>
+                  <span className="text-sm leading-6 text-foreground">{option.text}</span>
                 </label>
               )
             })}
           </div>
         ) : (
           <div className="space-y-2">
-            <label htmlFor={`mistake-review-answer-${question.questionId}`} className="text-sm font-medium text-slate-700">
+            <label htmlFor={`mistake-review-answer-${question.questionId}`} className="text-sm font-medium text-foreground">
               Câu trả lời của bạn
             </label>
             <Textarea

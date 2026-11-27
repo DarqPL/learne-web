@@ -241,7 +241,7 @@ export function StudentDashboardPage() {
       <section className="overflow-hidden rounded-[2rem] border border-indigo-100 bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 text-white shadow-xl shadow-indigo-200">
         <div className="relative p-6 sm:p-8">
           <div className="relative max-w-3xl space-y-5">
-            <Badge className="border-white/20 bg-white/15 text-white hover:bg-white/15">
+            <Badge className="border-white/20 bg-card/15 text-white hover:bg-card/15">
               <GraduationCap className="size-3.5" aria-hidden="true" /> AI
               Learning Hub
             </Badge>
@@ -257,7 +257,7 @@ export function StudentDashboardPage() {
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button
                 asChild
-                className="bg-white text-indigo-700 hover:bg-indigo-50"
+                className="bg-card text-indigo-700 hover:bg-indigo-50"
               >
                 <Link to="/student/enrollments">
                   <PlayCircle className="size-4" aria-hidden="true" /> Tiếp tục
@@ -267,7 +267,7 @@ export function StudentDashboardPage() {
               <Button
                 asChild
                 variant="outline"
-                className="border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+                className="border-white/40 bg-card/10 text-white hover:bg-card/20 hover:text-white"
               >
                 <Link to="/student/ai-tutor">
                   <Bot className="size-4" aria-hidden="true" /> Mở AI Tutor
@@ -290,11 +290,11 @@ export function StudentDashboardPage() {
             const Icon = item.icon;
 
             return (
-              <Card key={item.label} className="border-slate-200 bg-white">
+              <Card key={item.label} className="border-border bg-card">
                 <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0 pb-2">
                   <div>
                     <CardDescription>{item.label}</CardDescription>
-                    <CardTitle className="mt-2 text-2xl text-slate-950">
+                    <CardTitle className="mt-2 text-2xl text-foreground">
                       {loadingDashboard ? "..." : item.value}
                     </CardTitle>
                   </div>
@@ -305,7 +305,7 @@ export function StudentDashboardPage() {
                   </span>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-slate-600">{item.description}</p>
+                  <p className="text-sm text-muted-foreground">{item.description}</p>
                 </CardContent>
               </Card>
             );
@@ -313,9 +313,9 @@ export function StudentDashboardPage() {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[1fr_1.2fr]">
-          <Card className="border-slate-200 bg-white">
+          <Card className="border-border bg-card">
             <CardHeader>
-              <CardTitle className="text-lg text-slate-950">
+              <CardTitle className="text-lg text-foreground">
                 Tiến độ đăng ký
               </CardTitle>
               <CardDescription>
@@ -323,9 +323,9 @@ export function StudentDashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-xs font-medium text-slate-500">Tổng đăng ký</p>
-                <p className="mt-2 text-2xl font-bold text-slate-950">
+              <div className="rounded-2xl bg-muted p-4">
+                <p className="text-xs font-medium text-muted-foreground">Tổng đăng ký</p>
+                <p className="mt-2 text-2xl font-bold text-foreground">
                   {enrollmentSummary
                     ? formatNumber(enrollmentSummary.totalEnrollments)
                     : "--"}
@@ -350,9 +350,9 @@ export function StudentDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200 bg-white">
+          <Card className="border-border bg-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg text-slate-950">
+              <CardTitle className="flex items-center gap-2 text-lg text-foreground">
                 <Trophy className="size-5 text-amber-500" aria-hidden="true" />
                 Bảng xếp hạng học viên
               </CardTitle>
@@ -360,7 +360,7 @@ export function StudentDashboardPage() {
             </CardHeader>
             <CardContent>
               {loadingDashboard ? (
-                <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+                <div className="flex items-center gap-3 rounded-2xl bg-muted p-4 text-sm text-muted-foreground">
                   <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                   Đang tải bảng xếp hạng...
                 </div>
@@ -369,17 +369,17 @@ export function StudentDashboardPage() {
                   {dashboard.leaderboard.map((student, index) => (
                     <div
                       key={student.userId}
-                      className="flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4"
+                      className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-muted p-4"
                     >
                       <div className="flex min-w-0 items-center gap-3">
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-indigo-700 shadow-sm">
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-card text-sm font-bold text-indigo-700 shadow-sm">
                           {index + 1}
                         </span>
                         <div className="min-w-0">
-                          <p className="truncate font-semibold text-slate-950">
+                          <p className="truncate font-semibold text-foreground">
                             {student.fullName}
                           </p>
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs text-muted-foreground">
                             Streak {formatNumber(student.currentStreakDays)} ngày
                           </p>
                         </div>
@@ -388,7 +388,7 @@ export function StudentDashboardPage() {
                         <p className="font-bold text-amber-600">
                           {formatNumber(student.totalXp)} XP
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-muted-foreground">
                           Kỷ lục {formatNumber(student.longestStreakDays)} ngày
                         </p>
                       </div>
@@ -396,7 +396,7 @@ export function StudentDashboardPage() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 text-sm text-slate-600">
+                <div className="rounded-2xl border border-dashed border-border bg-muted p-5 text-sm text-muted-foreground">
                   Chưa có dữ liệu xếp hạng
                 </div>
               )}
@@ -418,7 +418,7 @@ export function StudentDashboardPage() {
               to={action.to}
               className="group rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             >
-              <Card className="h-full border-slate-200 bg-white transition-all group-hover:-translate-y-0.5 group-hover:border-indigo-200 group-hover:shadow-lg group-hover:shadow-indigo-100">
+              <Card className="h-full border-border bg-card transition-all group-hover:-translate-y-0.5 group-hover:border-indigo-200 group-hover:shadow-lg group-hover:shadow-indigo-100">
                 <CardHeader className="space-y-4">
                   <div className="flex items-start justify-between gap-3">
                     <span
@@ -428,10 +428,10 @@ export function StudentDashboardPage() {
                     </span>
                   </div>
                   <div>
-                    <CardTitle className="flex items-center justify-between gap-3 text-lg leading-6 text-slate-950">
+                    <CardTitle className="flex items-center justify-between gap-3 text-lg leading-6 text-foreground">
                       <span>{action.title}</span>
                       <ArrowRight
-                        className="size-4 shrink-0 text-slate-400 transition-transform group-hover:translate-x-1 group-hover:text-indigo-600"
+                        className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-indigo-600"
                         aria-hidden="true"
                       />
                     </CardTitle>
@@ -447,15 +447,15 @@ export function StudentDashboardPage() {
       </section>
 
       <section
-        className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
+        className="rounded-3xl border border-border bg-card p-5 shadow-sm"
         aria-label="Luồng học tập"
       >
         <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-slate-950">
+            <h2 className="text-xl font-semibold text-foreground">
               Hành trình học trên LearnE
             </h2>
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="mt-1 text-sm text-muted-foreground">
               Các bước học được gom thành một luồng rõ ràng cho học viên.
             </p>
           </div>
@@ -467,18 +467,18 @@ export function StudentDashboardPage() {
             return (
               <div
                 key={step.label}
-                className="relative rounded-2xl border border-slate-100 bg-slate-50 p-4"
+                className="relative rounded-2xl border border-border bg-muted p-4"
               >
                 <div className="mb-3 flex items-center justify-between gap-3">
-                  <span className="flex size-10 items-center justify-center rounded-2xl bg-white text-indigo-600 shadow-sm">
+                  <span className="flex size-10 items-center justify-center rounded-2xl bg-card text-indigo-600 shadow-sm">
                     <Icon className="size-5" aria-hidden="true" />
                   </span>
-                  <span className="text-xs font-semibold text-slate-400">
+                  <span className="text-xs font-semibold text-muted-foreground">
                     0{index + 1}
                   </span>
                 </div>
-                <h3 className="font-semibold text-slate-950">{step.label}</h3>
-                <p className="mt-1 text-sm text-slate-600">
+                <h3 className="font-semibold text-foreground">{step.label}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
                   {step.description}
                 </p>
               </div>
@@ -487,17 +487,17 @@ export function StudentDashboardPage() {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-3xl border border-indigo-100 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-3xl border border-indigo-100 bg-card shadow-sm">
         <div className="border-b border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-violet-50 p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <Badge className="border-indigo-100 bg-indigo-100 text-indigo-700 hover:bg-indigo-100">
                 <Sparkles className="size-3.5" aria-hidden="true" /> AI đề xuất
               </Badge>
-              <h2 className="mt-3 text-xl font-semibold text-slate-950">
+              <h2 className="mt-3 text-xl font-semibold text-foreground">
                 Khóa học phù hợp với bạn
               </h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
                 Bài kiểm tra đầu vào và lịch sử học giúp AI xác định điểm cần
                 cải thiện, sau đó đề xuất khóa học nên bắt đầu trước.
               </p>
@@ -531,13 +531,13 @@ export function StudentDashboardPage() {
             <div className="rounded-3xl border border-dashed border-indigo-200 bg-indigo-50/50 p-6">
               <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                 <div className="max-w-2xl">
-                  <div className="mb-3 flex size-12 items-center justify-center rounded-2xl bg-white text-indigo-600 shadow-sm">
+                  <div className="mb-3 flex size-12 items-center justify-center rounded-2xl bg-card text-indigo-600 shadow-sm">
                     <Target className="size-6" aria-hidden="true" />
                   </div>
-                  <h3 className="text-lg font-semibold text-slate-950">
+                  <h3 className="text-lg font-semibold text-foreground">
                     Bắt đầu bằng bài kiểm tra đầu vào
                   </h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
                     Hoàn thành 20 câu hỏi để AI hiểu trình độ hiện tại, điểm
                     mạnh và điểm cần cải thiện trước khi đề xuất khóa học.
                   </p>
@@ -573,26 +573,26 @@ export function StudentDashboardPage() {
                 <div className="max-w-2xl">
                   <Badge
                     variant="outline"
-                    className="border-violet-200 bg-white text-violet-700"
+                    className="border-violet-200 bg-card text-violet-700"
                   >
                     <CheckCircle2 className="size-3.5" aria-hidden="true" /> AI
                     match sẵn sàng
                   </Badge>
-                  <h3 className="mt-3 text-lg font-semibold text-slate-950">
+                  <h3 className="mt-3 text-lg font-semibold text-foreground">
                     Khóa học AI đề xuất đã sẵn sàng
                   </h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
                     {recommendations?.weaknesses.length
                       ? `AI phát hiện bạn nên tập trung: ${recommendations.weaknesses.join(", ")}.`
                       : "AI đã phân tích dữ liệu hiện có để đề xuất khóa học phù hợp."}
                   </p>
                 </div>
-                <div className="rounded-2xl bg-white px-5 py-4 text-center shadow-sm">
+                <div className="rounded-2xl bg-card px-5 py-4 text-center shadow-sm">
                   <p className="text-xs font-medium text-violet-600">Đề xuất</p>
                   <p className="text-3xl font-bold text-violet-800">
                     {recommendationCount}
                   </p>
-                  <p className="text-xs text-slate-500">khóa học</p>
+                  <p className="text-xs text-muted-foreground">khóa học</p>
                 </div>
               </div>
               <div className="mt-5 flex flex-col gap-3 sm:flex-row">
@@ -610,15 +610,15 @@ export function StudentDashboardPage() {
               </div>
             </div>
           ) : (
-            <div className="rounded-3xl border border-dashed border-indigo-200 bg-slate-50 p-6">
+            <div className="rounded-3xl border border-dashed border-indigo-200 bg-muted p-6">
               <Sparkles
                 className="mb-3 size-8 text-indigo-500"
                 aria-hidden="true"
               />
-              <h3 className="text-lg font-semibold text-slate-950">
+              <h3 className="text-lg font-semibold text-foreground">
                 Chưa có khóa học AI đề xuất
               </h3>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
                 Bạn có thể mở trang đề xuất để tạo danh sách khóa học cá nhân
                 hóa, hoặc khám phá toàn bộ khóa học đã duyệt.
               </p>

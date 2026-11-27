@@ -138,7 +138,7 @@ export function CourseImportExportPanel({
   }
 
   return (
-    <Card className="border-indigo-100 bg-white/95 shadow-sm shadow-indigo-100/60">
+    <Card className="border-indigo-100 bg-card/95 shadow-sm shadow-indigo-100/60">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
@@ -192,7 +192,7 @@ export function CourseImportExportPanel({
             <FieldLabel htmlFor="teacher-course-import-file">File gói nén</FieldLabel>
             <Input
               id="teacher-course-import-file"
-              className="bg-white file:mr-3 file:rounded-md file:border-0 file:bg-indigo-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-indigo-800"
+              className="bg-card file:mr-3 file:rounded-md file:border-0 file:bg-indigo-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-indigo-800"
               type="file"
               disabled={editingState.kind !== 'editable'}
               accept=".zip,.rar,.7z,application/zip,application/x-zip-compressed,application/vnd.rar,application/x-rar-compressed,application/x-7z-compressed"
@@ -238,7 +238,7 @@ export function CourseImportExportPanel({
               <div className="flex flex-col gap-1">
                 <AlertDialogTitle>Xác nhận import khóa học</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Import file <span className="font-semibold text-gray-900">{selectedFile?.name ?? '(Chưa chọn file)'}</span> sẽ ghi đè bản nháp hiện tại, hoặc tạo bản nháp mới nếu khóa học đã xuất bản/đang chờ duyệt. Nội dung đã xuất bản không đổi cho đến khi được duyệt.
+                  Import file <span className="font-semibold text-foreground">{selectedFile?.name ?? '(Chưa chọn file)'}</span> sẽ ghi đè bản nháp hiện tại, hoặc tạo bản nháp mới nếu khóa học đã xuất bản/đang chờ duyệt. Nội dung đã xuất bản không đổi cho đến khi được duyệt.
                   <span className="mt-2 block rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700">
                     Hãy kiểm tra kỹ file gói nén trước khi tiếp tục.
                   </span>

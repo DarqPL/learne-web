@@ -109,7 +109,7 @@ export function BuilderContentStep({
                                   className={`flex w-full min-w-0 flex-col gap-0.5 rounded-lg border px-3 py-2 text-sm transition-colors ${
                                     isSelected
                                       ? 'border-indigo-300 bg-indigo-100/70 font-medium'
-                                      : 'border-indigo-100 bg-white/80 font-normal hover:border-indigo-200 hover:bg-indigo-50/60'
+                                      : 'border-indigo-100 bg-card/80 font-normal hover:border-indigo-200 hover:bg-indigo-50/60'
                                   }`}
                                 >
                                   <span className={`min-w-0 flex-1 truncate text-left ${isSelected ? 'font-medium' : 'font-normal'}`}>{lesson.title || '(Chưa đặt tiêu đề)'}</span>

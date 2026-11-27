@@ -136,8 +136,8 @@ export function AdminStudentListPage() {
           </BreadcrumbList>
         </Breadcrumb>
         <div className="flex min-w-0 flex-col gap-1">
-          <h1 className="text-2xl font-bold tracking-tight text-gray-950">Quản lý học sinh</h1>
-          <p className="text-sm text-gray-600">Xem danh sách học viên, trạng thái tài khoản và khóa hoặc mở khóa khi cần.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Quản lý học sinh</h1>
+          <p className="text-sm text-muted-foreground">Xem danh sách học viên, trạng thái tài khoản và khóa hoặc mở khóa khi cần.</p>
         </div>
       </section>
 
@@ -155,7 +155,7 @@ export function AdminStudentListPage() {
           <AlertDescription className="text-red-700">{error}</AlertDescription>
         </Alert>
       ) : students === null ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
           <div className="flex flex-col gap-3">
             {Array.from({ length: 4 }, (_, index) => (
               <Skeleton key={index} className="h-10 w-full" />
@@ -163,14 +163,14 @@ export function AdminStudentListPage() {
           </div>
         </div>
       ) : students.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-200 bg-white p-8 text-center text-sm text-gray-600 shadow-sm">
+        <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground shadow-sm">
           Chưa có học sinh nào.
         </div>
       ) : (
         <>
-          <div className="rounded-xl border border-indigo-100 bg-white shadow-sm [&>[data-slot=table-container]]:max-h-[60vh] [&>[data-slot=table-container]]:overflow-y-auto">
+          <div className="rounded-xl border border-indigo-100 bg-card shadow-sm [&>[data-slot=table-container]]:max-h-[60vh] [&>[data-slot=table-container]]:overflow-y-auto">
             <Table className="[&_tr]:border-indigo-100/70">
-              <TableHeader className="sticky top-0 z-10 [&_th]:bg-indigo-50">
+              <TableHeader className="sticky top-0 z-10 [&_th]:bg-muted">
                 <TableRow>
                   <TableHead>Họ và tên</TableHead>
                   <TableHead>Email</TableHead>
@@ -302,7 +302,7 @@ export function AdminStudentListPage() {
                 <AlertDialogDescription>
                   {lockTarget?.locked ? (
                     <>
-                      Mở khóa tài khoản <span className="font-semibold text-gray-900">{lockTarget?.fullName}</span> (
+                      Mở khóa tài khoản <span className="font-semibold text-foreground">{lockTarget?.fullName}</span> (
                       {lockTarget?.email})?
                       <span className="mt-2 block rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
                         Học viên sẽ có thể đăng nhập trở lại.
@@ -310,7 +310,7 @@ export function AdminStudentListPage() {
                     </>
                   ) : (
                     <>
-                      Khóa tài khoản <span className="font-semibold text-gray-900">{lockTarget?.fullName}</span> (
+                      Khóa tài khoản <span className="font-semibold text-foreground">{lockTarget?.fullName}</span> (
                       {lockTarget?.email})?
                       <span className="mt-2 block rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
                         Học viên sẽ không thể đăng nhập cho đến khi được mở khóa.

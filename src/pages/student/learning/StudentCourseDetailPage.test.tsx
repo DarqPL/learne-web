@@ -467,7 +467,7 @@ describe('StudentCourseDetailPage compact redesign', () => {
 
     const lessonRow = await screen.findByRole('button', { name: /Lesson One/i })
     const chevron = lessonRow.querySelector('svg') as SVGElement
-    expect(chevron).toHaveClass('text-gray-400')
+    expect(chevron).toHaveClass('text-muted-foreground')
     expect(chevron).not.toHaveClass('text-indigo-500')
 
     fireEvent.click(lessonRow)

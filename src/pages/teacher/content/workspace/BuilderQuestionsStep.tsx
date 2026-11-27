@@ -133,7 +133,7 @@ export function BuilderQuestionsStep({
                     {question.options.length > 0 ? (
                       <div className="mt-2 flex flex-col gap-2">
                         {question.options.map((option) => (
-                          <p key={option.id} className="rounded-lg border border-indigo-100 bg-white/90 px-3 py-2 text-sm">
+                          <p key={option.id} className="rounded-lg border border-indigo-100 bg-card/90 px-3 py-2 text-sm">
                             {option.optionText}
                           </p>
                         ))}

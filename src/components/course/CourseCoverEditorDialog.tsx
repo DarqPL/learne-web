@@ -323,7 +323,7 @@ export function CourseCoverEditorDialog({
           ) : null}
           {image && crop && sourceUrl ? (
             <>
-              <div className="relative aspect-[16/9] overflow-hidden rounded-lg bg-slate-200">
+              <div className="relative aspect-[16/9] overflow-hidden rounded-lg bg-muted">
                 <div
                   aria-hidden="true"
                   className="absolute inset-0 scale-110 bg-cover bg-center blur-xl"

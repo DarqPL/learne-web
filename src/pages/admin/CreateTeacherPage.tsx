@@ -67,8 +67,8 @@ export function CreateTeacherPage() {
           </BreadcrumbList>
         </Breadcrumb>
         <div className="flex min-w-0 flex-col gap-1">
-          <h1 className="text-2xl font-bold tracking-tight text-gray-950">Tạo tài khoản giảng viên</h1>
-          <p className="text-sm text-gray-600">Nhập họ tên và email để tạo tài khoản giảng viên mới.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Tạo tài khoản giảng viên</h1>
+          <p className="text-sm text-muted-foreground">Nhập họ tên và email để tạo tài khoản giảng viên mới.</p>
         </div>
         <div>
           <Button variant="outline" size="sm" asChild>

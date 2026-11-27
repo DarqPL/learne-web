@@ -181,15 +181,15 @@ export function StudentLessonQuizPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Bài kiểm tra</p>
-            <h1 className="mt-2 text-2xl font-bold text-gray-900">{quiz.lessonTitle}</h1>
+            <h1 className="mt-2 text-2xl font-bold text-foreground">{quiz.lessonTitle}</h1>
             <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold">
               <span className="rounded-full bg-indigo-100 px-3 py-1 text-indigo-700">Điểm đạt {formatScorePercent(quiz.passPercent)}</span>
               {quiz.bestScorePercent !== null ? (
-                <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-700">Tốt nhất {formatScorePercent(quiz.bestScorePercent)}</span>
+                <span className="rounded-full bg-muted px-3 py-1 text-foreground">Tốt nhất {formatScorePercent(quiz.bestScorePercent)}</span>
               ) : null}
               {quiz.alreadyPassed ? <span className="rounded-full bg-green-100 px-3 py-1 text-green-700">Đã vượt qua</span> : null}
             </div>
@@ -203,13 +203,13 @@ export function StudentLessonQuizPage() {
 
         <div className="mt-6">
           <div className="mb-2 flex items-center justify-between gap-3 text-sm">
-            <span className="font-medium text-gray-700">Tiến độ câu hỏi</span>
-            <span className="font-semibold text-gray-900">
+            <span className="font-medium text-foreground">Tiến độ câu hỏi</span>
+            <span className="font-semibold text-foreground">
               {questionCount === 0 ? 0 : currentQuestionIndex + 1}/{questionCount}
             </span>
           </div>
           <div
-            className="h-2 overflow-hidden rounded-full bg-gray-100"
+            className="h-2 overflow-hidden rounded-full bg-muted"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={100}
@@ -235,19 +235,19 @@ export function StudentLessonQuizPage() {
       <LessonAudioPlayer audioUrl={quiz.audioUrl} title="Audio cho bài kiểm tra nghe" />
 
       {questionCount === 0 || currentQuestion === null ? (
-        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <p className="text-sm text-gray-600">Bài học này chưa có câu hỏi.</p>
+        <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <p className="text-sm text-muted-foreground">Bài học này chưa có câu hỏi.</p>
         </section>
       ) : (
-        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
                 <span className="rounded-full bg-indigo-100 px-3 py-1 text-indigo-700">{studentQuestionTypeLabels[currentQuestion.type]}</span>
-                {currentQuestion.difficulty ? <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-700">{currentQuestion.difficulty}</span> : null}
+                {currentQuestion.difficulty ? <span className="rounded-full bg-muted px-3 py-1 text-foreground">{currentQuestion.difficulty}</span> : null}
               </div>
               <p className="mt-4 text-sm font-semibold text-indigo-600">{getQuestionTypePrompt(currentQuestion.type)}</p>
-              <h2 id={currentQuestionLabelId} className="mt-2 whitespace-pre-wrap text-xl font-bold text-gray-900">
+              <h2 id={currentQuestionLabelId} className="mt-2 whitespace-pre-wrap text-xl font-bold text-foreground">
                 {currentQuestion.questionText}
               </h2>
             </div>
@@ -255,10 +255,10 @@ export function StudentLessonQuizPage() {
 
           <div className="mt-6">
             {isPronunciationQuestion(currentQuestion) ? (
-              <div className="rounded-2xl bg-gray-50 p-5">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Nội dung luyện đọc</p>
-                <p className="mt-2 whitespace-pre-wrap text-lg font-semibold text-gray-900">{currentQuestion.targetText?.trim() ? currentQuestion.targetText : currentQuestion.questionText}</p>
-                <p className="mt-4 text-sm leading-6 text-gray-600">Chưa hỗ trợ ghi âm và chấm điểm phát âm. Câu hỏi này không tính vào phần nộp bài.</p>
+              <div className="rounded-2xl bg-muted p-5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nội dung luyện đọc</p>
+                <p className="mt-2 whitespace-pre-wrap text-lg font-semibold text-foreground">{currentQuestion.targetText?.trim() ? currentQuestion.targetText : currentQuestion.questionText}</p>
+                <p className="mt-4 text-sm leading-6 text-muted-foreground">Chưa hỗ trợ ghi âm và chấm điểm phát âm. Câu hỏi này không tính vào phần nộp bài.</p>
               </div>
             ) : isOptionQuestion(currentQuestion) ? (
               <div className="space-y-3" role="radiogroup" aria-labelledby={currentQuestionLabelId}>
@@ -270,19 +270,19 @@ export function StudentLessonQuizPage() {
                       type="button"
                       role="radio"
                       className={`w-full rounded-xl border p-4 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-100 ${
-                        selected ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200 bg-white hover:border-indigo-200 hover:bg-gray-50'
+                        selected ? 'border-indigo-400 bg-indigo-50' : 'border-border bg-card hover:border-indigo-200 hover:bg-muted'
                       }`}
                       aria-checked={selected}
                       onClick={() => updateSelectedOption(currentQuestion.id, option.id)}
                     >
-                      <span className="text-sm font-semibold text-gray-900">{option.optionText}</span>
+                      <span className="text-sm font-semibold text-foreground">{option.optionText}</span>
                     </button>
                   )
                 })}
               </div>
             ) : currentQuestion.type === 'TRANSLATION' || currentQuestion.type === 'SHORT_ANSWER' ? (
               <textarea
-                className="min-h-36 w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="min-h-36 w-full rounded-xl border border-border px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                 aria-labelledby={currentQuestionLabelId}
                 value={getAnswerValue(answers, currentQuestion.id).answerText}
                 onChange={(event) => updateTextAnswer(currentQuestion.id, event.target.value)}
@@ -290,7 +290,7 @@ export function StudentLessonQuizPage() {
               />
             ) : (
               <input
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="w-full rounded-xl border border-border px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                 aria-labelledby={currentQuestionLabelId}
                 value={getAnswerValue(answers, currentQuestion.id).answerText}
                 onChange={(event) => updateTextAnswer(currentQuestion.id, event.target.value)}

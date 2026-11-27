@@ -199,30 +199,30 @@ export function StudentLessonDetailPage() {
         </Button>
       </div>
 
-      <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+      <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary" className="bg-indigo-50 text-indigo-700">
                 {studentCourseTypeLabels[enrollment.course.type]}
               </Badge>
-              <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
+              <Badge variant="outline" className="border-border bg-muted text-foreground">
                 Trình độ {enrollment.course.level}
               </Badge>
               <Badge variant="outline" className={cn(lessonProgressStatusStyles[lesson.status])}>
                 {lessonProgressStatusLabels[lesson.status]}
               </Badge>
             </div>
-            <h1 className="mt-3 text-2xl font-bold tracking-tight text-gray-950 sm:text-3xl">{lesson.title}</h1>
-            <p className="mt-2 text-sm leading-6 text-gray-600">
+            <h1 className="mt-3 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{lesson.title}</h1>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
               {enrollment.course.name} · {studentSkillTypeLabels[lesson.skillType]}
             </p>
-            <p className="mt-3 text-xs leading-5 text-gray-500">
+            <p className="mt-3 text-xs leading-5 text-muted-foreground">
               Tiến độ khóa học {courseProgressPercent}% · Tiến độ bài học {lessonProgressPercent}% · Bắt đầu{' '}
               {formatStudentLearningDate(lesson.startedAt)}
             </p>
             <div className="mt-3 max-w-md">
-              <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
+              <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
                 <span className="font-medium">Tiến độ bài học</span>
                 <span>{lessonProgressPercent}%</span>
               </div>
@@ -232,7 +232,7 @@ export function StudentLessonDetailPage() {
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-label={`Tiến độ bài học ${lesson.title}`}
-                className="mt-1 h-2 overflow-hidden rounded-full bg-gray-100"
+                className="mt-1 h-2 overflow-hidden rounded-full bg-muted"
               >
                 <div className="h-full rounded-full bg-indigo-600 transition-all" style={{ width: `${lessonProgressPercent}%` }} />
               </div>
@@ -273,16 +273,16 @@ export function StudentLessonDetailPage() {
       ) : null}
 
       {locked ? (
-        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <p className="text-sm leading-6 text-gray-700">Bài học này chưa được mở khóa. Hãy hoàn thành bài trước đó để tiếp tục.</p>
+        <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <p className="text-sm leading-6 text-foreground">Bài học này chưa được mở khóa. Hãy hoàn thành bài trước đó để tiếp tục.</p>
         </section>
       ) : (
         <div className="flex flex-col gap-3">
           {lesson.skillType === 'LISTENING' ? <LessonAudioPlayer audioUrl={lesson.audioUrl} /> : null}
-          <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+          <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Nội dung bài học</p>
-            <div className="mt-3 rounded-xl bg-gray-50 p-5">
-              <p className="whitespace-pre-wrap text-sm leading-7 text-gray-700">{content || 'Bài học chưa có nội dung.'}</p>
+            <div className="mt-3 rounded-xl bg-muted p-5">
+              <p className="whitespace-pre-wrap text-sm leading-7 text-foreground">{content || 'Bài học chưa có nội dung.'}</p>
             </div>
             <div className="mt-3 rounded-xl border border-indigo-100 bg-indigo-50 p-5">
               <p className="text-sm font-semibold text-indigo-900">Sẵn sàng kiểm tra mức hiểu bài?</p>

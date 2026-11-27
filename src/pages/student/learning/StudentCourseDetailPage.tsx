@@ -215,7 +215,7 @@ export function StudentCourseDetailPage() {
 
   if (courseId === null) {
     return (
-      <Card className="border-dashed border-gray-200 bg-white">
+      <Card className="border-dashed border-border bg-card">
         <CardContent>
           <Alert variant="destructive">
             <FileQuestion aria-hidden="true" />
@@ -230,7 +230,7 @@ export function StudentCourseDetailPage() {
     return (
       <Card className="border-red-100 bg-red-50/40">
         <CardContent>
-          <Alert variant="destructive" className="border-red-200 bg-white">
+          <Alert variant="destructive" className="border-red-200 bg-card">
             <FileQuestion aria-hidden="true" />
             <AlertTitle>Không thể tải khóa học</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
@@ -243,7 +243,7 @@ export function StudentCourseDetailPage() {
   if (!course) {
     return (
       <Card className="border-indigo-100 bg-gradient-to-br from-white to-indigo-50/70">
-        <CardContent className="flex items-center gap-3 py-8 text-sm font-medium text-gray-700">
+        <CardContent className="flex items-center gap-3 py-8 text-sm font-medium text-foreground">
           <Loader2 aria-hidden="true" className="size-4 animate-spin text-indigo-600" />
           Đang tải thông tin khóa học...
         </CardContent>
@@ -290,23 +290,23 @@ export function StudentCourseDetailPage() {
         </Button>
       </div>
 
-      <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+      <section className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6">
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.5fr)_minmax(15rem,0.9fr)] xl:items-start">
           <div className="min-w-0">
             <CourseCoverImage courseName={course.name} imageUrl={course.imageUrl} className="w-full" />
           </div>
 
           <div className="min-w-0">
-            <h1 className="text-2xl font-bold tracking-tight text-gray-950 sm:text-3xl">{course.name}</h1>
-            {course.description ? <p className="mt-2 max-w-2xl whitespace-pre-wrap text-sm leading-6 text-gray-600">{course.description}</p> : null}
+            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{course.name}</h1>
+            {course.description ? <p className="mt-2 max-w-2xl whitespace-pre-wrap text-sm leading-6 text-muted-foreground">{course.description}</p> : null}
             <div className="mt-3 flex items-center gap-2">
               <Avatar className="size-9">
                 <AvatarImage src={course.teacherAvatarUrl ?? undefined} alt={course.teacherName} />
                 <AvatarFallback>{getTeacherInitials(course.teacherName)}</AvatarFallback>
               </Avatar>
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-gray-950">{course.teacherName}</p>
-                <p className="text-xs text-gray-500">Giảng viên</p>
+                <p className="truncate text-sm font-medium text-foreground">{course.teacherName}</p>
+                <p className="text-xs text-muted-foreground">Giảng viên</p>
               </div>
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -324,7 +324,7 @@ export function StudentCourseDetailPage() {
             </div>
             {progressPercent !== null ? (
               <div className="mt-4 max-w-md">
-                <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
+                <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
                   <span className="font-medium">Tiến độ của bạn</span>
                   <span>{progressPercent}%</span>
                 </div>
@@ -334,7 +334,7 @@ export function StudentCourseDetailPage() {
                   aria-valuemin={0}
                   aria-valuemax={100}
                   aria-label="Tiến độ của bạn"
-                  className="mt-1 h-2 overflow-hidden rounded-full bg-gray-100"
+                  className="mt-1 h-2 overflow-hidden rounded-full bg-muted"
                 >
                   <div className="h-full rounded-full bg-indigo-600 transition-all" style={{ width: `${progressPercent}%` }} />
                 </div>
@@ -350,7 +350,7 @@ export function StudentCourseDetailPage() {
               </Button>
             ) : null}
             {!course.enrolled && requiresCheckout ? (
-              <Card id="course-purchase-panel" className="w-full border-indigo-200 bg-white shadow-sm sm:w-72">
+              <Card id="course-purchase-panel" className="w-full border-indigo-200 bg-card shadow-sm sm:w-72">
                 <CardHeader>
                   <CardTitle>Thanh toán khóa học</CardTitle>
                   <CardDescription>
@@ -405,8 +405,8 @@ export function StudentCourseDetailPage() {
 
       <section className="flex flex-col gap-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <h2 className="text-xl font-bold tracking-tight text-gray-950 sm:text-2xl">Nội dung khóa học</h2>
-          <p className="max-w-md text-sm leading-6 text-gray-500">Mở từng chủ đề, chọn bài học để xem trước nội dung và điểm kiến thức.</p>
+          <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">Nội dung khóa học</h2>
+          <p className="max-w-md text-sm leading-6 text-muted-foreground">Mở từng chủ đề, chọn bài học để xem trước nội dung và điểm kiến thức.</p>
         </div>
 
         <div className="flex flex-col gap-4">
@@ -417,7 +417,7 @@ export function StudentCourseDetailPage() {
                   <Lock aria-hidden="true" className="size-5 text-indigo-700" />
                 </span>
                 <CardTitle className="text-lg">Nội dung khóa học</CardTitle>
-                <p className="text-sm leading-6 text-gray-600">
+                <p className="text-sm leading-6 text-muted-foreground">
                   Nội dung chi tiết từng bài học và câu hỏi sẽ được mở ngay sau khi bạn hoàn tất mua khóa học.
                 </p>
                 <Button onClick={scrollToPurchasePanel}>Mua khóa học ngay</Button>
@@ -433,45 +433,45 @@ export function StudentCourseDetailPage() {
                 <AccordionItem
                   key={topic.id}
                   value={`topic-${topic.id}`}
-                  className="rounded-2xl border border-gray-200 bg-white px-5 shadow-sm"
+                  className="rounded-2xl border border-border bg-card px-5 shadow-sm"
                 >
                   <AccordionTrigger className="py-5 hover:no-underline">
                     <span className="flex min-w-0 flex-1 flex-col gap-2 text-left">
                       <span className="flex flex-wrap items-center gap-2">
-                        <Badge variant="secondary" className="bg-gray-100 text-gray-700">
+                        <Badge variant="secondary" className="bg-muted text-foreground">
                           Chặng {topic.orderIndex}
                         </Badge>
-                        <Badge variant="outline" className="border-gray-200 text-gray-700">
+                        <Badge variant="outline" className="border-border text-foreground">
                           Chủ đề
                         </Badge>
                       </span>
-                      <span className="text-xl font-semibold tracking-tight text-gray-950">{topic.name}</span>
+                      <span className="text-xl font-semibold tracking-tight text-foreground">{topic.name}</span>
                     </span>
                   </AccordionTrigger>
                   <AccordionContent>
-                    {topic.description ? <p className="whitespace-pre-wrap text-sm leading-6 text-gray-600">{topic.description}</p> : null}
+                    {topic.description ? <p className="whitespace-pre-wrap text-sm leading-6 text-muted-foreground">{topic.description}</p> : null}
 
                     <div className="mt-3 flex flex-col gap-2">
                       {topic.lessons.map((lesson) => {
                         const expanded = expandedLessonId === lesson.id
                         const lessonStatus = lessonStatusById.get(lesson.id)
                         return (
-                          <div key={lesson.id} className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+                          <div key={lesson.id} className="overflow-hidden rounded-xl border border-border bg-card">
                             <button
                               type="button"
                               onClick={() => toggleLesson(lesson.id)}
                               aria-expanded={expanded}
-                              className="flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-left transition-colors hover:bg-gray-50"
+                              className="flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-left transition-colors hover:bg-muted"
                             >
-                              <span className="shrink-0 text-xs font-semibold text-gray-500">{lesson.orderIndex}</span>
-                              <span className="min-w-0 flex-1 truncate text-sm font-medium text-gray-950">{lesson.title}</span>
+                              <span className="shrink-0 text-xs font-semibold text-muted-foreground">{lesson.orderIndex}</span>
+                              <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{lesson.title}</span>
                               <Badge variant="secondary" className="hidden shrink-0 text-[11px] sm:inline-flex">
                                 {studentSkillTypeLabels[lesson.skillType]}
                               </Badge>
                               <Badge variant="outline" className="shrink-0 border-amber-200 bg-amber-50 text-[11px] text-amber-700">
                                 {getTotalLessonXp(lesson)} XP
                               </Badge>
-                              <span className="hidden shrink-0 text-xs whitespace-nowrap text-gray-500 md:inline">
+                              <span className="hidden shrink-0 text-xs whitespace-nowrap text-muted-foreground md:inline">
                                 {lesson.questionCount} câu hỏi
                               </span>
                               {lessonStatus ? (
@@ -479,25 +479,25 @@ export function StudentCourseDetailPage() {
                                   {lessonProgressStatusLabels[lessonStatus]}
                                 </Badge>
                               ) : null}
-                              <ChevronDown aria-hidden="true" className={cn('size-4 shrink-0 transition-transform', expanded ? 'rotate-180 text-indigo-500' : 'text-gray-400')} />
+                              <ChevronDown aria-hidden="true" className={cn('size-4 shrink-0 transition-transform', expanded ? 'rotate-180 text-indigo-500' : 'text-muted-foreground')} />
                             </button>
                             {expanded ? (
-                              <div className="flex flex-col gap-3 border-t border-gray-100 px-3 py-3">
-                                {lesson.description ? <p className="whitespace-pre-wrap text-sm leading-6 text-gray-600">{lesson.description}</p> : null}
-                                <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-3">
-                                  <p className="text-xs font-semibold tracking-wide text-gray-700 uppercase">Nội dung xem trước</p>
-                                  <p className="mt-1.5 whitespace-pre-wrap text-sm leading-6 text-gray-700">{getContentPreview(lesson.content)}</p>
+                              <div className="flex flex-col gap-3 border-t border-border px-3 py-3">
+                                {lesson.description ? <p className="whitespace-pre-wrap text-sm leading-6 text-muted-foreground">{lesson.description}</p> : null}
+                                <div className="rounded-lg border border-dashed border-border bg-muted p-3">
+                                  <p className="text-xs font-semibold tracking-wide text-foreground uppercase">Nội dung xem trước</p>
+                                  <p className="mt-1.5 whitespace-pre-wrap text-sm leading-6 text-foreground">{getContentPreview(lesson.content)}</p>
                                 </div>
                                 {lesson.questions.length > 0 ? (
                                   <div className="flex flex-col gap-2">
                                     {lesson.questions.map((question) => (
-                                      <div key={question.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-gray-50 px-2.5 py-2 text-xs text-gray-600">
+                                      <div key={question.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-muted px-2.5 py-2 text-xs text-muted-foreground">
                                         <Badge variant="secondary">
                                           <FileQuestion aria-hidden="true" className="text-amber-600" />
                                           {studentQuestionTypeLabels[question.type]}
                                         </Badge>
                                         <span>
-                                          Điểm kiến thức: <span className="font-semibold text-gray-800">{question.knowledgePoint ?? 'Chưa có'}</span>
+                                          Điểm kiến thức: <span className="font-semibold text-foreground">{question.knowledgePoint ?? 'Chưa có'}</span>
                                         </span>
                                       </div>
                                     ))}

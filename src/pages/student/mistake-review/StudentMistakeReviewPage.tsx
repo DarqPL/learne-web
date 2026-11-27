@@ -164,8 +164,8 @@ export function StudentMistakeReviewPage() {
 
       <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">Ôn tập lỗi sai</h1>
-          <p className="max-w-2xl text-base leading-7 text-gray-600">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Ôn tập lỗi sai</h1>
+          <p className="max-w-2xl text-base leading-7 text-muted-foreground">
             Xem lại các câu bạn đã từng trả lời sai và luyện tập lại trong một phiên ngắn.
           </p>
         </div>
@@ -207,21 +207,21 @@ export function StudentMistakeReviewPage() {
       ) : null}
 
       {loading && questions === null ? (
-        <Card className="border-slate-200 bg-white">
-          <CardContent role="status" className="flex items-center justify-center gap-3 p-10 text-slate-600">
+        <Card className="border-border bg-card">
+          <CardContent role="status" className="flex items-center justify-center gap-3 p-10 text-muted-foreground">
             <Loader2 className="size-5 animate-spin" aria-hidden="true" />
             Đang tải câu hỏi cần ôn...
           </CardContent>
         </Card>
       ) : !error && questions !== null && questions.length === 0 ? (
-        <Card className="border-dashed border-indigo-200 bg-white/95">
+        <Card className="border-dashed border-indigo-200 bg-card/95">
           <CardContent className="flex flex-col items-center gap-4 p-10 text-center">
             <span className="flex size-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
               <BookOpen aria-hidden="true" className="size-6" />
             </span>
             <div className="space-y-2">
-              <h2 className="text-xl font-semibold text-slate-950">Bạn chưa có câu sai nào cần ôn</h2>
-              <p className="max-w-lg text-sm leading-6 text-slate-600">
+              <h2 className="text-xl font-semibold text-foreground">Bạn chưa có câu sai nào cần ôn</h2>
+              <p className="max-w-lg text-sm leading-6 text-muted-foreground">
                 Khi bạn trả lời sai trong bài học, câu hỏi sẽ xuất hiện ở đây để bạn luyện lại.
               </p>
             </div>
@@ -234,19 +234,19 @@ export function StudentMistakeReviewPage() {
         <>
           <div className="space-y-3">
             {questions.map((question) => (
-              <Card key={question.questionId} className="border-slate-200 bg-white">
+              <Card key={question.questionId} className="border-border bg-card">
                 <CardHeader className="space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="secondary">
                       {studentQuestionTypeLabels[question.questionType] ?? question.questionType}
                     </Badge>
                     {question.courseName || question.lessonTitle ? (
-                      <span className="text-sm text-slate-600">
+                      <span className="text-sm text-muted-foreground">
                         {[question.courseName, question.lessonTitle].filter(Boolean).join(' · ')}
                       </span>
                     ) : null}
                   </div>
-                  <h2 className="whitespace-pre-wrap text-base leading-7 text-slate-950">
+                  <h2 className="whitespace-pre-wrap text-base leading-7 text-foreground">
                     {question.questionText}
                   </h2>
                 </CardHeader>

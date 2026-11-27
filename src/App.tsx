@@ -139,7 +139,7 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then((module) => 
 
 function RouteFallback() {
   return (
-    <div className="flex min-h-screen items-center justify-center text-slate-600">
+    <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
       <Spinner />
     </div>
   )

@@ -320,10 +320,10 @@ export function StudentMistakeReviewSessionPage() {
         <Card className="border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-indigo-50">
           <CardHeader>
             <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Kết quả ôn tập</p>
-            <h1 className="text-3xl font-semibold leading-none tracking-tight text-slate-950">
+            <h1 className="text-3xl font-semibold leading-none tracking-tight text-foreground">
               {formatScorePercent(result.scorePercent)}
             </h1>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-muted-foreground">
               {result.answers.filter((answer) => answer.correct).length}/{result.questionCount} câu đúng
             </p>
           </CardHeader>
@@ -335,7 +335,7 @@ export function StudentMistakeReviewSessionPage() {
           </CardContent>
         </Card>
 
-        <h2 className="text-xl font-semibold tracking-tight text-slate-950">Chi tiết từng câu</h2>
+        <h2 className="text-xl font-semibold tracking-tight text-foreground">Chi tiết từng câu</h2>
 
         <MistakeReviewResultList questions={session.questions} answers={result.answers} />
       </div>
@@ -382,8 +382,8 @@ export function StudentMistakeReviewSessionPage() {
       <section className="space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-950">Ôn tập lỗi sai</h1>
-            <p className="mt-1 text-sm text-slate-600">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Ôn tập lỗi sai</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
               Câu {currentQuestionIndex + 1}/{session.questionCount}
             </p>
           </div>
@@ -396,7 +396,7 @@ export function StudentMistakeReviewSessionPage() {
         </div>
 
         <div
-          className="h-2 overflow-hidden rounded-full bg-slate-100"
+          className="h-2 overflow-hidden rounded-full bg-muted"
           role="progressbar"
           aria-valuemin={0}
           aria-valuemax={100}

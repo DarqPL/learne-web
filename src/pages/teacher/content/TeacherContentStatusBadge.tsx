@@ -3,11 +3,11 @@ import type { ContentStatus } from '../../../lib/api/types'
 import { contentStatusLabels } from './contentLabels'
 
 const statusStyles: Record<ContentStatus, string> = {
-  DRAFT: 'border-slate-200 bg-slate-50 text-slate-600',
+  DRAFT: 'border-border bg-muted text-muted-foreground',
   PENDING_REVIEW: 'border-amber-200 bg-amber-100 text-amber-800',
   APPROVED: 'border-emerald-200 bg-emerald-100 text-emerald-800',
   REJECTED: 'border-red-200 bg-red-100 text-red-800',
-  HIDDEN: 'border-slate-200 bg-slate-100 text-slate-600',
+  HIDDEN: 'border-border bg-muted text-muted-foreground',
 }
 
 export function TeacherContentStatusBadge({ status }: { status: ContentStatus }) {

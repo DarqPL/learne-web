@@ -4,6 +4,7 @@ import { useAuth } from '../lib/auth/auth-context'
 import { homePathFor, navItemsFor } from '../lib/auth/routes'
 import { logout } from '../lib/api/authApi'
 import type { UserRole } from '../lib/api/types'
+import { ThemeModeToggle } from '../components/theme/ThemeModeToggle'
 
 const roleLabels: Record<UserRole, string> = {
   STUDENT: 'Học viên',
@@ -44,11 +45,11 @@ export function AppShell({ children, header, headerActions, fullWidth, hideDefau
     : `w-full flex-1 px-4 py-8 sm:px-6 lg:px-8 ${isTeacher ? '' : 'mx-auto max-w-6xl'}`
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       {hideDefaultHeader ? (
         header
       ) : (
-      <header className="border-b border-gray-200 bg-white">
+      <header className="border-b border-border bg-card">
         <div className={`flex h-16 items-center justify-between gap-3 px-4 sm:px-6 ${fullWidth || isTeacher ? 'w-full' : 'mx-auto max-w-6xl'}`}>
           <div className="flex min-w-0 items-center gap-3 sm:gap-6">
             <Link to={homePathFor(user.role)} className="shrink-0 text-xl font-bold text-indigo-600">
@@ -62,7 +63,7 @@ export function AppShell({ children, header, headerActions, fullWidth, hideDefau
                   end={item.end}
                   className={({ isActive }) =>
                     `rounded-lg px-3 py-2 text-sm font-medium ${
-                      isActive ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                       isActive ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                     }`
                   }
                 >
@@ -72,15 +73,16 @@ export function AppShell({ children, header, headerActions, fullWidth, hideDefau
             </nav>
           </div>
           <div className="flex shrink-0 items-center gap-3">
+            <ThemeModeToggle />
             {headerActions}
             <div className="min-w-0 text-right">
-              <div className="max-w-28 truncate text-sm font-medium text-gray-900 sm:max-w-none">{user.fullName}</div>
-              <div className="text-xs text-gray-500">{roleLabels[user.role]}</div>
+              <div className="max-w-28 truncate text-sm font-medium text-foreground sm:max-w-none">{user.fullName}</div>
+              <div className="text-xs text-muted-foreground">{roleLabels[user.role]}</div>
             </div>
             <button
               type="button"
               onClick={handleLogout}
-              className="shrink-0 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100"
+              className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-sm text-foreground hover:bg-muted"
             >
               Đăng xuất
             </button>

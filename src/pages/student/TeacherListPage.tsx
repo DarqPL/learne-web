@@ -68,7 +68,7 @@ export function TeacherListPage() {
           ))}
         </div>
       ) : teachers.length === 0 ? (
-        <p className="text-gray-600">Chưa có giảng viên nào.</p>
+        <p className="text-muted-foreground">Chưa có giảng viên nào.</p>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {teachers.map((teacher) => (
@@ -77,7 +77,7 @@ export function TeacherListPage() {
               type="button"
               onClick={() => navigate(`/student/teachers/${teacher.teacherId}`)}
               aria-label={`Xem hồ sơ giảng viên ${teacher.fullName}`}
-              className="cursor-pointer rounded-2xl border border-gray-200 bg-white p-6 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md"
+              className="cursor-pointer rounded-2xl border border-border bg-card p-6 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md"
             >
               <div className="flex items-center gap-4">
                 <Avatar size="lg" className="size-16 border-2 border-indigo-100">
@@ -89,8 +89,8 @@ export function TeacherListPage() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0">
-                  <h2 className="truncate font-semibold text-gray-900">{teacher.fullName}</h2>
-                  <p className="truncate text-sm text-gray-500">{teacher.email}</p>
+                  <h2 className="truncate font-semibold text-foreground">{teacher.fullName}</h2>
+                  <p className="truncate text-sm text-muted-foreground">{teacher.email}</p>
                 </div>
               </div>
               <div className="mt-4">
@@ -99,7 +99,7 @@ export function TeacherListPage() {
                   {teacher.expertise}
                 </Badge>
               </div>
-              <p className="mt-2 flex items-center gap-1.5 text-xs text-gray-500">
+              <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Briefcase aria-hidden="true" className="size-3.5" />
                 {teacher.yearsOfExperience} năm kinh nghiệm
               </p>

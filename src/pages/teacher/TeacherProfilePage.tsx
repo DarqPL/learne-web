@@ -35,7 +35,7 @@ function getInitials(fullName: string) {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
 }
 
-const cardSoftClassName = 'border-indigo-100 bg-white/95 shadow-sm shadow-indigo-100/60'
+const cardSoftClassName = 'border-indigo-100 bg-card/95 shadow-sm shadow-indigo-100/60'
 
 export function TeacherProfilePage() {
   const [profile, setProfile] = useState<TeacherProfile | null>(null)
@@ -333,7 +333,7 @@ export function TeacherProfilePage() {
                       ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                       : profile.status === 'SUSPENDED'
                         ? 'border-red-200 bg-red-50 text-red-700'
-                        : 'border-slate-200 bg-slate-100 text-slate-600'
+                        : 'border-border bg-muted text-muted-foreground'
                   }
                 >
                   {statusLabels[profile.status]}
@@ -376,7 +376,7 @@ export function TeacherProfilePage() {
             <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
               <h3 className="text-sm font-semibold text-indigo-950">Video giới thiệu</h3>
               <div className="flex flex-wrap gap-2">
-                <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-indigo-200 bg-white px-3 py-1.5 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-50 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
+                <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-indigo-200 bg-card px-3 py-1.5 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-50 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
                   <Video data-icon="inline-start" aria-hidden="true" />
                   {mediaAction === 'video' ? 'Đang tải...' : profile.introductionVideoUrl ? 'Đổi video' : 'Tải video'}
                   <input type="file" accept="video/*" className="sr-only" disabled={mediaAction !== null} onChange={handleVideoUpload} />
@@ -397,22 +397,22 @@ export function TeacherProfilePage() {
               </div>
             </div>
             {profile.introductionVideoUrl ? (
-              <video className="w-full rounded-xl border border-indigo-100 bg-slate-950" src={profile.introductionVideoUrl} controls />
+              <video className="w-full rounded-xl border border-border bg-black" src={profile.introductionVideoUrl} controls />
             ) : (
               <p className="text-sm text-muted-foreground">Chưa cập nhật.</p>
             )}
           </section>
           <section>
             <h3 className="mb-1 text-sm font-semibold text-indigo-950">Giới thiệu</h3>
-            <p className="text-sm whitespace-pre-wrap text-slate-700">{profile.bio || 'Chưa cập nhật.'}</p>
+            <p className="text-sm whitespace-pre-wrap text-foreground">{profile.bio || 'Chưa cập nhật.'}</p>
           </section>
           <section>
             <h3 className="mb-1 text-sm font-semibold text-indigo-950">Chuyên môn</h3>
-            <p className="text-sm text-slate-700">{profile.expertise || 'Chưa cập nhật.'}</p>
+            <p className="text-sm text-foreground">{profile.expertise || 'Chưa cập nhật.'}</p>
           </section>
           <section>
             <h3 className="mb-1 text-sm font-semibold text-indigo-950">Kinh nghiệm</h3>
-            <p className="text-sm text-slate-700">{profile.yearsOfExperience} năm kinh nghiệm</p>
+            <p className="text-sm text-foreground">{profile.yearsOfExperience} năm kinh nghiệm</p>
           </section>
         </CardContent>
         <CardFooter>

@@ -264,11 +264,11 @@ export function LessonAudioEditor({
 
   return (
     <section
-      className="rounded-2xl border border-indigo-100 bg-white p-4 shadow-sm"
+      className="rounded-2xl border border-indigo-100 bg-card p-4 shadow-sm"
       aria-label={`Quản lý audio bài học: ${lesson.title}`}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold text-gray-900">Audio bài học</h3>
+        <h3 className="text-sm font-semibold text-foreground">Audio bài học</h3>
         {status === 'loading' ? (
           <span role="status" className="text-xs text-muted-foreground">
             Đang tải audio...

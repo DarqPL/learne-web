@@ -268,7 +268,7 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
               Trắc nghiệm nhiều lựa chọn, hiện chỉ hỗ trợ một đáp án đúng. Tích vào ô tròn để chọn đáp án đúng.
             </p>
             {form.options.map((option, optionIndex) => (
-              <div className="flex items-center gap-2 rounded-lg border border-indigo-100 bg-white px-2 py-1.5" key={optionIndex}>
+              <div className="flex items-center gap-2 rounded-lg border border-indigo-100 bg-card px-2 py-1.5" key={optionIndex}>
                 <input
                   type="radio"
                   disabled={disabled}

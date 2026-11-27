@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import { AdminLayout } from './AdminLayout'
+import { ThemeProvider } from '../lib/theme/ThemeProvider'
 
 vi.mock('../lib/auth/auth-context', () => ({
   useAuth: () => ({ user: { fullName: 'Admin', role: 'ADMIN' }, logout: vi.fn() }),
@@ -10,13 +11,13 @@ vi.mock('../lib/auth/auth-context', () => ({
 describe('AdminLayout', () => {
   it('renders teacher-style sidebar nav and full-width outlet without constrained container', () => {
     render(
-      <MemoryRouter initialEntries={['/admin']}>
+      <ThemeProvider><MemoryRouter initialEntries={['/admin']}>
         <Routes>
           <Route element={<AdminLayout />}>
             <Route path="/admin" element={<div>Admin outlet</div>} />
           </Route>
         </Routes>
-      </MemoryRouter>,
+      </MemoryRouter></ThemeProvider>,
     )
 
     const nav = screen.getByRole('navigation', { name: 'Điều hướng quản trị' })
@@ -33,8 +34,8 @@ describe('AdminLayout', () => {
 
     const aside = nav.closest('aside')
     expect(aside?.className).toContain('rounded-3xl')
-    expect(aside?.className).toContain('border-indigo-100')
-    expect(aside?.className).toContain('bg-white/95')
+    expect(aside?.className).toContain('border-border')
+    expect(aside?.className).toContain('bg-card')
 
     expect(screen.getByText('Admin outlet')).toBeInTheDocument()
     expect(screen.getByText('Admin outlet').closest('main')).not.toHaveClass('max-w-6xl')

@@ -44,7 +44,7 @@ const errorTypeStyles: Record<GrammarCheckErrorItem['errorType'], { badge: strin
   PUNCTUATION: { badge: 'border-amber-200 bg-amber-50 text-amber-700', icon: 'bg-amber-100 text-amber-700', marker: 'bg-amber-100 text-amber-900 ring-amber-200' },
   WORD_CHOICE: { badge: 'border-emerald-200 bg-emerald-50 text-emerald-700', icon: 'bg-emerald-100 text-emerald-700', marker: 'bg-emerald-100 text-emerald-900 ring-emerald-200' },
   STYLE: { badge: 'border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700', icon: 'bg-fuchsia-100 text-fuchsia-700', marker: 'bg-fuchsia-100 text-fuchsia-900 ring-fuchsia-200' },
-  OTHER: { badge: 'border-slate-200 bg-slate-50 text-slate-700', icon: 'bg-slate-100 text-slate-700', marker: 'bg-slate-100 text-slate-900 ring-slate-200' },
+  OTHER: { badge: 'border-border bg-muted text-foreground', icon: 'bg-muted text-foreground', marker: 'bg-muted text-foreground ring-slate-200' },
 }
 
 function formatStatus(status: GrammarCheckStatus) {
@@ -284,23 +284,23 @@ export function StudentGrammarCheckPage() {
                 <WandSparkles className="h-7 w-7" />
               </div>
               <div>
-                <Badge className="border-indigo-200 bg-white/80 text-indigo-700" variant="outline">
+                <Badge className="border-indigo-200 bg-card/80 text-indigo-700" variant="outline">
                   <Sparkles className="h-3 w-3" /> AI Grammar Check
                 </Badge>
-                <h1 className="mt-3 text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">Kiểm tra ngữ pháp AI</h1>
-                <p className="mt-3 max-w-3xl text-sm leading-6 text-gray-600">
+                <h1 className="mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Kiểm tra ngữ pháp AI</h1>
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
                   Nhập đoạn văn tiếng Anh để AI quét lỗi, tô sáng vị trí cần sửa và giải thích vì sao câu nên được viết tự nhiên hơn.
                 </p>
               </div>
             </div>
             <div className="grid gap-2 text-sm sm:grid-cols-3 lg:w-[420px] lg:grid-cols-1">
-              <Badge className="justify-start border-white/70 bg-white/80 px-3 py-2 text-indigo-700 shadow-sm" variant="outline">
+              <Badge className="justify-start border-white/70 bg-card/80 px-3 py-2 text-indigo-700 shadow-sm" variant="outline">
                 <ScanText className="h-3.5 w-3.5" /> Tô sáng lỗi theo vị trí
               </Badge>
-              <Badge className="justify-start border-white/70 bg-white/80 px-3 py-2 text-emerald-700 shadow-sm" variant="outline">
+              <Badge className="justify-start border-white/70 bg-card/80 px-3 py-2 text-emerald-700 shadow-sm" variant="outline">
                 <BookOpenCheck className="h-3.5 w-3.5" /> Gợi ý sửa dễ hiểu
               </Badge>
-              <Badge className="justify-start border-white/70 bg-white/80 px-3 py-2 text-sky-700 shadow-sm" variant="outline">
+              <Badge className="justify-start border-white/70 bg-card/80 px-3 py-2 text-sky-700 shadow-sm" variant="outline">
                 <ShieldCheck className="h-3.5 w-3.5" /> Lưu lịch sử luyện viết
               </Badge>
             </div>
@@ -317,7 +317,7 @@ export function StudentGrammarCheckPage() {
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-6">
-          <Card className="border-slate-200 shadow-sm">
+          <Card className="border-border shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MessageSquareText className="h-5 w-5 text-indigo-600" /> Đoạn văn cần kiểm tra
@@ -328,7 +328,7 @@ export function StudentGrammarCheckPage() {
               <form className="space-y-4" onSubmit={(event) => void handleSubmit(event)}>
                 <Field label="Nội dung" error={fieldError}>
                   <Textarea
-                    className="min-h-48 resize-y border-slate-200 bg-slate-50/70 text-base leading-7 focus-visible:bg-white"
+                    className="min-h-48 resize-y border-border bg-muted/70 text-base leading-7 focus-visible:bg-card"
                     disabled={submitting}
                     maxLength={MAX_INPUT_LENGTH}
                     placeholder="Ví dụ: I want order pizza yesterday."
@@ -340,7 +340,7 @@ export function StudentGrammarCheckPage() {
                   />
                 </Field>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <p className={inputText.length > MAX_INPUT_LENGTH ? 'text-sm text-red-600' : 'text-sm text-gray-500'}>{inputText.length}/2000 ký tự</p>
+                  <p className={inputText.length > MAX_INPUT_LENGTH ? 'text-sm text-red-600' : 'text-sm text-muted-foreground'}>{inputText.length}/2000 ký tự</p>
                   <Button className="bg-indigo-600 hover:bg-indigo-700" loading={submitting} disabled={submitDisabled} type="submit">
                     {submitting ? null : <WandSparkles className="h-4 w-4" />}
                     Kiểm tra ngữ pháp
@@ -350,7 +350,7 @@ export function StudentGrammarCheckPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200 shadow-sm">
+          <Card className="border-border shadow-sm">
             <CardHeader>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
@@ -366,8 +366,8 @@ export function StudentGrammarCheckPage() {
               {!result ? (
                 <div className="rounded-xl border border-dashed border-indigo-200 bg-indigo-50/50 p-6 text-center">
                   <ScanText className="mx-auto h-8 w-8 text-indigo-500" />
-                  <p className="mt-3 font-medium text-gray-900">Chưa có kết quả kiểm tra</p>
-                  <p className="mt-2 text-sm leading-6 text-gray-600">Hãy nhập một đoạn văn tiếng Anh để AI phân tích lỗi và gợi ý chỉnh sửa.</p>
+                  <p className="mt-3 font-medium text-foreground">Chưa có kết quả kiểm tra</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">Hãy nhập một đoạn văn tiếng Anh để AI phân tích lỗi và gợi ý chỉnh sửa.</p>
                 </div>
               ) : result.status === 'FAILED' ? (
                 <Alert variant="destructive">
@@ -385,18 +385,18 @@ export function StudentGrammarCheckPage() {
                 </div>
               ) : (
                 <div className="space-y-5">
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                    <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <div className="rounded-xl border border-border bg-muted p-4">
+                    <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                       <FileText className="h-4 w-4" /> Đoạn văn đã đánh dấu
                     </div>
-                    <div className="whitespace-pre-wrap text-sm leading-7 text-gray-800">{buildHighlightedText(result)}</div>
+                    <div className="whitespace-pre-wrap text-sm leading-7 text-foreground">{buildHighlightedText(result)}</div>
                   </div>
                   <Separator />
                   <div className="space-y-3">
                     {resultErrors.map((error) => {
                       const style = getErrorTypeStyle(error.errorType)
                       return (
-                      <article key={error.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
+                      <article key={error.id} className="rounded-xl border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
                         <div className="flex gap-3">
                           <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${style.icon}`}>
                             <AlertTriangle className="h-4 w-4" />
@@ -408,9 +408,9 @@ export function StudentGrammarCheckPage() {
                             {formatErrorType(error.errorType)}
                           </Badge>
                         </div>
-                        <p className="mt-3 text-sm text-gray-600">Lỗi: <span className="font-medium text-gray-900">{error.errorText}</span></p>
-                        <p className="mt-2 text-sm text-gray-600">Gợi ý: <span className="font-medium text-emerald-700">{error.suggestion}</span></p>
-                        <p className="mt-2 text-sm leading-6 text-gray-600">{error.explanation}</p>
+                        <p className="mt-3 text-sm text-muted-foreground">Lỗi: <span className="font-medium text-foreground">{error.errorText}</span></p>
+                        <p className="mt-2 text-sm text-muted-foreground">Gợi ý: <span className="font-medium text-emerald-700">{error.suggestion}</span></p>
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">{error.explanation}</p>
                           </div>
                         </div>
                       </article>
@@ -424,7 +424,7 @@ export function StudentGrammarCheckPage() {
         </div>
 
         <aside className="space-y-6">
-          <Card className="border-slate-200 shadow-sm">
+          <Card className="border-border shadow-sm">
             <CardHeader>
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -447,14 +447,14 @@ export function StudentGrammarCheckPage() {
                   <Loader2 className="h-5 w-5 animate-spin text-indigo-600" />
                 </div>
               ) : !historyError && history.length === 0 ? (
-                <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 text-sm leading-6 text-gray-600">Chưa có lịch sử kiểm tra. Kết quả mới sẽ xuất hiện tại đây.</p>
+                <p className="rounded-xl border border-dashed border-border bg-muted p-4 text-sm leading-6 text-muted-foreground">Chưa có lịch sử kiểm tra. Kết quả mới sẽ xuất hiện tại đây.</p>
               ) : (
                 <div className="space-y-2">
                   {history.map((item) => (
                     <button
                       key={item.id}
                       className={`w-full rounded-xl border p-3 text-left transition-colors hover:border-indigo-200 hover:bg-indigo-50/50 disabled:pointer-events-none disabled:opacity-60 ${
-                        selectedCheckId === item.id ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200 bg-white'
+                        selectedCheckId === item.id ? 'border-indigo-300 bg-indigo-50' : 'border-border bg-card'
                       }`}
                       type="button"
                       aria-pressed={selectedCheckId === item.id}
@@ -463,13 +463,13 @@ export function StudentGrammarCheckPage() {
                       onClick={() => void handleSelectHistoryItem(item.id)}
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-sm font-semibold text-gray-900">#{item.id}</span>
+                        <span className="text-sm font-semibold text-foreground">#{item.id}</span>
                         <Badge className={getStatusBadgeClassName(item.status)} variant="outline">
                           {formatStatus(item.status)}
                         </Badge>
                       </div>
-                      <p className="mt-2 line-clamp-2 text-sm leading-5 text-gray-600">{item.inputPreview || 'Không có nội dung xem trước.'}</p>
-                      <div className="mt-3 flex items-center justify-between gap-3 text-xs text-gray-500">
+                      <p className="mt-2 line-clamp-2 text-sm leading-5 text-muted-foreground">{item.inputPreview || 'Không có nội dung xem trước.'}</p>
+                      <div className="mt-3 flex items-center justify-between gap-3 text-xs text-muted-foreground">
                         <span>{formatStudentLearningDate(item.createdAt)}</span>
                         <span className="inline-flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> {item.errorCount} lỗi</span>
                       </div>
@@ -485,7 +485,7 @@ export function StudentGrammarCheckPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200 shadow-sm">
+          <Card className="border-border shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BookOpenCheck className="h-5 w-5 text-emerald-600" /> Gợi ý sử dụng
@@ -493,7 +493,7 @@ export function StudentGrammarCheckPage() {
               <CardDescription>Cách nhận phản hồi chính xác hơn từ AI.</CardDescription>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-3 text-sm leading-6 text-gray-600">
+              <ul className="space-y-3 text-sm leading-6 text-muted-foreground">
                 <li className="flex gap-2"><CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-emerald-600" /> Viết một đoạn hoàn chỉnh thay vì chỉ nhập một vài từ rời rạc.</li>
                 <li className="flex gap-2"><CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-emerald-600" /> Giữ nguyên lỗi bạn muốn kiểm tra để AI có thể đánh dấu đúng vị trí.</li>
                 <li className="flex gap-2"><CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-emerald-600" /> Đọc phần giải thích trước khi áp dụng gợi ý để hiểu lý do sửa.</li>

@@ -194,7 +194,7 @@ describe('AdminRevenueSection', () => {
 
     // indigo table chrome reused from teacher-style tables
     const header = document.querySelector('[data-slot="table-header"]')
-    expect(header?.className).toContain('bg-indigo-50')
+    expect(header?.className).toContain('bg-muted')
   })
 
   it('refetches when the month changes', async () => {

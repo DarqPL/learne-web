@@ -1,10 +1,17 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   *,
   ::after,
   ::before {
     border-color: var(--color-border, currentColor);
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
   }
 }
 
@@ -48,12 +55,52 @@
   --border: #e4e4e7;
   --input: #e4e4e7;
   --ring: #818cf8;
+  --auth-background: #f5f3ff;
+  --auth-glow-indigo: rgb(199 210 254 / 40%);
+  --auth-glow-violet: rgb(221 214 254 / 50%);
+  --auth-gradient-start: #fafafa;
+  --auth-gradient-middle: #f5f3ff;
+  --auth-gradient-end: #eef2ff;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
+.dark {
+  color-scheme: dark;
+  /* Cool charcoal surfaces establish elevation without stark black panels. */
+  --background: #111318;
+  --foreground: #e7e9ef;
+  --card: #191c23;
+  --card-foreground: #e7e9ef;
+  --popover: #222630;
+  --popover-foreground: #e7e9ef;
+  /* Softer indigo retains the LearnE brand without neon glare. */
+  --primary: #a5aaf5;
+  --primary-foreground: #171923;
+  --secondary: #252a34;
+  --secondary-foreground: #e1e4eb;
+  --muted: #20242d;
+  --muted-foreground: #a6adbb;
+  --accent: #292d43;
+  --accent-foreground: #d8dcff;
+  --destructive: #f08d91;
+  --border: #343a46;
+  --input: #3a414f;
+  --ring: #a5aaf5;
+  --auth-background: #111318;
+  --auth-glow-indigo: rgb(129 140 248 / 12%);
+  --auth-glow-violet: rgb(167 139 250 / 10%);
+  --auth-gradient-start: #111318;
+  --auth-gradient-middle: #171a24;
+  --auth-gradient-end: #202238;
 }
+
+.auth-background {
+  background-color: var(--auth-background);
+  background-image: radial-gradient(circle at top left, var(--accent), transparent 32%), linear-gradient(135deg, var(--auth-gradient-start) 0%, var(--auth-gradient-middle) 48%, var(--auth-gradient-end) 100%);
+}
+
+.auth-glow-indigo { background-color: var(--auth-glow-indigo); }
+.auth-glow-violet { background-color: var(--auth-glow-violet); }
+
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;

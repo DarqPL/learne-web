@@ -19,7 +19,7 @@ const errorTypeStyles: Record<GrammarCheckErrorItem['errorType'], { badge: strin
   PUNCTUATION: { badge: 'border-amber-200 bg-amber-50 text-amber-700', icon: 'bg-amber-100 text-amber-700', marker: 'bg-amber-100 text-amber-900 ring-amber-200' },
   WORD_CHOICE: { badge: 'border-emerald-200 bg-emerald-50 text-emerald-700', icon: 'bg-emerald-100 text-emerald-700', marker: 'bg-emerald-100 text-emerald-900 ring-emerald-200' },
   STYLE: { badge: 'border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700', icon: 'bg-fuchsia-100 text-fuchsia-700', marker: 'bg-fuchsia-100 text-fuchsia-900 ring-fuchsia-200' },
-  OTHER: { badge: 'border-slate-200 bg-slate-50 text-slate-700', icon: 'bg-slate-100 text-slate-700', marker: 'bg-slate-100 text-slate-900 ring-slate-200' },
+  OTHER: { badge: 'border-border bg-muted text-foreground', icon: 'bg-muted text-foreground', marker: 'bg-muted text-foreground ring-slate-200' },
 }
 
 function formatStatus(status: GrammarCheckStatus) {
@@ -136,18 +136,18 @@ function HistoryDetail({ result }: { result: GrammarCheckResult }) {
 
   return (
     <div className="space-y-5">
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-        <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <div className="rounded-xl border border-border bg-muted p-4">
+        <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <FileText className="h-4 w-4" /> Đoạn văn đã đánh dấu
         </div>
-        <div className="whitespace-pre-wrap text-sm leading-7 text-gray-800">{buildHighlightedText(result)}</div>
+        <div className="whitespace-pre-wrap text-sm leading-7 text-foreground">{buildHighlightedText(result)}</div>
       </div>
       <Separator />
       <div className="space-y-3">
         {resultErrors.map((error) => {
           const style = errorTypeStyles[error.errorType]
           return (
-            <article key={error.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <article key={error.id} className="rounded-xl border border-border bg-card p-4 shadow-sm">
               <div className="flex gap-3">
                 <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${style.icon}`}>
                   <AlertTriangle className="h-4 w-4" />
@@ -159,9 +159,9 @@ function HistoryDetail({ result }: { result: GrammarCheckResult }) {
                       {formatErrorType(error.errorType)}
                     </Badge>
                   </div>
-                  <p className="mt-3 text-sm text-gray-600">Lỗi: <span className="font-medium text-gray-900">{error.errorText}</span></p>
-                  <p className="mt-2 text-sm text-gray-600">Gợi ý: <span className="font-medium text-emerald-700">{error.suggestion}</span></p>
-                  <p className="mt-2 text-sm leading-6 text-gray-600">{error.explanation}</p>
+                  <p className="mt-3 text-sm text-muted-foreground">Lỗi: <span className="font-medium text-foreground">{error.errorText}</span></p>
+                  <p className="mt-2 text-sm text-muted-foreground">Gợi ý: <span className="font-medium text-emerald-700">{error.suggestion}</span></p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{error.explanation}</p>
                 </div>
               </div>
             </article>
@@ -253,7 +253,7 @@ export function StudentGrammarCheckHistoryPage() {
       <Card className="relative overflow-hidden border-indigo-100 py-0 shadow-sm">
         <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-indigo-300/30 blur-3xl" />
         <div className="relative bg-gradient-to-br from-indigo-50 via-white to-sky-50 p-5 sm:p-7">
-          <Button asChild variant="outline" className="mb-5 border-indigo-200 bg-white/80 text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800">
+          <Button asChild variant="outline" className="mb-5 border-indigo-200 bg-card/80 text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800">
             <Link to="/student/grammar-check">
               <ArrowLeft className="h-4 w-4" /> Quay lại kiểm tra
             </Link>
@@ -263,18 +263,18 @@ export function StudentGrammarCheckHistoryPage() {
               <History className="h-7 w-7" />
             </div>
             <div>
-              <Badge className="border-indigo-200 bg-white/80 text-indigo-700" variant="outline">
+              <Badge className="border-indigo-200 bg-card/80 text-indigo-700" variant="outline">
                 Lịch sử luyện viết
               </Badge>
-              <h1 className="mt-3 text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">Toàn bộ lịch sử kiểm tra</h1>
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-gray-600">Xem lại các lần AI đã phân tích, mở chi tiết lỗi và tiếp tục rút kinh nghiệm cho bài viết tiếp theo.</p>
+              <h1 className="mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Toàn bộ lịch sử kiểm tra</h1>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">Xem lại các lần AI đã phân tích, mở chi tiết lỗi và tiếp tục rút kinh nghiệm cho bài viết tiếp theo.</p>
             </div>
           </div>
         </div>
       </Card>
 
       <div className="grid gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">
-        <Card className="border-slate-200 shadow-sm">
+        <Card className="border-border shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <History className="h-5 w-5 text-indigo-600" /> Danh sách kiểm tra
@@ -293,25 +293,25 @@ export function StudentGrammarCheckHistoryPage() {
                 <Loader2 className="h-5 w-5 animate-spin text-indigo-600" />
               </div>
             ) : !historyError && historyItems.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 text-sm leading-6 text-gray-600">Chưa có lịch sử kiểm tra.</p>
+              <p className="rounded-xl border border-dashed border-border bg-muted p-4 text-sm leading-6 text-muted-foreground">Chưa có lịch sử kiểm tra.</p>
             ) : (
               <div className="space-y-2">
                 {historyItems.map((item) => (
                   <button
                     key={item.id}
-                    className={`w-full rounded-xl border p-3 text-left transition-colors hover:border-indigo-200 hover:bg-indigo-50/50 ${selectedCheckId === item.id ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200 bg-white'}`}
+                    className={`w-full rounded-xl border p-3 text-left transition-colors hover:border-indigo-200 hover:bg-indigo-50/50 ${selectedCheckId === item.id ? 'border-indigo-300 bg-indigo-50' : 'border-border bg-card'}`}
                     type="button"
                     aria-pressed={selectedCheckId === item.id}
                     onClick={() => void loadDetail(item.id)}
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <span className="text-sm font-semibold text-gray-900">#{item.id}</span>
+                      <span className="text-sm font-semibold text-foreground">#{item.id}</span>
                       <Badge className={getStatusBadgeClassName(item.status)} variant="outline">
                         {formatStatus(item.status)}
                       </Badge>
                     </div>
-                    <p className="mt-2 line-clamp-2 text-sm leading-5 text-gray-600">{item.inputPreview || 'Không có nội dung xem trước.'}</p>
-                    <div className="mt-3 flex items-center justify-between gap-3 text-xs text-gray-500">
+                    <p className="mt-2 line-clamp-2 text-sm leading-5 text-muted-foreground">{item.inputPreview || 'Không có nội dung xem trước.'}</p>
+                    <div className="mt-3 flex items-center justify-between gap-3 text-xs text-muted-foreground">
                       <span>{formatStudentLearningDate(item.createdAt)}</span>
                       <span className="inline-flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> {item.errorCount} lỗi</span>
                     </div>
@@ -323,7 +323,7 @@ export function StudentGrammarCheckHistoryPage() {
               <Button variant="outline" disabled={!hasPrevious || historyLoading} onClick={() => setPage((current) => Math.max(0, current - 1))}>
                 Trước
               </Button>
-              <span className="text-sm text-gray-500">Trang {page + 1}{historyPage ? ` / ${Math.max(historyPage.totalPages, 1)}` : ''}</span>
+              <span className="text-sm text-muted-foreground">Trang {page + 1}{historyPage ? ` / ${Math.max(historyPage.totalPages, 1)}` : ''}</span>
               <Button variant="outline" disabled={!hasNext || historyLoading} onClick={() => setPage((current) => current + 1)}>
                 Sau
               </Button>
@@ -331,7 +331,7 @@ export function StudentGrammarCheckHistoryPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 shadow-sm">
+        <Card className="border-border shadow-sm">
           <CardHeader>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -351,7 +351,7 @@ export function StudentGrammarCheckHistoryPage() {
               </Alert>
             ) : null}
             {detailLoading ? (
-              <div className="flex justify-center rounded-xl border border-slate-200 bg-slate-50 py-12">
+              <div className="flex justify-center rounded-xl border border-border bg-muted py-12">
                 <Loader2 className="h-5 w-5 animate-spin text-indigo-600" />
               </div>
             ) : detail ? (
@@ -359,8 +359,8 @@ export function StudentGrammarCheckHistoryPage() {
             ) : (
               <div className="rounded-xl border border-dashed border-indigo-200 bg-indigo-50/50 p-6 text-center">
                 <History className="mx-auto h-8 w-8 text-indigo-500" />
-                <p className="mt-3 font-medium text-gray-900">Chưa chọn kết quả</p>
-                <p className="mt-2 text-sm leading-6 text-gray-600">Mở một mục trong lịch sử để xem lại lỗi và gợi ý.</p>
+                <p className="mt-3 font-medium text-foreground">Chưa chọn kết quả</p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">Mở một mục trong lịch sử để xem lại lỗi và gợi ý.</p>
               </div>
             )}
           </CardContent>

@@ -392,7 +392,7 @@ export function CourseBuilderWorkspace({
                 <AlertDialogDescription>
                   {deleteTarget ? (
                     <>
-                      Xóa vĩnh viễn <span className="font-semibold text-gray-900">{deleteTarget.name || '(Chưa đặt tên)'}</span>
+                      Xóa vĩnh viễn <span className="font-semibold text-foreground">{deleteTarget.name || '(Chưa đặt tên)'}</span>
                       {deleteTarget.kind === 'topic'
                         ? ' cùng toàn bộ bài học và câu hỏi bên trong?'
                         : deleteTarget.kind === 'lesson'
@@ -444,7 +444,7 @@ export function CourseBuilderWorkspace({
               <div className="flex flex-col gap-1">
                 <DialogTitle>Gửi duyệt khóa học</DialogTitle>
                 <DialogDescription>
-                  Gửi khóa học <span className="font-semibold text-gray-900">{course.name}</span> để duyệt? Sau khi gửi, nội dung sẽ chuyển sang trạng thái chờ duyệt và chỉ đọc.
+                  Gửi khóa học <span className="font-semibold text-foreground">{course.name}</span> để duyệt? Sau khi gửi, nội dung sẽ chuyển sang trạng thái chờ duyệt và chỉ đọc.
                 </DialogDescription>
               </div>
             </div>

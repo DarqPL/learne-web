@@ -30,7 +30,7 @@ import { CourseSubmissionStatus } from './CourseSubmissionStatus'
 import { getLessonInitialValue, getQuestionInitialValue } from './teacherContentMappers'
 import { LessonAudioEditor } from './audio/LessonAudioEditor'
 
-const cardClassName = 'rounded-2xl border border-gray-200 bg-white p-5 shadow-sm'
+const cardClassName = 'rounded-2xl border border-border bg-card p-5 shadow-sm'
 
 function parsePositiveInteger(value: string | undefined) {
   const parsed = Number(value)
@@ -81,13 +81,13 @@ function ReadOnlyQuestionDetails({ question }: { question: TeacherQuestion }) {
   const correctOption = question.options.find((option) => option.correct)
 
   return (
-    <div className="mt-4 space-y-3 rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm">
+    <div className="mt-4 space-y-3 rounded-xl border border-border bg-muted p-4 text-sm">
       {question.options.length > 0 ? (
         <div>
-          <p className="font-medium text-gray-700">Lựa chọn</p>
+          <p className="font-medium text-foreground">Lựa chọn</p>
           <div className="mt-2 space-y-2">
             {question.options.map((option) => (
-              <p key={option.id} className={option.correct ? 'rounded-lg bg-green-50 px-3 py-2 font-medium text-green-700' : 'rounded-lg bg-white px-3 py-2 text-gray-600'}>
+              <p key={option.id} className={option.correct ? 'rounded-lg bg-green-50 px-3 py-2 font-medium text-green-700' : 'rounded-lg bg-card px-3 py-2 text-muted-foreground'}>
                 {option.optionText}{option.correct ? ' (đáp án đúng)' : ''}
               </p>
             ))}
@@ -97,15 +97,15 @@ function ReadOnlyQuestionDetails({ question }: { question: TeacherQuestion }) {
 
       {question.correctAnswer || correctOption ? (
         <div>
-          <p className="font-medium text-gray-700">Đáp án đúng</p>
-          <p className="mt-1 whitespace-pre-wrap text-gray-600">{question.correctAnswer || correctOption?.optionText}</p>
+          <p className="font-medium text-foreground">Đáp án đúng</p>
+          <p className="mt-1 whitespace-pre-wrap text-muted-foreground">{question.correctAnswer || correctOption?.optionText}</p>
         </div>
       ) : null}
 
       {question.explanation ? (
         <div>
-          <p className="font-medium text-gray-700">Giải thích</p>
-          <p className="mt-1 whitespace-pre-wrap text-gray-600">{question.explanation}</p>
+          <p className="font-medium text-foreground">Giải thích</p>
+          <p className="mt-1 whitespace-pre-wrap text-muted-foreground">{question.explanation}</p>
         </div>
       ) : null}
     </div>
@@ -312,9 +312,9 @@ export function TeacherLessonWorkspacePage() {
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-medium text-indigo-700">{currentCourse.name}</p>
-                <h1 className="mt-1 text-2xl font-bold text-gray-900">{lesson.title}</h1>
-                <p className="mt-2 text-gray-600">Chủ đề: {topic?.name ?? 'Không xác định'}</p>
-                <p className="mt-3 text-sm text-gray-600">
+                <h1 className="mt-1 text-2xl font-bold text-foreground">{lesson.title}</h1>
+                <p className="mt-2 text-muted-foreground">Chủ đề: {topic?.name ?? 'Không xác định'}</p>
+                <p className="mt-3 text-sm text-muted-foreground">
                   {skillTypeLabels[lesson.skillType]} · {lesson.questions.length} câu hỏi · {lesson.xpReward} XP
                 </p>
               </div>
@@ -329,14 +329,14 @@ export function TeacherLessonWorkspacePage() {
             <section className={cardClassName}>
               <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Thông tin bài học</h2>
-                  <p className="mt-1 text-sm text-gray-600">Cập nhật nội dung bài học và quản lý trạng thái trước khi gửi duyệt khóa học.</p>
+                  <h2 className="text-lg font-semibold text-foreground">Thông tin bài học</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">Cập nhật nội dung bài học và quản lý trạng thái trước khi gửi duyệt khóa học.</p>
                 </div>
                 <Button variant="destructive" loading={action === `delete-lesson-${lesson.id}`} disabled={action !== null && action !== `delete-lesson-${lesson.id}`} onClick={handleDeleteLesson}>
                   Xóa bài học
                 </Button>
               </div>
-              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <div className="rounded-xl border border-border bg-muted p-4">
                 <LessonAudioEditor
                   key={lesson.id}
                   courseId={currentCourse.id}
@@ -351,9 +351,9 @@ export function TeacherLessonWorkspacePage() {
             </section>
           ) : (
             <section className={cardClassName}>
-              <h2 className="text-lg font-semibold text-gray-900">Nội dung bài học</h2>
-              <p className="mt-3 text-sm font-medium text-gray-700">Mô tả</p>
-              <p className="mt-1 whitespace-pre-wrap text-gray-600">{lesson.description || 'Chưa có mô tả bài học.'}</p>
+              <h2 className="text-lg font-semibold text-foreground">Nội dung bài học</h2>
+              <p className="mt-3 text-sm font-medium text-foreground">Mô tả</p>
+              <p className="mt-1 whitespace-pre-wrap text-muted-foreground">{lesson.description || 'Chưa có mô tả bài học.'}</p>
               <LessonAudioEditor
                 key={lesson.id}
                 courseId={currentCourse.id}
@@ -363,20 +363,20 @@ export function TeacherLessonWorkspacePage() {
                 lockedHint={currentCourse ? getAudioLockedHint(currentCourse, editingState) : undefined}
                 onAudioChanged={(audio) => handleAudioChanged(lesson.id, audio)}
               />
-              <p className="mt-4 text-sm font-medium text-gray-700">Nội dung</p>
-              <p className="mt-1 whitespace-pre-wrap text-gray-600">{lesson.content || 'Chưa có nội dung bài học.'}</p>
+              <p className="mt-4 text-sm font-medium text-foreground">Nội dung</p>
+              <p className="mt-1 whitespace-pre-wrap text-muted-foreground">{lesson.content || 'Chưa có nội dung bài học.'}</p>
             </section>
           )}
 
           <section className="space-y-4">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Câu hỏi luyện tập</h2>
-              <p className="mt-1 text-sm text-gray-600">Xây dựng và chỉnh sửa ngân hàng câu hỏi cho bài học này.</p>
+              <h2 className="text-lg font-semibold text-foreground">Câu hỏi luyện tập</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Xây dựng và chỉnh sửa ngân hàng câu hỏi cho bài học này.</p>
             </div>
 
             {editable && editingQuestionId === null ? (
               <div className={cardClassName}>
-                <h3 className="mb-4 font-semibold text-gray-900">Thêm câu hỏi</h3>
+                <h3 className="mb-4 font-semibold text-foreground">Thêm câu hỏi</h3>
                 <QuestionForm
                   key={`create-question-${lesson.id}-${formResetVersion}`}
                   loading={action === `create-question-${lesson.id}`}
@@ -389,16 +389,16 @@ export function TeacherLessonWorkspacePage() {
 
             {lesson.questions.length === 0 ? (
               <div className={cardClassName}>
-                <p className="text-gray-600">Chưa có câu hỏi nào. Thêm câu hỏi đầu tiên để hoàn thiện bài học.</p>
+                <p className="text-muted-foreground">Chưa có câu hỏi nào. Thêm câu hỏi đầu tiên để hoàn thiện bài học.</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {lesson.questions.map((question) => (
-                  <article key={question.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                  <article key={question.id} className="rounded-xl border border-border bg-card p-4 shadow-sm">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>
-                        <h3 className="font-semibold text-gray-900">{question.questionText}</h3>
-                        <p className="mt-1 text-sm text-gray-600">
+                        <h3 className="font-semibold text-foreground">{question.questionText}</h3>
+                        <p className="mt-1 text-sm text-muted-foreground">
                           {questionTypeLabels[question.type]} · {question.xpReward} XP
                         </p>
                       </div>
@@ -423,9 +423,9 @@ export function TeacherLessonWorkspacePage() {
                     </div>
 
                     {editable && editingQuestionId === question.id ? (
-                      <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+                      <div className="mt-4 rounded-xl border border-border bg-muted p-4">
                         <div className="mb-3 flex items-center justify-between gap-3">
-                          <h4 className="font-medium text-gray-900">Chỉnh sửa câu hỏi</h4>
+                          <h4 className="font-medium text-foreground">Chỉnh sửa câu hỏi</h4>
                           <Button variant="outline" disabled={action !== null} onClick={() => setEditingQuestionId(null)}>
                             Đóng
                           </Button>

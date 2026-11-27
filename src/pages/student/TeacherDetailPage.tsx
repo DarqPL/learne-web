@@ -25,7 +25,7 @@ function getInitials(fullName: string) {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
 }
 
-const cardSoftClassName = 'border-indigo-100 bg-white/95 shadow-sm shadow-indigo-100/60'
+const cardSoftClassName = 'border-indigo-100 bg-card/95 shadow-sm shadow-indigo-100/60'
 
 export function TeacherDetailPage() {
   const navigate = useNavigate()
@@ -150,25 +150,25 @@ export function TeacherDetailPage() {
           </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
-          <section className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
-            <h3 className="mb-2 text-sm font-semibold text-indigo-950">Video giới thiệu</h3>
+          <section className="rounded-xl border border-border bg-muted/50 p-4">
+            <h3 className="mb-2 text-sm font-semibold text-foreground">Video giới thiệu</h3>
             {profile.introductionVideoUrl ? (
-              <video className="w-full rounded-xl border border-indigo-100 bg-slate-950" src={profile.introductionVideoUrl} controls />
+              <video className="w-full rounded-xl border border-border bg-black" src={profile.introductionVideoUrl} controls />
             ) : (
               <p className="text-sm text-muted-foreground">Chưa cập nhật.</p>
             )}
           </section>
           <section>
-            <h3 className="mb-1 text-sm font-semibold text-indigo-950">Giới thiệu</h3>
-            <p className="text-sm whitespace-pre-wrap text-slate-700">{profile.bio || 'Chưa cập nhật.'}</p>
+            <h3 className="mb-1 text-sm font-semibold text-foreground">Giới thiệu</h3>
+            <p className="text-sm whitespace-pre-wrap text-foreground">{profile.bio || 'Chưa cập nhật.'}</p>
           </section>
           <section>
-            <h3 className="mb-1 text-sm font-semibold text-indigo-950">Chuyên môn</h3>
-            <p className="text-sm text-slate-700">{profile.expertise || 'Chưa cập nhật.'}</p>
+            <h3 className="mb-1 text-sm font-semibold text-foreground">Chuyên môn</h3>
+            <p className="text-sm text-foreground">{profile.expertise || 'Chưa cập nhật.'}</p>
           </section>
           <section>
-            <h3 className="mb-1 text-sm font-semibold text-indigo-950">Kinh nghiệm</h3>
-            <p className="text-sm text-slate-700">{profile.yearsOfExperience} năm kinh nghiệm</p>
+            <h3 className="mb-1 text-sm font-semibold text-foreground">Kinh nghiệm</h3>
+            <p className="text-sm text-foreground">{profile.yearsOfExperience} năm kinh nghiệm</p>
           </section>
         </CardContent>
       </Card>

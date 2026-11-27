@@ -6,6 +6,7 @@ import { NotificationProvider } from './NotificationProvider'
 import { NotificationBell } from './NotificationBell'
 import { TeacherLayout } from '../../layouts/TeacherLayout'
 import { getNotifications, getUnreadCount, markNotificationRead } from '../../lib/api/notificationApi'
+import { ThemeProvider } from '../../lib/theme/ThemeProvider'
 
 const auth = vi.hoisted(() => ({ user: { id: 1, role: 'TEACHER' } as { id: number; role: string } | null }))
 vi.mock('../../lib/auth/auth-context', () => ({ useAuth: () => ({ user: auth.user, isInitializing: false }) }))
@@ -15,7 +16,7 @@ const item = (id = 'n1', available = true) => ({ id, type: 'COURSE_APPROVED', me
 const page = (content = [item()], nextCursor: string | null = null) => ({ data: { content, nextCursor, hasNext: !!nextCursor, size: 20, unreadCount: 42 } })
 const deferred = <T,>() => { let resolve!: (value: T) => void; const promise = new Promise<T>((r) => { resolve = r }); return { promise, resolve } }
 const flush = async () => { await act(async () => { await Promise.resolve() }) }
-const view = () => <MemoryRouter><NotificationProvider><NotificationBell /></NotificationProvider></MemoryRouter>
+const view = () => <ThemeProvider><MemoryRouter><NotificationProvider><NotificationBell /></NotificationProvider></MemoryRouter></ThemeProvider>
 const open = async () => { fireEvent.click(screen.getByRole('button', { name: /Thông báo/ })); await flush() }
 const visibility = (value: 'hidden' | 'visible') => { Object.defineProperty(document, 'visibilityState', { configurable: true, value }); fireEvent(document, new Event('visibilitychange')) }
 
@@ -261,7 +262,7 @@ it('does not let an older pending page overwrite a newer count snapshot', async 
 })
 
 it('mounts a single bell and a single polling owner in TeacherLayout', async () => {
-  render(<MemoryRouter><TeacherLayout /></MemoryRouter>); await flush()
+  render(<ThemeProvider><MemoryRouter><TeacherLayout /></MemoryRouter></ThemeProvider>); await flush()
   expect(screen.getAllByRole('button', { name: /Thông báo/ })).toHaveLength(1)
   expect(getUnreadCount).toHaveBeenCalledTimes(1)
   expect(screen.getByRole('navigation', { name: 'Điều hướng giảng viên' })).toBeInTheDocument()

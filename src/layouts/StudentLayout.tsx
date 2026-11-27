@@ -4,6 +4,7 @@ import { StudentAccountMenu } from './StudentAccountMenu'
 import { StudentTopNav } from './StudentTopNav'
 import { logout } from '../lib/api/authApi'
 import { useAuth } from '../lib/auth/auth-context'
+import { ThemeModeToggle } from '../components/theme/ThemeModeToggle'
 
 export function StudentLayout() {
   const { user, logout: clearAuth } = useAuth()
@@ -20,12 +21,13 @@ export function StudentLayout() {
   }
 
   const header = (
-    <header className="border-b border-gray-200 bg-white">
+    <header className="border-b border-border bg-card">
       <div className="mx-auto flex h-16 w-full items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         <div className="min-w-0 flex-1">
           <StudentTopNav />
         </div>
         <div className="flex shrink-0 items-center">
+          <ThemeModeToggle />
           <StudentAccountMenu userName={user?.fullName ?? ''} userEmail={user?.email} onLogout={handleLogout} />
         </div>
       </div>

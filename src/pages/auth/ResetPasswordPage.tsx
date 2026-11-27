@@ -64,7 +64,7 @@ export function ResetPasswordPage() {
 
   return (
     <main className="mx-auto w-full max-w-md">
-      <Card className="border-white/70 bg-white/90 shadow-2xl shadow-indigo-200/40 backdrop-blur">
+      <Card className="border-white/70 bg-card/90 shadow-2xl shadow-indigo-200/40 backdrop-blur">
         <CardHeader className="text-center">
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
             <KeyRound className="h-7 w-7" />
@@ -72,7 +72,7 @@ export function ResetPasswordPage() {
           <Badge variant="outline" className="mx-auto border-indigo-200 bg-indigo-50 text-indigo-700">
             Mã xác thực trong email
           </Badge>
-          <CardTitle className="text-2xl font-bold text-gray-950">Đặt lại mật khẩu</CardTitle>
+          <CardTitle className="text-2xl font-bold text-foreground">Đặt lại mật khẩu</CardTitle>
           <CardDescription>Nhập mã OTP và mật khẩu mới để bảo vệ tài khoản của bạn.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -103,7 +103,7 @@ export function ResetPasswordPage() {
                   required
                   autoComplete="email"
                   placeholder="ban@example.com"
-                  className="h-11 rounded-xl bg-white/90"
+                  className="h-11 rounded-xl bg-card/90"
                 />
               </Field>
             )}
@@ -115,7 +115,7 @@ export function ResetPasswordPage() {
                 onChange={(event) => setToken(event.target.value)}
                 required
                 placeholder="123456"
-                className="h-11 rounded-xl bg-white/90 text-center tracking-[0.45em]"
+                className="h-11 rounded-xl bg-card/90 text-center tracking-[0.45em]"
               />
             </Field>
             <Field label="Mật khẩu mới" error={fieldErrors.newPassword}>

@@ -116,30 +116,30 @@ export function StudentEnrollmentProgressPage() {
           <Badge variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700">
             {studentCourseTypeLabels[enrollment.course.type]}
           </Badge>
-          <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
+          <Badge variant="outline" className="border-border bg-muted text-foreground">
             Trình độ {enrollment.course.level}
           </Badge>
           <Badge variant="outline" className={cn(enrollmentStatusStyles[enrollment.status])}>
             {enrollmentStatusLabels[enrollment.status]}
           </Badge>
         </div>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">{enrollment.course.name}</h1>
-        <p className="text-base leading-7 text-gray-600">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">{enrollment.course.name}</h1>
+        <p className="text-base leading-7 text-muted-foreground">
           {enrollment.course.teacherName} · {enrollment.completedLessonCount}/{enrollment.totalLessonCount} bài học ·{' '}
           {progressPercent}% hoàn thành
         </p>
       </section>
 
-      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
         <div>
           <div className="mb-2 flex items-center justify-between gap-3 text-sm">
-            <span className="font-medium text-gray-700">Tiến độ</span>
-            <span className="font-semibold text-gray-900">
+            <span className="font-medium text-foreground">Tiến độ</span>
+            <span className="font-semibold text-foreground">
               {enrollment.completedLessonCount}/{enrollment.totalLessonCount} bài học
             </span>
           </div>
           <div
-            className="h-2 overflow-hidden rounded-full bg-gray-100"
+            className="h-2 overflow-hidden rounded-full bg-muted"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={100}
@@ -148,7 +148,7 @@ export function StudentEnrollmentProgressPage() {
           >
             <div className="h-full rounded-full bg-indigo-600" style={{ width: `${progressPercent}%` }} />
           </div>
-          <p className="mt-2 text-xs font-medium text-gray-500">{progressPercent}% hoàn thành</p>
+          <p className="mt-2 text-xs font-medium text-muted-foreground">{progressPercent}% hoàn thành</p>
         </div>
       </section>
 
@@ -159,8 +159,8 @@ export function StudentEnrollmentProgressPage() {
       ) : null}
       <div className="space-y-5">
         {enrollment.topics.length === 0 ? (
-          <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <p className="text-sm text-gray-600">Chưa có bài học nào trong khóa học này.</p>
+          <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <p className="text-sm text-muted-foreground">Chưa có bài học nào trong khóa học này.</p>
           </section>
         ) : (
           <Accordion
@@ -172,12 +172,12 @@ export function StudentEnrollmentProgressPage() {
               <AccordionItem
                 key={topic.id}
                 value={`topic-${topic.id}`}
-                className="rounded-2xl border border-gray-200 bg-white px-5 shadow-sm"
+                className="rounded-2xl border border-border bg-card px-5 shadow-sm"
               >
                 <AccordionTrigger className="py-5 hover:no-underline">
                   <span className="flex min-w-0 flex-1 flex-col gap-1 text-left">
                     <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Chủ đề</span>
-                    <span className="text-lg font-semibold text-gray-900">{topic.name}</span>
+                    <span className="text-lg font-semibold text-foreground">{topic.name}</span>
                   </span>
                 </AccordionTrigger>
                 <AccordionContent>
@@ -189,25 +189,25 @@ export function StudentEnrollmentProgressPage() {
                       return (
                         <article
                           key={lesson.lessonId}
-                          className={`rounded-xl border p-4 ${locked ? 'border-gray-100 bg-gray-50' : 'border-gray-200 bg-white'}`}
+                          className={`rounded-xl border p-4 ${locked ? 'border-border bg-muted' : 'border-border bg-card'}`}
                         >
                           <div className="flex items-start justify-between gap-3">
-                            <span className="text-sm font-semibold text-gray-900">{lesson.title}</span>
+                            <span className="text-sm font-semibold text-foreground">{lesson.title}</span>
                             <span className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold ${lessonProgressStatusStyles[lesson.status]}`}>
                               {lessonProgressStatusLabels[lesson.status]}
                             </span>
                           </div>
                           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold">
-                            <span className="rounded-full bg-white px-2 py-1 text-gray-700">{studentSkillTypeLabels[lesson.skillType]}</span>
-                            <span className="text-gray-500">{lessonProgressPercent}%</span>
+                            <span className="rounded-full bg-card px-2 py-1 text-foreground">{studentSkillTypeLabels[lesson.skillType]}</span>
+                            <span className="text-muted-foreground">{lessonProgressPercent}%</span>
                           </div>
-                          <dl className="mt-4 grid gap-2 text-xs text-gray-500">
+                          <dl className="mt-4 grid gap-2 text-xs text-muted-foreground">
                             <div>
-                              <dt className="font-medium text-gray-600">Bắt đầu</dt>
+                              <dt className="font-medium text-muted-foreground">Bắt đầu</dt>
                               <dd>{formatStudentLearningDate(lesson.startedAt)}</dd>
                             </div>
                             <div>
-                              <dt className="font-medium text-gray-600">Hoàn thành</dt>
+                              <dt className="font-medium text-muted-foreground">Hoàn thành</dt>
                               <dd>{formatStudentLearningDate(lesson.completedAt)}</dd>
                             </div>
                           </dl>

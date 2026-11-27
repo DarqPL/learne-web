@@ -233,17 +233,17 @@ export function StudentPlacementTestPage() {
 
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-2xl border border-indigo-100 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-indigo-100 bg-card shadow-sm">
         <div className="bg-gradient-to-br from-indigo-50 via-white to-violet-50 p-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Placement test</p>
-              <h1 className="mt-2 text-2xl font-bold text-gray-900">Bài kiểm tra đầu vào</h1>
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-gray-600">
+              <h1 className="mt-2 text-2xl font-bold text-foreground">Bài kiểm tra đầu vào</h1>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
                 Hoàn thành 20 câu hỏi để AI phân tích năng lực hiện tại và đề xuất khóa học phù hợp nhất.
               </p>
             </div>
-            <div className="rounded-2xl bg-white px-5 py-4 text-center shadow-sm">
+            <div className="rounded-2xl bg-card px-5 py-4 text-center shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-wide text-violet-600">Thời gian còn lại</p>
               <p className={`mt-1 text-2xl font-bold ${timerExpired ? 'text-red-700' : 'text-violet-800'}`}>{formatDuration(remainingSeconds)}</p>
             </div>
@@ -251,12 +251,12 @@ export function StudentPlacementTestPage() {
 
           <div className="mt-6">
             <div className="mb-2 flex items-center justify-between gap-3 text-sm">
-              <span className="font-medium text-gray-700">Tiến độ trả lời</span>
-              <span className="font-semibold text-gray-900">
+              <span className="font-medium text-foreground">Tiến độ trả lời</span>
+              <span className="font-semibold text-foreground">
                 {answeredCount}/{questionCount}
               </span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-gray-100" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPercent}>
+            <div className="h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPercent}>
               <div className="h-full rounded-full bg-indigo-600" style={{ width: `${progressPercent}%` }} />
             </div>
           </div>
@@ -275,9 +275,9 @@ export function StudentPlacementTestPage() {
       ) : null}
 
       {questionCount === 0 ? (
-        <section className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center shadow-sm">
-          <p className="text-sm text-gray-600">Bài kiểm tra hiện chưa có câu hỏi.</p>
-          <Link className="mt-4 inline-flex items-center justify-center rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-800" to="/student">
+        <section className="rounded-2xl border border-dashed border-border bg-card p-8 text-center shadow-sm">
+          <p className="text-sm text-muted-foreground">Bài kiểm tra hiện chưa có câu hỏi.</p>
+          <Link className="mt-4 inline-flex items-center justify-center rounded-lg bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground" to="/student">
             Quay lại dashboard
           </Link>
         </section>
@@ -290,16 +290,16 @@ export function StudentPlacementTestPage() {
             const optionQuestion = isOptionQuestion(question)
 
             return (
-              <section key={question.id} id={labelId} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <section key={question.id} id={labelId} className="rounded-2xl border border-border bg-card p-6 shadow-sm">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
                       <span className="rounded-full bg-indigo-100 px-3 py-1 text-indigo-700">Câu {index + 1}</span>
-                      <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-700">{getQuestionTypeLabel(question.type)}</span>
+                      <span className="rounded-full bg-muted px-3 py-1 text-foreground">{getQuestionTypeLabel(question.type)}</span>
                       <span className="rounded-full bg-violet-100 px-3 py-1 text-violet-700">{question.skill}</span>
                     </div>
-                    {question.knowledgePoint ? <p className="mt-3 text-xs font-medium text-gray-500">{question.knowledgePoint}</p> : null}
-                    <h2 className="mt-2 whitespace-pre-wrap text-lg font-bold text-gray-900">{question.questionText}</h2>
+                    {question.knowledgePoint ? <p className="mt-3 text-xs font-medium text-muted-foreground">{question.knowledgePoint}</p> : null}
+                    <h2 className="mt-2 whitespace-pre-wrap text-lg font-bold text-foreground">{question.questionText}</h2>
                   </div>
                 </div>
 
@@ -314,19 +314,19 @@ export function StudentPlacementTestPage() {
                             type="button"
                             role={multipleSelect ? 'checkbox' : 'radio'}
                             className={`w-full rounded-xl border p-4 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-100 ${
-                              selected ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200 bg-white hover:border-indigo-200 hover:bg-gray-50'
+                              selected ? 'border-indigo-400 bg-indigo-50' : 'border-border bg-card hover:border-indigo-200 hover:bg-muted'
                             }`}
                             aria-checked={selected}
                             onClick={() => (multipleSelect ? toggleSelectedOption(question.id, option.id) : updateSelectedOption(question.id, option.id))}
                           >
-                            <span className="text-sm font-semibold text-gray-900">{option.optionText}</span>
+                            <span className="text-sm font-semibold text-foreground">{option.optionText}</span>
                           </button>
                         )
                       })}
                     </div>
                   ) : question.type === 'TRANSLATION' || question.type === 'SHORT_ANSWER' ? (
                     <textarea
-                      className="min-h-32 w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                      className="min-h-32 w-full rounded-xl border border-border px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                       aria-labelledby={labelId}
                       value={answer.answerText}
                       onChange={(event) => updateTextAnswer(question.id, event.target.value)}
@@ -334,7 +334,7 @@ export function StudentPlacementTestPage() {
                     />
                   ) : (
                     <input
-                      className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                      className="w-full rounded-xl border border-border px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                       aria-labelledby={labelId}
                       value={answer.answerText}
                       onChange={(event) => updateTextAnswer(question.id, event.target.value)}
@@ -349,7 +349,7 @@ export function StudentPlacementTestPage() {
       )}
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Link className="inline-flex items-center justify-center rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-800 transition-colors hover:bg-gray-300" to="/student">
+        <Link className="inline-flex items-center justify-center rounded-lg bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80" to="/student">
           Quay lại dashboard
         </Link>
         <Button loading={submitting} disabled={questionCount === 0} onClick={() => void handleSubmit()}>

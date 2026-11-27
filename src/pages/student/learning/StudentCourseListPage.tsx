@@ -158,19 +158,19 @@ export function StudentCourseListPage() {
       </Breadcrumb>
 
       <section className="flex min-w-0 flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">Khám phá khóa học</h1>
-        <p className="text-base leading-7 text-gray-600">Tìm khóa học phù hợp với trình độ của bạn.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Khám phá khóa học</h1>
+        <p className="text-base leading-7 text-muted-foreground">Tìm khóa học phù hợp với trình độ của bạn.</p>
       </section>
 
-      <Card className="border-gray-200 bg-white/95 py-0 shadow-sm">
+      <Card className="border-border bg-card/95 py-0 shadow-sm">
         <CardContent className="p-4 sm:p-5">
           <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
             <label className="block">
-              <span className="mb-1.5 block text-sm font-medium text-gray-700">Trình độ</span>
+              <span className="mb-1.5 block text-sm font-medium text-foreground">Trình độ</span>
               <select
                 value={level ?? ''}
                 onChange={(event) => updateLevelFilter(event.target.value)}
-                className="h-10 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 shadow-xs outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+                className="h-10 w-full rounded-xl border border-border bg-card px-3 text-sm text-foreground shadow-xs outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
               >
                 <option value="">Tất cả trình độ</option>
                 {levelOptions.map((option) => (
@@ -181,14 +181,14 @@ export function StudentCourseListPage() {
               </select>
             </label>
             <label className="block">
-              <span className="mb-1.5 block text-sm font-medium text-gray-700">Tìm kiếm</span>
+              <span className="mb-1.5 block text-sm font-medium text-foreground">Tìm kiếm</span>
               <span className="relative block">
-                <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+                <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <input
                   value={localSearch}
                   onChange={(event) => handleSearchChange(event.target.value)}
                   placeholder="Tìm theo tên khóa học hoặc giảng viên"
-                  className="h-10 w-full rounded-xl border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm text-gray-900 shadow-xs outline-none transition placeholder:text-gray-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+                  className="h-10 w-full rounded-xl border border-border bg-card py-2 pl-9 pr-3 text-sm text-foreground shadow-xs outline-none transition placeholder:text-muted-foreground focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
                 />
               </span>
             </label>
@@ -196,7 +196,7 @@ export function StudentCourseListPage() {
 
           {teacherId ? (
             <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/80 p-3">
-              <Badge variant="outline" className="border-indigo-200 bg-white text-indigo-700">
+              <Badge variant="outline" className="border-indigo-200 bg-card text-indigo-700">
                 {teacherFilterName ? `Đang xem khóa học của giảng viên ${teacherFilterName}` : 'Đang lọc theo giảng viên'}
               </Badge>
               <Button variant="ghost" size="sm" onClick={clearFilters} className="text-indigo-700 hover:text-indigo-800">
@@ -223,22 +223,22 @@ export function StudentCourseListPage() {
           ) : null}
         </div>
       ) : courses === null ? (
-        <Card className="border-dashed border-indigo-200 bg-white/90 shadow-sm">
-          <CardContent className="flex items-center gap-4 p-6 text-gray-600">
+        <Card className="border-dashed border-indigo-200 bg-card/90 shadow-sm">
+          <CardContent className="flex items-center gap-4 p-6 text-muted-foreground">
             <span className="flex size-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
               <Loader2 aria-hidden="true" className="size-5 animate-spin" />
             </span>
             <div>
-              <p className="font-medium text-gray-900">Đang tải danh sách khóa học</p>
-              <p className="text-sm text-gray-500">Hệ thống đang lấy các khóa học đã duyệt phù hợp với bộ lọc của bạn.</p>
+              <p className="font-medium text-foreground">Đang tải danh sách khóa học</p>
+              <p className="text-sm text-muted-foreground">Hệ thống đang lấy các khóa học đã duyệt phù hợp với bộ lọc của bạn.</p>
             </div>
           </CardContent>
         </Card>
       ) : hasNoResults ? (
-        <Card className="border-dashed border-gray-200 bg-white text-center shadow-sm">
+        <Card className="border-dashed border-border bg-card text-center shadow-sm">
           <CardContent className="flex flex-col items-center gap-0 p-8">
-            <h2 className="mt-4 text-lg font-semibold text-gray-950">Chưa có khóa học phù hợp</h2>
-            <p className="mt-2 max-w-md text-sm leading-6 text-gray-600">Thử đổi trình độ, từ khóa tìm kiếm hoặc bỏ bộ lọc giảng viên để xem thêm khóa học.</p>
+            <h2 className="mt-4 text-lg font-semibold text-foreground">Chưa có khóa học phù hợp</h2>
+            <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">Thử đổi trình độ, từ khóa tìm kiếm hoặc bỏ bộ lọc giảng viên để xem thêm khóa học.</p>
             {hasFilters ? (
               <Button variant="outline" onClick={clearFilters} className="mt-5">
                 <XCircle aria-hidden="true" data-icon="inline-start" />
@@ -256,22 +256,22 @@ export function StudentCourseListPage() {
               to={`/student/courses/${course.id}`}
               className="group block min-w-0 rounded-3xl outline-none transition focus-visible:ring-4 focus-visible:ring-indigo-200"
             >
-              <Card className="h-full flex flex-col gap-3 overflow-hidden border-gray-200 bg-white p-5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:border-indigo-200 group-hover:shadow-sm">
+              <Card className="h-full flex flex-col gap-3 overflow-hidden border-border bg-card p-5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:border-indigo-200 group-hover:shadow-sm">
                 <CourseCoverImage courseName={course.name} imageUrl={course.imageUrl} />
                 <CardHeader className="flex flex-col gap-3 p-0">
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline" className={cn(courseTypeClass(course.type))}>
                       {studentCourseTypeLabels[course.type]}
                     </Badge>
-                    <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
+                    <Badge variant="outline" className="border-border bg-muted text-foreground">
                       {course.level}
                     </Badge>
                     {course.enrolled ? <Badge className="bg-emerald-600 text-white">Đã đăng ký</Badge> : null}
                   </div>
-                  <h2 className="text-xl font-semibold tracking-tight text-gray-950 transition group-hover:text-indigo-700">
+                  <h2 className="text-xl font-semibold tracking-tight text-foreground transition group-hover:text-indigo-700">
                     {course.name}
                   </h2>
-                  <p className="line-clamp-2 text-sm leading-6 text-gray-600">{course.description ?? 'Chưa có mô tả.'}</p>
+                  <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">{course.description ?? 'Chưa có mô tả.'}</p>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-3 p-0">
                   <div className="flex min-w-0 items-center gap-2">
@@ -279,9 +279,9 @@ export function StudentCourseListPage() {
                       {course.teacherAvatarUrl ? <AvatarImage src={course.teacherAvatarUrl} alt={course.teacherName} /> : null}
                       <AvatarFallback>{teacherInitials(course.teacherName)}</AvatarFallback>
                     </Avatar>
-                    <p className="min-w-0 truncate text-sm font-medium text-gray-950">{course.teacherName}</p>
+                    <p className="min-w-0 truncate text-sm font-medium text-foreground">{course.teacherName}</p>
                   </div>
-                  <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-5 text-gray-500">
+                  <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-5 text-muted-foreground">
                     <span className="inline-flex items-center gap-1">
                       <Layers aria-hidden="true" className="size-3.5 text-indigo-600" />
                       {course.topicCount} chủ đề

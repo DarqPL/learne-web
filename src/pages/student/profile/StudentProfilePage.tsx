@@ -287,19 +287,19 @@ export function StudentProfilePage() {
               {profile.avatarUrl ? (
                 <AvatarImage src={profile.avatarUrl} alt={`Ảnh đại diện của ${profile.fullName}`} />
               ) : null}
-              <AvatarFallback className="bg-white/20 text-white">{getInitials(profile.fullName)}</AvatarFallback>
+              <AvatarFallback className="bg-card/20 text-white">{getInitials(profile.fullName)}</AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
               <CardTitle className="truncate text-xl text-white">{profile.fullName}</CardTitle>
               <p className="mt-0.5 truncate text-sm text-indigo-100">{profile.email}</p>
-              <span className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-medium text-white">
+              <span className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-full bg-card/20 px-2.5 py-0.5 text-xs font-medium text-white">
                 <GraduationCap aria-hidden="true" className="size-3" />
                 {profile.currentLevel ?? 'Chưa xác định'}
               </span>
             </div>
             <div className="flex flex-wrap gap-2">
               <label
-                className={`inline-flex items-center justify-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-medium whitespace-nowrap text-indigo-700 transition-colors duration-200 hover:bg-indigo-50 ${avatarDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                className={`inline-flex items-center justify-center gap-2 rounded-md bg-card px-4 py-2 text-sm font-medium whitespace-nowrap text-indigo-700 transition-colors duration-200 hover:bg-indigo-50 ${avatarDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
               >
                 <Camera aria-hidden="true" className="size-4" />
                 {mediaAction === 'avatar' ? 'Đang tải...' : 'Đổi ảnh'}
@@ -316,7 +316,7 @@ export function StudentProfilePage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="border-white/60 bg-transparent text-white transition-colors duration-200 hover:bg-white/10 hover:text-white"
+                  className="border-white/60 bg-transparent text-white transition-colors duration-200 hover:bg-card/10 hover:text-white"
                   disabled={avatarDisabled}
                   loading={mediaAction === 'delete-avatar' && !deleteOpen}
                   onClick={() => setDeleteOpen(true)}
@@ -328,7 +328,7 @@ export function StudentProfilePage() {
             </div>
           </div>
           <dl className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <div className="flex items-center gap-3 rounded-xl border border-white/15 bg-white/10 px-4 py-3">
+            <div className="flex items-center gap-3 rounded-xl border border-white/15 bg-card/10 px-4 py-3">
               <GraduationCap aria-hidden="true" className="size-4 shrink-0 text-indigo-100" />
               <div className="min-w-0">
                 <dt className="text-[11px] font-medium tracking-wide text-indigo-100 uppercase">
@@ -339,7 +339,7 @@ export function StudentProfilePage() {
                 </dd>
               </div>
             </div>
-            <div className="flex items-center gap-3 rounded-xl border border-white/15 bg-white/10 px-4 py-3">
+            <div className="flex items-center gap-3 rounded-xl border border-white/15 bg-card/10 px-4 py-3">
               <Clock3 aria-hidden="true" className="size-4 shrink-0 text-indigo-100" />
               <div className="min-w-0">
                 <dt className="text-[11px] font-medium tracking-wide text-indigo-100 uppercase">
@@ -350,7 +350,7 @@ export function StudentProfilePage() {
                 </dd>
               </div>
             </div>
-            <div className="flex items-center gap-3 rounded-xl border border-white/15 bg-white/10 px-4 py-3">
+            <div className="flex items-center gap-3 rounded-xl border border-white/15 bg-card/10 px-4 py-3">
               <Sparkles aria-hidden="true" className="size-4 shrink-0 text-indigo-100" />
               <div className="min-w-0">
                 <dt className="text-[11px] font-medium tracking-wide text-indigo-100 uppercase">
@@ -373,7 +373,7 @@ export function StudentProfilePage() {
               <TabsTrigger
                 value="info"
                 title="Xem và sửa thông tin cá nhân"
-                className="cursor-pointer text-gray-600 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900 data-[state=active]:bg-indigo-600 data-[state=active]:font-medium data-[state=active]:text-white data-[state=active]:shadow-sm"
+                className="cursor-pointer text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground data-[state=active]:bg-indigo-600 data-[state=active]:font-medium data-[state=active]:text-white data-[state=active]:shadow-sm"
                 onClick={() => requestTabChange('info')}
               >
                 <UserRound data-icon="inline-start" aria-hidden="true" className="size-4" />
@@ -382,7 +382,7 @@ export function StudentProfilePage() {
               <TabsTrigger
                 value="learning"
                 title="Xem và sửa trình độ, mục tiêu và kỹ năng học tập"
-                className="cursor-pointer text-gray-600 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900 data-[state=active]:bg-indigo-600 data-[state=active]:font-medium data-[state=active]:text-white data-[state=active]:shadow-sm"
+                className="cursor-pointer text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground data-[state=active]:bg-indigo-600 data-[state=active]:font-medium data-[state=active]:text-white data-[state=active]:shadow-sm"
                 onClick={() => requestTabChange('learning')}
               >
                 <GraduationCap data-icon="inline-start" aria-hidden="true" className="size-4" />
@@ -391,7 +391,7 @@ export function StudentProfilePage() {
               <TabsTrigger
                 value="privacy"
                 title="Quản lý quyền hiển thị hồ sơ công khai"
-                className="cursor-pointer text-gray-600 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900 data-[state=active]:bg-indigo-600 data-[state=active]:font-medium data-[state=active]:text-white data-[state=active]:shadow-sm"
+                className="cursor-pointer text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground data-[state=active]:bg-indigo-600 data-[state=active]:font-medium data-[state=active]:text-white data-[state=active]:shadow-sm"
                 onClick={() => requestTabChange('privacy')}
               >
                 <ShieldCheck data-icon="inline-start" aria-hidden="true" className="size-4" />
@@ -529,7 +529,7 @@ export function StudentProfilePage() {
                     return (
                       <div
                         key={skill.value}
-                        className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors duration-200 ${checked ? 'border-indigo-500 bg-indigo-50 font-medium text-indigo-700' : 'border-gray-200 bg-white text-gray-600 hover:border-indigo-300 hover:text-indigo-700'} ${isEditingLearning ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}`}
+                        className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors duration-200 ${checked ? 'border-indigo-500 bg-indigo-50 font-medium text-indigo-700' : 'border-border bg-card text-muted-foreground hover:border-indigo-300 hover:text-indigo-700'} ${isEditingLearning ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}`}
                       >
                         <Checkbox
                           id={`skill-${skill.value}`}

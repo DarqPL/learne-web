@@ -20,13 +20,13 @@ const statusLabels: Record<string, string> = {
 }
 
 const statusPillStyles: Record<string, string> = {
-  DRAFT: 'bg-slate-100 text-slate-600',
+  DRAFT: 'bg-muted text-muted-foreground',
   PENDING_REVIEW: 'bg-amber-100 text-amber-700',
   APPROVED: 'bg-emerald-100 text-emerald-700',
   REJECTED: 'bg-red-100 text-red-700',
 }
 
-const cardSoftClassName = 'border-indigo-100 bg-white/95 shadow-sm shadow-indigo-100/60'
+const cardSoftClassName = 'border-indigo-100 bg-card/95 shadow-sm shadow-indigo-100/60'
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat('vi-VN').format(value)
@@ -41,7 +41,7 @@ function getStatusLabel(status: string) {
 }
 
 function getStatusPillClass(status: string) {
-  return statusPillStyles[status] ?? 'bg-slate-100 text-slate-600'
+  return statusPillStyles[status] ?? 'bg-muted text-muted-foreground'
 }
 
 const loadingPlaceholders = [0, 1, 2, 3]
@@ -177,7 +177,7 @@ export function TeacherDashboardPage() {
             <CardContent className="flex flex-col gap-3">
               {dashboard.courseStatusCounts.length ? (
                 dashboard.courseStatusCounts.map((item) => (
-                  <div key={item.status} className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/60 px-4 py-3">
+                  <div key={item.status} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/60 px-4 py-3">
                     <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusPillClass(item.status)}`}>
                       {getStatusLabel(item.status)}
                     </span>
@@ -203,7 +203,7 @@ export function TeacherDashboardPage() {
                   <Link
                     key={course.id}
                     to={`/teacher/content/courses/${course.id}`}
-                    className="rounded-lg border border-slate-100 p-4 transition-colors hover:border-indigo-200 hover:bg-indigo-50/50"
+                    className="rounded-lg border border-border p-4 transition-colors hover:border-indigo-200 hover:bg-indigo-50/50"
                   >
                     <span className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                       <span>
@@ -269,7 +269,7 @@ export function TeacherDashboardPage() {
                   <Link
                     key={course.id}
                     to={`/teacher/content/courses/${course.id}`}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/60 px-4 py-3 transition-colors hover:border-indigo-200 hover:bg-indigo-50/50"
+                    className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/60 px-4 py-3 transition-colors hover:border-indigo-200 hover:bg-indigo-50/50"
                   >
                     <span className="text-sm font-medium">{course.name}</span>
                     <span className="flex flex-wrap items-center justify-end gap-2 text-xs text-muted-foreground">

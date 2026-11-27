@@ -29,7 +29,7 @@ function statusLabel(order: OrderResponse, expiredLocally: boolean) {
 function statusClass(order: OrderResponse, expiredLocally: boolean) {
   if (order.status === 'PAID') return 'border-emerald-200 bg-emerald-50 text-emerald-700'
   if (order.status === 'PENDING_PAYMENT' && !expiredLocally) return 'border-amber-200 bg-amber-50 text-amber-700'
-  return 'border-gray-200 bg-gray-50 text-gray-700'
+  return 'border-border bg-muted text-foreground'
 }
 
 function nextActionPath(order: OrderResponse) {
@@ -46,10 +46,10 @@ function CopyableValue({ label, value }: { label: string; value: string }) {
   }
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">{label}</p>
+    <div className="rounded-2xl border border-border bg-card p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
       <div className="mt-2 flex items-center justify-between gap-3">
-        <p className="break-all text-sm font-semibold text-gray-950">{value}</p>
+        <p className="break-all text-sm font-semibold text-foreground">{value}</p>
         <Button type="button" variant="outline" size="icon" onClick={handleCopy} aria-label={`Sao chép ${label}`}>
           <Copy aria-hidden="true" />
         </Button>
@@ -139,7 +139,7 @@ export function StudentPaymentPage() {
 
   if (parsedPublicId === null) {
     return (
-      <Card className="border-dashed border-gray-200 bg-white">
+      <Card className="border-dashed border-border bg-card">
         <CardContent>
           <Alert variant="destructive">
             <FileQuestion aria-hidden="true" />
@@ -155,7 +155,7 @@ export function StudentPaymentPage() {
       return (
         <Card className="border-red-100 bg-red-50/40">
           <CardContent>
-            <Alert variant="destructive" className="border-red-200 bg-white">
+            <Alert variant="destructive" className="border-red-200 bg-card">
               <XCircle aria-hidden="true" />
               <AlertTitle>Không thể tải đơn thanh toán</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
@@ -170,7 +170,7 @@ export function StudentPaymentPage() {
 
     return (
       <Card className="border-indigo-100 bg-gradient-to-br from-white to-indigo-50/70">
-        <CardContent className="flex items-center gap-3 py-8 text-sm font-medium text-gray-700">
+        <CardContent className="flex items-center gap-3 py-8 text-sm font-medium text-foreground">
           <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin text-indigo-600" />
           Đang tải đơn thanh toán...
         </CardContent>
@@ -188,12 +188,12 @@ export function StudentPaymentPage() {
       <section className="overflow-hidden rounded-3xl border border-indigo-100 bg-[radial-gradient(circle_at_top_left,_rgba(79,70,229,0.18),_transparent_32%),linear-gradient(135deg,_#ffffff_0%,_#eef6ff_52%,_#f8f5ff_100%)] p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-2xl">
-            <Badge variant="outline" className="border-indigo-200 bg-white/85 text-indigo-700 shadow-sm">
+            <Badge variant="outline" className="border-indigo-200 bg-card/85 text-indigo-700 shadow-sm">
               <ReceiptText aria-hidden="true" />
               Đơn {order.publicId}
             </Badge>
-            <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">Thanh toán chuyển khoản SEPAY</h1>
-            <p className="mt-3 text-base leading-7 text-gray-600">
+            <h1 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Thanh toán chuyển khoản SEPAY</h1>
+            <p className="mt-3 text-base leading-7 text-muted-foreground">
               Quét mã QR hoặc chuyển khoản đúng số tiền và nội dung để hệ thống tự động xác nhận quyền truy cập của bạn.
             </p>
           </div>
@@ -224,8 +224,8 @@ export function StudentPaymentPage() {
             <div className="flex items-start gap-3">
               <BadgeCheck aria-hidden="true" className="mt-1 h-6 w-6 text-emerald-600" />
               <div>
-                <h2 className="text-xl font-bold text-gray-950">Thanh toán thành công</h2>
-                <p className="mt-2 text-sm leading-6 text-gray-600">Đơn hàng đã được xác nhận. Bạn có thể tiếp tục học hoặc quay về trang tổng quan.</p>
+                <h2 className="text-xl font-bold text-foreground">Thanh toán thành công</h2>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">Đơn hàng đã được xác nhận. Bạn có thể tiếp tục học hoặc quay về trang tổng quan.</p>
               </div>
             </div>
             <Button onClick={() => navigate(nextActionPath(order))}>
@@ -237,13 +237,13 @@ export function StudentPaymentPage() {
       ) : null}
 
       {isTerminal && !isPaid ? (
-        <Card className="border-gray-200 bg-white">
+        <Card className="border-border bg-card">
           <CardContent className="space-y-4">
             <div className="flex items-start gap-3">
-              <XCircle aria-hidden="true" className="mt-1 h-6 w-6 text-gray-500" />
+              <XCircle aria-hidden="true" className="mt-1 h-6 w-6 text-muted-foreground" />
               <div>
-                <h2 className="text-xl font-bold text-gray-950">Đơn thanh toán không còn hiệu lực</h2>
-                <p className="mt-2 text-sm leading-6 text-gray-600">Vui lòng tạo đơn thanh toán mới nếu bạn vẫn muốn mua nội dung này.</p>
+                <h2 className="text-xl font-bold text-foreground">Đơn thanh toán không còn hiệu lực</h2>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">Vui lòng tạo đơn thanh toán mới nếu bạn vẫn muốn mua nội dung này.</p>
               </div>
             </div>
             <Button variant="outline" asChild>
@@ -254,22 +254,22 @@ export function StudentPaymentPage() {
       ) : null}
 
       {canShowInstructions && instructions ? (
-        <Card className="border-gray-200 bg-white shadow-sm">
+        <Card className="border-border bg-card shadow-sm">
           <CardContent className="space-y-3">
             <div className="flex items-center justify-between gap-3 text-sm">
-              <p className="text-gray-500">Giá gốc</p>
-              <p className="font-semibold text-gray-950">{formatVnd(order.originalAmountVnd)}</p>
+              <p className="text-muted-foreground">Giá gốc</p>
+              <p className="font-semibold text-foreground">{formatVnd(order.originalAmountVnd)}</p>
             </div>
             {order.discountAmountVnd > 0 ? (
               <div className="flex items-center justify-between gap-3 text-sm">
-                <p className="text-gray-500">Giảm giá</p>
+                <p className="text-muted-foreground">Giảm giá</p>
                 <p className="font-semibold text-emerald-600">-{formatVnd(order.discountAmountVnd)}</p>
               </div>
             ) : null}
             <Separator />
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-bold text-gray-950">Cần chuyển khoản</p>
-              <p className="text-lg font-bold text-gray-950">{formatVnd(order.finalAmountVnd)}</p>
+              <p className="text-sm font-bold text-foreground">Cần chuyển khoản</p>
+              <p className="text-lg font-bold text-foreground">{formatVnd(order.finalAmountVnd)}</p>
             </div>
             {order.discountAmountVnd > 0 ? <Badge variant="secondary">Đã áp dụng giảm giá</Badge> : null}
           </CardContent>
@@ -278,17 +278,17 @@ export function StudentPaymentPage() {
 
       {canShowInstructions && instructions ? (
         <div className="grid gap-6 xl:grid-cols-[minmax(0,420px)_1fr]">
-          <Card className="border-indigo-100 bg-white shadow-sm">
+          <Card className="border-indigo-100 bg-card shadow-sm">
             <CardContent className="space-y-5">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-indigo-700">Mã QR chuyển khoản</p>
-                  <p className="mt-1 text-xs text-gray-500">Tự động điền số tiền và nội dung.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Tự động điền số tiền và nội dung.</p>
                 </div>
                 <QrCode aria-hidden="true" className="h-6 w-6 text-indigo-600" />
               </div>
-              <div className="rounded-3xl border border-gray-200 bg-gray-50 p-4">
-                <img src={instructions.qrUrl} alt="Mã QR thanh toán SEPAY" className="mx-auto aspect-square w-full max-w-xs rounded-2xl bg-white object-contain p-3" />
+              <div className="rounded-3xl border border-border bg-muted p-4">
+                <img src={instructions.qrUrl} alt="Mã QR thanh toán SEPAY" className="mx-auto aspect-square w-full max-w-xs rounded-2xl bg-card object-contain p-3" />
               </div>
               <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
                 <div className="flex items-center gap-2 font-semibold">
@@ -299,20 +299,20 @@ export function StudentPaymentPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-gray-200 bg-white shadow-sm">
+          <Card className="border-border bg-card shadow-sm">
             <CardContent className="space-y-5">
               <div>
-                <p className="text-sm font-semibold text-gray-500">Thông tin chuyển khoản</p>
-                <h2 className="mt-2 text-2xl font-bold text-gray-950">{formatVnd(instructions.amountVnd)}</h2>
+                <p className="text-sm font-semibold text-muted-foreground">Thông tin chuyển khoản</p>
+                <h2 className="mt-2 text-2xl font-bold text-foreground">{formatVnd(instructions.amountVnd)}</h2>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border border-gray-200 bg-white p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Ngân hàng</p>
-                  <p className="mt-2 text-sm font-semibold text-gray-950">{instructions.bankName ?? instructions.bankCode}</p>
+                <div className="rounded-2xl border border-border bg-card p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Ngân hàng</p>
+                  <p className="mt-2 text-sm font-semibold text-foreground">{instructions.bankName ?? instructions.bankCode}</p>
                 </div>
-                <div className="rounded-2xl border border-gray-200 bg-white p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Chủ tài khoản</p>
-                  <p className="mt-2 text-sm font-semibold text-gray-950">{instructions.accountName ?? 'LearnE'}</p>
+                <div className="rounded-2xl border border-border bg-card p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Chủ tài khoản</p>
+                  <p className="mt-2 text-sm font-semibold text-foreground">{instructions.accountName ?? 'LearnE'}</p>
                 </div>
               </div>
               <CopyableValue label="Số tài khoản" value={instructions.accountNumber} />
