@@ -31,9 +31,9 @@ import { enrollmentStatusLabels, enrollmentStatusStyles } from './studentLearnin
 const PAGE_SIZE = 6
 
 const enrollmentStatusBorders: Record<EnrollmentStatus, string> = {
-  ACTIVE: 'border-indigo-200',
-  COMPLETED: 'border-green-200',
-  CANCELLED: 'border-gray-200',
+  ACTIVE: 'border-primary/30',
+  COMPLETED: 'border-success/40',
+  CANCELLED: 'border-border',
 }
 
 function getProgressPercent(value: number) {
@@ -120,36 +120,36 @@ export function StudentEnrollmentsPage() {
       </Breadcrumb>
 
       <section className="flex min-w-0 flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">Khóa học đã đăng ký</h1>
-        <p className="text-base leading-7 text-gray-600">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Khóa học đã đăng ký</h1>
+        <p className="text-base leading-7 text-muted-foreground">
           Theo dõi các khóa học bạn đang tham gia và tiếp tục bài học còn dang dở.
         </p>
       </section>
 
       {error ? (
-        <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+        <Alert variant="destructive">
           <XCircle aria-hidden="true" data-icon="inline-start" />
           <AlertTitle>Không thể tải khóa học đã đăng ký</AlertTitle>
-          <AlertDescription className="text-red-700">{error}</AlertDescription>
+          <AlertDescription className="text-destructive">{error}</AlertDescription>
         </Alert>
       ) : enrollments === null ? (
-        <Card className="border-dashed border-indigo-200 bg-white/90 shadow-sm">
-          <CardContent className="flex items-center gap-4 p-6 text-gray-600">
-            <span className="flex size-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+        <Card className="border-dashed border-border bg-card shadow-sm">
+          <CardContent className="flex items-center gap-4 p-6 text-muted-foreground">
+            <span className="flex size-11 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
               <Loader2 aria-hidden="true" className="size-5 animate-spin" />
             </span>
             <div>
-              <p className="font-medium text-gray-900">Đang tải khóa học đã đăng ký</p>
-              <p className="text-sm text-gray-500">Hệ thống đang lấy các khóa học bạn đang tham gia.</p>
+              <p className="font-medium text-foreground">Đang tải khóa học đã đăng ký</p>
+              <p className="text-sm text-muted-foreground">Hệ thống đang lấy các khóa học bạn đang tham gia.</p>
             </div>
           </CardContent>
         </Card>
       ) : enrollments.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center shadow-sm">
-          <p className="text-gray-600">Bạn chưa đăng ký khóa học nào.</p>
+        <div className="rounded-2xl border border-dashed border-border bg-card p-8 text-center shadow-sm">
+          <p className="text-muted-foreground">Bạn chưa đăng ký khóa học nào.</p>
           <Link
             to="/student/courses"
-            className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700"
+            className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Khám phá khóa học
           </Link>
@@ -164,9 +164,9 @@ export function StudentEnrollmentsPage() {
                 <Link
                   key={enrollment.id}
                   to={`/student/enrollments/${enrollment.id}`}
-                  className="group block min-w-0 rounded-3xl outline-none transition focus-visible:ring-4 focus-visible:ring-indigo-200"
+                  className="group block min-w-0 rounded-3xl outline-none transition focus-visible:ring-4 focus-visible:ring-ring/50"
                 >
-                  <Card className="h-full flex flex-col gap-3 overflow-hidden border-gray-200 bg-white p-5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:border-indigo-200 group-hover:shadow-sm">
+                  <Card className="h-full flex flex-col gap-3 overflow-hidden border-border bg-card p-5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:border-primary/40 group-hover:shadow-sm">
                     <CardHeader className="flex flex-col gap-3 p-0">
                       <div className="flex flex-wrap gap-2">
                         <Badge
@@ -179,43 +179,43 @@ export function StudentEnrollmentsPage() {
                           {enrollmentStatusLabels[enrollment.status]}
                         </Badge>
                       </div>
-                      <h2 className="text-xl font-semibold tracking-tight text-gray-950 transition group-hover:text-indigo-700">
+                      <h2 className="text-xl font-semibold tracking-tight text-foreground transition group-hover:text-primary">
                         {enrollment.courseName}
                       </h2>
                       <div className="flex min-w-0 items-center gap-2">
                         <Avatar className="size-7">
                           <AvatarFallback>{teacherInitials(enrollment.teacherName)}</AvatarFallback>
                         </Avatar>
-                        <p className="min-w-0 truncate text-sm font-medium text-gray-950">
+                        <p className="min-w-0 truncate text-sm font-medium text-foreground">
                           {enrollment.teacherName}
                         </p>
                       </div>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-3 p-0">
-                      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-5 text-gray-500">
+                      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-5 text-muted-foreground">
                         <span className="inline-flex items-center gap-1">
-                          <BookOpen aria-hidden="true" className="size-3.5 text-sky-600" />
+                          <BookOpen aria-hidden="true" className="size-3.5 text-muted-foreground" />
                           {enrollment.completedLessonCount}/{enrollment.totalLessonCount} bài học
                         </span>
                         <span aria-hidden="true">·</span>
                         <span className="inline-flex items-center gap-1">
-                          <TrendingUp aria-hidden="true" className="size-3.5 text-emerald-600" />
+                          <TrendingUp aria-hidden="true" className="size-3.5 text-success" />
                           {progressPercent}% hoàn thành
                         </span>
                       </p>
                       <div
-                        className="h-2 overflow-hidden rounded-full bg-gray-100"
+                        className="h-2 overflow-hidden rounded-full bg-muted"
                         role="progressbar"
                         aria-valuemin={0}
                         aria-valuemax={100}
                         aria-valuenow={progressPercent}
                         aria-label={`Tiến độ khóa học ${enrollment.courseName}`}
                       >
-                        <div className="h-full rounded-full bg-indigo-600" style={{ width: `${progressPercent}%` }} />
+                        <div className="h-full rounded-full bg-primary" style={{ width: `${progressPercent}%` }} />
                       </div>
                     </CardContent>
                     <CardFooter className="mt-auto p-0 pt-1">
-                      <span className="inline-flex items-center gap-1 text-sm font-medium text-indigo-700 [&_svg]:size-4">
+                      <span className="inline-flex items-center gap-1 text-sm font-medium text-primary [&_svg]:size-4">
                         Tiếp tục học
                         <ArrowRight aria-hidden="true" data-icon="inline-end" />
                       </span>

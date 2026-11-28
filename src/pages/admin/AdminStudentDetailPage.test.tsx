@@ -95,6 +95,7 @@ describe('AdminStudentDetailPage shadcn sync', () => {
     expect(await screen.findByRole('heading', { name: 'Hoc Sinh Chi Tiet' })).toBeInTheDocument()
     expect(screen.getByText('detail@example.com')).toBeInTheDocument()
     expect(screen.getByText('Đang hoạt động')).toBeInTheDocument()
+    expect(screen.getByText('Đang hoạt động')).toHaveClass('bg-success-background', 'text-success-foreground')
 
     expect(screen.getByText('1250')).toBeInTheDocument()
     expect(document.querySelector('[data-slot="card"]')).not.toBeNull()

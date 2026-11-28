@@ -85,7 +85,9 @@ describe('StudentQuizResultPage cleanup', () => {
 
     expect(screen.getByRole('button', { name: /Quay lại bài học/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Quay lại lộ trình học/i })).toBeInTheDocument()
+    expect(screen.getByText('Review feedback')).toHaveClass('text-info-foreground')
   })
+
 
   it('navigates back to the learning progress from the result page', async () => {
     mockedGetStudentQuizAttempt.mockResolvedValue(attemptApiResponse(makeAttempt()))

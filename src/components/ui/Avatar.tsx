@@ -4,10 +4,10 @@ interface AvatarProps {
   size?: 'sm' | 'md' | 'lg'
 }
 
-const sizes: Record<NonNullable<AvatarProps['size']>, string> = {
-  sm: 'h-8 w-8 text-sm',
-  md: 'h-16 w-16 text-xl',
-  lg: 'h-24 w-24 text-3xl',
+const sizes: Record<NonNullable<AvatarProps['size']>, { primitive: 'sm' | 'default' | 'lg'; className: string; fallback: string }> = {
+  sm: { primitive: 'sm', className: '', fallback: 'text-sm' },
+  md: { primitive: 'default', className: 'size-16', fallback: 'text-xl' },
+  lg: { primitive: 'lg', className: 'size-24', fallback: 'text-3xl' },
 }
 
 function initials(name: string): string {
@@ -18,16 +18,11 @@ function initials(name: string): string {
 }
 
 export function Avatar({ name, url, size = 'md' }: AvatarProps) {
-  const base = `${sizes[size]} shrink-0 rounded-full object-cover`
-  if (url) {
-    return <img src={url} alt={name} className={base} />
-  }
   return (
-    <span
-      aria-hidden="true"
-      className={`${base} flex items-center justify-center bg-indigo-600 font-semibold text-white`}
-    >
-      {initials(name)}
-    </span>
+    <ShadcnAvatar size={sizes[size].primitive} className={`${sizes[size].className} shrink-0`}>
+      {url ? <AvatarImage src={url} alt={`${name} avatar`} /> : null}
+      <AvatarFallback className={`bg-primary font-semibold text-primary-foreground ${sizes[size].fallback}`}>{initials(name)}</AvatarFallback>
+    </ShadcnAvatar>
   )
 }
+import { Avatar as ShadcnAvatar, AvatarFallback, AvatarImage } from '../shadcn/ui/avatar'

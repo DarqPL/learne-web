@@ -264,11 +264,11 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
 
         {form.type === 'MULTIPLE_CHOICE' ? (
           <div className="flex flex-col gap-2">
-            <p className="text-sm text-indigo-900/70">
+            <p className="text-sm text-muted-foreground">
               Trắc nghiệm nhiều lựa chọn, hiện chỉ hỗ trợ một đáp án đúng. Tích vào ô tròn để chọn đáp án đúng.
             </p>
             {form.options.map((option, optionIndex) => (
-              <div className="flex items-center gap-2 rounded-lg border border-indigo-100 bg-white px-2 py-1.5" key={optionIndex}>
+              <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-2 py-1.5" key={optionIndex}>
                 <input
                   type="radio"
                   disabled={disabled}
@@ -287,11 +287,11 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
                   }}
                   aria-label={`Đánh dấu lựa chọn ${optionIndex + 1} là đáp án đúng`}
                   title="Đáp án đúng"
-                  className="size-4 shrink-0 accent-indigo-600"
+                  className="size-4 shrink-0 accent-primary"
                 />
                 <Input
                   aria-label={`Nội dung lựa chọn ${optionIndex + 1}`}
-                  className="min-w-0 flex-1 border-indigo-100 py-1.5"
+                  className="min-w-0 flex-1 border-border py-1.5"
                   value={option.optionText}
                   disabled={disabled}
                   placeholder={`Lựa chọn ${optionIndex + 1}`}
@@ -308,7 +308,7 @@ export function QuestionForm({ initialValue, loading = false, disabled = false, 
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="size-8 shrink-0 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                  className="size-8 shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
                   aria-label={`Xóa lựa chọn ${optionIndex + 1}`}
                   disabled={disabled}
                   onClick={() =>

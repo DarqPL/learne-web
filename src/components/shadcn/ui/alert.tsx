@@ -6,7 +6,10 @@ const alertVariants = cva('relative w-full rounded-lg border px-4 py-3 text-sm g
   variants: {
     variant: {
       default: 'bg-card text-card-foreground',
-      destructive: 'text-destructive bg-card [&>svg]:text-current',
+      destructive: 'border-destructive/30 text-destructive bg-destructive/10 [&>svg]:text-current',
+      success: 'border-success/40 bg-success-background text-success-foreground [&>svg]:text-success',
+      warning: 'border-warning/40 bg-warning-background text-warning-foreground [&>svg]:text-warning',
+      info: 'border-info/40 bg-info-background text-info-foreground [&>svg]:text-info',
     },
   },
   defaultVariants: {
@@ -26,4 +29,5 @@ function AlertDescription({ className, ...props }: React.ComponentProps<'div'>) 
   return <div data-slot="alert-description" className={cn('text-muted-foreground col-start-2 grid justify-items-start gap-1 text-sm [&_p]:leading-relaxed', className)} {...props} />
 }
 
+export type AlertProps = React.ComponentProps<'div'> & VariantProps<typeof alertVariants>
 export { Alert, AlertTitle, AlertDescription }

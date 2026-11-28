@@ -22,6 +22,16 @@ function blobResponse(data: Blob) {
 }
 
 describe('CourseImportExportPanel', () => {
+  it('uses semantic tokens for import guidance, feedback, and confirmation warning', async () => {
+    render(<CourseImportExportPanel />)
+    expect(screen.getByText(/Chấp nhận file/)).toHaveClass('text-muted-foreground')
+
+    const file = new File(['course'], 'course.zip', { type: 'application/zip' })
+    fireEvent.change(screen.getByLabelText('File gói nén'), { target: { files: [file] } })
+    fireEvent.click(screen.getByRole('button', { name: 'Import gói nén' }))
+    expect(screen.getByText('Hãy kiểm tra kỹ file gói nén trước khi tiếp tục.')).toHaveClass('bg-warning-background', 'text-warning-foreground')
+  })
+
   it('closes pending import confirmation on lock, blocks submit, and still exports', async () => {
     const props = { courseId: 42 }
     const { rerender } = render(<CourseImportExportPanel {...props} />)

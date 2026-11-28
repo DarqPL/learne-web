@@ -144,8 +144,8 @@ export function AdminCourseCoverReviewPanel() {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900">Ảnh bìa khóa học chờ duyệt</h2>
-        {reviews !== null ? <p className="mt-1 text-sm text-gray-600">{reviews.length} đề xuất đang tải</p> : null}
+        <h2 className="text-xl font-semibold text-foreground">Ảnh bìa khóa học chờ duyệt</h2>
+        {reviews !== null ? <p className="mt-1 text-sm text-muted-foreground">{reviews.length} đề xuất đang tải</p> : null}
       </div>
       {error ? (
         <Alert variant="destructive">
@@ -160,11 +160,11 @@ export function AdminCourseCoverReviewPanel() {
         </Alert>
       ) : null}
       <div className="grid gap-5 lg:grid-cols-[20rem_1fr]">
-        <aside className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-white p-4">
+        <aside className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4">
           {reviews === null ? (
-            <p className="py-4 text-sm text-gray-600">Đang tải ảnh bìa chờ duyệt...</p>
+            <p className="py-4 text-sm text-muted-foreground">Đang tải ảnh bìa chờ duyệt...</p>
           ) : reviews.length === 0 ? (
-            <p className="py-4 text-sm text-gray-600">Không có ảnh bìa nào đang chờ duyệt.</p>
+            <p className="py-4 text-sm text-muted-foreground">Không có ảnh bìa nào đang chờ duyệt.</p>
           ) : (
             reviews.map((review) => (
               <button
@@ -173,7 +173,7 @@ export function AdminCourseCoverReviewPanel() {
                 aria-current={selectedId === review.id ? 'true' : undefined}
                 disabled={busy}
                 className={`rounded-lg border p-3 text-left ${
-                  selectedId === review.id ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200 hover:bg-gray-50'
+                  selectedId === review.id ? 'border-ring bg-accent text-accent-foreground' : 'border-border hover:border-ring/50 hover:bg-muted'
                 }`}
                 onClick={() => {
                   setError(null)
@@ -182,9 +182,9 @@ export function AdminCourseCoverReviewPanel() {
                   void loadDetail(review.id)
                 }}
               >
-                <span className="block truncate text-sm font-medium text-gray-900">{review.courseName}</span>
-                <span className="mt-1 block truncate text-xs text-gray-600">{review.teacherName}</span>
-                <span className="mt-2 block text-xs text-gray-500">{new Date(review.submittedAt).toLocaleString('vi-VN')}</span>
+                <span className="block truncate text-sm font-medium text-foreground">{review.courseName}</span>
+                <span className="mt-1 block truncate text-xs text-muted-foreground">{review.teacherName}</span>
+                <span className="mt-2 block text-xs text-muted-foreground">{new Date(review.submittedAt).toLocaleString('vi-VN')}</span>
               </button>
             ))
           )}
@@ -203,21 +203,21 @@ export function AdminCourseCoverReviewPanel() {
           ) : null}
         </aside>
 
-        <section className="flex min-w-0 flex-col gap-4 rounded-xl border border-gray-200 bg-white p-5">
+        <section className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-card p-5">
           {loadingDetail ? (
-            <p className="text-sm text-gray-600">Đang tải đề xuất ảnh bìa...</p>
+            <p className="text-sm text-muted-foreground">Đang tải đề xuất ảnh bìa...</p>
           ) : detail ? (
             <>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-lg font-semibold text-gray-900">{detail.courseName}</h3>
+                  <h3 className="text-lg font-semibold text-foreground">{detail.courseName}</h3>
                   <Badge variant="outline">Chờ duyệt</Badge>
                 </div>
-                <p className="mt-1 text-sm text-gray-600">{detail.teacherName} · {detail.teacherEmail}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{detail.teacherName} · {detail.teacherEmail}</p>
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="flex flex-col gap-2">
-                  <h4 className="text-sm font-semibold text-gray-800">Ảnh bìa hiện tại</h4>
+                  <h4 className="text-sm font-semibold text-foreground">Ảnh bìa hiện tại</h4>
                   <CourseCoverImage
                     courseName={detail.courseName}
                     imageUrl={detail.currentCoverImageUrl}
@@ -225,7 +225,7 @@ export function AdminCourseCoverReviewPanel() {
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <h4 className="text-sm font-semibold text-gray-800">Ảnh bìa đề xuất</h4>
+                  <h4 className="text-sm font-semibold text-foreground">Ảnh bìa đề xuất</h4>
                   <CourseCoverImage
                     courseName={detail.courseName}
                     imageUrl={detail.proposedCoverImageUrl}
@@ -233,7 +233,7 @@ export function AdminCourseCoverReviewPanel() {
                   />
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2 border-y border-gray-200 py-3">
+              <div className="flex flex-wrap gap-2 border-y border-border py-3">
                 <Button type="button" disabled={busy} onClick={() => void handleApprove()}>
                   Duyệt ảnh bìa
                 </Button>
@@ -262,9 +262,9 @@ export function AdminCourseCoverReviewPanel() {
                       setReason(event.target.value)
                       setReasonError(null)
                     }}
-                    className="rounded-md border border-gray-300 p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                    className="rounded-md border border-border p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
-                  {reasonError ? <p role="alert" className="text-sm text-red-700">{reasonError}</p> : null}
+                  {reasonError ? <p role="alert" className="text-sm text-destructive">{reasonError}</p> : null}
                   <div className="flex justify-end">
                     <Button type="button" variant="destructive" disabled={busy} onClick={() => void handleReject()}>
                       {action === 'reject' ? 'Đang từ chối...' : 'Xác nhận từ chối'}
@@ -274,7 +274,7 @@ export function AdminCourseCoverReviewPanel() {
               ) : null}
             </>
           ) : (
-            <p className="text-sm text-gray-600">Chọn một đề xuất để xem ảnh cần duyệt.</p>
+            <p className="text-sm text-muted-foreground">Chọn một đề xuất để xem ảnh cần duyệt.</p>
           )}
         </section>
       </div>

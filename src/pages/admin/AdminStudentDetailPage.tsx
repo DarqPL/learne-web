@@ -122,10 +122,10 @@ export function AdminStudentDetailPage() {
 
   const accountStatus = student
     ? student.locked
-      ? { label: 'Bị khóa', className: 'border-red-200 bg-red-50 text-red-700' }
+      ? { label: 'Bị khóa', className: 'border-destructive/30 bg-destructive/10 text-destructive' }
       : student.mustChangePassword
-        ? { label: 'Chưa đổi mật khẩu', className: 'border-amber-200 bg-amber-50 text-amber-800' }
-        : { label: 'Đang hoạt động', className: 'border-emerald-200 bg-emerald-50 text-emerald-700' }
+        ? { label: 'Chưa đổi mật khẩu', className: 'border-warning/40 bg-warning-background text-warning-foreground' }
+        : { label: 'Đang hoạt động', className: 'border-success/40 bg-success-background text-success-foreground' }
     : null
 
   return (
@@ -147,10 +147,10 @@ export function AdminStudentDetailPage() {
       </section>
 
       {error ? (
-        <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+        <Alert variant="destructive">
           <XCircle aria-hidden="true" data-icon="inline-start" />
           <AlertTitle>Không thể tải thông tin học sinh</AlertTitle>
-          <AlertDescription className="text-red-700">{error}</AlertDescription>
+          <AlertDescription className="text-destructive">{error}</AlertDescription>
         </Alert>
       ) : student === null ? (
         <div className="flex flex-col gap-3">
@@ -167,8 +167,8 @@ export function AdminStudentDetailPage() {
           <Card>
             <CardContent className="flex flex-col gap-4 pt-6 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
-                <h1 className="text-2xl font-bold tracking-tight text-gray-950">{student.fullName}</h1>
-                <p className="mt-1 text-sm text-gray-600">{student.email}</p>
+                <h1 className="text-2xl font-bold tracking-tight text-foreground">{student.fullName}</h1>
+                <p className="mt-1 text-sm text-muted-foreground">{student.email}</p>
                 <div className="mt-2">
                   {accountStatus ? (
                     <Badge variant="outline" className={accountStatus.className}>
@@ -184,9 +184,9 @@ export function AdminStudentDetailPage() {
           </Card>
 
           {info ? (
-            <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800">
+            <Alert variant="success">
               <AlertTitle>Thành công</AlertTitle>
-              <AlertDescription className="text-emerald-700">{info}</AlertDescription>
+              <AlertDescription className="text-success-foreground">{info}</AlertDescription>
             </Alert>
           ) : null}
 
@@ -199,10 +199,10 @@ export function AdminStudentDetailPage() {
             ].map((item) => (
               <Card key={item.label}>
                 <CardHeader>
-                  <CardTitle className="text-sm font-medium text-gray-500">{item.label}</CardTitle>
+                  <CardTitle className="text-sm font-medium text-muted-foreground">{item.label}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-2xl font-bold text-gray-950">{item.value}</p>
+                  <p className="text-2xl font-bold text-foreground">{item.value}</p>
                 </CardContent>
               </Card>
             ))}
@@ -214,11 +214,11 @@ export function AdminStudentDetailPage() {
             </CardHeader>
             <CardContent>
               {student.enrollments.length === 0 ? (
-                <p className="text-sm text-gray-600">Chưa có khóa học đã đăng ký</p>
+                <p className="text-sm text-muted-foreground">Chưa có khóa học đã đăng ký</p>
               ) : (
                 <div className="[&>[data-slot=table-container]]:max-h-[50vh] [&>[data-slot=table-container]]:overflow-y-auto">
                   <Table>
-                    <TableHeader className="sticky top-0 z-10 [&_th]:bg-gray-50">
+                    <TableHeader className="sticky top-0 z-10 [&_th]:bg-muted">
                       <TableRow>
                         <TableHead>Khóa học</TableHead>
                         <TableHead>Trạng thái</TableHead>
@@ -248,20 +248,20 @@ export function AdminStudentDetailPage() {
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
               {student.recentQuizAttempts.length === 0 ? (
-                <p className="text-sm text-gray-600">Chưa có lượt làm quiz gần đây</p>
+                <p className="text-sm text-muted-foreground">Chưa có lượt làm quiz gần đây</p>
               ) : (
                 student.recentQuizAttempts.map((attempt) => (
-                  <div key={attempt.attemptId} className="rounded-xl border border-gray-200 p-4">
+                  <div key={attempt.attemptId} className="rounded-xl border border-border p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="font-medium text-gray-900">{attempt.lessonTitle}</p>
+                      <p className="font-medium text-foreground">{attempt.lessonTitle}</p>
                       <Badge
                         variant="outline"
-                        className={attempt.passed ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'}
+                        className={attempt.passed ? 'border-success/40 bg-success-background text-success-foreground' : 'border-destructive/30 bg-destructive/10 text-destructive'}
                       >
                         {attempt.passed ? 'Đạt' : 'Chưa đạt'}
                       </Badge>
                     </div>
-                    <p className="mt-2 text-sm text-gray-600">
+                    <p className="mt-2 text-sm text-muted-foreground">
                       Điểm: {attempt.scorePercent}% - {formatDate(attempt.submittedAt)}
                     </p>
                   </div>
@@ -276,13 +276,13 @@ export function AdminStudentDetailPage() {
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
               {student.recentGrammarChecks.length === 0 ? (
-                <p className="text-sm text-gray-600">Chưa có lần kiểm tra ngữ pháp gần đây</p>
+                <p className="text-sm text-muted-foreground">Chưa có lần kiểm tra ngữ pháp gần đây</p>
               ) : (
                 student.recentGrammarChecks.map((check) => (
-                  <div key={check.id} className="rounded-xl border border-gray-200 p-4">
-                    <p className="text-sm text-gray-500">{formatDate(check.createdAt)}</p>
-                    <p className="mt-2 text-sm text-gray-700">Nội dung gốc: {check.originalText}</p>
-                    <p className="mt-2 text-sm text-gray-700">Nội dung sửa: {check.correctedText ?? 'Chưa có nội dung sửa'}</p>
+                  <div key={check.id} className="rounded-xl border border-border p-4">
+                    <p className="text-sm text-muted-foreground">{formatDate(check.createdAt)}</p>
+                    <p className="mt-2 text-sm text-foreground">Nội dung gốc: {check.originalText}</p>
+                    <p className="mt-2 text-sm text-foreground">Nội dung sửa: {check.correctedText ?? 'Chưa có nội dung sửa'}</p>
                   </div>
                 ))
               )}
@@ -295,15 +295,15 @@ export function AdminStudentDetailPage() {
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
               {student.recentAiConversations.length === 0 ? (
-                <p className="text-sm text-gray-600">Chưa có hội thoại AI gần đây</p>
+                <p className="text-sm text-muted-foreground">Chưa có hội thoại AI gần đây</p>
               ) : (
                 student.recentAiConversations.map((conversation) => (
-                  <div key={conversation.id} className="rounded-xl border border-gray-200 p-4">
+                  <div key={conversation.id} className="rounded-xl border border-border p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="font-medium text-gray-900">{conversation.title}</p>
-                      <span className="text-sm text-gray-600">{practiceTypeLabels[conversation.practiceType]}</span>
+                      <p className="font-medium text-foreground">{conversation.title}</p>
+                      <span className="text-sm text-muted-foreground">{practiceTypeLabels[conversation.practiceType]}</span>
                     </div>
-                    <p className="mt-2 text-sm text-gray-600">Cập nhật: {formatDate(conversation.updatedAt)}</p>
+                    <p className="mt-2 text-sm text-muted-foreground">Cập nhật: {formatDate(conversation.updatedAt)}</p>
                   </div>
                 ))
               )}
@@ -325,7 +325,7 @@ export function AdminStudentDetailPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <div className="flex items-start gap-3">
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
                 <TriangleAlert className="size-5" aria-hidden="true" />
               </div>
               <div className="flex flex-col gap-1">
@@ -335,27 +335,27 @@ export function AdminStudentDetailPage() {
                 <AlertDialogDescription>
                   {lockTarget?.locked ? (
                     <>
-                      Mở khóa tài khoản <span className="font-semibold text-gray-900">{lockTarget?.fullName}</span> (
+                      Mở khóa tài khoản <span className="font-semibold text-foreground">{lockTarget?.fullName}</span> (
                       {lockTarget?.email})?
-                      <span className="mt-2 block rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
+                      <span className="mt-2 block rounded-lg bg-success-background px-3 py-2 text-sm font-medium text-success-foreground">
                         Học viên sẽ có thể đăng nhập trở lại.
                       </span>
                     </>
                   ) : (
                     <>
-                      Khóa tài khoản <span className="font-semibold text-gray-900">{lockTarget?.fullName}</span> (
+                      Khóa tài khoản <span className="font-semibold text-foreground">{lockTarget?.fullName}</span> (
                       {lockTarget?.email})?
-                      <span className="mt-2 block rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                      <span className="mt-2 block rounded-lg bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive">
                         Học viên sẽ không thể đăng nhập cho đến khi được mở khóa.
                       </span>
                     </>
                   )}
                 </AlertDialogDescription>
                 {dialogError ? (
-                  <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+                  <Alert variant="destructive">
                     <XCircle aria-hidden="true" data-icon="inline-start" />
                     <AlertTitle>Không thể cập nhật trạng thái tài khoản</AlertTitle>
-                    <AlertDescription className="text-red-700">{dialogError}</AlertDescription>
+                    <AlertDescription className="text-destructive">{dialogError}</AlertDescription>
                   </Alert>
                 ) : null}
               </div>

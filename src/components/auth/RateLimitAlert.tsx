@@ -11,15 +11,15 @@ export function RateLimitAlert({ info, secondsLeft }: RateLimitAlertProps) {
 
   if (info.kind === 'unavailable') {
     return (
-      <Alert variant="destructive" className="mb-4 border-red-200 bg-red-50">
-        <AlertDescription className="text-red-700">{rateLimitMessage(info)}</AlertDescription>
+      <Alert variant="destructive" className="mb-4">
+        <AlertDescription>{rateLimitMessage(info)}</AlertDescription>
       </Alert>
     )
   }
 
   return (
-    <Alert role="group" className="mb-4 border-amber-200 bg-amber-50">
-      <AlertDescription className="text-amber-800">
+    <Alert role="group" variant="warning" className="mb-4">
+      <AlertDescription>
         <span role="status" className={active ? 'sr-only' : undefined}>
           {active
             ? 'Đã tạm khóa gửi yêu cầu.'

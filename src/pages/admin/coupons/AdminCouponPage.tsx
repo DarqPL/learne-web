@@ -253,10 +253,10 @@ function CouponDialog({ mode, initialValue, open, onOpenChange, onSaved }: Coupo
         <form onSubmit={handleSubmit}>
           <FieldGroup className="gap-4">
             {submitError ? (
-              <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+              <Alert variant="destructive">
                 <XCircle aria-hidden="true" data-icon="inline-start" />
                 <AlertTitle>Không thể lưu mã giảm giá</AlertTitle>
-                <AlertDescription className="text-red-700">{submitError}</AlertDescription>
+                <AlertDescription className="text-destructive">{submitError}</AlertDescription>
               </Alert>
             ) : null}
 
@@ -546,8 +546,8 @@ export function AdminCouponPage() {
     <div className="flex min-w-0 flex-col gap-6">
       <section className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-1">
-          <h1 className="text-2xl font-bold tracking-tight text-gray-950">Mã giảm giá</h1>
-          <p className="text-sm text-gray-600">Tạo và quản lý mã giảm giá áp dụng cho khóa học và gói thành viên.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Mã giảm giá</h1>
+          <p className="text-sm text-muted-foreground">Tạo và quản lý mã giảm giá áp dụng cho khóa học và gói thành viên.</p>
         </div>
         <Button onClick={handleOpenCreate}>
           <Plus data-icon="inline-start" aria-hidden="true" />
@@ -556,13 +556,13 @@ export function AdminCouponPage() {
       </section>
 
       {error ? (
-        <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+        <Alert variant="destructive">
           <XCircle aria-hidden="true" data-icon="inline-start" />
           <AlertTitle>Không thể tải danh sách mã giảm giá</AlertTitle>
-          <AlertDescription className="text-red-700">{error}</AlertDescription>
+          <AlertDescription className="text-destructive">{error}</AlertDescription>
         </Alert>
       ) : coupons === null ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
           <div className="flex flex-col gap-3">
             {Array.from({ length: 4 }, (_, index) => (
               <Skeleton key={index} className="h-10 w-full" />
@@ -570,17 +570,17 @@ export function AdminCouponPage() {
           </div>
         </div>
       ) : coupons.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-200 bg-white p-8 text-center text-sm text-gray-600 shadow-sm">
-          <span className="mx-auto mb-3 flex size-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+        <div className="rounded-xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground shadow-sm">
+          <span className="mx-auto mb-3 flex size-11 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
             <Ticket aria-hidden="true" className="size-5" />
           </span>
           Chưa có mã giảm giá nào.
         </div>
       ) : (
         <>
-          <div className="rounded-xl border border-indigo-100 bg-white shadow-sm [&>[data-slot=table-container]]:max-h-[60vh] [&>[data-slot=table-container]]:overflow-y-auto">
-            <Table className="[&_tr]:border-indigo-100/70">
-              <TableHeader className="sticky top-0 z-10 [&_th]:bg-indigo-50">
+          <div className="rounded-xl border border-border bg-card shadow-sm [&>[data-slot=table-container]]:max-h-[60vh] [&>[data-slot=table-container]]:overflow-y-auto">
+            <Table className="[&_tr]:border-border">
+              <TableHeader className="sticky top-0 z-10 [&_th]:bg-muted">
                 <TableRow>
                   <TableHead>Mã</TableHead>
                   <TableHead>Giảm giá</TableHead>
@@ -598,7 +598,7 @@ export function AdminCouponPage() {
                     <TableCell className="whitespace-normal">
                       <div className="flex min-w-32 flex-wrap gap-1">
                         {coupon.productScopes.map((scope) => (
-                          <Badge key={scope} variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700">
+                          <Badge key={scope} variant="secondary">
                             {couponProductScopeLabels[scope]}
                           </Badge>
                         ))}
@@ -613,7 +613,7 @@ export function AdminCouponPage() {
                     <TableCell>
                       <Badge
                         variant="outline"
-                        className={coupon.active ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-gray-200 bg-gray-100 text-gray-700'}
+                        className={coupon.active ? 'border-success/40 bg-success-background text-success-foreground' : 'border-border bg-muted text-foreground'}
                       >
                         {couponStatusLabel(coupon.active)}
                       </Badge>
@@ -733,22 +733,22 @@ export function AdminCouponPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <div className="flex items-start gap-3">
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
                 <TriangleAlert className="size-5" aria-hidden="true" />
               </div>
               <div className="flex flex-col gap-1">
                 <AlertDialogTitle>Vô hiệu hóa mã giảm giá</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Vô hiệu hóa mã giảm giá <span className="font-semibold text-gray-900">{disableTarget?.code}</span>?
-                  <span className="mt-2 block rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                  Vô hiệu hóa mã giảm giá <span className="font-semibold text-foreground">{disableTarget?.code}</span>?
+                  <span className="mt-2 block rounded-lg bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive">
                     Người học sẽ không thể dùng mã này nữa.
                   </span>
                 </AlertDialogDescription>
                 {disableError ? (
-                  <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+                  <Alert variant="destructive">
                     <XCircle aria-hidden="true" data-icon="inline-start" />
                     <AlertTitle>Không thể vô hiệu hóa mã giảm giá</AlertTitle>
-                    <AlertDescription className="text-red-700">{disableError}</AlertDescription>
+                    <AlertDescription className="text-destructive">{disableError}</AlertDescription>
                   </Alert>
                 ) : null}
               </div>

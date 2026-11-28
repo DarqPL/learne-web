@@ -87,7 +87,27 @@ describe('AdminStudentListPage shadcn sync', () => {
 
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveAttribute('data-slot', 'alert')
+    expect(alert).toHaveClass('text-destructive')
     expect(within(alert).getByText('Không thể tải danh sách học sinh.')).toBeInTheDocument()
+  })
+
+  it('uses semantic status colors for locked, password-change, and active accounts', async () => {
+    mockedList.mockResolvedValue(apiResponse(eightStudents.slice(0, 3)))
+    renderPage()
+    await screen.findByRole('table')
+    expect(screen.getByText('Đang hoạt động')).toHaveClass('bg-success-background', 'text-success-foreground')
+    expect(screen.getByText('Bị khóa')).toHaveClass('bg-destructive/10', 'text-destructive')
+    expect(screen.getByText('Chưa đổi mật khẩu')).toHaveClass('bg-warning-background', 'text-warning-foreground')
+  })
+
+  it('uses semantic surfaces in the lock confirmation dialog', async () => {
+    mockedList.mockResolvedValue(apiResponse(eightStudents.slice(0, 1)))
+    renderPage()
+    await screen.findByRole('table')
+    fireEvent.click(screen.getByRole('button', { name: /Khóa/ }))
+    const dialog = await screen.findByRole('alertdialog')
+    expect(within(dialog).getByText('Học viên sẽ không thể đăng nhập cho đến khi được mở khóa.'))
+      .toHaveClass('bg-destructive/10', 'text-destructive')
   })
 
   it('renders six rows per page with Vietnamese pagination labels', async () => {
@@ -116,15 +136,15 @@ describe('AdminStudentListPage shadcn sync', () => {
     expect(tableRows()).toHaveLength(8)
   })
 
-  it('renders teacher-style indigo table chrome', async () => {
+  it('renders semantic table chrome', async () => {
     mockedList.mockResolvedValue(apiResponse(eightStudents.slice(0, 1)))
 
     renderPage()
 
     const table = await screen.findByRole('table')
-    expect(table.className).toContain('border-indigo-100/70')
-    expect(document.querySelector('[data-slot="table-header"]')?.className).toContain('bg-indigo-50')
-    expect(table.closest('[data-slot="table-container"]')?.parentElement?.className).toContain('border-indigo-100')
+    expect(table.className).toContain('border-border')
+    expect(document.querySelector('[data-slot="table-header"]')?.className).toContain('bg-muted')
+    expect(table.closest('[data-slot="table-container"]')?.parentElement?.className).toContain('border-border')
     const header = document.querySelector('[data-slot="table-header"]')
     expect(header?.className).toContain('sticky')
     expect(header?.className).toContain('z-10')

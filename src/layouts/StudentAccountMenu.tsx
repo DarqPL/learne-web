@@ -49,7 +49,7 @@ export function StudentAccountMenu({ userName, userEmail, onLogout }: StudentAcc
             type="button"
             aria-label="Tài khoản"
             className={cn(
-              'group flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-[15px] font-medium text-gray-700 transition-colors hover:bg-gray-100',
+              'group flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-[15px] font-medium text-foreground transition-colors hover:bg-muted',
             )}
           >
             <Avatar size="sm">
@@ -63,7 +63,7 @@ export function StudentAccountMenu({ userName, userEmail, onLogout }: StudentAcc
           <DropdownMenuLabel>
             <div className={cn('flex flex-col gap-1')}>
               <span className={cn('truncate text-sm font-medium')}>{userName}</span>
-              {userEmail ? <span className={cn('truncate text-xs text-gray-500')}>{userEmail}</span> : null}
+              {userEmail ? <span className={cn('truncate text-xs text-muted-foreground')}>{userEmail}</span> : null}
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
@@ -86,7 +86,7 @@ export function StudentAccountMenu({ userName, userEmail, onLogout }: StudentAcc
                 Gói học
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => setConfirmOpen(true)} className={cn('cursor-pointer')}>
+            <DropdownMenuItem onSelect={() => setConfirmOpen(true)} variant="destructive" className={cn('cursor-pointer')}>
               <span className={cn('flex w-full items-center gap-2')}>
                 <LogOut data-icon="inline-start" aria-hidden="true" />
                 Đăng xuất
@@ -103,13 +103,10 @@ export function StudentAccountMenu({ userName, userEmail, onLogout }: StudentAcc
             <AlertDialogDescription>Bạn sẽ cần đăng nhập lại để tiếp tục học.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className={cn('cursor-pointer rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100')}>
+            <AlertDialogCancel className={cn('cursor-pointer rounded-lg border border-border px-3 py-1.5 text-sm text-foreground hover:bg-muted')}>
               Hủy
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={onLogout}
-              className={cn('cursor-pointer rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700')}
-            >
+            <AlertDialogAction onClick={onLogout}>
               Đăng xuất
             </AlertDialogAction>
           </AlertDialogFooter>

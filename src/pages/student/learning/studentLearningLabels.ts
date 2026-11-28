@@ -38,9 +38,9 @@ export const enrollmentStatusLabels: Record<EnrollmentStatus, string> = {
 }
 
 export const enrollmentStatusStyles: Record<EnrollmentStatus, string> = {
-  ACTIVE: 'bg-indigo-100 text-indigo-700',
-  COMPLETED: 'bg-green-100 text-green-700',
-  CANCELLED: 'bg-gray-100 text-gray-600',
+  ACTIVE: 'bg-info-background text-info-foreground',
+  COMPLETED: 'bg-success-background text-success-foreground',
+  CANCELLED: 'bg-muted text-muted-foreground',
 }
 
 export const lessonProgressStatusLabels: Record<LessonProgressStatus, string> = {
@@ -51,8 +51,8 @@ export const lessonProgressStatusLabels: Record<LessonProgressStatus, string> = 
 }
 
 export const lessonProgressStatusStyles: Record<LessonProgressStatus, string> = {
-  LOCKED: 'bg-slate-100 text-slate-500',
-  UNLOCKED: 'bg-gray-100 text-gray-600',
-  IN_PROGRESS: 'bg-amber-100 text-amber-700',
-  COMPLETED: 'bg-green-100 text-green-700',
+  LOCKED: 'bg-muted text-muted-foreground',
+  UNLOCKED: 'bg-secondary text-secondary-foreground',
+  IN_PROGRESS: 'bg-warning-background text-warning-foreground',
+  COMPLETED: 'bg-success-background text-success-foreground',
 }

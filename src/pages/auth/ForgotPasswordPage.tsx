@@ -53,22 +53,22 @@ export function ForgotPasswordPage() {
 
   return (
     <main className="mx-auto w-full max-w-md">
-      <Card className="border-white/70 bg-white/90 shadow-2xl shadow-indigo-200/40 backdrop-blur">
+      <Card className="border-white/70 bg-card/90 shadow-2xl shadow-indigo-200/40 backdrop-blur">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
             <MailCheck className="h-7 w-7" />
           </div>
-          <Badge variant="outline" className="mx-auto border-indigo-200 bg-indigo-50 text-indigo-700">
+          <Badge variant="secondary" className="mx-auto">
             Khôi phục quyền truy cập
           </Badge>
-          <CardTitle className="text-2xl font-bold text-gray-950">Quên mật khẩu</CardTitle>
+          <CardTitle className="text-2xl font-bold text-foreground">Quên mật khẩu</CardTitle>
           <CardDescription>Nhập email tài khoản để nhận mã đặt lại mật khẩu.</CardDescription>
         </CardHeader>
         <CardContent>
           {rateLimit.info ? <RateLimitAlert info={rateLimit.info} secondsLeft={rateLimit.secondsLeft} /> : null}
           {error ? (
-            <Alert variant="destructive" className="mb-4 border-red-200 bg-red-50">
-              <AlertDescription className="text-red-700">{error}</AlertDescription>
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription className="text-destructive">{error}</AlertDescription>
             </Alert>
           ) : null}
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -80,7 +80,7 @@ export function ForgotPasswordPage() {
                 required
                 autoComplete="email"
                 placeholder="ban@example.com"
-                className="h-11 rounded-xl bg-white/90"
+                className="h-11 rounded-xl bg-background"
               />
             </Field>
             <Button type="submit" loading={submitting} disabled={rateLimit.locked} className="h-11 w-full rounded-xl">
@@ -91,11 +91,11 @@ export function ForgotPasswordPage() {
         <CardFooter className="flex-col gap-4">
           <Separator />
           <div className="flex w-full items-center justify-between text-sm">
-            <Link to="/login" className="inline-flex items-center gap-1 font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
+            <Link to="/login" className="inline-flex items-center gap-1 font-medium text-primary hover:underline">
               <ArrowLeft className="h-4 w-4" />
               Đăng nhập
             </Link>
-            <Link to="/reset-password" className="font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
+            <Link to="/reset-password" className="font-medium text-primary hover:underline">
               Đã có mã?
             </Link>
           </div>

@@ -67,8 +67,8 @@ export function CreateTeacherPage() {
           </BreadcrumbList>
         </Breadcrumb>
         <div className="flex min-w-0 flex-col gap-1">
-          <h1 className="text-2xl font-bold tracking-tight text-gray-950">Tạo tài khoản giảng viên</h1>
-          <p className="text-sm text-gray-600">Nhập họ tên và email để tạo tài khoản giảng viên mới.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Tạo tài khoản giảng viên</h1>
+          <p className="text-sm text-muted-foreground">Nhập họ tên và email để tạo tài khoản giảng viên mới.</p>
         </div>
         <div>
           <Button variant="outline" size="sm" asChild>
@@ -81,16 +81,16 @@ export function CreateTeacherPage() {
       </section>
 
       {info ? (
-        <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800">
+        <Alert variant="success">
           <AlertTitle>Thành công</AlertTitle>
-          <AlertDescription className="text-emerald-700">{info}</AlertDescription>
+          <AlertDescription className="text-success-foreground">{info}</AlertDescription>
         </Alert>
       ) : null}
       {error ? (
-        <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+        <Alert variant="destructive">
           <XCircle aria-hidden="true" data-icon="inline-start" />
           <AlertTitle>Không thể tạo tài khoản giảng viên</AlertTitle>
-          <AlertDescription className="text-red-700">{error}</AlertDescription>
+          <AlertDescription className="text-destructive">{error}</AlertDescription>
         </Alert>
       ) : null}
 

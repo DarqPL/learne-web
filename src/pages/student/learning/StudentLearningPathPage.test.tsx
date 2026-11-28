@@ -115,7 +115,7 @@ describe('StudentLearningPathPage technical copy', () => {
     const matchLabel = screen.getByText('Độ phù hợp')
     const matchBadge = matchLabel.closest('[data-slot="badge"]')
     expect(matchBadge).not.toBeNull()
-    expect(matchBadge).toHaveClass('bg-violet-50')
+    expect(matchBadge).toHaveClass('bg-info-background')
 
     expect(await screen.findByText('80%')).toBeInTheDocument()
 
@@ -142,7 +142,7 @@ describe('StudentLearningPathPage technical copy', () => {
     )
     expect(createdStat).toBeInTheDocument()
     expect(createdStat.closest('[data-slot="badge"]')).not.toBeNull()
-    expect(createdStat.closest('[data-slot="badge"]')).toHaveClass('bg-indigo-50')
+    expect(createdStat.closest('[data-slot="badge"]')).toHaveClass('bg-secondary')
 
     expect(screen.queryByText(/Nguồn phân tích/)).not.toBeInTheDocument()
 
@@ -154,7 +154,7 @@ describe('StudentLearningPathPage technical copy', () => {
     )
     expect(countStat).toBeInTheDocument()
     expect(countStat.closest('[data-slot="badge"]')).not.toBeNull()
-    expect(countStat.closest('[data-slot="badge"]')).toHaveClass('bg-emerald-50')
+    expect(countStat.closest('[data-slot="badge"]')).toHaveClass('bg-success-background')
 
     expect(
       screen.queryByText(
@@ -209,7 +209,7 @@ describe('StudentLearningPathPage AI insight redesign', () => {
       ?? title.parentElement?.parentElement
     expect(strip).not.toBeNull()
     expect(strip?.className).toMatch(/rounded-2xl/)
-    expect(strip?.className).toMatch(/border-violet|from-violet|via-violet|violet/)
+    expect(strip?.className).toMatch(/border-info\/30.*bg-info-background/)
 
     for (const weakness of ['Past simple', 'Present perfect']) {
       const chip = await screen.findByText(weakness)
@@ -250,7 +250,7 @@ describe('StudentLearningPathPage AI insight redesign', () => {
     expect(matchValue).toBeInTheDocument()
     expect(matchValue.className).toMatch(/text-lg/)
     expect(matchValue.className).toMatch(/font-bold/)
-    expect(matchValue.className).toMatch(/violet/)
+    expect(matchValue.className).toContain('text-info-foreground')
     expect(screen.getAllByText('Độ phù hợp')[0]).toBeInTheDocument()
 
     const reason = screen.getByText('AI suggests this lesson.')

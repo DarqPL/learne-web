@@ -122,6 +122,9 @@ describe('StudentLessonDetailPage catalog sync', () => {
     const progressbar = screen.getByRole('progressbar')
     expect(progressbar).toBeInTheDocument()
     expect(progressbar.className).toMatch(/h-2/)
+    expect(progressbar.firstElementChild).toHaveClass('bg-primary')
+    expect(screen.getByText('Tổng hợp')).toHaveClass('bg-taxonomy-1')
+    expect(screen.getByText('Chưa bắt đầu')).toHaveClass('bg-secondary', 'text-secondary-foreground')
 
     const startButton = screen.getByRole('button', { name: /Bắt đầu học/i })
     expect(startButton.className).toMatch(/w-auto/)

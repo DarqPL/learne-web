@@ -1,10 +1,17 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   *,
   ::after,
   ::before {
     border-color: var(--color-border, currentColor);
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
   }
 }
 
@@ -27,6 +34,36 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-background: var(--success-background);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-background: var(--warning-background);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-background: var(--info-background);
+  --color-taxonomy-1: var(--taxonomy-1);
+  --color-taxonomy-1-foreground: var(--taxonomy-1-foreground);
+  --color-taxonomy-2: var(--taxonomy-2);
+  --color-taxonomy-2-foreground: var(--taxonomy-2-foreground);
+  --color-taxonomy-3: var(--taxonomy-3);
+  --color-taxonomy-3-foreground: var(--taxonomy-3-foreground);
+  --color-taxonomy-4: var(--taxonomy-4);
+  --color-taxonomy-4-foreground: var(--taxonomy-4-foreground);
+  --color-taxonomy-5: var(--taxonomy-5);
+  --color-taxonomy-5-foreground: var(--taxonomy-5-foreground);
+  --color-taxonomy-6: var(--taxonomy-6);
+  --color-taxonomy-6-foreground: var(--taxonomy-6-foreground);
+  --color-taxonomy-7: var(--taxonomy-7);
+  --color-taxonomy-7-foreground: var(--taxonomy-7-foreground);
+  --color-taxonomy-8: var(--taxonomy-8);
+  --color-taxonomy-8-foreground: var(--taxonomy-8-foreground);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
 }
 
 :root {
@@ -48,12 +85,112 @@
   --border: #e4e4e7;
   --input: #e4e4e7;
   --ring: #818cf8;
+  --success: #15803d;
+  --success-foreground: #14532d;
+  --success-background: #f0fdf4;
+  --warning: #a16207;
+  --warning-foreground: #713f12;
+  --warning-background: #fefce8;
+  --info: #1d4ed8;
+  --info-foreground: #1e3a8a;
+  --info-background: #eff6ff;
+  --taxonomy-1: #ede9fe;
+  --taxonomy-1-foreground: #5b21b6;
+  --taxonomy-2: #e0f2fe;
+  --taxonomy-2-foreground: #075985;
+  --taxonomy-3: #cffafe;
+  --taxonomy-3-foreground: #155e75;
+  --taxonomy-4: #ffe4e6;
+  --taxonomy-4-foreground: #9f1239;
+  --taxonomy-5: #d1fae5;
+  --taxonomy-5-foreground: #065f46;
+  --taxonomy-6: #fef3c7;
+  --taxonomy-6-foreground: #92400e;
+  --taxonomy-7: #e0e7ff;
+  --taxonomy-7-foreground: #3730a3;
+  --taxonomy-8: #fae8ff;
+  --taxonomy-8-foreground: #86198f;
+  --chart-1: #4f46e5;
+  --chart-2: #7c3aed;
+  --chart-3: #0891b2;
+  --chart-4: #059669;
+  --chart-5: #d97706;
+  --auth-background: #f5f3ff;
+  --auth-glow-indigo: rgb(199 210 254 / 40%);
+  --auth-glow-violet: rgb(221 214 254 / 50%);
+  --auth-gradient-start: #fafafa;
+  --auth-gradient-middle: #f5f3ff;
+  --auth-gradient-end: #eef2ff;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
+.dark {
+  color-scheme: dark;
+  /* Cool charcoal surfaces establish elevation without stark black panels. */
+  --background: #111318;
+  --foreground: #e7e9ef;
+  --card: #191c23;
+  --card-foreground: #e7e9ef;
+  --popover: #222630;
+  --popover-foreground: #e7e9ef;
+  /* Softer indigo retains the LearnE brand without neon glare. */
+  --primary: #a5aaf5;
+  --primary-foreground: #171923;
+  --secondary: #252a34;
+  --secondary-foreground: #e1e4eb;
+  --muted: #20242d;
+  --muted-foreground: #a6adbb;
+  --accent: #292d43;
+  --accent-foreground: #d8dcff;
+  --destructive: #f08d91;
+  --border: #343a46;
+  --input: #3a414f;
+  --ring: #a5aaf5;
+  --success: #86efac;
+  --success-foreground: #bbf7d0;
+  --success-background: #14251b;
+  --warning: #facc15;
+  --warning-foreground: #fde68a;
+  --warning-background: #2b2412;
+  --info: #93c5fd;
+  --info-foreground: #bfdbfe;
+  --info-background: #172235;
+  --taxonomy-1: #2e2342;
+  --taxonomy-1-foreground: #ddd6fe;
+  --taxonomy-2: #172c3c;
+  --taxonomy-2-foreground: #bae6fd;
+  --taxonomy-3: #16333b;
+  --taxonomy-3-foreground: #a5f3fc;
+  --taxonomy-4: #3a2029;
+  --taxonomy-4-foreground: #fecdd3;
+  --taxonomy-5: #17352c;
+  --taxonomy-5-foreground: #a7f3d0;
+  --taxonomy-6: #392d17;
+  --taxonomy-6-foreground: #fde68a;
+  --taxonomy-7: #252a48;
+  --taxonomy-7-foreground: #c7d2fe;
+  --taxonomy-8: #35223b;
+  --taxonomy-8-foreground: #f5d0fe;
+  --chart-1: #a5aaf5;
+  --chart-2: #c4b5fd;
+  --chart-3: #67e8f9;
+  --chart-4: #6ee7b7;
+  --chart-5: #fcd34d;
+  --auth-background: #111318;
+  --auth-glow-indigo: rgb(129 140 248 / 12%);
+  --auth-glow-violet: rgb(167 139 250 / 10%);
+  --auth-gradient-start: #111318;
+  --auth-gradient-middle: #171a24;
+  --auth-gradient-end: #202238;
 }
+
+.auth-background {
+  background-color: var(--auth-background);
+  background-image: radial-gradient(circle at top left, var(--accent), transparent 32%), linear-gradient(135deg, var(--auth-gradient-start) 0%, var(--auth-gradient-middle) 48%, var(--auth-gradient-end) 100%);
+}
+
+.auth-glow-indigo { background-color: var(--auth-glow-indigo); }
+.auth-glow-violet { background-color: var(--auth-glow-violet); }
+
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;

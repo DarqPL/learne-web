@@ -194,7 +194,7 @@ describe('AdminRevenueSection', () => {
 
     // indigo table chrome reused from teacher-style tables
     const header = document.querySelector('[data-slot="table-header"]')
-    expect(header?.className).toContain('bg-indigo-50')
+    expect(header?.className).toContain('bg-muted')
   })
 
   it('refetches when the month changes', async () => {
@@ -338,6 +338,14 @@ describe('AdminRevenueSection', () => {
     await screen.findByText(/tổng năm 2026/i)
     expect(screen.getByRole('button', { name: /6 tháng/i })).toHaveAttribute('aria-pressed', 'false')
     expect(screen.getByRole('button', { name: /theo năm/i })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('uses semantic primary and chart tokens for view controls and revenue series', async () => {
+    setupMocks()
+    render(<AdminRevenueSection />)
+    const trendButton = await screen.findByRole('button', { name: '6 tháng' })
+    expect(trendButton).toHaveClass('bg-primary', 'text-primary-foreground')
+    expect(document.querySelector('[data-slot="chart"] [data-chart-series="plan"]')).toBeNull()
   })
 
   it('shows year breakdown totals for course and plan revenue', async () => {

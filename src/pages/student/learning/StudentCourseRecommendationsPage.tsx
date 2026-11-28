@@ -118,18 +118,18 @@ export function StudentCourseRecommendationsPage() {
       <section className="flex min-w-0 flex-col gap-2">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">Khóa học AI đề xuất</h1>
-            <p className="mt-1 text-base leading-7 text-gray-600">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Khóa học AI đề xuất</h1>
+            <p className="mt-1 text-base leading-7 text-muted-foreground">
               AI phân tích bài kiểm tra đầu vào và dữ liệu học tập để ưu tiên khóa học phù hợp với kỹ năng cần cải thiện.
             </p>
             {path ? (
               <div className="mt-3 flex flex-wrap gap-2">
-                <Badge variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700">
+                <Badge variant="secondary">
                   <CalendarClock aria-hidden="true" />
                   <span>Ngày tạo {formatStudentLearningDate(path.generatedAt)}</span>
                 </Badge>
 
-                <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+                <Badge variant="info">
                   <ListChecks aria-hidden="true" />
                   <span>{sortedItems.length} khóa học đề xuất</span>
                 </Badge>
@@ -143,37 +143,37 @@ export function StudentCourseRecommendationsPage() {
       </section>
 
       {error ? (
-        <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+        <Alert variant="destructive">
           <XCircle aria-hidden="true" data-icon="inline-start" />
           <AlertTitle>Đã xảy ra lỗi</AlertTitle>
-          <AlertDescription className="text-red-700">{error}</AlertDescription>
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : null}
       {info ? (
-        <Alert className="border-indigo-200 bg-indigo-50 text-indigo-800">
+        <Alert variant="info">
           <Info aria-hidden="true" data-icon="inline-start" />
           <AlertTitle>Thông tin đề xuất</AlertTitle>
-          <AlertDescription className="text-indigo-700">{info}</AlertDescription>
+          <AlertDescription>{info}</AlertDescription>
         </Alert>
       ) : null}
 
       {loading ? (
-        <Card className="border-dashed border-indigo-200 bg-white/90 shadow-sm">
-          <CardContent className="flex items-center gap-4 p-6 text-gray-600">
-            <span className="flex size-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+        <Card className="border-dashed border-border bg-card shadow-sm">
+          <CardContent className="flex items-center gap-4 p-6 text-muted-foreground">
+            <span className="flex size-11 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
               <Loader2 aria-hidden="true" className="size-5 animate-spin" />
             </span>
             <div>
-              <p className="font-medium text-gray-900">Đang tải đề xuất khóa học</p>
-              <p className="text-sm text-gray-500">Hệ thống đang lấy các khóa học AI đề xuất cho bạn.</p>
+              <p className="font-medium text-foreground">Đang tải đề xuất khóa học</p>
+              <p className="text-sm text-muted-foreground">Hệ thống đang lấy các khóa học AI đề xuất cho bạn.</p>
             </div>
           </CardContent>
         </Card>
       ) : path === null ? (
-        <Card className="border-dashed border-gray-200 bg-white text-center shadow-sm">
+        <Card className="border-dashed border-border bg-card text-center shadow-sm">
           <CardContent className="flex flex-col items-center gap-0 p-8">
-            <h2 className="mt-4 text-lg font-semibold text-gray-950">Chưa có khóa học AI đề xuất</h2>
-            <p className="mt-2 max-w-md text-sm leading-6 text-gray-600">
+            <h2 className="mt-4 text-lg font-semibold text-foreground">Chưa có khóa học AI đề xuất</h2>
+            <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
               Nếu bạn đã hoàn thành hoặc bỏ qua bài kiểm tra đầu vào, hãy tạo đề xuất. Nếu chưa, hãy làm bài kiểm tra để AI có dữ liệu chính xác hơn.
             </p>
             <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
@@ -188,37 +188,37 @@ export function StudentCourseRecommendationsPage() {
         </Card>
       ) : (
         <div className="flex min-w-0 flex-col gap-6">
-          <div className="flex min-w-0 flex-col gap-2 rounded-2xl border border-violet-200 bg-gradient-to-r from-violet-50 to-indigo-50 p-4">
+            <div className="flex min-w-0 flex-col gap-2 rounded-2xl border border-info/30 bg-info-background p-4">
             <div className="flex items-center gap-2">
-              <span className="flex size-8 items-center justify-center rounded-xl bg-violet-600 text-white">
+              <span className="flex size-8 items-center justify-center rounded-xl bg-info text-info-foreground">
                 <Sparkles aria-hidden="true" className="size-4" />
               </span>
-              <h2 className="text-base font-semibold text-gray-950">Nên tập trung luyện tập</h2>
+              <h2 className="text-base font-semibold text-foreground">Nên tập trung luyện tập</h2>
             </div>
             {path.weaknesses.length > 0 ? (
               <div className="flex flex-wrap gap-1.5">
                 {path.weaknesses.map((weakness) => (
-                  <Badge key={weakness} variant="outline" className="border-violet-200 bg-white/80 text-violet-700">
+                  <Badge key={weakness} variant="taxonomy1">
                     {weakness}
                   </Badge>
                 ))}
               </div>
             ) : (
-              <p className="text-sm leading-6 text-gray-600">AI chưa ghi nhận điểm yếu cụ thể. Bạn vẫn có thể tham khảo các khóa học phù hợp bên dưới.</p>
+              <p className="text-sm leading-6 text-muted-foreground">AI chưa ghi nhận điểm yếu cụ thể. Bạn vẫn có thể tham khảo các khóa học phù hợp bên dưới.</p>
             )}
-            <p className="text-xs leading-5 text-gray-500">Dựa trên {path.source || 'kết quả học tập gần đây'}.</p>
+            <p className="text-xs leading-5 text-muted-foreground">Dựa trên {path.source || 'kết quả học tập gần đây'}.</p>
           </div>
 
           <section className="flex min-w-0 flex-col gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Thứ tự đề xuất</p>
-              <h2 className="mt-1 text-xl font-semibold text-gray-950">Khóa học nên bắt đầu</h2>
+              <p className="text-xs font-semibold uppercase tracking-wide text-primary">Thứ tự đề xuất</p>
+              <h2 className="mt-1 text-xl font-semibold text-foreground">Khóa học nên bắt đầu</h2>
             </div>
 
             {sortedItems.length === 0 ? (
-              <Card className="border-dashed border-gray-200 bg-white shadow-sm">
+              <Card className="border-dashed border-border bg-card shadow-sm">
                 <CardContent className="p-6">
-                  <p className="text-sm leading-6 text-gray-600">Danh sách hiện chưa có khóa học đề xuất. Hãy tạo lại sau khi có thêm dữ liệu học tập.</p>
+                  <p className="text-sm leading-6 text-muted-foreground">Danh sách hiện chưa có khóa học đề xuất. Hãy tạo lại sau khi có thêm dữ liệu học tập.</p>
                 </CardContent>
               </Card>
             ) : (
@@ -229,30 +229,30 @@ export function StudentCourseRecommendationsPage() {
                   return (
                     <Card
                       key={item.id}
-                      className="h-full flex flex-col gap-2.5 overflow-hidden border-gray-200 bg-white p-4 transition-colors hover:border-indigo-200 hover:shadow-sm"
+                      className="h-full flex flex-col gap-2.5 overflow-hidden border-border bg-card p-4 transition-colors hover:border-ring/50 hover:shadow-sm"
                     >
                       <CardHeader className="flex flex-col gap-2.5 p-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <Badge variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700">
+                          <Badge variant="secondary">
                             {item.level}
                           </Badge>
-                          <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+                          <Badge variant="info">
                             {getCourseTypeLabel(item.type)}
                           </Badge>
-                          {item.enrolled ? <Badge className="bg-emerald-600 text-white">Đã đăng ký</Badge> : null}
+                          {item.enrolled ? <Badge variant="success">Đã đăng ký</Badge> : null}
                         </div>
                         <div className="flex min-w-0 flex-col gap-1">
-                          <h3 className="text-lg font-semibold tracking-tight text-gray-950">{item.courseTitle}</h3>
-                          <p className="text-xs leading-5 text-gray-500">Giảng viên: {item.teacherName}</p>
+                          <h3 className="text-lg font-semibold tracking-tight text-foreground">{item.courseTitle}</h3>
+                          <p className="text-xs leading-5 text-muted-foreground">Giảng viên: {item.teacherName}</p>
                         </div>
-                        <Badge variant="outline" className="w-fit border-violet-200 bg-violet-50 text-violet-700">
+                        <Badge variant="info" className="w-fit">
                           <span>Độ phù hợp</span>
                           <span aria-hidden="true">·</span>
-                          <span className="text-lg font-bold text-violet-700">{scorePercent}%</span>
+                          <span className="text-lg font-bold text-info-foreground">{scorePercent}%</span>
                         </Badge>
                       </CardHeader>
                       <CardContent className="p-0">
-                        <p className="line-clamp-2 text-sm leading-6 text-gray-600">
+                        <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
                           {item.reason || 'AI đề xuất khóa học này dựa trên kết quả kiểm tra đầu vào và dữ liệu học tập hiện có.'}
                         </p>
                       </CardContent>

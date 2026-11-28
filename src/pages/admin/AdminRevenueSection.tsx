@@ -193,8 +193,8 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
     <section aria-label="Doanh thu" className="flex min-w-0 flex-col gap-4">
       <div className="flex min-w-0 flex-wrap items-end justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-1">
-          <h2 className="text-lg font-bold tracking-tight text-gray-950">Doanh thu</h2>
-          <p className="text-sm text-gray-600">Theo dõi doanh thu khóa học, gói và chia sẻ giảng viên theo tháng.</p>
+          <h2 className="text-lg font-bold tracking-tight text-foreground">Doanh thu</h2>
+          <p className="text-sm text-muted-foreground">Theo dõi doanh thu khóa học, gói và chia sẻ giảng viên theo tháng.</p>
         </div>
         <div className="flex w-48 flex-col gap-1.5">
           <Label htmlFor="admin-revenue-month">Tháng</Label>
@@ -210,15 +210,15 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
       </div>
 
       {error ? (
-        <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+        <Alert variant="destructive">
           <XCircle aria-hidden="true" data-icon="inline-start" />
           <AlertTitle>Không thể tải dữ liệu doanh thu</AlertTitle>
-          <AlertDescription className="text-red-700">{error}</AlertDescription>
+          <AlertDescription className="text-destructive">{error}</AlertDescription>
         </Alert>
       ) : null}
 
       <div className="flex min-w-0 flex-wrap items-end gap-3">
-        <div role="group" aria-label="Chế độ xem doanh thu" className="flex overflow-hidden rounded-md border border-gray-200">
+        <div role="group" aria-label="Chế độ xem doanh thu" className="flex overflow-hidden rounded-md border border-border">
           <button
             type="button"
             aria-pressed={viewMode === 'trend'}
@@ -227,8 +227,8 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
             }}
             className={
               viewMode === 'trend'
-                ? 'bg-indigo-600 px-4 py-2 text-sm font-medium text-white'
-                : 'bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50'
+                ? 'bg-primary px-4 py-2 text-sm font-medium text-primary-foreground'
+                : 'bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted'
             }
           >
             6 tháng
@@ -241,8 +241,8 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
             }}
             className={
               viewMode === 'year'
-                ? 'bg-indigo-600 px-4 py-2 text-sm font-medium text-white'
-                : 'bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50'
+                ? 'bg-primary px-4 py-2 text-sm font-medium text-primary-foreground'
+                : 'bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted'
             }
           >
             Theo năm
@@ -284,8 +284,8 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
               <CardDescription>Tổng net khóa học + gói trong tháng {formatMonthLabel(month)}</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-gray-950">{formatVnd(totalRevenue)}</p>
-              <p className="mt-1 text-sm text-gray-600">
+              <p className="text-3xl font-bold text-foreground">{formatVnd(totalRevenue)}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
                 Khóa học {formatVnd(courseTotal)} · Gói {formatVnd(planTotal)}
               </p>
             </CardContent>
@@ -299,8 +299,8 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
                   <CardDescription>Tổng net khóa học + gói trong năm {year}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-3xl font-bold text-gray-950">{formatVnd(yearCourse + yearPlan)}</p>
-                  <p className="mt-1 text-sm text-gray-600">
+                  <p className="text-3xl font-bold text-foreground">{formatVnd(yearCourse + yearPlan)}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
                     Khóa học {formatVnd(yearCourse)} · Gói {formatVnd(yearPlan)}
                   </p>
                 </CardContent>
@@ -313,23 +313,23 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
                 </CardHeader>
                 <CardContent>
                   {!yearData || yearData.length === 0 ? (
-                    <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+                    <p className="rounded-xl border border-dashed border-border bg-muted p-4 text-sm text-muted-foreground">
                       Chưa có dữ liệu doanh thu năm {year}.
                     </p>
                   ) : (
                     <div className="h-64 w-full">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={yearData} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
-                          <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
-                          <XAxis dataKey="label" tick={{ fontSize: 12 }} interval={0} />
+                          <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
+                          <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} interval={0} />
                           <YAxis
                             tickFormatter={(value: number) => formatCompactVnd(value)}
-                            tick={{ fontSize: 12 }}
+                            tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }}
                             width={80}
                           />
-                          <Tooltip formatter={(value) => formatVnd(Number(value))} />
-                          <Bar dataKey="course" name="Khóa học" stackId="revenue" fill="#4f46e5" />
-                          <Bar dataKey="plan" name="Gói" stackId="revenue" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                          <Tooltip contentStyle={{ background: 'var(--popover)', borderColor: 'var(--border)', color: 'var(--popover-foreground)' }} formatter={(value) => formatVnd(Number(value))} />
+                          <Bar dataKey="course" name="Khóa học" stackId="revenue" fill="var(--primary)" />
+                          <Bar dataKey="plan" name="Gói" stackId="revenue" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
@@ -345,7 +345,7 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
             </CardHeader>
             <CardContent>
               {trend.length === 0 ? (
-                <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+                <p className="rounded-xl border border-dashed border-border bg-muted p-4 text-sm text-muted-foreground">
                   Chưa có dữ liệu xu hướng doanh thu.
                 </p>
               ) : (
@@ -353,10 +353,11 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
                   <div className="h-64 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={trend} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
-                        <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
-                        <XAxis dataKey="label" tick={{ fontSize: 12 }} interval={0} />
-                        <YAxis tickFormatter={(value: number) => formatCompactVnd(value)} tick={{ fontSize: 12 }} width={80} />
+                        <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
+                        <XAxis dataKey="label" tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} interval={0} />
+                        <YAxis tickFormatter={(value: number) => formatCompactVnd(value)} tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} width={80} />
                         <Tooltip
+                          contentStyle={{ background: 'var(--popover)', borderColor: 'var(--border)', color: 'var(--popover-foreground)' }}
                           formatter={(value) => formatVnd(Number(value))}
                           labelFormatter={(label) => `Tháng ${String(label)}`}
                         />
@@ -364,7 +365,7 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
                           type="monotone"
                           dataKey="total"
                           name="Doanh thu"
-                          stroke="#4f46e5"
+                          stroke="var(--primary)"
                           strokeWidth={2}
                           dot={{ r: 3 }}
                           activeDot={{ r: 5 }}
@@ -372,9 +373,9 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
-                  <div className="rounded-xl border border-indigo-100 bg-white shadow-sm [&>[data-slot=table-container]]:max-h-[40vh] [&>[data-slot=table-container]]:overflow-y-auto">
-                    <Table className="[&_tr]:border-indigo-100/70">
-                      <TableHeader className="sticky top-0 z-10 [&_th]:bg-indigo-50">
+                  <div className="rounded-xl border border-border bg-card shadow-sm [&>[data-slot=table-container]]:max-h-[40vh] [&>[data-slot=table-container]]:overflow-y-auto">
+                    <Table className="[&_tr]:border-border">
+                      <TableHeader className="sticky top-0 z-10 [&_th]:bg-muted">
                         <TableRow>
                           <TableHead>Tháng</TableHead>
                           <TableHead className="text-right">Doanh thu net</TableHead>
@@ -404,7 +405,7 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 {courseChartData.length === 0 ? (
-                  <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+                  <p className="rounded-xl border border-dashed border-border bg-muted p-4 text-sm text-muted-foreground">
                     Chưa có dữ liệu doanh thu khóa học.
                   </p>
                 ) : (
@@ -412,21 +413,21 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
                     <div className="h-64 w-full">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={courseChartData} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
-                          <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
-                          <XAxis dataKey="name" tick={{ fontSize: 12 }} interval={0} />
+                          <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
+                          <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} interval={0} />
                           <YAxis
                             tickFormatter={(value: number) => formatCompactVnd(value)}
-                            tick={{ fontSize: 12 }}
+                            tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }}
                             width={80}
                           />
-                          <Tooltip formatter={(value) => formatVnd(Number(value))} />
-                          <Bar dataKey="total" name="Doanh thu" fill="#4f46e5" radius={[6, 6, 0, 0]} />
+                          <Tooltip contentStyle={{ background: 'var(--popover)', borderColor: 'var(--border)', color: 'var(--popover-foreground)' }} formatter={(value) => formatVnd(Number(value))} />
+                          <Bar dataKey="total" name="Doanh thu" fill="var(--primary)" radius={[6, 6, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
-                    <div className="rounded-xl border border-indigo-100 bg-white shadow-sm [&>[data-slot=table-container]]:max-h-[40vh] [&>[data-slot=table-container]]:overflow-y-auto">
-                      <Table className="[&_tr]:border-indigo-100/70">
-                        <TableHeader className="sticky top-0 z-10 [&_th]:bg-indigo-50">
+                    <div className="rounded-xl border border-border bg-card shadow-sm [&>[data-slot=table-container]]:max-h-[40vh] [&>[data-slot=table-container]]:overflow-y-auto">
+                      <Table className="[&_tr]:border-border">
+                          <TableHeader className="sticky top-0 z-10 [&_th]:bg-muted">
                           <TableRow>
                             <TableHead>Khóa học</TableHead>
                             <TableHead className="text-right">Doanh thu net</TableHead>
@@ -454,7 +455,7 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 {planChartData.length === 0 ? (
-                  <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+                  <p className="rounded-xl border border-dashed border-border bg-muted p-4 text-sm text-muted-foreground">
                     Chưa có dữ liệu doanh thu gói.
                   </p>
                 ) : (
@@ -462,21 +463,21 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
                     <div className="h-64 w-full">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={planChartData} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
-                          <CartesianGrid stroke="#e5e7eb" strokeDasharray="3 3" />
-                          <XAxis dataKey="name" tick={{ fontSize: 12 }} interval={0} />
+                          <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
+                          <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} interval={0} />
                           <YAxis
                             tickFormatter={(value: number) => formatCompactVnd(value)}
-                            tick={{ fontSize: 12 }}
+                            tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }}
                             width={80}
                           />
-                          <Tooltip formatter={(value) => formatVnd(Number(value))} />
-                          <Bar dataKey="total" name="Doanh thu" fill="#059669" radius={[6, 6, 0, 0]} />
+                          <Tooltip contentStyle={{ background: 'var(--popover)', borderColor: 'var(--border)', color: 'var(--popover-foreground)' }} formatter={(value) => formatVnd(Number(value))} />
+                          <Bar dataKey="total" name="Doanh thu" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
-                    <div className="rounded-xl border border-indigo-100 bg-white shadow-sm [&>[data-slot=table-container]]:max-h-[40vh] [&>[data-slot=table-container]]:overflow-y-auto">
-                      <Table className="[&_tr]:border-indigo-100/70">
-                        <TableHeader className="sticky top-0 z-10 [&_th]:bg-indigo-50">
+                    <div className="rounded-xl border border-border bg-card shadow-sm [&>[data-slot=table-container]]:max-h-[40vh] [&>[data-slot=table-container]]:overflow-y-auto">
+                      <Table className="[&_tr]:border-border">
+                          <TableHeader className="sticky top-0 z-10 [&_th]:bg-muted">
                           <TableRow>
                             <TableHead>Gói</TableHead>
                             <TableHead className="text-right">Doanh thu net</TableHead>
@@ -507,13 +508,13 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
             </CardHeader>
             <CardContent>
               {!teacherShare || teacherShare.rows.length === 0 ? (
-                <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+                <p className="rounded-xl border border-dashed border-border bg-muted p-4 text-sm text-muted-foreground">
                   Chưa có dữ liệu chia sẻ giảng viên.
                 </p>
               ) : (
-                <div className="rounded-xl border border-indigo-100 bg-white shadow-sm [&>[data-slot=table-container]]:max-h-[60vh] [&>[data-slot=table-container]]:overflow-y-auto">
-                  <Table className="[&_tr]:border-indigo-100/70">
-                    <TableHeader className="sticky top-0 z-10 [&_th]:bg-indigo-50">
+                <div className="rounded-xl border border-border bg-card shadow-sm [&>[data-slot=table-container]]:max-h-[60vh] [&>[data-slot=table-container]]:overflow-y-auto">
+                  <Table className="[&_tr]:border-border">
+                    <TableHeader className="sticky top-0 z-10 [&_th]:bg-muted">
                       <TableRow>
                         <TableHead>giảng viên</TableHead>
                         <TableHead>điểm hoạt động</TableHead>

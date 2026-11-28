@@ -13,6 +13,7 @@ describe('StudentTopNav', () => {
     )
     expect(screen.getByRole('link', { name: 'LearnE' })).toHaveAttribute('href', '/student')
     expect(screen.getByRole('link', { name: 'Trang chủ' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'LearnE' })).toHaveClass('text-primary')
     expect(screen.getByRole('link', { name: 'Giảng viên' })).toBeInTheDocument()
 
     // ChevronDown icons rotate on open via Radix data-state.

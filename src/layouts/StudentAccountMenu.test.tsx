@@ -24,7 +24,7 @@ describe('StudentAccountMenu', () => {
     expect(screen.getByRole('menuitem', { name: /hồ sơ của tôi/i })).toHaveAttribute('href', '/profile')
     expect(screen.getByRole('menuitem', { name: /đổi mật khẩu/i })).toHaveAttribute('href', '/change-password')
     expect(screen.getByRole('menuitem', { name: /gói học/i })).toHaveAttribute('href', '/student/subscription')
-    expect(screen.getByRole('menuitem', { name: /đăng xuất/i })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: /đăng xuất/i })).toHaveAttribute('data-variant', 'destructive')
     fireEvent.click(screen.getByRole('menuitem', { name: 'Đăng xuất' }))
     expect(screen.getByRole('alertdialog')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Đăng xuất' }))

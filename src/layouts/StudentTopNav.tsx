@@ -38,10 +38,10 @@ const mobileLinks: StudentTopNavLink[] = [
 ]
 
 const desktopLinkClassName = ({ isActive }: { isActive: boolean }) =>
-  cn('rounded-lg px-3 py-2 text-[15px] font-medium transition-colors', isActive ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900')
+  cn('rounded-lg px-3 py-2 text-[15px] font-medium transition-colors', isActive ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground')
 
 const dropdownTriggerClassName =
-  'group flex cursor-pointer items-center gap-1 rounded-lg px-3 py-2 text-[15px] font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900'
+  'group flex cursor-pointer items-center gap-1 rounded-lg px-3 py-2 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground'
 
 function isLinkActive(pathname: string, link: StudentTopNavLink) {
   if (link.end) {
@@ -73,7 +73,7 @@ function StudentNavDropdown({ label, links }: { label: string; links: StudentTop
             // visual active class (do not rely on NavLink internal isActive).
             const isActive = isLinkActive(pathname, link)
             return (
-              <DropdownMenuItem key={link.label} asChild className={cn('cursor-pointer', isActive && 'bg-indigo-50 font-medium text-indigo-700')}>
+              <DropdownMenuItem key={link.label} asChild className={cn('cursor-pointer', isActive && 'bg-accent font-medium text-accent-foreground')}>
                 <NavLink to={link.to} end={link.end} aria-current={isActive ? 'page' : undefined} className="block w-full rounded-sm px-2 py-1.5 text-sm">
                   {link.label}
                 </NavLink>
@@ -89,7 +89,7 @@ function StudentNavDropdown({ label, links }: { label: string; links: StudentTop
 export function StudentTopNav() {
   return (
     <div className="flex items-center gap-1 sm:gap-2">
-      <Link to="/student" className="shrink-0 text-xl font-bold text-indigo-600">
+      <Link to="/student" className="shrink-0 text-xl font-bold text-primary">
         LearnE
       </Link>
       <nav aria-label="Student navigation">
@@ -112,7 +112,7 @@ export function StudentTopNav() {
             <button
               type="button"
               aria-label="Mở điều hướng"
-              className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100"
+              className="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-sm text-foreground hover:bg-muted"
             >
               <Menu data-icon="inline-start" aria-hidden="true" />
               Menu

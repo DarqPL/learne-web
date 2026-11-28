@@ -1,31 +1,34 @@
 import type { ButtonHTMLAttributes } from 'react'
 import { Spinner } from './Spinner'
+import { Button as ShadcnButton } from '../shadcn/ui/button'
 
-type Variant = 'primary' | 'secondary' | 'danger'
+type Variant = 'primary' | 'secondary' | 'danger' | 'outline' | 'ghost' | 'link'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean
   variant?: Variant
 }
 
-const variants: Record<Variant, string> = {
-  primary: 'bg-indigo-600 text-white hover:bg-indigo-700',
-  secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300',
-  danger: 'bg-red-600 text-white hover:bg-red-700',
+const variants: Record<Variant, 'default' | 'secondary' | 'destructive' | 'outline' | 'ghost' | 'link'> = {
+  primary: 'default',
+  secondary: 'secondary',
+  danger: 'destructive',
+  outline: 'outline',
+  ghost: 'ghost',
+  link: 'link',
 }
 
 export function Button({ loading = false, variant = 'primary', type = 'button', className, children, disabled, ...props }: ButtonProps) {
-  const base =
-    'inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60'
   return (
-    <button
+    <ShadcnButton
       type={type}
-      className={`${base} ${variants[variant]} ${className ?? ''}`}
+      variant={variants[variant]}
+      className={className}
       disabled={disabled || loading}
       {...props}
     >
-      {loading ? <Spinner /> : null}
+      {loading ? <Spinner aria-hidden="true" /> : null}
       {children}
-    </button>
+    </ShadcnButton>
   )
 }

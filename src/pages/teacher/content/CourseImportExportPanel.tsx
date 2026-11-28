@@ -138,7 +138,7 @@ export function CourseImportExportPanel({
   }
 
   return (
-    <Card className="border-indigo-100 bg-white/95 shadow-sm shadow-indigo-100/60">
+    <Card className="border-border bg-card shadow-sm">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
@@ -148,7 +148,7 @@ export function CourseImportExportPanel({
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
-            className="border-indigo-200"
+            className="border-border"
             loading={action === 'template'}
             disabled={action !== null && action !== 'template'}
             onClick={handleDownloadTemplate}
@@ -159,7 +159,7 @@ export function CourseImportExportPanel({
           {courseId ? (
             <Button
               variant="outline"
-              className="border-indigo-200"
+              className="border-border"
               loading={action === 'export'}
               disabled={action !== null && action !== 'export'}
               onClick={handleExportCourse}
@@ -170,11 +170,11 @@ export function CourseImportExportPanel({
           ) : null}
         </div>
 
-        <Accordion type="single" collapsible className="rounded-xl border border-indigo-100 bg-indigo-50/50 px-4">
+        <Accordion type="single" collapsible className="rounded-xl border border-border bg-muted px-4">
           <AccordionItem value="import-guide">
             <AccordionTrigger>Hướng dẫn file import</AccordionTrigger>
             <AccordionContent>
-              <ul className="list-disc space-y-1 pl-5 text-sm text-indigo-950/80">
+              <ul className="list-disc space-y-1 pl-5 text-sm text-foreground">
                 <li>1 file `.xlsm` duy nhất từ template Tải template Excel.</li>
                 <li>Cột bắt buộc Content: topic_title, lesson_title, skill_type, question_type, question_text + đáp án theo loại (trắc nghiệm: option_a..d + correct_option; loại khác: correct_answer).</li>
                 <li>Audio mp3/wav/m4a/ogg trong thư mục `audio/`, mỗi file tối đa 20MB.</li>
@@ -185,20 +185,20 @@ export function CourseImportExportPanel({
         </Accordion>
 
         <form
-          className="flex flex-col gap-3 rounded-xl border border-indigo-100 bg-indigo-50/50 p-4 sm:flex-row sm:items-end"
+          className="flex flex-col gap-3 rounded-xl border border-border bg-muted p-4 sm:flex-row sm:items-end"
           onSubmit={handleImportSubmit}
         >
           <Field className="flex-1">
             <FieldLabel htmlFor="teacher-course-import-file">File gói nén</FieldLabel>
             <Input
               id="teacher-course-import-file"
-              className="bg-white file:mr-3 file:rounded-md file:border-0 file:bg-indigo-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-indigo-800"
+              className="bg-card file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-secondary-foreground"
               type="file"
               disabled={editingState.kind !== 'editable'}
               accept=".zip,.rar,.7z,application/zip,application/x-zip-compressed,application/vnd.rar,application/x-rar-compressed,application/x-7z-compressed"
               onChange={handleFileChange}
             />
-            <p className="text-xs text-indigo-900/70">Chấp nhận file .zip, .rar, .7z tối đa 100MB. Bên trong phải có đúng 1 file .xlsm từ template và audio (mp3/wav/m4a/ogg, mỗi file tối đa 20MB) đặt trong thư mục audio/.</p>
+            <p className="text-xs text-muted-foreground">Chấp nhận file .zip, .rar, .7z tối đa 100MB. Bên trong phải có đúng 1 file .xlsm từ template và audio (mp3/wav/m4a/ogg, mỗi file tối đa 20MB) đặt trong thư mục audio/.</p>
           </Field>
           <Button type="submit" loading={action === 'import'} disabled={!selectedFile || action !== null || editingState.kind !== 'editable'}>
             <FileUp data-icon="inline-start" aria-hidden="true" />
@@ -214,10 +214,10 @@ export function CourseImportExportPanel({
           </Alert>
         ) : null}
         {info ? (
-          <p role="status" className="rounded-xl border border-emerald-200 bg-emerald-50/70 px-3 py-2 text-sm text-emerald-800">{info}</p>
+          <p role="status" className="rounded-xl border border-success/40 bg-success-background px-3 py-2 text-sm text-success-foreground">{info}</p>
         ) : null}
         {importErrors.length > 0 ? (
-          <div role="status" className="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm text-amber-800">
+          <div role="status" className="rounded-xl border border-warning/40 bg-warning-background px-4 py-3 text-sm text-warning-foreground">
             <p className="font-medium">Import có cảnh báo:</p>
             <ul className="mt-2 list-disc space-y-1 pl-5">
               {importErrors.map((item, index) => (
@@ -232,14 +232,14 @@ export function CourseImportExportPanel({
         <AlertDialogContent>
           <AlertDialogHeader>
             <div className="flex items-start gap-3">
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-warning-background text-warning-foreground">
                 <FileArchive className="size-5" aria-hidden="true" />
               </div>
               <div className="flex flex-col gap-1">
                 <AlertDialogTitle>Xác nhận import khóa học</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Import file <span className="font-semibold text-gray-900">{selectedFile?.name ?? '(Chưa chọn file)'}</span> sẽ ghi đè bản nháp hiện tại, hoặc tạo bản nháp mới nếu khóa học đã xuất bản/đang chờ duyệt. Nội dung đã xuất bản không đổi cho đến khi được duyệt.
-                  <span className="mt-2 block rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-700">
+                  Import file <span className="font-semibold text-foreground">{selectedFile?.name ?? '(Chưa chọn file)'}</span> sẽ ghi đè bản nháp hiện tại, hoặc tạo bản nháp mới nếu khóa học đã xuất bản/đang chờ duyệt. Nội dung đã xuất bản không đổi cho đến khi được duyệt.
+                  <span className="mt-2 block rounded-lg bg-warning-background px-3 py-2 text-sm font-medium text-warning-foreground">
                     Hãy kiểm tra kỹ file gói nén trước khi tiếp tục.
                   </span>
                 </AlertDialogDescription>

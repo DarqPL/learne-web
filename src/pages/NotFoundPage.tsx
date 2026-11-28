@@ -6,10 +6,10 @@ export function NotFoundPage() {
   const { user } = useAuth()
   const home = user ? homePathFor(user.role) : '/login'
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4">
-      <h1 className="mb-2 text-4xl font-bold text-gray-900">404</h1>
-      <p className="mb-6 text-gray-600">Trang bạn tìm không tồn tại.</p>
-      <Link to={home} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 text-foreground">
+      <h1 className="mb-2 text-4xl font-bold text-foreground">404</h1>
+      <p className="mb-6 text-muted-foreground">Trang bạn tìm không tồn tại.</p>
+      <Link to={home} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
         Về trang chủ
       </Link>
     </div>

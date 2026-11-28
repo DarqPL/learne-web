@@ -264,6 +264,7 @@ describe('AdminContentReviewPage shadcn sync', () => {
     renderPage()
 
     expect(await screen.findByRole('button', { name: /Khoa hoc mot/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Khoa hoc mot/ })).toHaveClass('border-ring', 'bg-accent', 'text-accent-foreground')
     expect(screen.getByRole('button', { name: /Khoa hoc hai/ })).toBeInTheDocument()
 
     // sticky header for the pending list
@@ -539,6 +540,7 @@ describe('AdminContentReviewPage shadcn sync', () => {
 
     await waitFor(() => expect(mockedApprove).toHaveBeenCalledWith(1))
     expect(await screen.findByText('Đã duyệt')).toBeInTheDocument()
+    expect(screen.getByText('Đã duyệt')).toHaveClass('bg-success-background', 'text-success-foreground')
     await waitFor(() => expect(screen.getByRole('button', { name: 'Duyệt khóa học' })).toBeDisabled())
     expect(screen.getByRole('button', { name: 'Từ chối' })).toBeDisabled()
   })

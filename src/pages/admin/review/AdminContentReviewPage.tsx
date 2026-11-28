@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { BadgeCheck, XCircle } from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { approveReviewCourse, getReviewCourse, listPendingReviewCourses, rejectReviewCourse } from '../../../lib/api/adminReviewApi'
-import type { AdminReviewCourseDetail, AdminReviewCourseSummary, AdminReviewLesson, CoursePricingType } from '../../../lib/api/types'
+import type { AdminReviewCourseDetail, AdminReviewCourseSummary, AdminReviewLesson, ContentStatus, CoursePricingType } from '../../../lib/api/types'
 import { CourseCoverImage } from '../../../components/course/CourseCoverImage'
 import {
   AlertDialog,
@@ -27,12 +27,20 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Skeleton } from '@/components/shadcn/ui/skeleton'
 import { RejectCourseForm } from './RejectCourseForm'
 import { AdminCourseCoverReviewPanel } from './AdminCourseCoverReviewPanel'
-import { reviewCourseTypeLabels, reviewQuestionTypeLabels, reviewSkillTypeLabels, reviewStatusLabels, reviewStatusStyles } from './adminReviewLabels'
+import { reviewCourseTypeLabels, reviewQuestionTypeLabels, reviewSkillTypeLabels, reviewStatusLabels } from './adminReviewLabels'
 import { countReviewLessons, countReviewQuestions, formatReviewDate } from './adminReviewUtils'
+
+const reviewStatusVariants: Record<ContentStatus, 'secondary' | 'warning' | 'success' | 'destructive'> = {
+  DRAFT: 'secondary',
+  PENDING_REVIEW: 'warning',
+  APPROVED: 'success',
+  REJECTED: 'destructive',
+  HIDDEN: 'secondary',
+}
 
 function StatusBadge({ status }: { status: AdminReviewCourseDetail['status'] }) {
   return (
-    <Badge variant="outline" className={reviewStatusStyles[status]}>
+    <Badge variant={reviewStatusVariants[status]}>
       {reviewStatusLabels[status]}
     </Badge>
   )
@@ -205,22 +213,22 @@ export function AdminContentReviewPage() {
           </BreadcrumbList>
         </Breadcrumb>
         <div className="flex min-w-0 flex-col gap-1">
-          <h1 className="text-2xl font-bold tracking-tight text-gray-950">Kiểm duyệt nội dung</h1>
-          <p className="text-sm text-gray-600">Xem khóa học giảng viên gửi duyệt và phê duyệt hoặc từ chối theo gói nội dung.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Kiểm duyệt nội dung</h1>
+          <p className="text-sm text-muted-foreground">Xem khóa học giảng viên gửi duyệt và phê duyệt hoặc từ chối theo gói nội dung.</p>
         </div>
       </section>
 
       {error ? (
-        <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+        <Alert variant="destructive">
           <XCircle aria-hidden="true" data-icon="inline-start" />
           <AlertTitle>Không thể tải khóa học chờ duyệt</AlertTitle>
-          <AlertDescription className="text-red-700">{error}</AlertDescription>
+          <AlertDescription className="text-destructive">{error}</AlertDescription>
         </Alert>
       ) : null}
       {info ? (
-        <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800">
+        <Alert variant="success">
           <AlertTitle>Thành công</AlertTitle>
-          <AlertDescription className="text-emerald-700">{info}</AlertDescription>
+          <AlertDescription className="text-success-foreground">{info}</AlertDescription>
         </Alert>
       ) : null}
 
@@ -245,11 +253,11 @@ export function AdminContentReviewPage() {
 
       {activeQueue === 'covers' ? <AdminCourseCoverReviewPanel /> : (
       <div className="grid gap-6 lg:grid-cols-[20rem_1fr]">
-        <aside className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm lg:sticky lg:top-24 lg:self-start">
-          <div className="sticky top-0 z-10 border-b border-gray-200 bg-white px-5 py-4">
-            <h2 className="text-lg font-semibold text-gray-900">Khóa học chờ duyệt</h2>
+        <aside className="overflow-hidden rounded-xl border border-border bg-card shadow-sm lg:sticky lg:top-24 lg:self-start">
+          <div className="sticky top-0 z-10 border-b border-border bg-card px-5 py-4">
+            <h2 className="text-lg font-semibold text-foreground">Khóa học chờ duyệt</h2>
             {courses !== null ? (
-              <p className="mt-1 text-sm text-gray-600">{courses.length} khóa học đang chờ</p>
+              <p className="mt-1 text-sm text-muted-foreground">{courses.length} khóa học đang chờ</p>
             ) : null}
           </div>
           <div className="p-4">
@@ -260,7 +268,7 @@ export function AdminContentReviewPage() {
                 ))}
               </div>
             ) : courses.length === 0 ? (
-              <p className="px-1 py-4 text-sm text-gray-600">Không có khóa học nào đang chờ duyệt.</p>
+              <p className="px-1 py-4 text-sm text-muted-foreground">Không có khóa học nào đang chờ duyệt.</p>
             ) : (
               <div className="max-h-[60vh] overflow-y-auto pr-1">
                 <div className="flex flex-col gap-2">
@@ -271,18 +279,18 @@ export function AdminContentReviewPage() {
                         key={course.id}
                         type="button"
                         className={`w-full rounded-lg border p-3 text-left transition-colors ${
-                          isSelected ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200 bg-white hover:border-indigo-200 hover:bg-gray-50'
+                          isSelected ? 'border-ring bg-accent text-accent-foreground' : 'border-border bg-card hover:border-ring/50 hover:bg-muted'
                         }`}
                         disabled={busy}
                         aria-current={isSelected ? 'true' : undefined}
                         onClick={() => handleSelectCourse(course.id)}
                       >
-                        <span className="block truncate text-sm font-medium text-gray-900">{course.name}</span>
-                        <span className="mt-0.5 block truncate text-xs text-gray-500">{course.teacherName}</span>
+                        <span className="block truncate text-sm font-medium text-foreground">{course.name}</span>
+                        <span className="mt-0.5 block truncate text-xs text-muted-foreground">{course.teacherName}</span>
                         <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
                           <Badge variant={course.pricingType === 'PAID' ? 'default' : 'secondary'}>{pricingLabel(course.pricingType)}</Badge>
                           <Badge variant="outline">{course.level}</Badge>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-muted-foreground">
                             {course.topicCount} chủ đề · {course.lessonCount} bài · {course.questionCount} câu hỏi
                           </span>
                         </span>
@@ -295,7 +303,7 @@ export function AdminContentReviewPage() {
           </div>
         </aside>
 
-        <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
           {courses === null || detailLoading ? (
             <div className="flex flex-col gap-3">
               <Skeleton className="h-7 w-2/3" />
@@ -304,45 +312,45 @@ export function AdminContentReviewPage() {
               <Skeleton className="h-32 w-full" />
             </div>
           ) : selectedCourse === null ? (
-            <p className="text-sm text-gray-600">Chọn một khóa học để xem nội dung cần duyệt.</p>
+            <p className="text-sm text-muted-foreground">Chọn một khóa học để xem nội dung cần duyệt.</p>
           ) : (
             <div className="flex flex-col gap-5">
               <div className="flex flex-col gap-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-xl font-semibold text-gray-900">{selectedCourse.name}</h2>
+                  <h2 className="text-xl font-semibold text-foreground">{selectedCourse.name}</h2>
                   <StatusBadge status={selectedCourse.status} />
                 </div>
-                <dl className="grid gap-x-6 gap-y-1 text-sm text-gray-600 sm:grid-cols-2">
+                <dl className="grid gap-x-6 gap-y-1 text-sm text-muted-foreground sm:grid-cols-2">
                   <div className="flex gap-2">
-                    <dt className="shrink-0 font-medium text-gray-900">Giảng viên</dt>
+                    <dt className="shrink-0 font-medium text-foreground">Giảng viên</dt>
                     <dd className="truncate">
                       {selectedCourse.teacherName} · {selectedCourse.teacherEmail}
                     </dd>
                   </div>
                   <div className="flex gap-2">
-                    <dt className="shrink-0 font-medium text-gray-900">Cấp độ</dt>
+                    <dt className="shrink-0 font-medium text-foreground">Cấp độ</dt>
                     <dd>{selectedCourse.level}</dd>
                   </div>
                   <div className="flex gap-2">
-                    <dt className="shrink-0 font-medium text-gray-900">Loại khóa học</dt>
+                    <dt className="shrink-0 font-medium text-foreground">Loại khóa học</dt>
                     <dd>{reviewCourseTypeLabels[selectedCourse.type]}</dd>
                   </div>
                   <div className="flex gap-2">
-                    <dt className="shrink-0 font-medium text-gray-900">Cập nhật</dt>
+                    <dt className="shrink-0 font-medium text-foreground">Cập nhật</dt>
                     <dd>{formatReviewDate(selectedCourse.updatedAt)}</dd>
                   </div>
                 </dl>
-                <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                   <Badge variant={selectedCourse.pricingType === 'PAID' ? 'default' : 'secondary'}>{pricingLabel(selectedCourse.pricingType)}</Badge>
                   {selectedCourse.pricingType === 'PAID' ? <span>{formatVnd(selectedCourse.proposedPriceAmountVnd)}</span> : null}
                   <span>
                     {selectedCourse.topics.length} chủ đề · {countReviewLessons(selectedCourse)} bài học · {countReviewQuestions(selectedCourse)} câu hỏi
                   </span>
                 </div>
-                {selectedCourse.description ? <p className="text-sm leading-6 text-gray-700">{selectedCourse.description}</p> : null}
+                {selectedCourse.description ? <p className="text-sm leading-6 text-foreground">{selectedCourse.description}</p> : null}
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="flex flex-col gap-2">
-                    <h3 className="text-sm font-semibold text-gray-900">Ảnh bìa hiện tại</h3>
+                    <h3 className="text-sm font-semibold text-foreground">Ảnh bìa hiện tại</h3>
                     <CourseCoverImage
                       courseName={selectedCourse.name}
                       imageUrl={selectedCourse.currentCoverImageUrl}
@@ -350,7 +358,7 @@ export function AdminContentReviewPage() {
                     />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <h3 className="text-sm font-semibold text-gray-900">Ảnh bìa đề xuất trong bản gửi duyệt</h3>
+                    <h3 className="text-sm font-semibold text-foreground">Ảnh bìa đề xuất trong bản gửi duyệt</h3>
                     <CourseCoverImage
                       courseName={selectedCourse.name}
                       imageUrl={selectedCourse.proposedCoverImageUrl}
@@ -359,18 +367,18 @@ export function AdminContentReviewPage() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-sm font-semibold text-gray-900">Thông tin giá</h3>
-                  <dl className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-gray-600">
+                  <h3 className="text-sm font-semibold text-foreground">Thông tin giá</h3>
+                  <dl className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground">
                     <div className="flex gap-2">
-                      <dt className="font-medium text-gray-900">Giá hiện tại</dt>
+                      <dt className="font-medium text-foreground">Giá hiện tại</dt>
                       <dd>{formatVnd(selectedCourse.priceAmountVnd)}</dd>
                     </div>
                     <div className="flex gap-2">
-                      <dt className="font-medium text-gray-900">Giá đề xuất</dt>
+                      <dt className="font-medium text-foreground">Giá đề xuất</dt>
                       <dd>{formatVnd(selectedCourse.proposedPriceAmountVnd)}</dd>
                     </div>
                     <div className="flex gap-2">
-                      <dt className="font-medium text-gray-900">Trạng thái giá</dt>
+                      <dt className="font-medium text-foreground">Trạng thái giá</dt>
                       <dd>{selectedCourse.priceStatus}</dd>
                     </div>
                   </dl>
@@ -390,8 +398,8 @@ export function AdminContentReviewPage() {
                 ) : null}
               </div>
 
-              <div data-testid="approval-panel" className="sticky top-0 z-10 flex flex-col gap-3 border-y border-gray-200 bg-white py-3">
-                <p className="text-sm text-gray-600">Trạng thái hiện tại: {reviewStatusLabels[selectedCourse.status]}</p>
+              <div data-testid="approval-panel" className="sticky top-0 z-10 flex flex-col gap-3 border-y border-border bg-card py-3">
+                <p className="text-sm text-muted-foreground">Trạng thái hiện tại: {reviewStatusLabels[selectedCourse.status]}</p>
                 <div className="flex flex-row gap-2">
                   <Button disabled={busy || isDecided} onClick={handleOpenApprove}>
                     Duyệt khóa học
@@ -406,29 +414,29 @@ export function AdminContentReviewPage() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <h3 className="text-sm font-semibold text-gray-900">Nội dung khóa học</h3>
+                <h3 className="text-sm font-semibold text-foreground">Nội dung khóa học</h3>
                 {selectedCourse.topics.length === 0 ? (
-                  <p className="text-sm text-gray-600">Khóa học chưa có chủ đề.</p>
+                  <p className="text-sm text-muted-foreground">Khóa học chưa có chủ đề.</p>
                 ) : (
                   <Accordion type="multiple" className="flex flex-col gap-2">
                     {selectedCourse.topics.map((topic) => (
-                      <AccordionItem key={topic.id} value={`topic-${topic.id}`} className="rounded-lg border border-gray-200 px-4">
+                      <AccordionItem key={topic.id} value={`topic-${topic.id}`} className="rounded-lg border border-border px-4">
                         <AccordionTrigger className="py-3 hover:no-underline">
                           <span className="flex flex-wrap items-center gap-2">
-                            <span className="font-semibold text-gray-900">Chủ đề: {topic.name}</span>
+                            <span className="font-semibold text-foreground">Chủ đề: {topic.name}</span>
                             <Badge variant="secondary">{topic.lessons.length} bài học</Badge>
                           </span>
                         </AccordionTrigger>
                         <AccordionContent>
-                          {topic.description ? <p className="mb-2 text-sm text-gray-600">{topic.description}</p> : null}
+                          {topic.description ? <p className="mb-2 text-sm text-muted-foreground">{topic.description}</p> : null}
                           <div className="flex flex-col gap-1">
                             {topic.lessons.map((lesson) => (
-                              <div key={lesson.id} className="flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 py-2">
+                              <div key={lesson.id} className="flex flex-wrap items-center justify-between gap-2 border-t border-border py-2">
                                 <div className="flex min-w-0 flex-wrap items-center gap-2">
-                                  <span className="font-medium text-gray-900">{lesson.title}</span>
+                                  <span className="font-medium text-foreground">{lesson.title}</span>
                                   <Badge variant="secondary">{reviewSkillTypeLabels[lesson.skillType]}</Badge>
                                   <Badge variant="secondary">{lesson.xpReward} XP</Badge>
-                                  <Badge variant="outline" className={reviewStatusStyles[lesson.status]}>
+                                  <Badge variant={reviewStatusVariants[lesson.status]}>
                                     {reviewStatusLabels[lesson.status]}
                                   </Badge>
                                   {lesson.placementTest ? <Badge variant="secondary">Bài kiểm tra đầu vào</Badge> : null}
@@ -467,43 +475,43 @@ export function AdminContentReviewPage() {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="secondary">{reviewSkillTypeLabels[lessonDetail.skillType]}</Badge>
                 <Badge variant="secondary">{lessonDetail.xpReward} XP</Badge>
-                <Badge variant="outline" className={reviewStatusStyles[lessonDetail.status]}>
+                <Badge variant={reviewStatusVariants[lessonDetail.status]}>
                   {reviewStatusLabels[lessonDetail.status]}
                 </Badge>
                 {lessonDetail.placementTest ? <Badge variant="secondary">Bài kiểm tra đầu vào</Badge> : null}
               </div>
-              {lessonDetail.description ? <p className="text-gray-600">{lessonDetail.description}</p> : null}
-              {lessonDetail.content ? <p className="whitespace-pre-line leading-6 text-gray-700">{lessonDetail.content}</p> : null}
+              {lessonDetail.description ? <p className="text-muted-foreground">{lessonDetail.description}</p> : null}
+              {lessonDetail.content ? <p className="whitespace-pre-line leading-6 text-foreground">{lessonDetail.content}</p> : null}
               <div className="flex flex-col gap-3">
                 {lessonDetail.questions.map((question) => (
-                  <div key={question.id} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                  <div key={question.id} className="rounded-lg border border-border bg-muted p-4">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h5 className="font-medium text-gray-900">Câu hỏi: {question.questionText}</h5>
+                      <h5 className="font-medium text-foreground">Câu hỏi: {question.questionText}</h5>
                       <Badge variant="secondary">{reviewQuestionTypeLabels[question.type]}</Badge>
                       <Badge variant="secondary">{question.xpReward} XP</Badge>
                     </div>
-                    <dl className="mt-3 grid gap-2 text-sm text-gray-600 sm:grid-cols-2">
+                    <dl className="mt-3 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
                       {question.correctAnswer ? (
                         <div>
-                          <dt className="font-medium text-gray-900">Đáp án đúng</dt>
+                          <dt className="font-medium text-foreground">Đáp án đúng</dt>
                           <dd>{question.correctAnswer}</dd>
                         </div>
                       ) : null}
                       {question.explanation ? (
                         <div>
-                          <dt className="font-medium text-gray-900">Giải thích</dt>
+                          <dt className="font-medium text-foreground">Giải thích</dt>
                           <dd>{question.explanation}</dd>
                         </div>
                       ) : null}
                       {question.knowledgePoint ? (
                         <div>
-                          <dt className="font-medium text-gray-900">Điểm kiến thức</dt>
+                          <dt className="font-medium text-foreground">Điểm kiến thức</dt>
                           <dd>{question.knowledgePoint}</dd>
                         </div>
                       ) : null}
                       {question.difficulty ? (
                         <div>
-                          <dt className="font-medium text-gray-900">Độ khó</dt>
+                          <dt className="font-medium text-foreground">Độ khó</dt>
                           <dd>{question.difficulty}</dd>
                         </div>
                       ) : null}
@@ -511,7 +519,7 @@ export function AdminContentReviewPage() {
                     {question.options.length > 0 ? (
                       <ul className="mt-3 flex flex-col gap-2">
                         {question.options.map((option) => (
-                          <li key={option.id} className="flex items-center justify-between gap-3 rounded-lg bg-white px-3 py-2 text-sm text-gray-700">
+                          <li key={option.id} className="flex items-center justify-between gap-3 rounded-lg bg-card px-3 py-2 text-sm text-foreground">
                             <span>{option.optionText}</span>
                             {option.correct ? <Badge variant="secondary">Đáp án đúng</Badge> : null}
                           </li>
@@ -539,22 +547,22 @@ export function AdminContentReviewPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <div className="flex items-start gap-3">
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-success-background text-success">
                 <BadgeCheck className="size-5" aria-hidden="true" />
               </div>
               <div className="flex flex-col gap-1">
                 <AlertDialogTitle>Duyệt khóa học {selectedCourse?.name}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Xác nhận duyệt khóa học <span className="font-semibold text-gray-900">{selectedCourse?.name}</span>?
-                  <span className="mt-2 block rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
+                  Xác nhận duyệt khóa học <span className="font-semibold text-foreground">{selectedCourse?.name}</span>?
+                  <span className="mt-2 block rounded-lg bg-success-background px-3 py-2 text-sm font-medium text-success-foreground">
                     Khóa học sẽ được xuất bản cho học viên sau khi duyệt.
                   </span>
                 </AlertDialogDescription>
                 {approveError ? (
-                  <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+                  <Alert variant="destructive">
                     <XCircle aria-hidden="true" data-icon="inline-start" />
                     <AlertTitle>Không thể duyệt khóa học</AlertTitle>
-                    <AlertDescription className="text-red-700">{approveError}</AlertDescription>
+                    <AlertDescription className="text-destructive">{approveError}</AlertDescription>
                   </Alert>
                 ) : null}
               </div>

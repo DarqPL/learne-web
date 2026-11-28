@@ -106,6 +106,14 @@ function renderSessionWithNavigation(initialId: number, nextId: number) {
 }
 
 describe('StudentMistakeReviewSessionPage', () => {
+  it('uses semantic theme tokens for selected answer controls', async () => {
+    mockedGet.mockResolvedValue(sessionResponse(makeSession()))
+    renderSession()
+    const option = await screen.findByLabelText('Paris')
+    fireEvent.click(option)
+    expect(option.closest('label')).toHaveClass('border-primary', 'bg-primary/10')
+  })
+
   beforeEach(() => {
     mockedGet.mockReset()
     mockedSubmit.mockReset()

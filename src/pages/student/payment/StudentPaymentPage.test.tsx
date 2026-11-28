@@ -105,8 +105,10 @@ describe('StudentPaymentPage', () => {
     renderPaymentPage()
 
     expect(await screen.findByText('Chờ chuyển khoản')).toBeInTheDocument()
+    expect(screen.getByText('Chờ chuyển khoản')).toHaveClass('bg-warning-background', 'text-warning-foreground')
 
     await waitFor(() => expect(screen.getByText('Thanh toán thành công')).toBeInTheDocument(), { timeout: 4500 })
+    expect(screen.getByText('Đã thanh toán')).toHaveClass('bg-success-background', 'text-success-foreground')
     expect(mockedGetStudentOrder).toHaveBeenCalledTimes(2)
   })
 

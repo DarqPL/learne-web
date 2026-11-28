@@ -65,14 +65,14 @@ export function LoginPage() {
   }
 
   return (
-    <main className="mx-auto grid w-full max-w-5xl overflow-hidden rounded-[2rem] border border-white/70 bg-white/80 shadow-2xl shadow-indigo-200/40 backdrop-blur lg:grid-cols-[1.05fr_0.95fr]">
+    <main className="mx-auto grid w-full max-w-5xl overflow-hidden rounded-[2rem] border border-white/70 bg-card/80 shadow-2xl shadow-indigo-200/40 backdrop-blur lg:grid-cols-[1.05fr_0.95fr]">
       <section className="relative hidden min-h-[620px] overflow-hidden bg-slate-950 p-10 text-white lg:block">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_18%,_rgba(129,140,248,0.45),_transparent_30%),radial-gradient(circle_at_78%_10%,_rgba(168,85,247,0.34),_transparent_28%),linear-gradient(145deg,_#020617_0%,_#1e1b4b_58%,_#312e81_100%)]" />
         <div className="absolute left-10 top-28 h-[28rem] w-[28rem] rounded-full border border-white/10" />
         <div className="absolute left-24 top-[10.5rem] h-[20rem] w-[20rem] rounded-full border border-indigo-300/20" />
         <div className="relative z-10 flex h-full flex-col justify-between">
           <div>
-            <Badge className="border-white/15 bg-white/10 text-indigo-50 hover:bg-white/10">
+            <Badge className="border-white/15 bg-card/10 text-indigo-50 hover:bg-card/10">
               <Sparkles className="h-3.5 w-3.5" />
               LearnE AI Platform
             </Badge>
@@ -95,23 +95,23 @@ export function LoginPage() {
       <section className="p-5 sm:p-8 lg:p-10">
         <Card className="border-0 bg-transparent py-0 shadow-none">
           <CardHeader className="px-0 pb-6">
-            <Badge variant="outline" className="mb-2 w-fit border-indigo-200 bg-indigo-50 text-indigo-700">
+            <Badge variant="secondary" className="mb-2 w-fit">
               Không gian học tập cá nhân hóa
             </Badge>
-            <CardTitle className="text-3xl font-bold tracking-tight text-gray-950">Chào mừng trở lại</CardTitle>
-            <CardDescription className="text-base text-gray-600">Mỗi lần đăng nhập là một bước gần hơn tới cách học phù hợp với bạn.</CardDescription>
+            <CardTitle className="text-3xl font-bold tracking-tight text-foreground">Chào mừng trở lại</CardTitle>
+            <CardDescription className="text-base text-muted-foreground">Mỗi lần đăng nhập là một bước gần hơn tới cách học phù hợp với bạn.</CardDescription>
           </CardHeader>
           <CardContent className="px-0">
             {message ? (
-              <Alert className="mb-4 border-green-200 bg-green-50 text-green-800">
+              <Alert variant="success" className="mb-4">
                 <CheckCircle2 className="h-4 w-4" />
-                <AlertDescription className="text-green-800">{message}</AlertDescription>
+                <AlertDescription className="text-success-foreground">{message}</AlertDescription>
               </Alert>
             ) : null}
             {rateLimit.info ? <RateLimitAlert info={rateLimit.info} secondsLeft={rateLimit.secondsLeft} /> : null}
             {error ? (
-              <Alert variant="destructive" className="mb-4 border-red-200 bg-red-50">
-                <AlertDescription className="text-red-700">{error}</AlertDescription>
+              <Alert variant="destructive" className="mb-4">
+                <AlertDescription className="text-destructive">{error}</AlertDescription>
               </Alert>
             ) : null}
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -123,7 +123,7 @@ export function LoginPage() {
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="ban@example.com"
                   autoComplete="email"
-                  className="h-11 rounded-xl bg-white/90"
+                  className="h-11 rounded-xl bg-background"
                 />
               </Field>
               <Field label="Mật khẩu" error={fieldErrors.password}>
@@ -139,7 +139,7 @@ export function LoginPage() {
                 type="submit"
                 loading={submitting}
                 disabled={rateLimit.locked}
-                className="h-11 w-full rounded-xl text-base shadow-lg shadow-indigo-200"
+                className="h-11 w-full rounded-xl text-base"
               >
                 Đăng nhập
                 <ArrowRight className="h-4 w-4" />
@@ -149,10 +149,10 @@ export function LoginPage() {
           <CardFooter className="flex-col items-stretch gap-4 px-0 pt-6">
             <Separator />
             <div className="flex justify-between text-sm">
-              <Link to="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
+              <Link to="/forgot-password" className="font-medium text-primary hover:underline">
                 Quên mật khẩu?
               </Link>
-              <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
+              <Link to="/register" className="font-medium text-primary hover:underline">
                 Đăng ký tài khoản
               </Link>
             </div>

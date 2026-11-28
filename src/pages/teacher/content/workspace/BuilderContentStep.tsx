@@ -64,7 +64,7 @@ export function BuilderContentStep({
               <CardDescription>Chọn chủ đề hoặc bài học để chỉnh sửa.</CardDescription>
             </div>
             {editable ? (
-              <Button size="sm" variant="outline" className="border-indigo-200" disabled={busy} onClick={onAddTopic}>
+              <Button size="sm" variant="outline" disabled={busy} onClick={onAddTopic}>
                 <Plus data-icon="inline-start" aria-hidden="true" />
                 Chủ đề
               </Button>
@@ -80,13 +80,13 @@ export function BuilderContentStep({
                 {course.topics.map((topic) => {
                   const isTopicSelected = selectedTopic?.id === topic.id && !selectedLesson
                   return (
-                    <AccordionItem key={topic.id} value={`topic-${topic.id}`} className="rounded-xl border border-indigo-100 bg-indigo-50/40 px-3">
+                    <AccordionItem key={topic.id} value={`topic-${topic.id}`} className="rounded-xl border border-border bg-muted/50 px-3">
                       <AccordionTrigger className="py-3 hover:no-underline" onClick={() => onSelectTopic(topic.id)}>
                         <span className="flex min-w-0 flex-1 items-center gap-2 text-left">
-                          <span className={`min-w-0 flex-1 truncate font-medium ${isTopicSelected ? 'text-indigo-900' : ''}`}>
+                          <span className={`min-w-0 flex-1 truncate font-medium ${isTopicSelected ? 'text-primary' : ''}`}>
                             {topic.name || '(Chưa đặt tên)'}
                           </span>
-                          <Badge variant="outline" className="shrink-0 border-violet-200 bg-violet-50 text-violet-700">
+                          <Badge variant="taxonomy1" className="shrink-0">
                             {topic.lessons.length} bài
                           </Badge>
                         </span>
@@ -94,7 +94,7 @@ export function BuilderContentStep({
                       <AccordionContent>
                         <div className="flex min-w-0 flex-col gap-2 pb-1">
                           {topic.lessons.length === 0 ? (
-                            <p className="rounded-lg border border-dashed border-indigo-200 px-3 py-2 text-sm text-muted-foreground">
+                            <p className="rounded-lg border border-dashed border-border px-3 py-2 text-sm text-muted-foreground">
                               Chưa có bài học nào trong chủ đề này.
                             </p>
                           ) : (
@@ -108,8 +108,8 @@ export function BuilderContentStep({
                                   aria-current={isSelected ? 'true' : undefined}
                                   className={`flex w-full min-w-0 flex-col gap-0.5 rounded-lg border px-3 py-2 text-sm transition-colors ${
                                     isSelected
-                                      ? 'border-indigo-300 bg-indigo-100/70 font-medium'
-                                      : 'border-indigo-100 bg-white/80 font-normal hover:border-indigo-200 hover:bg-indigo-50/60'
+                                      ? 'border-primary bg-primary/10 font-medium'
+                                      : 'border-border bg-card font-normal hover:border-ring/50 hover:bg-muted'
                                   }`}
                                 >
                                   <span className={`min-w-0 flex-1 truncate text-left ${isSelected ? 'font-medium' : 'font-normal'}`}>{lesson.title || '(Chưa đặt tiêu đề)'}</span>
@@ -125,7 +125,7 @@ export function BuilderContentStep({
                             })
                           )}
                           {editable ? (
-                            <Button size="sm" variant="ghost" className="justify-start text-indigo-600 hover:text-indigo-800" disabled={busy} onClick={() => onAddLesson(topic.id)}>
+                            <Button size="sm" variant="ghost" className="justify-start text-primary" disabled={busy} onClick={() => onAddLesson(topic.id)}>
                               <Plus data-icon="inline-start" aria-hidden="true" />
                               Thêm bài học
                             </Button>
@@ -150,7 +150,7 @@ export function BuilderContentStep({
                   <CardDescription>{findLessonTopic(course, selectedLesson.id)?.name}</CardDescription>
                   <CardTitle className="mt-1">{selectedLesson.title || '(Chưa đặt tiêu đề)'}</CardTitle>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <Badge variant="outline" className="border-sky-200 bg-sky-50 text-sky-700">
+                    <Badge variant="info">
                       {skillTypeLabels[selectedLesson.skillType]}
                     </Badge>
                     <TeacherContentStatusBadge status={selectedLesson.status} />
@@ -165,9 +165,8 @@ export function BuilderContentStep({
                   </Button>
                   {editable ? (
                     <Button
-                      variant="outline"
                       size="sm"
-                      className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      variant="destructive"
                       disabled={busy}
                       onClick={() => onDeleteRequest({ kind: 'lesson', id: selectedLesson.id, name: selectedLesson.title })}
                     >
@@ -196,7 +195,7 @@ export function BuilderContentStep({
                 onAudioChanged={(audio) => onAudioChanged(selectedLesson.id, audio)}
               />
               {editable ? (
-                <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
+                <div className="rounded-xl border border-border bg-muted/50 p-4">
                   <LessonForm
                     key={selectedLesson.id}
                     initialValue={lessonInitialValue}
@@ -209,7 +208,7 @@ export function BuilderContentStep({
               ) : (
                 <div className="flex flex-col gap-3 text-sm">
                   <p className="whitespace-pre-wrap text-muted-foreground">{selectedLesson.description || 'Chưa có mô tả bài học.'}</p>
-                  <Separator className="bg-indigo-100" />
+                  <Separator />
                   <p className="whitespace-pre-wrap">{selectedLesson.content || 'Chưa có nội dung bài học.'}</p>
                 </div>
               )}
@@ -225,14 +224,13 @@ export function BuilderContentStep({
                 </div>
                 {editable ? (
                   <div className="flex flex-wrap items-center gap-2">
-                    <Button size="sm" variant="outline" className="border-indigo-200" disabled={busy} onClick={() => onAddLesson(selectedTopic.id)}>
+                    <Button size="sm" variant="outline" disabled={busy} onClick={() => onAddLesson(selectedTopic.id)}>
                       <Plus data-icon="inline-start" aria-hidden="true" />
                       Thêm bài học
                     </Button>
                     <Button
-                      variant="outline"
                       size="sm"
-                      className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      variant="destructive"
                       disabled={busy}
                       onClick={() => onDeleteRequest({ kind: 'topic', id: selectedTopic.id, name: selectedTopic.name })}
                     >
@@ -245,7 +243,7 @@ export function BuilderContentStep({
             </CardHeader>
             <CardContent>
               {editable ? (
-                <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
+                <div className="rounded-xl border border-border bg-muted/50 p-4">
                   <TopicForm
                     initialValue={topicInitialValue}
                     loading={action === `update-topic-${selectedTopic.id}`}

@@ -103,6 +103,13 @@ describe('AdminDashboardPage shadcn sync', () => {
     expect(document.querySelector('[data-slot="card-title"]')).not.toBeNull()
   })
 
+  it('uses semantic warning tokens for locked-account badges', async () => {
+    mockedAdminGetDashboard.mockResolvedValue(dashboardApiResponse(makeDashboard()))
+    renderDashboardPage()
+    const locked = await screen.findByText('3 tài khoản bị khóa')
+    expect(locked).toHaveClass('bg-warning-background', 'text-warning-foreground')
+  })
+
   it('renders quick links as shadcn buttons with correct hrefs and no hash links', async () => {
     mockedAdminGetDashboard.mockResolvedValue(dashboardApiResponse(makeDashboard()))
 

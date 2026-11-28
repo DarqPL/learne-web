@@ -88,7 +88,7 @@ describe('StudentCourseRecommendationsPage learning-path sync', () => {
     const strip = title.closest('div.rounded-2xl, section.rounded-2xl') ?? title.parentElement?.parentElement
     expect(strip).not.toBeNull()
     expect(strip?.className).toMatch(/rounded-2xl/)
-    expect(strip?.className).toMatch(/border-violet|from-violet|via-violet|violet/)
+    expect(strip?.className).toMatch(/border-info\/30.*bg-info-background/)
 
     const chip = await screen.findByText('Past simple')
     expect(chip).toBeInTheDocument()
@@ -130,7 +130,7 @@ describe('StudentCourseRecommendationsPage learning-path sync', () => {
     const matchLabel = screen.getByText('Độ phù hợp')
     const matchBadge = matchLabel.closest('[data-slot="badge"]')
     expect(matchBadge).not.toBeNull()
-    expect(matchBadge).toHaveClass('bg-violet-50')
+    expect(matchBadge).toHaveClass('bg-info-background')
 
     const actions = screen.getAllByRole('link', { name: /Xem khóa học/i })
     expect(actions).toHaveLength(1)

@@ -20,13 +20,13 @@ const statusLabels: Record<string, string> = {
 }
 
 const statusPillStyles: Record<string, string> = {
-  DRAFT: 'bg-slate-100 text-slate-600',
-  PENDING_REVIEW: 'bg-amber-100 text-amber-700',
-  APPROVED: 'bg-emerald-100 text-emerald-700',
-  REJECTED: 'bg-red-100 text-red-700',
+  DRAFT: 'bg-muted text-muted-foreground',
+  PENDING_REVIEW: 'bg-warning-background text-warning-foreground',
+  APPROVED: 'bg-success-background text-success-foreground',
+  REJECTED: 'bg-destructive/10 text-destructive',
 }
 
-const cardSoftClassName = 'border-indigo-100 bg-white/95 shadow-sm shadow-indigo-100/60'
+const cardSoftClassName = 'border-border bg-card shadow-sm'
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat('vi-VN').format(value)
@@ -41,7 +41,7 @@ function getStatusLabel(status: string) {
 }
 
 function getStatusPillClass(status: string) {
-  return statusPillStyles[status] ?? 'bg-slate-100 text-slate-600'
+  return statusPillStyles[status] ?? 'bg-muted text-muted-foreground'
 }
 
 const loadingPlaceholders = [0, 1, 2, 3]
@@ -75,10 +75,10 @@ export function TeacherDashboardPage() {
 
   const overview = dashboard?.overview
   const statCards = [
-    { label: 'Tổng khóa học', value: overview?.totalCourses, icon: BookOpen, tile: 'bg-indigo-50 text-indigo-600' },
-    { label: 'Học viên đăng ký', value: overview?.enrolledStudents, icon: GraduationCap, tile: 'bg-emerald-50 text-emerald-600' },
-    { label: 'Tổng bài học', value: overview?.totalLessons, icon: ClipboardList, tile: 'bg-sky-50 text-sky-600' },
-    { label: 'Tổng câu hỏi', value: overview?.totalQuestions, icon: FileQuestion, tile: 'bg-amber-50 text-amber-600' },
+    { label: 'Tổng khóa học', value: overview?.totalCourses, icon: BookOpen, tile: 'bg-primary/10 text-primary' },
+    { label: 'Học viên đăng ký', value: overview?.enrolledStudents, icon: GraduationCap, tile: 'bg-success-background text-success' },
+    { label: 'Tổng bài học', value: overview?.totalLessons, icon: ClipboardList, tile: 'bg-info-background text-info' },
+    { label: 'Tổng câu hỏi', value: overview?.totalQuestions, icon: FileQuestion, tile: 'bg-warning-background text-warning' },
   ]
 
   const rejectedCount = dashboard?.courseStatusCounts.find((item) => item.status === 'REJECTED')?.count ?? 0
@@ -90,7 +90,7 @@ export function TeacherDashboardPage() {
     <div className="flex flex-col gap-6">
       <Card className={cardSoftClassName}>
         <CardHeader>
-          <p className="text-sm font-semibold uppercase tracking-wide text-indigo-600">Dashboard Giảng viên</p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-primary">Dashboard Giảng viên</p>
           <CardTitle className="text-2xl">Chào mừng {user?.fullName ?? 'giảng viên'}!</CardTitle>
           <CardDescription>
             Theo dõi nội dung học tập, tình trạng kiểm duyệt và tiếp tục hoàn thiện hồ sơ giảng viên.
@@ -177,7 +177,7 @@ export function TeacherDashboardPage() {
             <CardContent className="flex flex-col gap-3">
               {dashboard.courseStatusCounts.length ? (
                 dashboard.courseStatusCounts.map((item) => (
-                  <div key={item.status} className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/60 px-4 py-3">
+                  <div key={item.status} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/60 px-4 py-3">
                     <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusPillClass(item.status)}`}>
                       {getStatusLabel(item.status)}
                     </span>
@@ -185,7 +185,7 @@ export function TeacherDashboardPage() {
                   </div>
                 ))
               ) : (
-                <p className="rounded-lg border border-dashed border-indigo-100 p-4 text-sm text-muted-foreground">
+                <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
                   Chưa có khóa học nào để thống kê.
                 </p>
               )}
@@ -203,7 +203,7 @@ export function TeacherDashboardPage() {
                   <Link
                     key={course.id}
                     to={`/teacher/content/courses/${course.id}`}
-                    className="rounded-lg border border-slate-100 p-4 transition-colors hover:border-indigo-200 hover:bg-indigo-50/50"
+                    className="rounded-lg border border-border p-4 transition-colors hover:border-ring/50 hover:bg-muted"
                   >
                     <span className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                       <span>
@@ -269,7 +269,7 @@ export function TeacherDashboardPage() {
                   <Link
                     key={course.id}
                     to={`/teacher/content/courses/${course.id}`}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50/60 px-4 py-3 transition-colors hover:border-indigo-200 hover:bg-indigo-50/50"
+                    className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/60 px-4 py-3 transition-colors hover:border-ring/50 hover:bg-muted"
                   >
                     <span className="text-sm font-medium">{course.name}</span>
                     <span className="flex flex-wrap items-center justify-end gap-2 text-xs text-muted-foreground">

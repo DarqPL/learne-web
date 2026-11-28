@@ -35,7 +35,7 @@ function getInitials(fullName: string) {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
 }
 
-const cardSoftClassName = 'border-indigo-100 bg-white/95 shadow-sm shadow-indigo-100/60'
+const cardSoftClassName = 'border-border bg-card shadow-sm'
 
 export function TeacherProfilePage() {
   const [profile, setProfile] = useState<TeacherProfile | null>(null)
@@ -203,7 +203,7 @@ export function TeacherProfilePage() {
   if (loadError || !profile) {
     return (
       <div className="mx-auto max-w-2xl">
-        <h1 className="mb-6 text-2xl font-bold text-indigo-950">Hồ sơ giảng viên</h1>
+        <h1 className="mb-6 text-2xl font-bold text-foreground">Hồ sơ giảng viên</h1>
         <Alert variant="destructive">
           <TriangleAlert aria-hidden="true" />
           <AlertTitle>Không thể tải hồ sơ</AlertTitle>
@@ -222,7 +222,7 @@ export function TeacherProfilePage() {
   if (editing) {
     return (
       <div className="mx-auto max-w-2xl">
-        <h1 className="mb-6 text-2xl font-bold text-indigo-950">Chỉnh sửa hồ sơ</h1>
+        <h1 className="mb-6 text-2xl font-bold text-foreground">Chỉnh sửa hồ sơ</h1>
         {error ? (
           <div className="mb-4">
             <Alert variant="destructive">
@@ -300,9 +300,9 @@ export function TeacherProfilePage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="mb-6 text-2xl font-bold text-indigo-950">Hồ sơ giảng viên</h1>
+      <h1 className="mb-6 text-2xl font-bold text-foreground">Hồ sơ giảng viên</h1>
       {success ? (
-        <p role="status" className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50/70 px-3 py-2 text-sm text-emerald-800">{success}</p>
+        <p role="status" className="mb-4 rounded-xl border border-success/40 bg-success-background px-3 py-2 text-sm text-success-foreground">{success}</p>
       ) : null}
       {error ? (
         <div className="mb-4">
@@ -316,9 +316,9 @@ export function TeacherProfilePage() {
       <Card className={cardSoftClassName}>
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
-            <Avatar size="lg" className="size-16 border-2 border-indigo-100 bg-indigo-50 text-indigo-700">
+            <Avatar size="lg" className="size-16 border-2 border-border bg-muted text-foreground">
               {profile.avatarUrl ? <AvatarImage src={profile.avatarUrl} alt={`Ảnh đại diện của ${profile.fullName}`} /> : null}
-              <AvatarFallback className="bg-indigo-100 text-base font-semibold text-indigo-700">
+              <AvatarFallback className="bg-muted text-base font-semibold text-foreground">
                 {getInitials(profile.fullName)}
               </AvatarFallback>
             </Avatar>
@@ -330,10 +330,10 @@ export function TeacherProfilePage() {
                   variant="outline"
                   className={
                     profile.status === 'ACTIVE'
-                      ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                      ? 'border-success/40 bg-success-background text-success-foreground'
                       : profile.status === 'SUSPENDED'
-                        ? 'border-red-200 bg-red-50 text-red-700'
-                        : 'border-slate-200 bg-slate-100 text-slate-600'
+                        ? 'border-destructive/40 bg-destructive/10 text-destructive'
+                        : 'border-border bg-muted text-muted-foreground'
                   }
                 >
                   {statusLabels[profile.status]}
@@ -342,8 +342,8 @@ export function TeacherProfilePage() {
                   variant="outline"
                   className={
                     profile.completed
-                      ? 'border-indigo-200 bg-indigo-50 text-indigo-700'
-                      : 'border-amber-200 bg-amber-50 text-amber-700'
+                      ? 'border-info/40 bg-info-background text-info-foreground'
+                      : 'border-warning/40 bg-warning-background text-warning-foreground'
                   }
                 >
                   {profile.completed ? 'Hồ sơ công khai' : 'Hồ sơ chưa hoàn tất'}
@@ -351,7 +351,7 @@ export function TeacherProfilePage() {
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium whitespace-nowrap text-white transition-colors hover:bg-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
+              <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium whitespace-nowrap text-primary-foreground transition-colors hover:bg-primary/90 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
                 {mediaAction === 'avatar' ? <Spinner className="text-white" /> : <Camera data-icon="inline-start" aria-hidden="true" />}
                 {mediaAction === 'avatar' ? 'Đang tải...' : 'Đổi ảnh'}
                 <input type="file" accept="image/*" className="sr-only" disabled={mediaAction !== null} onChange={handleAvatarUpload} />
@@ -359,7 +359,7 @@ export function TeacherProfilePage() {
               {profile.avatarUrl ? (
                 <Button
                   variant="outline"
-                  className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                   loading={mediaAction === 'delete-avatar'}
                   disabled={mediaAction !== null}
                   onClick={handleAvatarDelete}
@@ -372,11 +372,11 @@ export function TeacherProfilePage() {
           </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
-          <section className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
+          <section className="rounded-xl border border-border bg-muted p-4">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-              <h3 className="text-sm font-semibold text-indigo-950">Video giới thiệu</h3>
+              <h3 className="text-sm font-semibold text-foreground">Video giới thiệu</h3>
               <div className="flex flex-wrap gap-2">
-                <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-indigo-200 bg-white px-3 py-1.5 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-50 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2">
+                <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-accent focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
                   <Video data-icon="inline-start" aria-hidden="true" />
                   {mediaAction === 'video' ? 'Đang tải...' : profile.introductionVideoUrl ? 'Đổi video' : 'Tải video'}
                   <input type="file" accept="video/*" className="sr-only" disabled={mediaAction !== null} onChange={handleVideoUpload} />
@@ -385,7 +385,7 @@ export function TeacherProfilePage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                     loading={mediaAction === 'delete-video'}
                     disabled={mediaAction !== null}
                     onClick={handleVideoDelete}
@@ -397,22 +397,22 @@ export function TeacherProfilePage() {
               </div>
             </div>
             {profile.introductionVideoUrl ? (
-              <video className="w-full rounded-xl border border-indigo-100 bg-slate-950" src={profile.introductionVideoUrl} controls />
+              <video className="w-full rounded-xl border border-border bg-black" src={profile.introductionVideoUrl} controls />
             ) : (
               <p className="text-sm text-muted-foreground">Chưa cập nhật.</p>
             )}
           </section>
           <section>
-            <h3 className="mb-1 text-sm font-semibold text-indigo-950">Giới thiệu</h3>
-            <p className="text-sm whitespace-pre-wrap text-slate-700">{profile.bio || 'Chưa cập nhật.'}</p>
+            <h3 className="mb-1 text-sm font-semibold text-foreground">Giới thiệu</h3>
+            <p className="text-sm whitespace-pre-wrap text-foreground">{profile.bio || 'Chưa cập nhật.'}</p>
           </section>
           <section>
-            <h3 className="mb-1 text-sm font-semibold text-indigo-950">Chuyên môn</h3>
-            <p className="text-sm text-slate-700">{profile.expertise || 'Chưa cập nhật.'}</p>
+            <h3 className="mb-1 text-sm font-semibold text-foreground">Chuyên môn</h3>
+            <p className="text-sm text-foreground">{profile.expertise || 'Chưa cập nhật.'}</p>
           </section>
           <section>
-            <h3 className="mb-1 text-sm font-semibold text-indigo-950">Kinh nghiệm</h3>
-            <p className="text-sm text-slate-700">{profile.yearsOfExperience} năm kinh nghiệm</p>
+            <h3 className="mb-1 text-sm font-semibold text-foreground">Kinh nghiệm</h3>
+            <p className="text-sm text-foreground">{profile.yearsOfExperience} năm kinh nghiệm</p>
           </section>
         </CardContent>
         <CardFooter>

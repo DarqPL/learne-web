@@ -20,7 +20,7 @@ function DialogClose({ ...props }: React.ComponentProps<typeof DialogPrimitive.C
 }
 
 function DialogOverlay({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
-  return <DialogPrimitive.Overlay data-slot="dialog-overlay" className={cn('fixed inset-0 z-50 bg-slate-950/50', className)} {...props} />
+  return <DialogPrimitive.Overlay data-slot="dialog-overlay" className={cn('fixed inset-0 z-50 bg-foreground/50', className)} {...props} />
 }
 
 function DialogContent({ className, children, showCloseButton = true, ...props }: React.ComponentProps<typeof DialogPrimitive.Content> & { showCloseButton?: boolean }) {
@@ -29,12 +29,12 @@ function DialogContent({ className, children, showCloseButton = true, ...props }
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
-        className={cn('fixed left-1/2 top-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] p-6 -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border bg-white shadow-lg duration-200', className)}
+        className={cn('fixed left-1/2 top-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] p-6 -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border border-border bg-popover text-popover-foreground shadow-lg duration-200', className)}
         {...props}
       >
         {children}
         {showCloseButton ? (
-          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:pointer-events-none">
+          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:pointer-events-none">
             <XIcon className="size-4" />
             <span className="sr-only">Đóng</span>
           </DialogPrimitive.Close>

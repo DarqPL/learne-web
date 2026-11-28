@@ -12,16 +12,16 @@ describe('courseBadgeStyles', () => {
     )
   })
 
-  it('maps every course status to its pastel class and label', () => {
-    expect(getCourseBadgeClass('status', 'DRAFT')).toBe('bg-slate-100 text-slate-600')
-    expect(getCourseBadgeClass('status', 'PENDING_REVIEW')).toBe('bg-amber-50 text-amber-700')
-    expect(getCourseBadgeClass('status', 'APPROVED')).toBe('bg-emerald-50 text-emerald-700')
-    expect(getCourseBadgeClass('status', 'REJECTED')).toBe('bg-rose-50 text-rose-700')
-    expect(getCourseBadgeClass('status', 'HIDDEN')).toBe('bg-slate-50 text-slate-500')
+  it('maps course status to semantic status token classes and labels', () => {
+    expect(getCourseBadgeClass('status', 'DRAFT')).toBe('bg-muted text-muted-foreground')
+    expect(getCourseBadgeClass('status', 'PENDING_REVIEW')).toBe('bg-warning-background text-warning-foreground')
+    expect(getCourseBadgeClass('status', 'APPROVED')).toBe('bg-success-background text-success-foreground')
+    expect(getCourseBadgeClass('status', 'REJECTED')).toBe('bg-destructive/10 text-destructive')
+    expect(getCourseBadgeClass('status', 'HIDDEN')).toBe('bg-muted text-muted-foreground')
     expect(getCourseBadgeLabel('status', 'PENDING_REVIEW')).toBe('Chờ duyệt')
   })
 
-  it('maps every course type to a distinct class', () => {
+  it('maps every course type to a distinct semantic taxonomy class', () => {
     const classes = [
       getCourseBadgeClass('type', 'COMPREHENSIVE'),
       getCourseBadgeClass('type', 'GRAMMAR'),
@@ -34,19 +34,19 @@ describe('courseBadgeStyles', () => {
     ]
 
     expect(new Set(classes).size).toBe(8)
-    expect(getCourseBadgeClass('type', 'GRAMMAR')).toBe('bg-violet-50 text-violet-700')
+    expect(getCourseBadgeClass('type', 'GRAMMAR')).toBe('bg-taxonomy-1 text-taxonomy-1-foreground')
     expect(getCourseBadgeLabel('type', 'GRAMMAR')).toBe('Ngữ pháp')
   })
 
   it('maps level and payment styles', () => {
-    expect(getCourseBadgeClass('level', 'B1')).toBe('bg-cyan-50 text-cyan-700')
-    expect(getCourseBadgeClass('payment', 'PAID')).toBe('bg-teal-50 text-teal-700')
-    expect(getCourseBadgeClass('payment', 'FREE')).toBe('bg-slate-100 text-slate-600')
+    expect(getCourseBadgeClass('level', 'B1')).toBe('bg-taxonomy-3 text-taxonomy-3-foreground')
+    expect(getCourseBadgeClass('payment', 'PAID')).toBe('bg-info-background text-info-foreground')
+    expect(getCourseBadgeClass('payment', 'FREE')).toBe('bg-muted text-muted-foreground')
     expect(getCourseBadgeLabel('payment', 'PAID')).toBe('Trả phí')
   })
 
   it('falls back safely for unknown values', () => {
-    expect(getCourseBadgeClass('status', 'UNKNOWN')).toBe('bg-slate-100 text-slate-600')
+    expect(getCourseBadgeClass('status', 'UNKNOWN')).toBe('bg-muted text-muted-foreground')
     expect(getCourseBadgeLabel('status', 'UNKNOWN')).toBe('UNKNOWN')
     expect(getCourseBadgeLabel('level', 'C2')).toBe('C2')
   })

@@ -264,22 +264,22 @@ export function RegisterPage() {
   if (step === 2) {
     return (
       <main className="mx-auto w-full max-w-md">
-        <Card className="border-white/70 bg-white/90 shadow-2xl shadow-indigo-200/40 backdrop-blur">
+        <Card className="border-white/70 bg-card/90 shadow-2xl shadow-indigo-200/40 backdrop-blur">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
               <MailCheck className="h-7 w-7" />
             </div>
-            <Badge variant="outline" className="mx-auto border-indigo-200 bg-indigo-50 text-indigo-700">
+            <Badge variant="secondary" className="mx-auto">
               Xác thực email
             </Badge>
-            <CardTitle className="text-2xl font-bold text-gray-950">Nhập mã OTP</CardTitle>
+            <CardTitle className="text-2xl font-bold text-foreground">Nhập mã OTP</CardTitle>
             <CardDescription>
-              Email xác thực: <span className="font-medium text-gray-800">{form.email}</span>
+              Email xác thực: <span className="font-medium text-foreground">{form.email}</span>
             </CardDescription>
           </CardHeader>
           <CardContent>
             {rateLimit.info ? <RateLimitAlert info={rateLimit.info} secondsLeft={rateLimit.secondsLeft} /> : null}
-            <p className="mb-4 text-center text-sm text-gray-600">
+            <p className="mb-4 text-center text-sm text-muted-foreground">
               {otpState === 'expired' ? (
                 'Mã OTP đã hết hạn.'
               ) : otpState === 'exhausted' ? (
@@ -302,14 +302,14 @@ export function RegisterPage() {
               {otpState === 'expired' ? 'Mã OTP đã hết hạn.' : otpState === 'exhausted' ? 'Bạn đã nhập sai quá 5 lần.' : ''}
             </p>
             {info ? (
-              <Alert className="mb-4 border-green-200 bg-green-50 text-green-800">
+              <Alert variant="success" className="mb-4">
                 <ShieldCheck className="h-4 w-4" />
-                <AlertDescription className="text-green-800">{info}</AlertDescription>
+                <AlertDescription className="text-success-foreground">{info}</AlertDescription>
               </Alert>
             ) : null}
             {error ? (
-              <Alert variant="destructive" className="mb-4 border-red-200 bg-red-50">
-                <AlertDescription className="text-red-700">{error}</AlertDescription>
+              <Alert variant="destructive" className="mb-4">
+                <AlertDescription className="text-destructive">{error}</AlertDescription>
               </Alert>
             ) : null}
             <form onSubmit={handleVerifyOtp} className="space-y-5">
@@ -321,7 +321,7 @@ export function RegisterPage() {
                   onChange={(event) => setOtp(event.target.value)}
                   placeholder="123456"
                   required
-                  className="h-11 rounded-xl bg-white/90 text-center tracking-[0.45em]"
+                  className="h-11 rounded-xl bg-card/90 text-center tracking-[0.45em]"
                 />
               </Field>
               <Button
@@ -341,7 +341,7 @@ export function RegisterPage() {
                 type="button"
                 onClick={handleResendOtp}
                 disabled={submitting || rateLimit.locked || otpLifetime.secondsLeft > 0}
-                className="font-medium text-indigo-600 hover:text-indigo-700 hover:underline disabled:opacity-60"
+                className="font-medium text-primary hover:underline disabled:opacity-60"
               >
                 Gửi lại mã OTP
               </button>
@@ -349,7 +349,7 @@ export function RegisterPage() {
                 type="button"
                 onClick={handleEditInfo}
                 disabled={submitting}
-                className="font-medium text-gray-600 hover:text-gray-800 hover:underline disabled:opacity-60"
+                className="font-medium text-muted-foreground hover:text-foreground hover:underline disabled:opacity-60"
               >
                 Sửa thông tin
               </button>
@@ -362,27 +362,27 @@ export function RegisterPage() {
 
   return (
     <main className="mx-auto w-full max-w-md">
-      <Card className="border-white/70 bg-white/90 shadow-2xl shadow-indigo-200/40 backdrop-blur">
+      <Card className="border-white/70 bg-card/90 shadow-2xl shadow-indigo-200/40 backdrop-blur">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
             <UserPlus className="h-7 w-7" />
           </div>
-          <Badge variant="outline" className="mx-auto border-indigo-200 bg-indigo-50 text-indigo-700">
+          <Badge variant="secondary" className="mx-auto">
             Bắt đầu hành trình LearnE
           </Badge>
-          <CardTitle className="text-2xl font-bold text-gray-950">Tạo tài khoản học viên</CardTitle>
+          <CardTitle className="text-2xl font-bold text-foreground">Tạo tài khoản học viên</CardTitle>
           <CardDescription>Hoàn tất thông tin cơ bản, sau đó xác thực email bằng OTP.</CardDescription>
         </CardHeader>
         <CardContent>
           {rateLimit.info ? <RateLimitAlert info={rateLimit.info} secondsLeft={rateLimit.secondsLeft} /> : null}
           {error ? (
-            <Alert variant="destructive" className="mb-4 border-red-200 bg-red-50">
-              <AlertDescription className="text-red-700">{error}</AlertDescription>
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription className="text-destructive">{error}</AlertDescription>
             </Alert>
           ) : null}
           <form onSubmit={handleRequestOtp} className="space-y-5">
             <Field label="Họ và tên" error={fieldErrors.fullName}>
-              <Input value={form.fullName} onChange={(event) => setField('fullName', event.target.value)} required autoComplete="name" className="h-11 rounded-xl bg-white/90" />
+              <Input value={form.fullName} onChange={(event) => setField('fullName', event.target.value)} required autoComplete="name" className="h-11 rounded-xl bg-background" />
             </Field>
             <Field label="Email" error={fieldErrors.email}>
               <Input
@@ -392,7 +392,7 @@ export function RegisterPage() {
                 required
                 autoComplete="email"
                 placeholder="ban@example.com"
-                className="h-11 rounded-xl bg-white/90"
+                className="h-11 rounded-xl bg-background"
               />
             </Field>
             <Field label="Mật khẩu" error={fieldErrors.password}>
@@ -406,7 +406,7 @@ export function RegisterPage() {
                 autoComplete="new-password"
               />
             </Field>
-            <p className="rounded-xl bg-indigo-50 px-3 py-2 text-xs text-indigo-700">Mật khẩu phải có ít nhất 8 ký tự, gồm cả chữ và số.</p>
+            <p className="rounded-xl bg-muted px-3 py-2 text-xs text-muted-foreground">Mật khẩu phải có ít nhất 8 ký tự, gồm cả chữ và số.</p>
             <Button type="submit" loading={submitting} disabled={rateLimit.locked} className="h-11 w-full rounded-xl">
               Gửi mã xác thực
             </Button>
@@ -414,9 +414,9 @@ export function RegisterPage() {
         </CardContent>
         <CardFooter className="flex-col gap-4">
           <Separator />
-          <p className="text-center text-sm text-gray-600">
+          <p className="text-center text-sm text-muted-foreground">
             Đã có tài khoản?{' '}
-            <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
+            <Link to="/login" className="font-medium text-primary hover:underline">
               Đăng nhập
             </Link>
           </p>

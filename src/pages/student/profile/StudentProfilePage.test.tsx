@@ -52,6 +52,16 @@ function mockLoaded(overrides: Partial<StudentProfile> = {}) {
 }
 
 describe('StudentProfilePage', () => {
+  it('renders profile success feedback with semantic status colors', async () => {
+    mockLoaded()
+    const { container } = render(<StudentProfilePage />)
+    await screen.findByText('Hồ sơ học viên')
+    fireEvent.click(screen.getByRole('button', { name: /chỉnh sửa thông tin/i }))
+    fireEvent.change(screen.getByLabelText(/họ và tên/i), { target: { value: 'Student Updated' } })
+    fireEvent.click(screen.getByRole('button', { name: /lưu thông tin/i }))
+    await waitFor(() => expect(container.querySelector('[role="status"]')).toHaveClass('border-success/40', 'bg-success-background', 'text-success-foreground'))
+  })
+
   beforeEach(() => {
     mockLoaded()
   })

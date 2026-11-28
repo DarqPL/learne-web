@@ -46,6 +46,7 @@ describe('TeacherDetailPage', () => {
     renderAt('/student/teachers/7')
 
     expect(await screen.findByText('Nguyen Van Giao')).toBeInTheDocument()
+    expect(document.querySelector('[data-slot="avatar-fallback"]')).toHaveClass('bg-muted', 'text-foreground')
     expect(screen.getByText('giao@example.com')).toBeInTheDocument()
     expect(screen.getByText('Giao vien IELTS 8.0.')).toBeInTheDocument()
     expect(screen.getByText('IELTS, Giao tiep')).toBeInTheDocument()
