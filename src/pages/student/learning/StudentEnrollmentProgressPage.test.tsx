@@ -108,6 +108,8 @@ describe('StudentEnrollmentProgressPage catalog sync breadcrumb and slim hero', 
     const enrollmentsLink = screen.getByRole('link', { name: 'Khóa học đã đăng ký' })
     expect(enrollmentsLink).toHaveAttribute('href', '/student/enrollments')
     expect(screen.getAllByText('English B1')).toHaveLength(2)
+    expect(screen.getByText('Tổng hợp')).toHaveClass('bg-taxonomy-1')
+    expect(screen.getByText('Đang học')).toHaveClass('bg-info-background', 'text-info-foreground')
   })
 })
 

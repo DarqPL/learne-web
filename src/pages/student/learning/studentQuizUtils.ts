@@ -64,6 +64,6 @@ export function formatScorePercent(value: number) {
 
 export function getResultTone(passed: boolean) {
   return passed
-    ? { label: 'Đạt', className: 'bg-green-100 text-green-700', message: 'Bạn đã vượt qua bài học này.' }
-    : { label: 'Chưa đạt', className: 'bg-amber-100 text-amber-700', message: 'Bạn cần đạt tối thiểu 70% để hoàn thành bài học.' }
+    ? { label: 'Đạt', className: 'bg-success-background text-success-foreground', message: 'Bạn đã vượt qua bài học này.' }
+    : { label: 'Chưa đạt', className: 'bg-warning-background text-warning-foreground', message: 'Bạn cần đạt tối thiểu 70% để hoàn thành bài học.' }
 }

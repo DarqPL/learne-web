@@ -48,9 +48,9 @@ const accountStatusLabels: Record<AccountStatus, string> = {
 }
 
 const accountStatusBadgeClassNames: Record<AccountStatus, string> = {
-  locked: 'border-red-200 bg-red-50 text-red-700',
-  mustChange: 'border-amber-200 bg-amber-50 text-amber-800',
-  active: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  locked: 'border-destructive/30 bg-destructive/10 text-destructive',
+  mustChange: 'border-warning/40 bg-warning-background text-warning-foreground',
+  active: 'border-success/40 bg-success-background text-success-foreground',
 }
 
 export function AdminStudentListPage() {
@@ -142,17 +142,17 @@ export function AdminStudentListPage() {
       </section>
 
       {info ? (
-        <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800">
+        <Alert variant="success">
           <AlertTitle>Thành công</AlertTitle>
-          <AlertDescription className="text-emerald-700">{info}</AlertDescription>
+          <AlertDescription className="text-success-foreground">{info}</AlertDescription>
         </Alert>
       ) : null}
 
       {error ? (
-        <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+        <Alert variant="destructive">
           <XCircle aria-hidden="true" data-icon="inline-start" />
           <AlertTitle>Không thể tải danh sách học sinh</AlertTitle>
-          <AlertDescription className="text-red-700">{error}</AlertDescription>
+          <AlertDescription className="text-destructive">{error}</AlertDescription>
         </Alert>
       ) : students === null ? (
         <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
@@ -168,8 +168,8 @@ export function AdminStudentListPage() {
         </div>
       ) : (
         <>
-          <div className="rounded-xl border border-indigo-100 bg-card shadow-sm [&>[data-slot=table-container]]:max-h-[60vh] [&>[data-slot=table-container]]:overflow-y-auto">
-            <Table className="[&_tr]:border-indigo-100/70">
+          <div className="rounded-xl border border-border bg-card shadow-sm [&>[data-slot=table-container]]:max-h-[60vh] [&>[data-slot=table-container]]:overflow-y-auto">
+            <Table className="[&_tr]:border-border">
               <TableHeader className="sticky top-0 z-10 [&_th]:bg-muted">
                 <TableRow>
                   <TableHead>Họ và tên</TableHead>
@@ -292,7 +292,7 @@ export function AdminStudentListPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <div className="flex items-start gap-3">
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
                 <TriangleAlert className="size-5" aria-hidden="true" />
               </div>
               <div className="flex flex-col gap-1">
@@ -304,7 +304,7 @@ export function AdminStudentListPage() {
                     <>
                       Mở khóa tài khoản <span className="font-semibold text-foreground">{lockTarget?.fullName}</span> (
                       {lockTarget?.email})?
-                      <span className="mt-2 block rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
+                      <span className="mt-2 block rounded-lg bg-success-background px-3 py-2 text-sm font-medium text-success-foreground">
                         Học viên sẽ có thể đăng nhập trở lại.
                       </span>
                     </>
@@ -312,17 +312,17 @@ export function AdminStudentListPage() {
                     <>
                       Khóa tài khoản <span className="font-semibold text-foreground">{lockTarget?.fullName}</span> (
                       {lockTarget?.email})?
-                      <span className="mt-2 block rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                      <span className="mt-2 block rounded-lg bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive">
                         Học viên sẽ không thể đăng nhập cho đến khi được mở khóa.
                       </span>
                     </>
                   )}
                 </AlertDialogDescription>
                 {dialogError ? (
-                  <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+                  <Alert variant="destructive">
                     <XCircle aria-hidden="true" data-icon="inline-start" />
                     <AlertTitle>Không thể cập nhật trạng thái tài khoản</AlertTitle>
-                    <AlertDescription className="text-red-700">{dialogError}</AlertDescription>
+                    <AlertDescription className="text-destructive">{dialogError}</AlertDescription>
                   </Alert>
                 ) : null}
               </div>

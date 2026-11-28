@@ -42,6 +42,13 @@ function renderEnrollmentsPage() {
 }
 
 describe('StudentEnrollmentsPage redesign sync with course catalog', () => {
+  it('uses the shared primary treatment for the empty-state action', async () => {
+    mockedListStudentEnrollments.mockResolvedValue(enrollmentsApiResponse([]))
+    renderEnrollmentsPage()
+    const explore = await screen.findByRole('link', { name: 'Khám phá khóa học' })
+    expect(explore).toHaveClass('bg-primary', 'text-primary-foreground')
+
+  })
   beforeEach(() => {
     mockedListStudentEnrollments.mockReset()
   })

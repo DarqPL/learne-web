@@ -165,18 +165,29 @@ describe('AdminTeacherListPage shadcn sync', () => {
     expect(within(alert).getByText('Không thể tải danh sách giảng viên.')).toBeInTheDocument()
   })
 
-  it('renders a teacher-style indigo table with sticky header', async () => {
+  it('renders semantic table chrome with sticky header', async () => {
     mockedList.mockResolvedValue(apiResponse(eightTeachers.slice(0, 1)))
 
     renderPage()
 
     const table = await screen.findByRole('table')
     expect(table).toHaveAttribute('data-slot', 'table')
-    expect(table.className).toContain('border-indigo-100/70')
+    expect(table.className).toContain('border-border')
     expect(document.querySelector('[data-slot="table-header"]')?.className).toContain('bg-muted')
-    expect(table.closest('[data-slot="table-container"]')?.parentElement?.className).toContain('border-indigo-100')
+    expect(table.closest('[data-slot="table-container"]')?.parentElement?.className).toContain('border-border')
     expect(screen.getByText('Họ và tên')).toBeInTheDocument()
     expect(screen.getByText('Email')).toBeInTheDocument()
+  })
+
+  it('uses semantic colors for account and teacher statuses', async () => {
+    mockedList.mockResolvedValue(apiResponse([
+      makeTeacher({ userId: 1, locked: false, mustChangePassword: false, profileStatus: 'ACTIVE' }),
+      makeTeacher({ userId: 2, locked: true, profileStatus: 'SUSPENDED' }),
+    ]))
+    renderPage()
+    await screen.findByRole('table')
+    expect(screen.getByText('Đang hoạt động')).toHaveClass('bg-success-background', 'text-success-foreground')
+    expect(screen.getAllByText('Bị khóa')[0]).toHaveClass('bg-destructive/10', 'text-destructive')
   })
 
   it('renders six rows per page with Vietnamese pagination labels', async () => {

@@ -1,18 +1,23 @@
 import type { ReactNode } from 'react'
+import type { HTMLAttributes } from 'react'
+import { Alert as ShadcnAlert, type AlertProps as ShadcnAlertProps } from '../shadcn/ui/alert'
 
-type Variant = 'error' | 'success' | 'info'
+type Variant = 'error' | 'success' | 'info' | 'warning'
 
 interface AlertProps {
   variant?: Variant
   children: ReactNode
+  className?: string
+  role?: HTMLAttributes<HTMLDivElement>['role']
 }
 
-const styles: Record<Variant, string> = {
-  error: 'border-red-200 bg-red-50 text-red-700',
-  success: 'border-green-200 bg-green-50 text-green-700',
-  info: 'border-blue-200 bg-blue-50 text-blue-700',
+const styles: Record<Variant, NonNullable<ShadcnAlertProps['variant']>> = {
+  error: 'destructive',
+  success: 'success',
+  info: 'info',
+  warning: 'warning',
 }
 
-export function Alert({ variant = 'error', children }: AlertProps) {
-  return <div className={`rounded-lg border px-4 py-3 text-sm ${styles[variant]}`}>{children}</div>
+export function Alert({ variant = 'error', children, className, role }: AlertProps) {
+  return <ShadcnAlert role={role ?? (variant === 'error' ? 'alert' : 'status')} className={className} variant={variant === 'error' ? 'destructive' : styles[variant]}>{children}</ShadcnAlert>
 }

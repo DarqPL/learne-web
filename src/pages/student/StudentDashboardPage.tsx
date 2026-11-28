@@ -48,49 +48,49 @@ const quickActions = [
       "Tìm khóa học đã duyệt theo trình độ và kỹ năng cần cải thiện.",
     to: "/student/courses",
     icon: BookOpen,
-    className: "border-sky-100 bg-sky-50 text-sky-700",
+    className: "border-info/30 bg-info-background text-info-foreground",
   },
   {
     title: "Khóa đã đăng ký",
     description: "Tiếp tục bài học, theo dõi lesson và tiến độ hoàn thành.",
     to: "/student/enrollments",
     icon: GraduationCap,
-    className: "border-emerald-100 bg-emerald-50 text-emerald-700",
+    className: "border-success/30 bg-success-background text-success-foreground",
   },
   {
     title: "Ôn tập lỗi sai",
     description: "Làm lại các câu đã sai để củng cố kiến thức.",
     to: "/student/mistake-review",
     icon: RotateCcw,
-    className: "border-rose-100 bg-rose-50 text-rose-700",
+    className: "border-destructive/30 bg-destructive/10 text-destructive",
   },
   {
     title: "Lộ trình học",
     description: "Xem hành trình học cá nhân và các bước nên ưu tiên.",
     to: "/student/learning-path",
     icon: MapIcon,
-    className: "border-violet-100 bg-violet-50 text-violet-700",
+    className: "border-border bg-muted text-foreground",
   },
   {
     title: "AI đề xuất khóa học",
     description: "Dùng kết quả đầu vào để đề xuất khóa học phù hợp.",
     to: "/student/course-recommendations",
     icon: Sparkles,
-    className: "border-indigo-100 bg-indigo-50 text-indigo-700",
+    className: "border-primary/30 bg-accent text-accent-foreground",
   },
   {
     title: "Kiểm tra ngữ pháp AI",
     description: "Dán đoạn văn tiếng Anh để AI highlight lỗi và gợi ý sửa.",
     to: "/student/grammar-check",
     icon: FileCheck2,
-    className: "border-amber-100 bg-amber-50 text-amber-700",
+    className: "border-warning/30 bg-warning-background text-warning-foreground",
   },
   {
     title: "AI Tutor",
     description: "Luyện hội thoại, roleplay và writing cùng gia sư AI.",
     to: "/student/ai-tutor",
     icon: Bot,
-    className: "border-fuchsia-100 bg-fuchsia-50 text-fuchsia-700",
+    className: "border-border bg-muted text-foreground",
   },
 ];
 
@@ -207,21 +207,21 @@ export function StudentDashboardPage() {
       value: stats ? formatNumber(stats.totalXp) : "--",
       description: "Điểm kinh nghiệm đã tích lũy",
       icon: Zap,
-      className: "border-amber-100 bg-amber-50 text-amber-700",
+      className: "border-warning/30 bg-warning-background text-warning-foreground",
     },
     {
       label: "Streak hiện tại",
       value: stats ? `${formatNumber(stats.currentStreakDays)} ngày` : "--",
       description: "Số ngày học liên tiếp",
       icon: Sparkles,
-      className: "border-orange-100 bg-orange-50 text-orange-700",
+      className: "border-info/30 bg-info-background text-info-foreground",
     },
     {
       label: "Streak dài nhất",
       value: stats ? `${formatNumber(stats.longestStreakDays)} ngày` : "--",
       description: "Kỷ lục duy trì thói quen",
       icon: Trophy,
-      className: "border-violet-100 bg-violet-50 text-violet-700",
+      className: "border-border bg-muted text-foreground",
     },
     {
       label: "Bài học hoàn thành",
@@ -232,7 +232,7 @@ export function StudentDashboardPage() {
         ? `${formatNumber(enrollmentSummary.activeEnrollments)} khóa đang học / ${formatNumber(enrollmentSummary.totalEnrollments)} khóa đã đăng ký`
         : "Theo dõi tiến độ học tập",
       icon: CheckCircle2,
-      className: "border-emerald-100 bg-emerald-50 text-emerald-700",
+      className: "border-success/30 bg-success-background text-success-foreground",
     },
   ];
 
@@ -241,7 +241,7 @@ export function StudentDashboardPage() {
       <section className="overflow-hidden rounded-[2rem] border border-indigo-100 bg-gradient-to-br from-indigo-600 via-violet-600 to-sky-500 text-white shadow-xl shadow-indigo-200">
         <div className="relative p-6 sm:p-8">
           <div className="relative max-w-3xl space-y-5">
-            <Badge className="border-white/20 bg-card/15 text-white hover:bg-card/15">
+        <Badge className="border-white/20 bg-card/15 text-white hover:bg-card/15">
               <GraduationCap className="size-3.5" aria-hidden="true" /> AI
               Learning Hub
             </Badge>
@@ -255,10 +255,7 @@ export function StudentDashboardPage() {
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Button
-                asChild
-                className="bg-card text-indigo-700 hover:bg-indigo-50"
-              >
+              <Button asChild className="bg-card text-primary hover:bg-muted">
                 <Link to="/student/enrollments">
                   <PlayCircle className="size-4" aria-hidden="true" /> Tiếp tục
                   học
@@ -331,17 +328,17 @@ export function StudentDashboardPage() {
                     : "--"}
                 </p>
               </div>
-              <div className="rounded-2xl bg-indigo-50 p-4">
-                <p className="text-xs font-medium text-indigo-600">Đang học</p>
-                <p className="mt-2 text-2xl font-bold text-indigo-800">
+              <div className="rounded-2xl bg-info-background p-4">
+                <p className="text-xs font-medium text-info">Đang học</p>
+                <p className="mt-2 text-2xl font-bold text-info-foreground">
                   {enrollmentSummary
                     ? formatNumber(enrollmentSummary.activeEnrollments)
                     : "--"}
                 </p>
               </div>
-              <div className="rounded-2xl bg-emerald-50 p-4">
-                <p className="text-xs font-medium text-emerald-600">Đã hoàn thành</p>
-                <p className="mt-2 text-2xl font-bold text-emerald-800">
+              <div className="rounded-2xl bg-success-background p-4">
+                <p className="text-xs font-medium text-success">Đã hoàn thành</p>
+                <p className="mt-2 text-2xl font-bold text-success-foreground">
                   {enrollmentSummary
                     ? formatNumber(enrollmentSummary.completedLessons)
                     : "--"}
@@ -353,7 +350,7 @@ export function StudentDashboardPage() {
           <Card className="border-border bg-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-                <Trophy className="size-5 text-amber-500" aria-hidden="true" />
+                <Trophy className="size-5 text-warning" aria-hidden="true" />
                 Bảng xếp hạng học viên
               </CardTitle>
               <CardDescription>Top học viên theo XP và streak.</CardDescription>
@@ -372,7 +369,7 @@ export function StudentDashboardPage() {
                       className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-muted p-4"
                     >
                       <div className="flex min-w-0 items-center gap-3">
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-card text-sm font-bold text-indigo-700 shadow-sm">
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-card text-sm font-bold text-primary shadow-sm">
                           {index + 1}
                         </span>
                         <div className="min-w-0">
@@ -385,7 +382,7 @@ export function StudentDashboardPage() {
                         </div>
                       </div>
                       <div className="shrink-0 text-right">
-                        <p className="font-bold text-amber-600">
+                        <p className="font-bold text-warning">
                           {formatNumber(student.totalXp)} XP
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -416,9 +413,9 @@ export function StudentDashboardPage() {
             <Link
               key={action.to}
               to={action.to}
-              className="group rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="group rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <Card className="h-full border-border bg-card transition-all group-hover:-translate-y-0.5 group-hover:border-indigo-200 group-hover:shadow-lg group-hover:shadow-indigo-100">
+              <Card className="h-full border-border bg-card transition-all group-hover:-translate-y-0.5 group-hover:border-ring/50 group-hover:shadow-lg">
                 <CardHeader className="space-y-4">
                   <div className="flex items-start justify-between gap-3">
                     <span
@@ -431,7 +428,7 @@ export function StudentDashboardPage() {
                     <CardTitle className="flex items-center justify-between gap-3 text-lg leading-6 text-foreground">
                       <span>{action.title}</span>
                       <ArrowRight
-                        className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-indigo-600"
+                        className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary"
                         aria-hidden="true"
                       />
                     </CardTitle>
@@ -470,7 +467,7 @@ export function StudentDashboardPage() {
                 className="relative rounded-2xl border border-border bg-muted p-4"
               >
                 <div className="mb-3 flex items-center justify-between gap-3">
-                  <span className="flex size-10 items-center justify-center rounded-2xl bg-card text-indigo-600 shadow-sm">
+                  <span className="flex size-10 items-center justify-center rounded-2xl bg-card text-primary shadow-sm">
                     <Icon className="size-5" aria-hidden="true" />
                   </span>
                   <span className="text-xs font-semibold text-muted-foreground">
@@ -487,11 +484,11 @@ export function StudentDashboardPage() {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-3xl border border-indigo-100 bg-card shadow-sm">
-        <div className="border-b border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-violet-50 p-6">
+      <section className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+        <div className="border-b border-border bg-muted p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <Badge className="border-indigo-100 bg-indigo-100 text-indigo-700 hover:bg-indigo-100">
+              <Badge variant="info">
                 <Sparkles className="size-3.5" aria-hidden="true" /> AI đề xuất
               </Badge>
               <h2 className="mt-3 text-xl font-semibold text-foreground">
@@ -505,7 +502,7 @@ export function StudentDashboardPage() {
             <Button
               asChild
               variant="outline"
-              className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:text-indigo-700"
+              className="border-border"
             >
               <Link to="/student/course-recommendations">
                 Xem AI đề xuất{" "}
@@ -523,15 +520,15 @@ export function StudentDashboardPage() {
           ) : null}
 
           {loadingAiCard ? (
-            <div className="flex items-center gap-3 rounded-2xl border border-indigo-100 bg-indigo-50 p-5 text-sm text-indigo-700">
+            <div className="flex items-center gap-3 rounded-2xl border border-info/30 bg-info-background p-5 text-sm text-info-foreground">
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />{" "}
               Đang kiểm tra dữ liệu cá nhân hóa...
             </div>
           ) : shouldTakePlacement ? (
-            <div className="rounded-3xl border border-dashed border-indigo-200 bg-indigo-50/50 p-6">
+            <div className="rounded-3xl border border-dashed border-border bg-muted p-6">
               <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                 <div className="max-w-2xl">
-                  <div className="mb-3 flex size-12 items-center justify-center rounded-2xl bg-card text-indigo-600 shadow-sm">
+                  <div className="mb-3 flex size-12 items-center justify-center rounded-2xl bg-card text-primary shadow-sm">
                     <Target className="size-6" aria-hidden="true" />
                   </div>
                   <h3 className="text-lg font-semibold text-foreground">
@@ -542,16 +539,13 @@ export function StudentDashboardPage() {
                     mạnh và điểm cần cải thiện trước khi đề xuất khóa học.
                   </p>
                   {placementStatus?.reason ? (
-                    <p className="mt-3 text-xs font-medium text-indigo-700">
+                    <p className="mt-3 text-xs font-medium text-muted-foreground">
                       {placementStatus.reason}
                     </p>
                   ) : null}
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-                  <Button
-                    asChild
-                    className="bg-indigo-600 text-white hover:bg-indigo-700"
-                  >
+                  <Button asChild>
                     <Link to="/student/placement-test">
                       Làm bài kiểm tra đầu vào
                     </Link>
@@ -568,12 +562,11 @@ export function StudentDashboardPage() {
               </div>
             </div>
           ) : recommendationCount > 0 ? (
-            <div className="rounded-3xl border border-violet-100 bg-violet-50/60 p-6">
+            <div className="rounded-3xl border border-success/30 bg-success-background p-6">
               <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                 <div className="max-w-2xl">
                   <Badge
-                    variant="outline"
-                    className="border-violet-200 bg-card text-violet-700"
+                    variant="success"
                   >
                     <CheckCircle2 className="size-3.5" aria-hidden="true" /> AI
                     match sẵn sàng
@@ -588,18 +581,15 @@ export function StudentDashboardPage() {
                   </p>
                 </div>
                 <div className="rounded-2xl bg-card px-5 py-4 text-center shadow-sm">
-                  <p className="text-xs font-medium text-violet-600">Đề xuất</p>
-                  <p className="text-3xl font-bold text-violet-800">
+                  <p className="text-xs font-medium text-success">Đề xuất</p>
+                  <p className="text-3xl font-bold text-success-foreground">
                     {recommendationCount}
                   </p>
                   <p className="text-xs text-muted-foreground">khóa học</p>
                 </div>
               </div>
               <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                <Button
-                  asChild
-                  className="bg-indigo-600 text-white hover:bg-indigo-700"
-                >
+                <Button asChild>
                   <Link to="/student/course-recommendations">
                     Xem khóa học AI đề xuất
                   </Link>
@@ -610,9 +600,9 @@ export function StudentDashboardPage() {
               </div>
             </div>
           ) : (
-            <div className="rounded-3xl border border-dashed border-indigo-200 bg-muted p-6">
+            <div className="rounded-3xl border border-dashed border-border bg-muted p-6">
               <Sparkles
-                className="mb-3 size-8 text-indigo-500"
+                className="mb-3 size-8 text-primary"
                 aria-hidden="true"
               />
               <h3 className="text-lg font-semibold text-foreground">
@@ -623,10 +613,7 @@ export function StudentDashboardPage() {
                 hóa, hoặc khám phá toàn bộ khóa học đã duyệt.
               </p>
               <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                <Button
-                  asChild
-                  className="bg-indigo-600 text-white hover:bg-indigo-700"
-                >
+                <Button asChild>
                   <Link to="/student/course-recommendations">
                     Xem AI đề xuất
                   </Link>

@@ -214,9 +214,9 @@ export function StudentMistakeReviewPage() {
           </CardContent>
         </Card>
       ) : !error && questions !== null && questions.length === 0 ? (
-        <Card className="border-dashed border-indigo-200 bg-card/95">
+        <Card className="border-dashed border-border bg-card">
           <CardContent className="flex flex-col items-center gap-4 p-10 text-center">
-            <span className="flex size-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+            <span className="flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
               <BookOpen aria-hidden="true" className="size-6" />
             </span>
             <div className="space-y-2">

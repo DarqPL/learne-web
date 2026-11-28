@@ -61,7 +61,7 @@ import { TeacherContentStatusBadge } from './TeacherContentStatusBadge'
 import { coursePricingTypeLabels, courseTypeLabels, formatVndAmount } from './contentLabels'
 import { canSubmitCourse, countLessons, countQuestions, isPendingRevision, mergeLessonAudio } from './contentUtils'
 
-const cardSoftClassName = 'border-indigo-100 bg-card/95 shadow-sm shadow-indigo-100/60'
+const cardSoftClassName = 'border-border bg-card shadow-sm'
 
 function parsePositiveInteger(value: string | undefined) {
   const parsed = Number(value)
@@ -481,10 +481,10 @@ export function TeacherCourseBuilderPage() {
   return (
     <div className="flex flex-col gap-6">
       <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm">
-        <Link to="/teacher/content" className="font-medium text-indigo-600 hover:text-indigo-800 hover:underline">
+        <Link to="/teacher/content" className="font-medium text-primary hover:underline">
           Nội dung
         </Link>
-        <ChevronRight aria-hidden="true" className="size-4 shrink-0 text-indigo-300" />
+        <ChevronRight aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
         <span aria-current="page" className="max-w-64 truncate text-muted-foreground">
           {currentCourse ? currentCourse.name : 'Chi tiết khóa học'}
         </span>
@@ -498,8 +498,8 @@ export function TeacherCourseBuilderPage() {
         </Alert>
       ) : null}
       {info ? (
-        <Alert className="border-indigo-200 bg-indigo-50/60">
-          <Info aria-hidden="true" className="text-indigo-600" />
+        <Alert variant="info">
+          <Info aria-hidden="true" />
           <AlertTitle>Thông báo</AlertTitle>
           <AlertDescription>{info}</AlertDescription>
         </Alert>
@@ -539,10 +539,10 @@ export function TeacherCourseBuilderPage() {
                   <CardTitle className="text-2xl">{currentCourse.name}</CardTitle>
                   <CardDescription className="mt-2">{currentCourse.description || 'Chưa có mô tả khóa học.'}</CardDescription>
                   <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <Badge variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700">
+                    <Badge variant="taxonomy1">
                       {courseTypeLabels[currentCourse.type]}
                     </Badge>
-                    <Badge variant="outline" className="border-sky-200 bg-sky-50 text-sky-700">
+                    <Badge variant="taxonomy2">
                       {currentCourse.level}
                     </Badge>
                     <Badge variant={currentCourse.pricingType === 'PAID' ? 'default' : 'secondary'}>
@@ -573,7 +573,7 @@ export function TeacherCourseBuilderPage() {
               <div className="grid gap-4 sm:grid-cols-[minmax(0,240px)_minmax(0,1fr)] sm:items-center">
                 <CourseCoverImage courseName={currentCourse.name} imageUrl={currentCourse.imageUrl} />
                 <div className="flex flex-wrap gap-2">
-                  <label className={`inline-flex h-9 cursor-pointer items-center rounded-md bg-indigo-600 px-4 text-sm font-medium text-white ${action !== null ? 'pointer-events-none opacity-50' : ''}`}>
+                  <label className={`inline-flex h-9 cursor-pointer items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground ${action !== null ? 'pointer-events-none opacity-50' : ''}`}>
                     {action === 'upload-cover' ? 'Đang tải...' : currentCourse.imageUrl ? 'Thay ảnh bìa' : 'Tải ảnh bìa'}
                     <input
                       type="file"
@@ -611,14 +611,14 @@ export function TeacherCourseBuilderPage() {
               {coverState?.pendingSnapshot?.kind === 'COVER_ONLY' &&
               coverState.pendingSnapshot.status === 'PENDING_REVIEW' &&
               coverState.pendingSnapshot.proposedImageUrl ? (
-                <div className="mt-4 grid gap-3 rounded-lg border border-amber-200 bg-amber-50/50 p-3 sm:grid-cols-[minmax(0,240px)_1fr] sm:items-center">
+                <div className="mt-4 grid gap-3 rounded-lg border border-warning/40 bg-warning-background p-3 sm:grid-cols-[minmax(0,240px)_1fr] sm:items-center">
                   <CourseCoverImage
                     courseName={currentCourse.name}
                     imageUrl={coverState.pendingSnapshot.proposedImageUrl}
                     imageAlt={`Ảnh bìa đề xuất đang chờ duyệt cho ${currentCourse.name}`}
                   />
                   <div className="flex flex-col items-start gap-2">
-                    <p className="text-sm font-medium text-amber-900">Ảnh bìa mới đang chờ duyệt.</p>
+                    <p className="text-sm font-medium text-warning-foreground">Ảnh bìa mới đang chờ duyệt.</p>
                     <Button type="button" variant="outline" disabled={action !== null} onClick={() => void handleCancelCoverProposal()}>
                       {action === 'cancel-cover' ? 'Đang hủy...' : 'Hủy đề xuất ảnh bìa'}
                     </Button>
@@ -626,14 +626,14 @@ export function TeacherCourseBuilderPage() {
                 </div>
               ) : null}
               {coverState?.revisionCandidate ? (
-                <div className="mt-4 grid gap-3 rounded-lg border border-indigo-200 bg-indigo-50/50 p-3 sm:grid-cols-[minmax(0,240px)_1fr] sm:items-center">
+                <div className="mt-4 grid gap-3 rounded-lg border border-info/40 bg-info-background p-3 sm:grid-cols-[minmax(0,240px)_1fr] sm:items-center">
                   <CourseCoverImage
                     courseName={currentCourse.name}
                     imageUrl={coverState.revisionCandidate.proposedImageUrl}
                     imageAlt={`Ảnh bìa đề xuất trong bản sửa cho ${currentCourse.name}`}
                   />
                   <div className="flex flex-col items-start gap-2">
-                    <p className="text-sm font-medium text-indigo-900">
+                    <p className="text-sm font-medium text-info-foreground">
                       Ảnh bìa đề xuất trong bản sửa · {coverState.revisionCandidate.status}
                     </p>
                       {coverState.revisionCandidate.status === 'DRAFT' ||
@@ -671,8 +671,8 @@ export function TeacherCourseBuilderPage() {
           </Card>
 
           {isPendingRevision(currentCourse) ? (
-            <Alert className="border-amber-200 bg-amber-50/60">
-              <Info aria-hidden="true" className="text-amber-600" />
+            <Alert variant="warning">
+              <Info aria-hidden="true" />
               <AlertTitle>Thông báo</AlertTitle>
               <AlertDescription>Bản nháp đang chờ duyệt.</AlertDescription>
             </Alert>
@@ -681,8 +681,8 @@ export function TeacherCourseBuilderPage() {
           (currentCourse.hasEditableRevision ||
             currentCourse.latestRevisionStatus === 'DRAFT' ||
             currentCourse.latestRevisionStatus === 'REJECTED') ? (
-            <Alert className="border-indigo-200 bg-indigo-50/60">
-              <Info aria-hidden="true" className="text-indigo-600" />
+            <Alert variant="info">
+              <Info aria-hidden="true" />
               <AlertTitle>Thông báo</AlertTitle>
               <AlertDescription>
                 Đang sửa bản nháp R{currentCourse.latestRevisionId} — nội dung đã xuất bản không đổi cho đến khi được
@@ -741,14 +741,14 @@ export function TeacherCourseBuilderPage() {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <div className="flex items-start gap-3">
-                  <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+                  <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
                     <TriangleAlert className="size-5" aria-hidden="true" />
                   </div>
                   <div className="flex flex-col gap-1">
                     <AlertDialogTitle>Xóa khóa học</AlertDialogTitle>
                     <AlertDialogDescription>
                       Xóa vĩnh viễn khóa học <span className="font-semibold text-foreground">{currentCourse.name}</span> cùng toàn bộ chủ đề, bài học và câu hỏi?
-                      <span className="mt-2 block rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                      <span className="mt-2 block rounded-lg bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive">
                         Hành động này không thể hoàn tác.
                       </span>
                     </AlertDialogDescription>

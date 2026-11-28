@@ -317,9 +317,9 @@ export function StudentMistakeReviewSessionPage() {
           </BreadcrumbList>
         </Breadcrumb>
 
-        <Card className="border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-indigo-50">
+        <Card className="border-success/30 bg-success-background">
           <CardHeader>
-            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Kết quả ôn tập</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-success-foreground">Kết quả ôn tập</p>
             <h1 className="text-3xl font-semibold leading-none tracking-tight text-foreground">
               {formatScorePercent(result.scorePercent)}
             </h1>
@@ -403,7 +403,7 @@ export function StudentMistakeReviewSessionPage() {
           aria-valuenow={progressPercent}
           aria-label="Tiến độ phiên ôn tập"
         >
-          <div className="h-full rounded-full bg-indigo-600 transition-all" style={{ width: `${progressPercent}%` }} />
+          <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progressPercent}%` }} />
         </div>
       </section>
 

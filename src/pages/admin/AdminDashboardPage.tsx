@@ -68,7 +68,7 @@ export function AdminDashboardPage() {
       locked: overview ? formatNumber(overview.lockedStudents) + ' tài khoản bị khóa' : null,
       fallbackDescription: 'Tài khoản học viên',
       icon: GraduationCap,
-      tileClassName: 'bg-indigo-50 text-indigo-600',
+      tileClassName: 'bg-muted text-muted-foreground',
     },
     {
       label: 'Giảng viên',
@@ -76,7 +76,7 @@ export function AdminDashboardPage() {
       locked: overview ? formatNumber(overview.lockedTeachers) + ' tài khoản bị khóa' : null,
       fallbackDescription: 'Tài khoản giảng viên',
       icon: Users,
-      tileClassName: 'bg-emerald-50 text-emerald-700',
+      tileClassName: 'bg-success-background text-success-foreground',
     },
     {
       label: 'Khóa học',
@@ -84,7 +84,7 @@ export function AdminDashboardPage() {
       locked: null,
       fallbackDescription: 'Tổng khóa học trên hệ thống',
       icon: BookOpen,
-      tileClassName: 'bg-amber-50 text-amber-700',
+      tileClassName: 'bg-warning-background text-warning-foreground',
     },
     {
       label: 'Lượt đăng ký',
@@ -92,7 +92,7 @@ export function AdminDashboardPage() {
       locked: null,
       fallbackDescription: 'Tổng ghi danh của học viên',
       icon: ListChecks,
-      tileClassName: 'bg-sky-50 text-sky-700',
+      tileClassName: 'bg-info-background text-info-foreground',
     },
   ]
 
@@ -108,7 +108,7 @@ export function AdminDashboardPage() {
         </Breadcrumb>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex min-w-0 flex-col gap-1">
-            <p className="text-sm font-semibold uppercase tracking-wide text-indigo-600">Dashboard Quản trị</p>
+            <p className="text-sm font-semibold uppercase tracking-wide text-primary">Dashboard Quản trị</p>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               Chào mừng {user?.fullName ?? 'quản trị viên'}!
             </h1>
@@ -140,10 +140,10 @@ export function AdminDashboardPage() {
       </section>
 
       {error ? (
-        <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+        <Alert variant="destructive">
           <XCircle aria-hidden="true" data-icon="inline-start" />
           <AlertTitle>Không thể tải dashboard quản trị</AlertTitle>
-          <AlertDescription className="text-red-700">{error}</AlertDescription>
+          <AlertDescription className="text-destructive">{error}</AlertDescription>
         </Alert>
       ) : null}
 
@@ -180,7 +180,7 @@ export function AdminDashboardPage() {
                   {item.locked ? (
                     <Badge
                       variant="outline"
-                      className="border-amber-200 bg-amber-50 text-amber-800"
+                      className="border-warning/40 bg-warning-background text-warning-foreground"
                     >
                       {item.locked}
                     </Badge>
@@ -225,7 +225,7 @@ export function AdminDashboardPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Trophy className="size-5 text-amber-500" aria-hidden="true" />
+              <Trophy className="size-5 text-warning" aria-hidden="true" />
               <CardTitle>Top học viên</CardTitle>
             </div>
           </CardHeader>
@@ -237,7 +237,7 @@ export function AdminDashboardPage() {
                   className="flex items-center justify-between gap-4 rounded-xl border border-border bg-muted p-4"
                 >
                   <div className="flex min-w-0 items-center gap-3">
-                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-card text-sm font-bold text-indigo-700 shadow-sm">
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-card text-sm font-bold text-primary shadow-sm">
                       {index + 1}
                     </span>
                     <div className="min-w-0">
@@ -246,7 +246,7 @@ export function AdminDashboardPage() {
                     </div>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="font-bold text-amber-600">{formatNumber(student.totalXp)} XP</p>
+                    <p className="font-bold text-warning">{formatNumber(student.totalXp)} XP</p>
                     <p className="text-xs text-muted-foreground">Kỷ lục {formatNumber(student.longestStreakDays)} ngày</p>
                   </div>
                 </div>

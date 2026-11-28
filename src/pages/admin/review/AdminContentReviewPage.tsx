@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { BadgeCheck, XCircle } from 'lucide-react'
 import { getApiErrorMessage } from '../../../lib/api/client'
 import { approveReviewCourse, getReviewCourse, listPendingReviewCourses, rejectReviewCourse } from '../../../lib/api/adminReviewApi'
-import type { AdminReviewCourseDetail, AdminReviewCourseSummary, AdminReviewLesson, CoursePricingType } from '../../../lib/api/types'
+import type { AdminReviewCourseDetail, AdminReviewCourseSummary, AdminReviewLesson, ContentStatus, CoursePricingType } from '../../../lib/api/types'
 import { CourseCoverImage } from '../../../components/course/CourseCoverImage'
 import {
   AlertDialog,
@@ -27,12 +27,20 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Skeleton } from '@/components/shadcn/ui/skeleton'
 import { RejectCourseForm } from './RejectCourseForm'
 import { AdminCourseCoverReviewPanel } from './AdminCourseCoverReviewPanel'
-import { reviewCourseTypeLabels, reviewQuestionTypeLabels, reviewSkillTypeLabels, reviewStatusLabels, reviewStatusStyles } from './adminReviewLabels'
+import { reviewCourseTypeLabels, reviewQuestionTypeLabels, reviewSkillTypeLabels, reviewStatusLabels } from './adminReviewLabels'
 import { countReviewLessons, countReviewQuestions, formatReviewDate } from './adminReviewUtils'
+
+const reviewStatusVariants: Record<ContentStatus, 'secondary' | 'warning' | 'success' | 'destructive'> = {
+  DRAFT: 'secondary',
+  PENDING_REVIEW: 'warning',
+  APPROVED: 'success',
+  REJECTED: 'destructive',
+  HIDDEN: 'secondary',
+}
 
 function StatusBadge({ status }: { status: AdminReviewCourseDetail['status'] }) {
   return (
-    <Badge variant="outline" className={reviewStatusStyles[status]}>
+    <Badge variant={reviewStatusVariants[status]}>
       {reviewStatusLabels[status]}
     </Badge>
   )
@@ -211,16 +219,16 @@ export function AdminContentReviewPage() {
       </section>
 
       {error ? (
-        <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+        <Alert variant="destructive">
           <XCircle aria-hidden="true" data-icon="inline-start" />
           <AlertTitle>Không thể tải khóa học chờ duyệt</AlertTitle>
-          <AlertDescription className="text-red-700">{error}</AlertDescription>
+          <AlertDescription className="text-destructive">{error}</AlertDescription>
         </Alert>
       ) : null}
       {info ? (
-        <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800">
+        <Alert variant="success">
           <AlertTitle>Thành công</AlertTitle>
-          <AlertDescription className="text-emerald-700">{info}</AlertDescription>
+          <AlertDescription className="text-success-foreground">{info}</AlertDescription>
         </Alert>
       ) : null}
 
@@ -271,7 +279,7 @@ export function AdminContentReviewPage() {
                         key={course.id}
                         type="button"
                         className={`w-full rounded-lg border p-3 text-left transition-colors ${
-                          isSelected ? 'border-indigo-300 bg-indigo-50' : 'border-border bg-card hover:border-indigo-200 hover:bg-muted'
+                          isSelected ? 'border-ring bg-accent text-accent-foreground' : 'border-border bg-card hover:border-ring/50 hover:bg-muted'
                         }`}
                         disabled={busy}
                         aria-current={isSelected ? 'true' : undefined}
@@ -428,7 +436,7 @@ export function AdminContentReviewPage() {
                                   <span className="font-medium text-foreground">{lesson.title}</span>
                                   <Badge variant="secondary">{reviewSkillTypeLabels[lesson.skillType]}</Badge>
                                   <Badge variant="secondary">{lesson.xpReward} XP</Badge>
-                                  <Badge variant="outline" className={reviewStatusStyles[lesson.status]}>
+                                  <Badge variant={reviewStatusVariants[lesson.status]}>
                                     {reviewStatusLabels[lesson.status]}
                                   </Badge>
                                   {lesson.placementTest ? <Badge variant="secondary">Bài kiểm tra đầu vào</Badge> : null}
@@ -467,7 +475,7 @@ export function AdminContentReviewPage() {
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="secondary">{reviewSkillTypeLabels[lessonDetail.skillType]}</Badge>
                 <Badge variant="secondary">{lessonDetail.xpReward} XP</Badge>
-                <Badge variant="outline" className={reviewStatusStyles[lessonDetail.status]}>
+                <Badge variant={reviewStatusVariants[lessonDetail.status]}>
                   {reviewStatusLabels[lessonDetail.status]}
                 </Badge>
                 {lessonDetail.placementTest ? <Badge variant="secondary">Bài kiểm tra đầu vào</Badge> : null}
@@ -539,22 +547,22 @@ export function AdminContentReviewPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <div className="flex items-start gap-3">
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-success-background text-success">
                 <BadgeCheck className="size-5" aria-hidden="true" />
               </div>
               <div className="flex flex-col gap-1">
                 <AlertDialogTitle>Duyệt khóa học {selectedCourse?.name}</AlertDialogTitle>
                 <AlertDialogDescription>
                   Xác nhận duyệt khóa học <span className="font-semibold text-foreground">{selectedCourse?.name}</span>?
-                  <span className="mt-2 block rounded-lg bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700">
+                  <span className="mt-2 block rounded-lg bg-success-background px-3 py-2 text-sm font-medium text-success-foreground">
                     Khóa học sẽ được xuất bản cho học viên sau khi duyệt.
                   </span>
                 </AlertDialogDescription>
                 {approveError ? (
-                  <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+                  <Alert variant="destructive">
                     <XCircle aria-hidden="true" data-icon="inline-start" />
                     <AlertTitle>Không thể duyệt khóa học</AlertTitle>
-                    <AlertDescription className="text-red-700">{approveError}</AlertDescription>
+                    <AlertDescription className="text-destructive">{approveError}</AlertDescription>
                   </Alert>
                 ) : null}
               </div>

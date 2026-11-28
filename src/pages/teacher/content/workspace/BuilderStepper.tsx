@@ -31,19 +31,19 @@ export function BuilderStepper({ step, done, onStepChange }: BuilderStepperProps
                   onClick={() => onStepChange(item.id)}
                   aria-current={isCurrent ? 'step' : undefined}
                   className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors ${
-                    isCurrent ? 'border-indigo-300 bg-indigo-50/80' : 'border-indigo-100 bg-card/70 hover:border-indigo-200 hover:bg-indigo-50/50'
+                    isCurrent ? 'border-primary bg-primary/10' : 'border-border bg-card hover:border-ring/50 hover:bg-muted'
                   }`}
                 >
                   <span
                     className={`flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
-                      isDone ? 'bg-emerald-100 text-emerald-700' : isCurrent ? 'bg-indigo-600 text-white' : 'bg-muted text-muted-foreground'
+                      isDone ? 'bg-success-background text-success-foreground' : isCurrent ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                     }`}
                   >
                     {isDone ? <Check aria-hidden="true" className="size-4" /> : <span aria-hidden="true">{index + 1}</span>}
                   </span>
                   <span className="flex min-w-0 items-center gap-1.5">
-                    <Icon aria-hidden="true" className={`size-4 shrink-0 ${isCurrent ? 'text-indigo-600' : 'text-muted-foreground'}`} />
-                    <span className={`truncate text-sm font-medium ${isCurrent ? 'text-indigo-900' : 'text-muted-foreground'}`}>{item.label}</span>
+                    <Icon aria-hidden="true" className={`size-4 shrink-0 ${isCurrent ? 'text-primary' : 'text-muted-foreground'}`} />
+                    <span className={`truncate text-sm font-medium ${isCurrent ? 'text-primary' : 'text-muted-foreground'}`}>{item.label}</span>
                   </span>
                 </button>
               </li>

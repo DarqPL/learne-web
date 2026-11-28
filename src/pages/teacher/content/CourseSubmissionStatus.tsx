@@ -6,5 +6,5 @@ export function CourseSubmissionStatus({ submission }: { submission: CourseSubmi
     : submission.status === 'PROCESSING' ? `Đang xử lý khóa học: ${submission.processedQuestions}/${submission.totalQuestions} câu hỏi.`
       : submission.status === 'SUCCEEDED' ? 'Đã gửi khóa học để duyệt.'
         : `Không thể hoàn tất gửi duyệt. ${submission.message || 'Vui lòng kiểm tra nội dung và thử lại.'}`
-  return <p role="status" aria-live="polite" className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-sm">{text}</p>
+  return <p role="status" aria-live="polite" className="rounded-xl border border-info/40 bg-info-background p-4 text-sm text-info-foreground">{text}</p>
 }

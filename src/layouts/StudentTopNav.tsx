@@ -73,7 +73,7 @@ function StudentNavDropdown({ label, links }: { label: string; links: StudentTop
             // visual active class (do not rely on NavLink internal isActive).
             const isActive = isLinkActive(pathname, link)
             return (
-              <DropdownMenuItem key={link.label} asChild className={cn('cursor-pointer', isActive && 'bg-indigo-50 font-medium text-indigo-700')}>
+              <DropdownMenuItem key={link.label} asChild className={cn('cursor-pointer', isActive && 'bg-accent font-medium text-accent-foreground')}>
                 <NavLink to={link.to} end={link.end} aria-current={isActive ? 'page' : undefined} className="block w-full rounded-sm px-2 py-1.5 text-sm">
                   {link.label}
                 </NavLink>
@@ -89,7 +89,7 @@ function StudentNavDropdown({ label, links }: { label: string; links: StudentTop
 export function StudentTopNav() {
   return (
     <div className="flex items-center gap-1 sm:gap-2">
-      <Link to="/student" className="shrink-0 text-xl font-bold text-indigo-600">
+      <Link to="/student" className="shrink-0 text-xl font-bold text-primary">
         LearnE
       </Link>
       <nav aria-label="Student navigation">

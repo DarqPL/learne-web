@@ -228,9 +228,9 @@ export function StudentCourseDetailPage() {
 
   if (error && !course) {
     return (
-      <Card className="border-red-100 bg-red-50/40">
+      <Card className="border-destructive/20 bg-destructive/5">
         <CardContent>
-          <Alert variant="destructive" className="border-red-200 bg-card">
+          <Alert variant="destructive" className="bg-card">
             <FileQuestion aria-hidden="true" />
             <AlertTitle>Không thể tải khóa học</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
@@ -242,9 +242,9 @@ export function StudentCourseDetailPage() {
 
   if (!course) {
     return (
-      <Card className="border-indigo-100 bg-gradient-to-br from-white to-indigo-50/70">
+      <Card className="border-border bg-card">
         <CardContent className="flex items-center gap-3 py-8 text-sm font-medium text-foreground">
-          <Loader2 aria-hidden="true" className="size-4 animate-spin text-indigo-600" />
+          <Loader2 aria-hidden="true" className="size-4 animate-spin text-primary" />
           Đang tải thông tin khóa học...
         </CardContent>
       </Card>
@@ -310,17 +310,17 @@ export function StudentCourseDetailPage() {
               </div>
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
-              <Badge variant="secondary" className="bg-indigo-50 text-indigo-700">
+              <Badge variant="secondary" className="bg-accent text-accent-foreground">
                 {course.topics.length} chủ đề
               </Badge>
-              <Badge variant="secondary" className="bg-sky-50 text-sky-700">
+              <Badge variant="info">
                 {lessonCount} bài học
               </Badge>
-              <Badge variant="secondary" className="bg-amber-50 text-amber-700">
+              <Badge variant="warning">
                 {questionCount} câu hỏi
               </Badge>
-              <Badge variant="outline" className="border-violet-200 bg-violet-50 text-violet-700">Trình độ {course.level}</Badge>
-              <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">{studentCourseTypeLabels[course.type]}</Badge>
+              <Badge variant="secondary">Trình độ {course.level}</Badge>
+              <Badge variant="success">{studentCourseTypeLabels[course.type]}</Badge>
             </div>
             {progressPercent !== null ? (
               <div className="mt-4 max-w-md">
@@ -336,7 +336,7 @@ export function StudentCourseDetailPage() {
                   aria-label="Tiến độ của bạn"
                   className="mt-1 h-2 overflow-hidden rounded-full bg-muted"
                 >
-                  <div className="h-full rounded-full bg-indigo-600 transition-all" style={{ width: `${progressPercent}%` }} />
+                  <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progressPercent}%` }} />
                 </div>
               </div>
             ) : null}
@@ -350,11 +350,11 @@ export function StudentCourseDetailPage() {
               </Button>
             ) : null}
             {!course.enrolled && requiresCheckout ? (
-              <Card id="course-purchase-panel" className="w-full border-indigo-200 bg-card shadow-sm sm:w-72">
+              <Card id="course-purchase-panel" className="w-full border-border bg-card shadow-sm sm:w-72">
                 <CardHeader>
                   <CardTitle>Thanh toán khóa học</CardTitle>
                   <CardDescription>
-                    <span className="mt-1 block text-xl font-bold text-indigo-700">
+                    <span className="mt-1 block text-xl font-bold text-primary">
                       {course.priceAmountVnd != null ? formatVnd(course.priceAmountVnd) : 'Liên hệ'}
                     </span>
                   </CardDescription>
@@ -389,17 +389,17 @@ export function StudentCourseDetailPage() {
       </section>
 
       {error ? (
-        <Alert variant="destructive" className="border-red-200 bg-red-50">
+        <Alert variant="destructive">
           <FileQuestion aria-hidden="true" />
           <AlertTitle>{requiresCheckout ? 'Không thể tạo đơn thanh toán' : 'Không thể đăng ký khóa học'}</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : null}
       {info ? (
-        <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800">
+        <Alert variant="success">
           <CheckCircle2 aria-hidden="true" />
           <AlertTitle>Đã đăng ký</AlertTitle>
-          <AlertDescription className="text-emerald-700">{info}</AlertDescription>
+          <AlertDescription>{info}</AlertDescription>
         </Alert>
       ) : null}
 
@@ -411,10 +411,10 @@ export function StudentCourseDetailPage() {
 
         <div className="flex flex-col gap-4">
           {course.topics.length === 0 && requiresCheckout ? (
-            <Card className="border-indigo-200 bg-indigo-50/50">
+            <Card className="border-border bg-muted">
               <CardContent className="flex flex-col items-start gap-3 py-6">
-                <span className="flex size-10 items-center justify-center rounded-full bg-indigo-100">
-                  <Lock aria-hidden="true" className="size-5 text-indigo-700" />
+                <span className="flex size-10 items-center justify-center rounded-full bg-secondary">
+                  <Lock aria-hidden="true" className="size-5 text-secondary-foreground" />
                 </span>
                 <CardTitle className="text-lg">Nội dung khóa học</CardTitle>
                 <p className="text-sm leading-6 text-muted-foreground">
@@ -468,7 +468,7 @@ export function StudentCourseDetailPage() {
                               <Badge variant="secondary" className="hidden shrink-0 text-[11px] sm:inline-flex">
                                 {studentSkillTypeLabels[lesson.skillType]}
                               </Badge>
-                              <Badge variant="outline" className="shrink-0 border-amber-200 bg-amber-50 text-[11px] text-amber-700">
+                              <Badge variant="warning" className="shrink-0 text-[11px]">
                                 {getTotalLessonXp(lesson)} XP
                               </Badge>
                               <span className="hidden shrink-0 text-xs whitespace-nowrap text-muted-foreground md:inline">
@@ -479,7 +479,7 @@ export function StudentCourseDetailPage() {
                                   {lessonProgressStatusLabels[lessonStatus]}
                                 </Badge>
                               ) : null}
-                              <ChevronDown aria-hidden="true" className={cn('size-4 shrink-0 transition-transform', expanded ? 'rotate-180 text-indigo-500' : 'text-muted-foreground')} />
+                              <ChevronDown aria-hidden="true" className={cn('size-4 shrink-0 transition-transform', expanded ? 'rotate-180 text-primary' : 'text-muted-foreground')} />
                             </button>
                             {expanded ? (
                               <div className="flex flex-col gap-3 border-t border-border px-3 py-3">
@@ -493,7 +493,7 @@ export function StudentCourseDetailPage() {
                                     {lesson.questions.map((question) => (
                                       <div key={question.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-muted px-2.5 py-2 text-xs text-muted-foreground">
                                         <Badge variant="secondary">
-                                          <FileQuestion aria-hidden="true" className="text-amber-600" />
+                                          <FileQuestion aria-hidden="true" className="text-warning" />
                                           {studentQuestionTypeLabels[question.type]}
                                         </Badge>
                                         <span>

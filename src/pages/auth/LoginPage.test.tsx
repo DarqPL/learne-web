@@ -57,6 +57,12 @@ afterEach(() => {
 })
 
 describe('LoginPage rate limits', () => {
+  it('uses semantic theme tokens for navigation, inputs, actions, and feedback', () => {
+    render(<ThemeProvider><MemoryRouter><LoginPage /></MemoryRouter></ThemeProvider>)
+    expect(screen.getByRole('link', { name: 'Quên mật khẩu?' })).toHaveClass('text-primary')
+    expect(screen.getByLabelText('Email')).toHaveClass('h-11', 'bg-background')
+    expect(screen.getByRole('button', { name: 'Đăng nhập' })).toHaveClass('bg-primary')
+  })
   it('renders the authentication surface in each resolved theme', () => {
     const { rerender } = render(<ThemeProvider><MemoryRouter><AuthLayout /></MemoryRouter></ThemeProvider>)
     const surface = document.querySelector('.auth-background')

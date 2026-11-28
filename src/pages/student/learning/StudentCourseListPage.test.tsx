@@ -175,7 +175,7 @@ describe('StudentCourseListPage redesign', () => {
     expect(cardLink.querySelector('[data-slot="separator"]')).toBeNull()
   })
 
-  it('tints card metadata icons with the semantic accent family', async () => {
+  it('uses semantic theme colors for card metadata icons', async () => {
     mockedListStudentCourses.mockResolvedValue(coursesApiResponse([makeCourse()]))
 
     renderListPage()
@@ -193,9 +193,9 @@ describe('StudentCourseListPage redesign', () => {
 
     const icons = stats.querySelectorAll('svg')
     expect(icons).toHaveLength(3)
-    expect(icons[0]).toHaveClass('text-indigo-600', 'size-3.5')
-    expect(icons[1]).toHaveClass('text-sky-600', 'size-3.5')
-    expect(icons[2]).toHaveClass('text-amber-600', 'size-3.5')
+    expect(icons[0]).toHaveClass('text-primary', 'size-3.5')
+    expect(icons[1]).toHaveClass('text-info', 'size-3.5')
+    expect(icons[2]).toHaveClass('text-warning', 'size-3.5')
   })
 
   it('renders backend cursor results and resets the cursor on search', async () => {

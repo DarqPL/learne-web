@@ -27,8 +27,8 @@ function statusLabel(order: OrderResponse, expiredLocally: boolean) {
 }
 
 function statusClass(order: OrderResponse, expiredLocally: boolean) {
-  if (order.status === 'PAID') return 'border-emerald-200 bg-emerald-50 text-emerald-700'
-  if (order.status === 'PENDING_PAYMENT' && !expiredLocally) return 'border-amber-200 bg-amber-50 text-amber-700'
+  if (order.status === 'PAID') return 'border-success/40 bg-success-background text-success-foreground'
+  if (order.status === 'PENDING_PAYMENT' && !expiredLocally) return 'border-warning/40 bg-warning-background text-warning-foreground'
   return 'border-border bg-muted text-foreground'
 }
 
@@ -153,9 +153,9 @@ export function StudentPaymentPage() {
   if (!order || order.publicId !== parsedPublicId) {
     if (error) {
       return (
-        <Card className="border-red-100 bg-red-50/40">
+        <Card className="border-destructive/20 bg-destructive/5">
           <CardContent>
-            <Alert variant="destructive" className="border-red-200 bg-card">
+            <Alert variant="destructive" className="bg-card">
               <XCircle aria-hidden="true" />
               <AlertTitle>Không thể tải đơn thanh toán</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
@@ -169,9 +169,9 @@ export function StudentPaymentPage() {
     }
 
     return (
-      <Card className="border-indigo-100 bg-gradient-to-br from-white to-indigo-50/70">
+      <Card className="border-border bg-card">
         <CardContent className="flex items-center gap-3 py-8 text-sm font-medium text-foreground">
-          <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin text-indigo-600" />
+          <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin text-primary" />
           Đang tải đơn thanh toán...
         </CardContent>
       </Card>
@@ -188,7 +188,7 @@ export function StudentPaymentPage() {
       <section className="overflow-hidden rounded-3xl border border-indigo-100 bg-[radial-gradient(circle_at_top_left,_rgba(79,70,229,0.18),_transparent_32%),linear-gradient(135deg,_#ffffff_0%,_#eef6ff_52%,_#f8f5ff_100%)] p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-2xl">
-            <Badge variant="outline" className="border-indigo-200 bg-card/85 text-indigo-700 shadow-sm">
+            <Badge variant="secondary" className="shadow-sm">
               <ReceiptText aria-hidden="true" />
               Đơn {order.publicId}
             </Badge>
@@ -211,7 +211,7 @@ export function StudentPaymentPage() {
       </section>
 
       {error ? (
-        <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+        <Alert variant="destructive">
           <TriangleAlert aria-hidden="true" />
           <AlertTitle>Chưa thể cập nhật trạng thái</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
@@ -219,10 +219,10 @@ export function StudentPaymentPage() {
       ) : null}
 
       {isPaid ? (
-        <Card className="border-emerald-100 bg-emerald-50/60">
+        <Card className="border-success/30 bg-success-background">
           <CardContent className="space-y-4">
             <div className="flex items-start gap-3">
-              <BadgeCheck aria-hidden="true" className="mt-1 h-6 w-6 text-emerald-600" />
+              <BadgeCheck aria-hidden="true" className="mt-1 h-6 w-6 text-success" />
               <div>
                 <h2 className="text-xl font-bold text-foreground">Thanh toán thành công</h2>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">Đơn hàng đã được xác nhận. Bạn có thể tiếp tục học hoặc quay về trang tổng quan.</p>
@@ -263,7 +263,7 @@ export function StudentPaymentPage() {
             {order.discountAmountVnd > 0 ? (
               <div className="flex items-center justify-between gap-3 text-sm">
                 <p className="text-muted-foreground">Giảm giá</p>
-                <p className="font-semibold text-emerald-600">-{formatVnd(order.discountAmountVnd)}</p>
+                <p className="font-semibold text-success">-{formatVnd(order.discountAmountVnd)}</p>
               </div>
             ) : null}
             <Separator />
@@ -278,19 +278,19 @@ export function StudentPaymentPage() {
 
       {canShowInstructions && instructions ? (
         <div className="grid gap-6 xl:grid-cols-[minmax(0,420px)_1fr]">
-          <Card className="border-indigo-100 bg-card shadow-sm">
+          <Card className="border-border bg-card shadow-sm">
             <CardContent className="space-y-5">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold text-indigo-700">Mã QR chuyển khoản</p>
+                  <p className="text-sm font-semibold text-primary">Mã QR chuyển khoản</p>
                   <p className="mt-1 text-xs text-muted-foreground">Tự động điền số tiền và nội dung.</p>
                 </div>
-                <QrCode aria-hidden="true" className="h-6 w-6 text-indigo-600" />
+                <QrCode aria-hidden="true" className="h-6 w-6 text-primary" />
               </div>
               <div className="rounded-3xl border border-border bg-muted p-4">
                 <img src={instructions.qrUrl} alt="Mã QR thanh toán SEPAY" className="mx-auto aspect-square w-full max-w-xs rounded-2xl bg-card object-contain p-3" />
               </div>
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+              <div className="rounded-2xl border border-warning/30 bg-warning-background p-4 text-sm text-warning-foreground">
                 <div className="flex items-center gap-2 font-semibold">
                   <Clock3 aria-hidden="true" className="h-4 w-4" />
                   Còn {formatCountdown(remainingMs)} để hoàn tất chuyển khoản
@@ -317,7 +317,7 @@ export function StudentPaymentPage() {
               </div>
               <CopyableValue label="Số tài khoản" value={instructions.accountNumber} />
               <CopyableValue label="Nội dung chuyển khoản" value={instructions.paymentReference} />
-              <div className="rounded-2xl border border-indigo-100 bg-indigo-50/80 p-4 text-sm leading-6 text-indigo-900">
+              <div className="rounded-2xl border border-info/30 bg-info-background p-4 text-sm leading-6 text-info-foreground">
                 <div className="flex gap-2 font-semibold">
                   <Building2 aria-hidden="true" className="mt-0.5 h-4 w-4" />
                   Lưu ý thanh toán
@@ -330,7 +330,7 @@ export function StudentPaymentPage() {
       ) : null}
 
       {order.status === 'PENDING_PAYMENT' && !expiredLocally && !instructions ? (
-        <Alert className="border-amber-200 bg-amber-50 text-amber-900">
+        <Alert variant="warning">
           <TriangleAlert aria-hidden="true" />
           <AlertTitle>Chưa có hướng dẫn thanh toán</AlertTitle>
           <AlertDescription>Đơn đang chờ thanh toán nhưng chưa có thông tin SEPAY. Vui lòng kiểm tra lại sau hoặc tạo đơn mới.</AlertDescription>

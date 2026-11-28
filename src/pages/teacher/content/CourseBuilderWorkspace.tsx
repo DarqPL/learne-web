@@ -382,7 +382,7 @@ export function CourseBuilderWorkspace({
         <AlertDialogContent>
           <AlertDialogHeader>
             <div className="flex items-start gap-3">
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
                 <TriangleAlert className="size-5" aria-hidden="true" />
               </div>
               <div className="flex flex-col gap-1">
@@ -402,7 +402,7 @@ export function CourseBuilderWorkspace({
                   ) : (
                     'Không xác định.'
                   )}
-                  <span className="mt-2 block rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                  <span className="mt-2 block rounded-lg bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive">
                     Hành động này không thể hoàn tác.
                   </span>
                 </AlertDialogDescription>
@@ -438,7 +438,7 @@ export function CourseBuilderWorkspace({
         <DialogContent className="sm:max-w-[480px]" showCloseButton={!busy}>
           <DialogHeader>
             <div className="flex items-start gap-3">
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-info-background text-info-foreground">
                 <Send className="size-5" aria-hidden="true" />
               </div>
               <div className="flex flex-col gap-1">

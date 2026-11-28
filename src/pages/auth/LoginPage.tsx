@@ -95,7 +95,7 @@ export function LoginPage() {
       <section className="p-5 sm:p-8 lg:p-10">
         <Card className="border-0 bg-transparent py-0 shadow-none">
           <CardHeader className="px-0 pb-6">
-            <Badge variant="outline" className="mb-2 w-fit border-indigo-200 bg-indigo-50 text-indigo-700">
+            <Badge variant="secondary" className="mb-2 w-fit">
               Không gian học tập cá nhân hóa
             </Badge>
             <CardTitle className="text-3xl font-bold tracking-tight text-foreground">Chào mừng trở lại</CardTitle>
@@ -103,15 +103,15 @@ export function LoginPage() {
           </CardHeader>
           <CardContent className="px-0">
             {message ? (
-              <Alert className="mb-4 border-green-200 bg-green-50 text-green-800">
+              <Alert variant="success" className="mb-4">
                 <CheckCircle2 className="h-4 w-4" />
-                <AlertDescription className="text-green-800">{message}</AlertDescription>
+                <AlertDescription className="text-success-foreground">{message}</AlertDescription>
               </Alert>
             ) : null}
             {rateLimit.info ? <RateLimitAlert info={rateLimit.info} secondsLeft={rateLimit.secondsLeft} /> : null}
             {error ? (
-              <Alert variant="destructive" className="mb-4 border-red-200 bg-red-50">
-                <AlertDescription className="text-red-700">{error}</AlertDescription>
+              <Alert variant="destructive" className="mb-4">
+                <AlertDescription className="text-destructive">{error}</AlertDescription>
               </Alert>
             ) : null}
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -123,7 +123,7 @@ export function LoginPage() {
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="ban@example.com"
                   autoComplete="email"
-                  className="h-11 rounded-xl bg-card/90"
+                  className="h-11 rounded-xl bg-background"
                 />
               </Field>
               <Field label="Mật khẩu" error={fieldErrors.password}>
@@ -139,7 +139,7 @@ export function LoginPage() {
                 type="submit"
                 loading={submitting}
                 disabled={rateLimit.locked}
-                className="h-11 w-full rounded-xl text-base shadow-lg shadow-indigo-200"
+                className="h-11 w-full rounded-xl text-base"
               >
                 Đăng nhập
                 <ArrowRight className="h-4 w-4" />
@@ -149,10 +149,10 @@ export function LoginPage() {
           <CardFooter className="flex-col items-stretch gap-4 px-0 pt-6">
             <Separator />
             <div className="flex justify-between text-sm">
-              <Link to="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
+              <Link to="/forgot-password" className="font-medium text-primary hover:underline">
                 Quên mật khẩu?
               </Link>
-              <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-700 hover:underline">
+              <Link to="/register" className="font-medium text-primary hover:underline">
                 Đăng ký tài khoản
               </Link>
             </div>

@@ -113,7 +113,7 @@ export function StudentEnrollmentProgressPage() {
 
       <section className="flex min-w-0 flex-col gap-2">
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700">
+          <Badge variant="taxonomy1">
             {studentCourseTypeLabels[enrollment.course.type]}
           </Badge>
           <Badge variant="outline" className="border-border bg-muted text-foreground">
@@ -146,7 +146,7 @@ export function StudentEnrollmentProgressPage() {
             aria-valuenow={progressPercent}
             aria-label={`Tiến độ khóa học ${enrollment.course.name}`}
           >
-            <div className="h-full rounded-full bg-indigo-600" style={{ width: `${progressPercent}%` }} />
+            <div className="h-full rounded-full bg-primary" style={{ width: `${progressPercent}%` }} />
           </div>
           <p className="mt-2 text-xs font-medium text-muted-foreground">{progressPercent}% hoàn thành</p>
         </div>
@@ -176,7 +176,7 @@ export function StudentEnrollmentProgressPage() {
               >
                 <AccordionTrigger className="py-5 hover:no-underline">
                   <span className="flex min-w-0 flex-1 flex-col gap-1 text-left">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Chủ đề</span>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-primary">Chủ đề</span>
                     <span className="text-lg font-semibold text-foreground">{topic.name}</span>
                   </span>
                 </AccordionTrigger>

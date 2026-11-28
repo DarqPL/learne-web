@@ -38,6 +38,7 @@ describe('TeacherInvitationDelivery', () => {
     rerender(<TeacherInvitationDelivery delivery={{ ...delivery, canResend: false }} onResend={action} />)
     reject({ isAxiosError: true, response: { data: { message: 'Lỗi gửi lại' } } })
     await waitFor(() => expect(within(dialog).getByRole('alert')).toHaveTextContent('Lỗi gửi lại'))
+    expect(within(dialog).getByRole('alert')).toHaveClass('text-destructive')
     expect(confirm).toBeDisabled()
     expect(action).toHaveBeenCalledTimes(1)
   })

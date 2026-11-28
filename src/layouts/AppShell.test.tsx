@@ -26,4 +26,8 @@ describe('AppShell', () => {
     expect(screen.queryByRole('button', { name: 'Đăng xuất' })).not.toBeInTheDocument()
     expect(screen.getByText('Student content').closest('main')).not.toHaveClass('max-w-6xl')
   })
+  it('uses the shared primary token for the LearnE wordmark', () => {
+    render(<ThemeProvider><MemoryRouter><AppShell>Content</AppShell></MemoryRouter></ThemeProvider>)
+    expect(screen.getByRole('link', { name: 'LearnE' })).toHaveClass('text-primary')
+  })
 })

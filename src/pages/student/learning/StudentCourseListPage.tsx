@@ -26,14 +26,14 @@ const levelOptions = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
 const PAGE_SIZE = 6
 
 const courseTypeStyles: Record<CourseType, string> = {
-  COMPREHENSIVE: 'border-violet-200 bg-violet-50 text-violet-700',
-  GRAMMAR: 'border-sky-200 bg-sky-50 text-sky-700',
-  LISTENING: 'border-cyan-200 bg-cyan-50 text-cyan-700',
-  SPEAKING: 'border-rose-200 bg-rose-50 text-rose-700',
-  READING: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  WRITING: 'border-amber-200 bg-amber-50 text-amber-700',
-  VOCABULARY: 'border-indigo-200 bg-indigo-50 text-indigo-700',
-  PRONUNCIATION: 'border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700',
+  COMPREHENSIVE: 'border-transparent bg-taxonomy-1 text-taxonomy-1-foreground',
+  GRAMMAR: 'border-transparent bg-taxonomy-2 text-taxonomy-2-foreground',
+  LISTENING: 'border-transparent bg-taxonomy-3 text-taxonomy-3-foreground',
+  SPEAKING: 'border-transparent bg-taxonomy-4 text-taxonomy-4-foreground',
+  READING: 'border-transparent bg-taxonomy-5 text-taxonomy-5-foreground',
+  WRITING: 'border-transparent bg-taxonomy-6 text-taxonomy-6-foreground',
+  VOCABULARY: 'border-transparent bg-taxonomy-7 text-taxonomy-7-foreground',
+  PRONUNCIATION: 'border-transparent bg-taxonomy-8 text-taxonomy-8-foreground',
 }
 
 function courseTypeClass(type: CourseType) {
@@ -170,7 +170,7 @@ export function StudentCourseListPage() {
               <select
                 value={level ?? ''}
                 onChange={(event) => updateLevelFilter(event.target.value)}
-                className="h-10 w-full rounded-xl border border-border bg-card px-3 text-sm text-foreground shadow-xs outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+                className="h-10 w-full rounded-xl border border-border bg-card px-3 text-sm text-foreground shadow-xs outline-none transition focus:border-ring focus:ring-4 focus:ring-ring/20"
               >
                 <option value="">Tất cả trình độ</option>
                 {levelOptions.map((option) => (
@@ -188,18 +188,18 @@ export function StudentCourseListPage() {
                   value={localSearch}
                   onChange={(event) => handleSearchChange(event.target.value)}
                   placeholder="Tìm theo tên khóa học hoặc giảng viên"
-                  className="h-10 w-full rounded-xl border border-border bg-card py-2 pl-9 pr-3 text-sm text-foreground shadow-xs outline-none transition placeholder:text-muted-foreground focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100"
+                  className="h-10 w-full rounded-xl border border-border bg-card py-2 pl-9 pr-3 text-sm text-foreground shadow-xs outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-ring/20"
                 />
               </span>
             </label>
           </div>
 
           {teacherId ? (
-            <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/80 p-3">
-              <Badge variant="outline" className="border-indigo-200 bg-card text-indigo-700">
+            <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-muted p-3">
+              <Badge variant="secondary">
                 {teacherFilterName ? `Đang xem khóa học của giảng viên ${teacherFilterName}` : 'Đang lọc theo giảng viên'}
               </Badge>
-              <Button variant="ghost" size="sm" onClick={clearFilters} className="text-indigo-700 hover:text-indigo-800">
+              <Button variant="ghost" size="sm" onClick={clearFilters}>
                 <XCircle aria-hidden="true" data-icon="inline-start" />
                 Xóa bộ lọc
               </Button>
@@ -210,10 +210,10 @@ export function StudentCourseListPage() {
 
       {error ? (
         <div className="flex flex-col gap-4">
-          <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+          <Alert variant="destructive">
             <XCircle aria-hidden="true" data-icon="inline-start" />
             <AlertTitle>Không thể tải khóa học</AlertTitle>
-            <AlertDescription className="text-red-700">{error}</AlertDescription>
+            <AlertDescription className="text-destructive">{error}</AlertDescription>
           </Alert>
           {hasFilters ? (
             <Button variant="outline" onClick={clearFilters}>
@@ -223,9 +223,9 @@ export function StudentCourseListPage() {
           ) : null}
         </div>
       ) : courses === null ? (
-        <Card className="border-dashed border-indigo-200 bg-card/90 shadow-sm">
+        <Card className="border-dashed border-border bg-card shadow-sm">
           <CardContent className="flex items-center gap-4 p-6 text-muted-foreground">
-            <span className="flex size-11 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+            <span className="flex size-11 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
               <Loader2 aria-hidden="true" className="size-5 animate-spin" />
             </span>
             <div>
@@ -254,9 +254,9 @@ export function StudentCourseListPage() {
             <Link
               key={course.id}
               to={`/student/courses/${course.id}`}
-              className="group block min-w-0 rounded-3xl outline-none transition focus-visible:ring-4 focus-visible:ring-indigo-200"
+              className="group block min-w-0 rounded-3xl outline-none transition focus-visible:ring-4 focus-visible:ring-ring/30"
             >
-              <Card className="h-full flex flex-col gap-3 overflow-hidden border-border bg-card p-5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:border-indigo-200 group-hover:shadow-sm">
+              <Card className="h-full flex flex-col gap-3 overflow-hidden border-border bg-card p-5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:border-ring/50 group-hover:shadow-sm">
                 <CourseCoverImage courseName={course.name} imageUrl={course.imageUrl} />
                 <CardHeader className="flex flex-col gap-3 p-0">
                   <div className="flex flex-wrap gap-2">
@@ -266,9 +266,9 @@ export function StudentCourseListPage() {
                     <Badge variant="outline" className="border-border bg-muted text-foreground">
                       {course.level}
                     </Badge>
-                    {course.enrolled ? <Badge className="bg-emerald-600 text-white">Đã đăng ký</Badge> : null}
+                    {course.enrolled ? <Badge variant="success">Đã đăng ký</Badge> : null}
                   </div>
-                  <h2 className="text-xl font-semibold tracking-tight text-foreground transition group-hover:text-indigo-700">
+                  <h2 className="text-xl font-semibold tracking-tight text-foreground transition group-hover:text-primary">
                     {course.name}
                   </h2>
                   <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">{course.description ?? 'Chưa có mô tả.'}</p>
@@ -283,23 +283,23 @@ export function StudentCourseListPage() {
                   </div>
                   <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-5 text-muted-foreground">
                     <span className="inline-flex items-center gap-1">
-                      <Layers aria-hidden="true" className="size-3.5 text-indigo-600" />
+                      <Layers aria-hidden="true" className="size-3.5 text-primary" />
                       {course.topicCount} chủ đề
                     </span>
                     <span aria-hidden="true">·</span>
                     <span className="inline-flex items-center gap-1">
-                      <BookOpen aria-hidden="true" className="size-3.5 text-sky-600" />
+                      <BookOpen aria-hidden="true" className="size-3.5 text-info" />
                       {course.lessonCount} bài học
                     </span>
                     <span aria-hidden="true">·</span>
                     <span className="inline-flex items-center gap-1">
-                      <FileQuestion aria-hidden="true" className="size-3.5 text-amber-600" />
+                      <FileQuestion aria-hidden="true" className="size-3.5 text-warning" />
                       {course.questionCount} câu hỏi
                     </span>
                   </p>
                 </CardContent>
                 <CardFooter className="mt-auto p-0 pt-1">
-                  <span className="inline-flex items-center gap-1 text-sm font-medium text-indigo-700 [&_svg]:size-4">
+                  <span className="inline-flex items-center gap-1 text-sm font-medium text-primary [&_svg]:size-4">
                     Xem khóa học
                     <ArrowRight aria-hidden="true" data-icon="inline-end" />
                   </span>

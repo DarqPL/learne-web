@@ -38,8 +38,8 @@ export function BuilderReviewStep({
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {reviewClean ? (
-          <Alert className="border-emerald-200 bg-emerald-50/70">
-            <Check aria-hidden="true" className="text-emerald-600" />
+          <Alert variant="success">
+            <Check aria-hidden="true" />
             <AlertTitle>Sẵn sàng gửi duyệt</AlertTitle>
             <AlertDescription>
               Khóa học có {course.topics.length} chủ đề · {lessonCount} bài học · {questionCount} câu hỏi và không còn vấn đề chặn nào.
@@ -48,9 +48,9 @@ export function BuilderReviewStep({
         ) : (
           <div className="flex flex-col gap-2">
             {issues.map((issue) => (
-              <div key={issue.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/60 px-3 py-2.5">
-                <p className="min-w-0 flex-1 text-sm text-amber-900">{issue.message}</p>
-                <Button size="sm" variant="outline" className="border-amber-300 bg-card/80" onClick={() => onJump(issue)}>
+              <div key={issue.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-warning/30 bg-warning-background px-3 py-2.5">
+                <p className="min-w-0 flex-1 text-sm text-warning-foreground">{issue.message}</p>
+                <Button size="sm" variant="outline" className="border-warning/40 bg-card" onClick={() => onJump(issue)}>
                   Đi tới
                 </Button>
               </div>

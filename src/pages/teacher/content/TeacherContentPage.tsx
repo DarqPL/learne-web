@@ -24,7 +24,7 @@ import { CourseSubmissionStatus } from './CourseSubmissionStatus'
 
 type StatusFilter = ContentStatus | 'ALL'
 
-const cardSoftClassName = 'border-indigo-100 bg-card/95 shadow-sm shadow-indigo-100/60'
+const cardSoftClassName = 'border-border bg-card shadow-sm'
 
 const statusFilterOptions = Object.keys(contentStatusLabels) as ContentStatus[]
 
@@ -271,7 +271,7 @@ export function TeacherContentPage() {
           <CardDescription>Khởi tạo khóa học trước khi thêm cấu trúc nội dung trong builder.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
+          <div className="rounded-xl border border-border bg-muted p-4">
             <CourseForm
               key={`create-course-${formResetVersion}`}
               loading={action === 'create-course'}
@@ -404,9 +404,9 @@ export function TeacherContentPage() {
               </EmptyContent>
             </Empty>
           ) : (
-            <div className="rounded-xl border border-indigo-100 [&>[data-slot=table-container]]:max-h-[60vh] [&>[data-slot=table-container]]:overflow-y-auto">
-            <Table className="[&_tr]:border-indigo-100/70">
-              <TableHeader className="sticky top-0 z-10 [&_th]:bg-indigo-50">
+            <div className="rounded-xl border border-border [&>[data-slot=table-container]]:max-h-[60vh] [&>[data-slot=table-container]]:overflow-y-auto">
+            <Table className="[&_tr]:border-border">
+              <TableHeader className="sticky top-0 z-10 [&_th]:bg-muted">
                 <TableRow>
                   <TableHead>Tên khóa học</TableHead>
                   <TableHead>Loại</TableHead>
@@ -428,7 +428,7 @@ export function TeacherContentPage() {
                           <span className="font-medium">{course.name}</span>
                           {course.description ? <span className="line-clamp-2 text-xs text-muted-foreground">{course.description}</span> : null}
                           {course.rejectionReason ? (
-                            <span className="text-xs text-red-600">Lý do từ chối: {course.rejectionReason}</span>
+                            <span className="text-xs text-destructive">Lý do từ chối: {course.rejectionReason}</span>
                           ) : null}
                         </div>
                       </TableCell>
@@ -563,7 +563,7 @@ export function TeacherContentPage() {
         <DialogContent className="sm:max-w-[480px]" showCloseButton={!busy}>
           <DialogHeader>
             <div className="flex items-start gap-3">
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
                 <TriangleAlert className="size-5" aria-hidden="true" />
               </div>
               <div className="flex flex-col gap-1">
@@ -574,7 +574,7 @@ export function TeacherContentPage() {
                       Xóa vĩnh viễn khóa học <span className="font-semibold text-foreground">{deleteTarget.name}</span> cùng toàn bộ chủ đề, bài học và câu hỏi?
                     </>
                   ) : null}
-                  <span className="mt-2 block rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">Hành động này không thể hoàn tác.</span>
+                  <span className="mt-2 block rounded-lg bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive">Hành động này không thể hoàn tác.</span>
                 </DialogDescription>
               </div>
             </div>

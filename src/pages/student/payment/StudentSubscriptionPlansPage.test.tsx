@@ -90,6 +90,7 @@ describe('StudentSubscriptionPlansPage', () => {
 
     await waitFor(() => expect(mockedCheckoutPlan).toHaveBeenCalledWith('PRO', {}))
     expect(await screen.findByText('Gói học đã được kích hoạt.')).toBeInTheDocument()
+    expect(screen.getByText('Đã kích hoạt').closest('[data-slot="alert"]')).toHaveClass('border-success/40', 'bg-success-background', 'text-success-foreground')
   })
 
   it('shows the current active subscription and disables the active plan', async () => {

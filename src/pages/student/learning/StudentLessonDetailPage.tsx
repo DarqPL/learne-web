@@ -115,7 +115,7 @@ export function StudentLessonDetailPage() {
 
   if (enrollmentId === null || lessonId === null) {
     return (
-      <Alert variant="destructive" className="border-red-200 bg-red-50">
+      <Alert variant="destructive">
         <FileQuestion aria-hidden="true" />
         <AlertTitle>Không tìm thấy bài học.</AlertTitle>
       </Alert>
@@ -124,7 +124,7 @@ export function StudentLessonDetailPage() {
 
   if (error && !enrollment) {
     return (
-      <Alert variant="destructive" className="border-red-200 bg-red-50">
+      <Alert variant="destructive">
         <FileQuestion aria-hidden="true" />
         <AlertTitle>Không thể tải bài học</AlertTitle>
         <AlertDescription>{error}</AlertDescription>
@@ -146,7 +146,7 @@ export function StudentLessonDetailPage() {
 
   if (!lesson) {
     return (
-      <Alert variant="destructive" className="border-red-200 bg-red-50">
+      <Alert variant="destructive">
         <FileQuestion aria-hidden="true" />
         <AlertTitle>Không tìm thấy bài học trong khóa học đã đăng ký.</AlertTitle>
       </Alert>
@@ -203,7 +203,7 @@ export function StudentLessonDetailPage() {
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="secondary" className="bg-indigo-50 text-indigo-700">
+              <Badge variant="taxonomy1">
                 {studentCourseTypeLabels[enrollment.course.type]}
               </Badge>
               <Badge variant="outline" className="border-border bg-muted text-foreground">
@@ -234,7 +234,7 @@ export function StudentLessonDetailPage() {
                 aria-label={`Tiến độ bài học ${lesson.title}`}
                 className="mt-1 h-2 overflow-hidden rounded-full bg-muted"
               >
-                <div className="h-full rounded-full bg-indigo-600 transition-all" style={{ width: `${lessonProgressPercent}%` }} />
+                <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${lessonProgressPercent}%` }} />
               </div>
             </div>
           </div>
@@ -258,17 +258,17 @@ export function StudentLessonDetailPage() {
       </section>
 
       {error ? (
-        <Alert variant="destructive" className="border-red-200 bg-red-50">
+        <Alert variant="destructive">
           <FileQuestion aria-hidden="true" />
           <AlertTitle>Đã xảy ra lỗi</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : null}
       {info ? (
-        <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800">
+        <Alert variant="success">
           <CheckCircle2 aria-hidden="true" />
           <AlertTitle>Thành công</AlertTitle>
-          <AlertDescription className="text-emerald-700">{info}</AlertDescription>
+          <AlertDescription>{info}</AlertDescription>
         </Alert>
       ) : null}
 
@@ -280,13 +280,13 @@ export function StudentLessonDetailPage() {
         <div className="flex flex-col gap-3">
           {lesson.skillType === 'LISTENING' ? <LessonAudioPlayer audioUrl={lesson.audioUrl} /> : null}
           <section className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Nội dung bài học</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">Nội dung bài học</p>
             <div className="mt-3 rounded-xl bg-muted p-5">
               <p className="whitespace-pre-wrap text-sm leading-7 text-foreground">{content || 'Bài học chưa có nội dung.'}</p>
             </div>
-            <div className="mt-3 rounded-xl border border-indigo-100 bg-indigo-50 p-5">
-              <p className="text-sm font-semibold text-indigo-900">Sẵn sàng kiểm tra mức hiểu bài?</p>
-              <p className="mt-2 text-sm leading-6 text-indigo-800">Làm quiz để hệ thống chấm điểm, cập nhật tiến độ, XP và streak của bạn.</p>
+            <div className="mt-3 rounded-xl border border-info/30 bg-info-background p-5">
+              <p className="text-sm font-semibold text-info-foreground">Sẵn sàng kiểm tra mức hiểu bài?</p>
+              <p className="mt-2 text-sm leading-6 text-info-foreground">Làm quiz để hệ thống chấm điểm, cập nhật tiến độ, XP và streak của bạn.</p>
               <Button
                 size="default"
                 className="mt-4 w-auto"

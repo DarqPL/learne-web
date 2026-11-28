@@ -23,6 +23,7 @@ describe('AdminLayout', () => {
     const nav = screen.getByRole('navigation', { name: 'Điều hướng quản trị' })
     expect(nav).toBeInTheDocument()
     expect(screen.getByText('Tổng quan')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Tổng quan/ })).toHaveClass('bg-primary', 'text-primary-foreground')
     expect(screen.getByText('Dashboard hệ thống')).toBeInTheDocument()
     expect(screen.getByText('Quản lý học sinh')).toBeInTheDocument()
     expect(screen.getByText('Khóa, mở khóa tài khoản')).toBeInTheDocument()

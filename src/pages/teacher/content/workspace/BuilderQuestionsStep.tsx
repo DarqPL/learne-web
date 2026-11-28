@@ -77,7 +77,7 @@ export function BuilderQuestionsStep({
               <CardTitle>Ngân hàng câu hỏi</CardTitle>
               <CardDescription>Chọn bài học để quản lý câu hỏi, hoặc bật xem trước giao diện học viên.</CardDescription>
             </div>
-            <Button variant="outline" size="sm" className="border-indigo-200" onClick={onTogglePreview}>
+            <Button variant="outline" size="sm" className="border-border" onClick={onTogglePreview}>
               {previewMode ? <EyeOff data-icon="inline-start" aria-hidden="true" /> : <Eye data-icon="inline-start" aria-hidden="true" />}
               {previewMode ? 'Tắt xem trước' : 'Xem trước học viên'}
             </Button>
@@ -121,19 +121,19 @@ export function BuilderQuestionsStep({
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <p className="whitespace-pre-wrap text-sm">{activeLesson.content || 'Chưa có nội dung bài học.'}</p>
-              <Separator className="bg-indigo-100" />
+              <Separator className="bg-border" />
               {activeLesson.questions.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Bài học này chưa có câu hỏi.</p>
               ) : (
                 activeLesson.questions.map((question, index) => (
-                  <div key={question.id} className="rounded-xl border border-indigo-100 bg-indigo-50/40 p-4">
+                  <div key={question.id} className="rounded-xl border border-border bg-muted p-4">
                     <p className="text-sm font-medium">
                       Câu {index + 1}: {question.questionText}
                     </p>
                     {question.options.length > 0 ? (
                       <div className="mt-2 flex flex-col gap-2">
                         {question.options.map((option) => (
-                          <p key={option.id} className="rounded-lg border border-indigo-100 bg-card/90 px-3 py-2 text-sm">
+                          <p key={option.id} className="rounded-lg border border-border bg-card px-3 py-2 text-sm">
                             {option.optionText}
                           </p>
                         ))}
@@ -182,7 +182,7 @@ export function BuilderQuestionsStep({
                             <Button
                               variant="outline"
                               size="sm"
-                              className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                               disabled={busy}
                               onClick={() => onDeleteRequest({ kind: 'question', id: question.id, name: question.questionText })}
                             >

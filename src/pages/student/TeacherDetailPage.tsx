@@ -25,7 +25,7 @@ function getInitials(fullName: string) {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
 }
 
-const cardSoftClassName = 'border-indigo-100 bg-card/95 shadow-sm shadow-indigo-100/60'
+const cardSoftClassName = 'border-border bg-card shadow-sm'
 
 export function TeacherDetailPage() {
   const navigate = useNavigate()
@@ -69,7 +69,7 @@ export function TeacherDetailPage() {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <h1 className="mb-6 mt-2 text-2xl font-bold text-indigo-950">Chi tiết giảng viên</h1>
+        <h1 className="mb-6 mt-2 text-2xl font-bold text-foreground">Chi tiết giảng viên</h1>
         <Alert variant="destructive">
           <TriangleAlert aria-hidden="true" />
           <AlertTitle>Không thể tải hồ sơ giảng viên</AlertTitle>
@@ -123,7 +123,7 @@ export function TeacherDetailPage() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <h1 className="mb-6 mt-2 text-2xl font-bold text-indigo-950">Chi tiết giảng viên</h1>
+      <h1 className="mb-6 mt-2 text-2xl font-bold text-foreground">Chi tiết giảng viên</h1>
       <div className="mb-4 flex flex-wrap gap-3">
         <Button variant="secondary" onClick={() => navigate('/student/teachers')}>
           <ArrowLeft data-icon="inline-start" aria-hidden="true" />
@@ -137,9 +137,9 @@ export function TeacherDetailPage() {
       <Card className={cardSoftClassName}>
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
-            <Avatar size="lg" className="size-16 border-2 border-indigo-100 bg-indigo-50 text-indigo-700">
+            <Avatar size="lg" className="size-16 border-2 border-border bg-muted text-foreground">
               {profile.avatarUrl ? <AvatarImage src={profile.avatarUrl} alt={`Ảnh đại diện của ${profile.fullName}`} /> : null}
-              <AvatarFallback className="bg-indigo-100 text-base font-semibold text-indigo-700">
+              <AvatarFallback className="bg-muted text-base font-semibold text-foreground">
                 {getInitials(profile.fullName)}
               </AvatarFallback>
             </Avatar>

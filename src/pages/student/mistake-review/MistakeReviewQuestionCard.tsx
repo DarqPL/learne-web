@@ -57,8 +57,8 @@ export function MistakeReviewQuestionCard({ question, answer, onChange }: Mistak
                   htmlFor={inputId}
                   className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${
                     selected
-                      ? 'border-indigo-500 bg-indigo-50'
-                      : 'border-border bg-card hover:border-indigo-200 hover:bg-indigo-50/30'
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border bg-card hover:border-ring/50 hover:bg-muted'
                   }`}
                 >
                   <input
@@ -67,7 +67,7 @@ export function MistakeReviewQuestionCard({ question, answer, onChange }: Mistak
                     name={`mistake-review-question-${question.questionId}`}
                     checked={selected}
                     onChange={() => onChange({ answerText: '', selectedOptionId: option.id })}
-                    className="mt-1 size-4 rounded-full accent-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                    className="mt-1 size-4 rounded-full accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   />
                   <span className="text-sm leading-6 text-foreground">{option.text}</span>
                 </label>

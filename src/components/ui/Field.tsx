@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react'
+import { cloneElement, isValidElement, useId, type ReactElement, type ReactNode } from 'react'
+import { Label } from '../shadcn/ui/label'
 
 interface FieldProps {
   label: string
@@ -7,11 +8,22 @@ interface FieldProps {
 }
 
 export function Field({ label, error, children }: FieldProps) {
+  const generatedId = useId()
+  const errorId = `${generatedId}-error`
+  const child = children as ReactElement<{ id?: string; htmlFor?: string; 'aria-invalid'?: boolean; 'aria-describedby'?: string }>
+  const labelFor = isValidElement(child) ? child.props.id ?? generatedId : undefined
+  const control = isValidElement(child)
+    ? cloneElement(child, {
+        id: child.props.id ?? generatedId,
+        'aria-invalid': error ? true : child.props['aria-invalid'],
+        'aria-describedby': [child.props['aria-describedby'], error ? errorId : undefined].filter(Boolean).join(' ') || undefined,
+      })
+    : children
   return (
-    <label className="block">
-      <span className="mb-1 block text-sm font-medium text-foreground">{label}</span>
-      {children}
-      {error ? <span className="mt-1 block text-xs text-red-600">{error}</span> : null}
-    </label>
+    <div className="flex flex-col gap-1.5">
+      <Label htmlFor={labelFor}>{label}</Label>
+      {control}
+      {error ? <span id={errorId} className="text-sm text-destructive">{error}</span> : null}
+    </div>
   )
 }

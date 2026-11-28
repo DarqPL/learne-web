@@ -23,7 +23,7 @@ export function MistakeReviewResultList({ questions, answers }: MistakeReviewRes
           <Card key={answer.questionId} className="border-border bg-card">
             <CardHeader className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge className={answer.correct ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}>
+                <Badge variant={answer.correct ? 'success' : 'destructive'}>
                   {answer.correct ? 'Đúng' : 'Chưa đúng'}
                 </Badge>
                 <span className="text-sm text-muted-foreground">Câu {index + 1}</span>
@@ -40,15 +40,15 @@ export function MistakeReviewResultList({ questions, answers }: MistakeReviewRes
                 </p>
               </div>
               {feedback ? (
-                <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">Phản hồi</p>
-                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-indigo-900">{feedback}</p>
+                <div className="rounded-xl border border-info/30 bg-info-background p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-info-foreground">Phản hồi</p>
+                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-info-foreground">{feedback}</p>
                 </div>
               ) : null}
               {explanation ? (
-                <div className="rounded-xl border border-amber-100 bg-amber-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">Giải thích</p>
-                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-amber-900">{explanation}</p>
+                <div className="rounded-xl border border-warning/30 bg-warning-background p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-warning-foreground">Giải thích</p>
+                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-warning-foreground">{explanation}</p>
                 </div>
               ) : null}
             </CardContent>

@@ -144,15 +144,15 @@ describe('AdminCouponPage list', () => {
     expect(screen.queryByText('Trang sau')).not.toBeInTheDocument()
   })
 
-  it('renders teacher-style indigo table chrome', async () => {
+  it('renders semantic table chrome', async () => {
     mockedListAdminCoupons.mockResolvedValue(couponsApiResponse(eightCoupons.slice(0, 1)))
 
     render(<AdminCouponPage />)
 
     const table = await screen.findByRole('table')
-    expect(table.className).toContain('border-indigo-100/70')
-    expect(document.querySelector('[data-slot="table-header"]')?.className).toContain('bg-indigo-50')
-    expect(table.closest('[data-slot="table-container"]')?.parentElement?.className).toContain('border-indigo-100')
+    expect(table.className).toContain('border-border')
+    expect(document.querySelector('[data-slot="table-header"]')?.className).toContain('bg-muted')
+    expect(table.closest('[data-slot="table-container"]')?.parentElement?.className).toContain('border-border')
   })
 
   it('renders discount text, product scope badges, status badges and icon actions per row', async () => {

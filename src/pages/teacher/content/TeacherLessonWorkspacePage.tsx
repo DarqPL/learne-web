@@ -87,7 +87,7 @@ function ReadOnlyQuestionDetails({ question }: { question: TeacherQuestion }) {
           <p className="font-medium text-foreground">Lựa chọn</p>
           <div className="mt-2 space-y-2">
             {question.options.map((option) => (
-              <p key={option.id} className={option.correct ? 'rounded-lg bg-green-50 px-3 py-2 font-medium text-green-700' : 'rounded-lg bg-card px-3 py-2 text-muted-foreground'}>
+              <p key={option.id} className={option.correct ? 'rounded-lg bg-success-background px-3 py-2 font-medium text-success-foreground' : 'rounded-lg bg-card px-3 py-2 text-muted-foreground'}>
                 {option.optionText}{option.correct ? ' (đáp án đúng)' : ''}
               </p>
             ))}
@@ -292,9 +292,9 @@ export function TeacherLessonWorkspacePage() {
         </Alert>
       ) : null}
       {info ? (
-        <Alert className="border-emerald-200 bg-emerald-50/70 text-emerald-800">
+        <Alert variant="success">
           <AlertTitle>Thông báo</AlertTitle>
-          <AlertDescription className="text-emerald-700">{info}</AlertDescription>
+          <AlertDescription>{info}</AlertDescription>
         </Alert>
       ) : null}
 
@@ -311,7 +311,7 @@ export function TeacherLessonWorkspacePage() {
           <header className={cardClassName}>
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-medium text-indigo-700">{currentCourse.name}</p>
+                <p className="text-sm font-medium text-primary">{currentCourse.name}</p>
                 <h1 className="mt-1 text-2xl font-bold text-foreground">{lesson.title}</h1>
                 <p className="mt-2 text-muted-foreground">Chủ đề: {topic?.name ?? 'Không xác định'}</p>
                 <p className="mt-3 text-sm text-muted-foreground">
@@ -321,7 +321,7 @@ export function TeacherLessonWorkspacePage() {
               <TeacherContentStatusBadge status={lesson.status} />
             </div>
             {lesson.rejectionReason ? (
-              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">Lý do từ chối: {lesson.rejectionReason}</div>
+              <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">Lý do từ chối: {lesson.rejectionReason}</div>
             ) : null}
           </header>
 

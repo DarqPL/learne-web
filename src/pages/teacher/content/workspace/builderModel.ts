@@ -2,7 +2,7 @@ import type { TeacherCourse, TeacherQuestion } from '../../../../lib/api/types'
 
 export type BuilderStep = 'thong-tin' | 'noi-dung' | 'cau-hoi' | 'kiem-tra'
 
-export const cardSoftClassName = 'border-indigo-100 bg-white/95 shadow-sm shadow-indigo-100/60'
+export const cardSoftClassName = 'border-border bg-card shadow-sm'
 
 export const stepDefinitions: { id: BuilderStep; label: string }[] = [
   { id: 'thong-tin', label: 'Thông tin' },

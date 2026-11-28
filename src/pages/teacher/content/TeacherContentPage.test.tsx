@@ -62,6 +62,14 @@ describe('TeacherContentPage edit revisions', () => {
     vi.clearAllMocks()
   })
 
+  it('uses theme surfaces for course creation and destructive confirmation', async () => {
+    mockedListTeacherCourses.mockResolvedValue(listResponse([makeCourse()]))
+    render(<MemoryRouter><TeacherContentPage /></MemoryRouter>)
+    const createAction = await screen.findByRole('link', { name: 'Tạo khóa học' })
+    expect(createAction).toHaveAttribute('href', '#tao-khoa-hoc')
+    expect(document.getElementById('tao-khoa-hoc')).toHaveClass('border-border', 'bg-card')
+  })
+
   it('shows create-draft action for approved courses without editable revision', async () => {
     mockedListTeacherCourses.mockResolvedValue(listResponse([makeCourse()]))
 
@@ -251,9 +259,9 @@ describe('TeacherContentPage edit revisions', () => {
 
     renderContentPage()
 
-    expect(await screen.findByText('Chờ duyệt', { selector: '[data-slot="course-badge"]' })).toHaveClass('bg-amber-50', 'text-amber-700', 'rounded', 'text-[12px]')
-    expect(screen.getByText('Ngữ pháp', { selector: '[data-slot="course-badge"]' })).toHaveClass('bg-violet-50', 'text-violet-700')
-    expect(screen.getByText('B1', { selector: '[data-slot="course-badge"]' })).toHaveClass('bg-cyan-50', 'text-cyan-700')
-    expect(screen.getByText('Trả phí', { selector: '[data-slot="course-badge"]' })).toHaveClass('bg-teal-50', 'text-teal-700')
+    expect(await screen.findByText('Chờ duyệt', { selector: '[data-slot="course-badge"]' })).toHaveClass('bg-warning-background', 'text-warning-foreground', 'rounded', 'text-[12px]')
+    expect(screen.getByText('Ngữ pháp', { selector: '[data-slot="course-badge"]' })).toHaveClass('bg-taxonomy-1', 'text-taxonomy-1-foreground')
+    expect(screen.getByText('B1', { selector: '[data-slot="course-badge"]' })).toHaveClass('bg-taxonomy-3', 'text-taxonomy-3-foreground')
+    expect(screen.getByText('Trả phí', { selector: '[data-slot="course-badge"]' })).toHaveClass('bg-info-background', 'text-info-foreground')
   })
 })

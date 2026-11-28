@@ -184,14 +184,14 @@ export function StudentLessonQuizPage() {
       <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Bài kiểm tra</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">Bài kiểm tra</p>
             <h1 className="mt-2 text-2xl font-bold text-foreground">{quiz.lessonTitle}</h1>
             <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold">
-              <span className="rounded-full bg-indigo-100 px-3 py-1 text-indigo-700">Điểm đạt {formatScorePercent(quiz.passPercent)}</span>
+              <span className="rounded-full bg-primary/10 px-3 py-1 text-primary">Điểm đạt {formatScorePercent(quiz.passPercent)}</span>
               {quiz.bestScorePercent !== null ? (
                 <span className="rounded-full bg-muted px-3 py-1 text-foreground">Tốt nhất {formatScorePercent(quiz.bestScorePercent)}</span>
               ) : null}
-              {quiz.alreadyPassed ? <span className="rounded-full bg-green-100 px-3 py-1 text-green-700">Đã vượt qua</span> : null}
+              {quiz.alreadyPassed ? <span className="rounded-full bg-success-background px-3 py-1 text-success-foreground">Đã vượt qua</span> : null}
             </div>
           </div>
 
@@ -216,7 +216,7 @@ export function StudentLessonQuizPage() {
             aria-valuenow={progressPercent}
             aria-label="Tiến độ làm bài kiểm tra"
           >
-            <div className="h-full rounded-full bg-indigo-600" style={{ width: `${progressPercent}%` }} />
+              <div className="h-full rounded-full bg-primary" style={{ width: `${progressPercent}%` }} />
           </div>
         </div>
       </section>
@@ -243,10 +243,10 @@ export function StudentLessonQuizPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-                <span className="rounded-full bg-indigo-100 px-3 py-1 text-indigo-700">{studentQuestionTypeLabels[currentQuestion.type]}</span>
+                <span className="rounded-full bg-primary/10 px-3 py-1 text-primary">{studentQuestionTypeLabels[currentQuestion.type]}</span>
                 {currentQuestion.difficulty ? <span className="rounded-full bg-muted px-3 py-1 text-foreground">{currentQuestion.difficulty}</span> : null}
               </div>
-              <p className="mt-4 text-sm font-semibold text-indigo-600">{getQuestionTypePrompt(currentQuestion.type)}</p>
+              <p className="mt-4 text-sm font-semibold text-primary">{getQuestionTypePrompt(currentQuestion.type)}</p>
               <h2 id={currentQuestionLabelId} className="mt-2 whitespace-pre-wrap text-xl font-bold text-foreground">
                 {currentQuestion.questionText}
               </h2>
@@ -269,8 +269,8 @@ export function StudentLessonQuizPage() {
                       key={option.id}
                       type="button"
                       role="radio"
-                      className={`w-full rounded-xl border p-4 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-100 ${
-                        selected ? 'border-indigo-400 bg-indigo-50' : 'border-border bg-card hover:border-indigo-200 hover:bg-muted'
+                      className={`w-full rounded-xl border p-4 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-ring/30 ${
+                        selected ? 'border-primary bg-primary/10' : 'border-border bg-card hover:border-ring/50 hover:bg-muted'
                       }`}
                       aria-checked={selected}
                       onClick={() => updateSelectedOption(currentQuestion.id, option.id)}
@@ -282,7 +282,7 @@ export function StudentLessonQuizPage() {
               </div>
             ) : currentQuestion.type === 'TRANSLATION' || currentQuestion.type === 'SHORT_ANSWER' ? (
               <textarea
-                className="min-h-36 w-full rounded-xl border border-border px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="min-h-36 w-full rounded-xl border border-border px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20"
                 aria-labelledby={currentQuestionLabelId}
                 value={getAnswerValue(answers, currentQuestion.id).answerText}
                 onChange={(event) => updateTextAnswer(currentQuestion.id, event.target.value)}
@@ -290,7 +290,7 @@ export function StudentLessonQuizPage() {
               />
             ) : (
               <input
-                className="w-full rounded-xl border border-border px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                className="w-full rounded-xl border border-border px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20"
                 aria-labelledby={currentQuestionLabelId}
                 value={getAnswerValue(answers, currentQuestion.id).answerText}
                 onChange={(event) => updateTextAnswer(currentQuestion.id, event.target.value)}

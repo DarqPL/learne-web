@@ -146,6 +146,15 @@ describe('StudentAiTutorPage chat focus', () => {
     expect(screen.getByText('AI Tutor')).toBeInTheDocument()
   })
 
+  it('uses semantic colors for selected conversations and practice taxonomy', async () => {
+    renderPage()
+    const conversationButton = await screen.findByRole('button', { name: /Test conversation/i }, { timeout: asyncTimeout })
+    fireEvent.click(conversationButton)
+    await waitFor(() => expect(conversationButton).toHaveAttribute('aria-pressed', 'true'), { timeout: asyncTimeout })
+    expect(conversationButton).toHaveClass('border-primary', 'bg-primary/10')
+    expect(screen.getAllByText('Trò chuyện tự do')[0].closest('[data-slot="badge"]')).toHaveClass('bg-info-background', 'text-info-foreground')
+  })
+
   it('bounds message list inside scrollable area so page does not stretch', async () => {
     renderPage()
 

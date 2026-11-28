@@ -75,20 +75,20 @@ const practiceTypeOptions: Array<{
     label: "Trò chuyện tự do",
     description:
       "Hỏi đáp linh hoạt về tiếng Anh, cách diễn đạt và luyện phản xạ.",
-    className: "border-indigo-200 bg-indigo-50 text-indigo-700",
+    className: "border-info/40 bg-info-background text-info-foreground",
   },
   {
     type: "ROLEPLAY",
     label: "Đóng vai tình huống",
     description:
       "Luyện hội thoại theo bối cảnh đời thực như nhà hàng, lớp học, du lịch.",
-    className: "border-violet-200 bg-violet-50 text-violet-700",
+    className: "border-taxonomy-1 bg-taxonomy-1 text-taxonomy-1-foreground",
   },
   {
     type: "WRITING_PRACTICE",
     label: "Luyện viết",
     description: "Viết câu, đoạn văn và nhận góp ý sửa lỗi trực tiếp.",
-    className: "border-amber-200 bg-amber-50 text-amber-700",
+    className: "border-taxonomy-2 bg-taxonomy-2 text-taxonomy-2-foreground",
   },
 ];
 
@@ -480,7 +480,7 @@ export function StudentAiTutorPage() {
         </BreadcrumbList>
       </Breadcrumb>
 
-      <Card className="relative overflow-hidden border-indigo-100 py-0 shadow-sm">
+      <Card className="relative overflow-hidden border-border py-0 shadow-sm">
         <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-violet-300/30 blur-3xl" />
         <div className="absolute bottom-0 left-1/3 h-44 w-44 rounded-full bg-amber-200/40 blur-3xl" />
         <div className="relative bg-gradient-to-br from-amber-50 via-white to-indigo-50 p-5 sm:p-7">
@@ -488,8 +488,7 @@ export function StudentAiTutorPage() {
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge
-                  variant="outline"
-                  className="border-amber-200 bg-amber-50 text-amber-700"
+                  variant="warning"
                 >
                   <Bot className="size-3" />
                   Chat luyện tập cá nhân
@@ -497,7 +496,7 @@ export function StudentAiTutorPage() {
               </div>
               <div className="space-y-2">
                 <h1 className="flex items-center gap-3 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-                  <span className="flex size-11 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-200">
+                  <span className="flex size-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
                     <MessagesSquare className="size-6" />
                   </span>
                   AI Chatbot Tutor
@@ -509,7 +508,6 @@ export function StudentAiTutorPage() {
               </div>
             </div>
             <Button
-              className="bg-indigo-600 text-white hover:bg-indigo-700"
               onClick={openCreateDialog}
             >
               <Plus className="size-4" />
@@ -523,7 +521,7 @@ export function StudentAiTutorPage() {
         <Card className="flex flex-col overflow-hidden border-border py-0 shadow-sm xl:h-full xl:min-h-0">
           <CardHeader className="border-b bg-card/80 px-5 py-4">
             <CardTitle className="flex items-center gap-2 text-base text-foreground">
-              <Clock3 className="size-4 text-indigo-600" />3 cuộc hội thoại gần
+              <Clock3 className="size-4 text-primary" />3 cuộc hội thoại gần
               nhất
             </CardTitle>
             <CardDescription>
@@ -542,15 +540,14 @@ export function StudentAiTutorPage() {
               {!listLoading && listError ? (
                 <Alert
                   variant="destructive"
-                  className="border-red-200 bg-red-50"
                 >
                   <AlertCircle className="size-4" />
                   <AlertDescription>{listError}</AlertDescription>
                 </Alert>
               ) : null}
               {!listLoading && !listError && conversations.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-indigo-200 bg-indigo-50/60 p-5 text-sm text-muted-foreground">
-                  <Bot className="mb-3 size-8 text-indigo-500" />
+                <div className="rounded-2xl border border-dashed border-border bg-muted p-5 text-sm text-muted-foreground">
+                  <Bot className="mb-3 size-8 text-muted-foreground" />
                   <p className="font-medium text-foreground">
                     Chưa có hội thoại nào.
                   </p>
@@ -573,8 +570,8 @@ export function StudentAiTutorPage() {
                         onClick={() => handleSelectConversation(conversation)}
                         className={`w-full rounded-2xl border p-4 text-left transition disabled:cursor-not-allowed disabled:opacity-60 ${
                           selected
-                            ? "border-indigo-200 bg-indigo-50 shadow-sm shadow-indigo-100"
-                            : "border-border bg-card hover:border-indigo-200 hover:bg-indigo-50/40"
+                            ? "border-primary bg-primary/10 shadow-sm"
+                            : "border-border bg-card hover:border-ring/50 hover:bg-muted"
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3">
@@ -584,7 +581,7 @@ export function StudentAiTutorPage() {
                             </p>
                             <PracticeBadge type={conversation.practiceType} />
                           </div>
-                          <span className="rounded-full bg-card p-2 text-indigo-600 ring-1 ring-indigo-100">
+                          <span className="rounded-full bg-card p-2 text-muted-foreground ring-1 ring-border">
                             <PracticeIcon type={conversation.practiceType} />
                           </span>
                         </div>
@@ -601,8 +598,7 @@ export function StudentAiTutorPage() {
                           </span>
                           {conversation.cleanupWarning ? (
                             <Badge
-                              variant="outline"
-                              className="border-amber-200 bg-amber-50 text-amber-700"
+                              variant="warning"
                             >
                               <AlertCircle className="size-3" />
                               Sắp lưu trữ
@@ -620,12 +616,12 @@ export function StudentAiTutorPage() {
 
         <Card
           ref={chatRegionRef}
-          className="flex max-h-none min-h-[720px] h-[calc(100vh-7rem)] flex-col overflow-hidden border-indigo-100 py-0 shadow-sm"
+          className="flex max-h-none min-h-[720px] h-[calc(100vh-7rem)] flex-col overflow-hidden border-border py-0 shadow-sm"
         >
           {!selectedConversation ? (
             <div className="flex min-h-0 flex-1 items-center justify-center bg-gradient-to-br from-white via-indigo-50/40 to-amber-50/50 p-6">
               <div className="max-w-md text-center">
-                <div className="mx-auto mb-5 flex size-16 items-center justify-center rounded-3xl bg-indigo-600 text-white shadow-xl shadow-indigo-200">
+                <div className="mx-auto mb-5 flex size-16 items-center justify-center rounded-3xl bg-primary text-primary-foreground shadow-xl">
                   <WandSparkles className="size-8" />
                 </div>
                 <h2 className="text-xl font-semibold text-foreground">
@@ -636,7 +632,6 @@ export function StudentAiTutorPage() {
                   bài viết khi bạn bắt đầu.
                 </p>
                 <Button
-                  className="mt-5 bg-indigo-600 text-white hover:bg-indigo-700"
                   onClick={openCreateDialog}
                 >
                   <Plus className="size-4" />
@@ -653,8 +648,7 @@ export function StudentAiTutorPage() {
                       <PracticeBadge type={selectedConversation.practiceType} />
                       {selectedConversation.cleanupWarning ? (
                         <Badge
-                          variant="outline"
-                          className="border-amber-200 bg-amber-50 text-amber-700"
+                          variant="warning"
                         >
                           <AlertCircle className="size-3" />
                           Sắp đến hạn lưu trữ
@@ -678,7 +672,6 @@ export function StudentAiTutorPage() {
                 {archiveError ? (
                   <Alert
                     variant="destructive"
-                    className="mt-4 border-red-200 bg-red-50"
                   >
                     <AlertCircle className="size-4" />
                     <AlertDescription>{archiveError}</AlertDescription>
@@ -700,7 +693,6 @@ export function StudentAiTutorPage() {
                 {!detailLoading && detailError ? (
                   <Alert
                     variant="destructive"
-                    className="border-red-200 bg-red-50"
                   >
                     <AlertCircle className="size-4" />
                     <AlertDescription>{detailError}</AlertDescription>
@@ -709,8 +701,8 @@ export function StudentAiTutorPage() {
                 {!detailLoading &&
                 !detailError &&
                 selectedMessages.length === 0 ? (
-                  <div className="rounded-3xl border border-dashed border-indigo-200 bg-card p-6 text-center shadow-sm">
-                    <Bot className="mx-auto mb-3 size-10 text-indigo-500" />
+                  <div className="rounded-3xl border border-dashed border-border bg-card p-6 text-center shadow-sm">
+                    <Bot className="mx-auto mb-3 size-10 text-muted-foreground" />
                     <p className="font-medium text-foreground">
                       Hội thoại đã sẵn sàng.
                     </p>
@@ -731,7 +723,7 @@ export function StudentAiTutorPage() {
                           className={`flex gap-3 ${isUser ? "justify-end" : "justify-start"}`}
                         >
                           {!isUser ? (
-                            <span className="mt-1 flex size-9 shrink-0 items-center justify-center rounded-2xl bg-card text-indigo-600 ring-1 ring-indigo-100">
+                            <span className="mt-1 flex size-9 shrink-0 items-center justify-center rounded-2xl bg-card text-muted-foreground ring-1 ring-border">
                               <Bot className="size-5" />
                             </span>
                           ) : null}
@@ -741,7 +733,7 @@ export function StudentAiTutorPage() {
                             <div
                               className={`rounded-3xl px-4 py-3 text-sm leading-6 shadow-sm whitespace-pre-wrap ${
                                 isUser
-                                  ? "rounded-br-md bg-indigo-600 text-white shadow-indigo-100"
+                                  ? "rounded-br-md bg-primary text-primary-foreground"
                                   : "rounded-bl-md border border-border bg-card text-foreground"
                               }`}
                             >
@@ -753,21 +745,20 @@ export function StudentAiTutorPage() {
                               {formatStudentLearningDate(message.createdAt)}
                             </p>
                             {isUser && message.feedback ? (
-                              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-left text-sm text-foreground shadow-sm">
+                              <div className="rounded-2xl border border-warning/40 bg-warning-background p-4 text-left text-sm text-warning-foreground shadow-sm">
                                 <div className="mb-3 flex flex-wrap items-center gap-2">
                                   <Badge
-                                    variant="outline"
-                                    className="border-amber-300 bg-card text-amber-700"
+                                    variant="warning"
                                   >
                                     <AlertCircle className="size-3" />
                                     {feedbackLabels[message.feedback.errorType]}
                                   </Badge>
-                                  <span className="text-xs text-amber-700">
+                                  <span className="text-xs text-warning-foreground">
                                     Phản hồi dưới tin nhắn của bạn
                                   </span>
                                 </div>
                                 <div className="grid gap-3 sm:grid-cols-2">
-                                  <div className="rounded-xl bg-card p-3 ring-1 ring-amber-100">
+                                  <div className="rounded-xl bg-card p-3 ring-1 ring-warning/30">
                                     <p className="mb-1 flex items-center gap-1 text-xs font-medium text-muted-foreground">
                                       <AlertCircle className="size-3" />
                                       Câu gốc
@@ -776,8 +767,8 @@ export function StudentAiTutorPage() {
                                       {message.feedback.originalText}
                                     </p>
                                   </div>
-                                  <div className="rounded-xl bg-card p-3 ring-1 ring-emerald-100">
-                                    <p className="mb-1 flex items-center gap-1 text-xs font-medium text-emerald-600">
+                                  <div className="rounded-xl bg-card p-3 ring-1 ring-success/30">
+                                    <p className="mb-1 flex items-center gap-1 text-xs font-medium text-success">
                                       <CheckCircle2 className="size-3" />
                                       Gợi ý sửa
                                     </p>
@@ -786,8 +777,8 @@ export function StudentAiTutorPage() {
                                     </p>
                                   </div>
                                 </div>
-                                <div className="mt-3 rounded-xl bg-card p-3 ring-1 ring-amber-100">
-                                  <p className="mb-1 flex items-center gap-1 text-xs font-medium text-indigo-600">
+                                <div className="mt-3 rounded-xl bg-card p-3 ring-1 ring-warning/30">
+                                  <p className="mb-1 flex items-center gap-1 text-xs font-medium text-warning-foreground">
                                     <Sparkles className="size-3" />
                                     Giải thích
                                   </p>
@@ -812,7 +803,6 @@ export function StudentAiTutorPage() {
                 {messageError ? (
                   <Alert
                     variant="destructive"
-                    className="mb-3 border-red-200 bg-red-50"
                   >
                     <AlertCircle className="size-4" />
                     <AlertDescription>{messageError}</AlertDescription>
@@ -831,12 +821,12 @@ export function StudentAiTutorPage() {
                     onKeyDown={handleComposerKeyDown}
                     placeholder="Ví dụ: I want order pizza."
                     aria-label="Tin nhắn gửi AI Tutor"
-                    className="min-h-11 resize-none border-indigo-100 bg-indigo-50/30 focus:border-indigo-500 focus:ring-indigo-500"
+                    className="min-h-11 resize-none border-border bg-background focus-visible:border-ring focus-visible:ring-ring"
                   />
                 </label>
                 <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <p
-                    className={`text-xs ${messageLength > MAX_MESSAGE_LENGTH ? "text-red-600" : "text-muted-foreground"}`}
+                    className={`text-xs ${messageLength > MAX_MESSAGE_LENGTH ? "text-destructive" : "text-muted-foreground"}`}
                   >
                     {messageLength}/{MAX_MESSAGE_LENGTH} ký tự
                   </p>
@@ -844,7 +834,6 @@ export function StudentAiTutorPage() {
                     type="submit"
                     disabled={sendDisabled}
                     loading={sending}
-                    className="bg-indigo-600 text-white hover:bg-indigo-700"
                   >
                     <Send className="size-4" />
                     Gửi tin nhắn
@@ -863,12 +852,12 @@ export function StudentAiTutorPage() {
         }
       >
         <DialogContent
-          className="max-h-[90vh] max-w-2xl overflow-y-auto border-indigo-100 p-0 shadow-2xl"
+          className="max-h-[90vh] max-w-2xl overflow-y-auto border-border p-0 shadow-2xl"
           showCloseButton={!creating}
         >
-          <DialogHeader className="border-b bg-gradient-to-br from-indigo-50 to-amber-50 px-5 py-5">
+          <DialogHeader className="border-b bg-muted px-5 py-5">
             <DialogTitle className="flex items-center gap-2 text-xl text-foreground">
-              <Plus className="size-5 text-indigo-600" />
+              <Plus className="size-5 text-primary" />
               Tạo hội thoại mới
             </DialogTitle>
             <DialogDescription>
@@ -880,7 +869,6 @@ export function StudentAiTutorPage() {
               {createError ? (
                 <Alert
                   variant="destructive"
-                  className="border-red-200 bg-red-50"
                 >
                   <AlertCircle className="size-4" />
                   <AlertDescription>{createError}</AlertDescription>
@@ -892,7 +880,7 @@ export function StudentAiTutorPage() {
                   maxLength={MAX_TITLE_LENGTH}
                   disabled={creating}
                   onChange={(event) => setConversationTitle(event.target.value)}
-                  className="w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
                   placeholder="Ví dụ: Luyện gọi món ở nhà hàng"
                 />
               </Field>
@@ -912,8 +900,8 @@ export function StudentAiTutorPage() {
                         key={option.type}
                         className={`cursor-pointer rounded-2xl border p-4 transition ${
                           selected
-                            ? "border-indigo-200 bg-indigo-50 shadow-sm shadow-indigo-100"
-                            : "border-border bg-card hover:border-indigo-200"
+                            ? "border-primary bg-primary/10 shadow-sm"
+                            : "border-border bg-card hover:border-ring/50"
                         } ${creating ? "cursor-not-allowed opacity-60" : ""}`}
                       >
                         <input
@@ -925,7 +913,7 @@ export function StudentAiTutorPage() {
                           onChange={() => setPracticeType(option.type)}
                           className="sr-only"
                         />
-                        <span className="mb-3 flex size-10 items-center justify-center rounded-2xl bg-card text-indigo-600 ring-1 ring-indigo-100">
+                        <span className="mb-3 flex size-10 items-center justify-center rounded-2xl bg-card text-muted-foreground ring-1 ring-border">
                           <PracticeIcon type={option.type} className="size-5" />
                         </span>
                         <span className="block font-medium text-foreground">
@@ -935,7 +923,7 @@ export function StudentAiTutorPage() {
                           {option.description}
                         </span>
                         {selected ? (
-                          <span className="mt-3 inline-flex text-xs font-medium text-indigo-700">
+                          <span className="mt-3 inline-flex text-xs font-medium text-primary">
                             Đang chọn
                           </span>
                         ) : null}
@@ -957,7 +945,6 @@ export function StudentAiTutorPage() {
                 <Button
                   type="submit"
                   loading={creating}
-                  className="bg-indigo-600 text-white hover:bg-indigo-700"
                 >
                   <Plus className="size-4" />
                   Tạo hội thoại mới

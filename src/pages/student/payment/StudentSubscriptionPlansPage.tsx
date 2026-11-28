@@ -117,7 +117,7 @@ export function StudentSubscriptionPlansPage() {
   return (
     <div className="space-y-6">
       <section className="rounded-3xl border border-indigo-100 bg-gradient-to-br from-white via-indigo-50 to-violet-50 p-6 shadow-sm sm:p-8">
-        <Badge variant="outline" className="border-indigo-200 bg-card text-indigo-700">
+        <Badge variant="secondary">
           <Crown aria-hidden="true" />
           Gói học
         </Badge>
@@ -128,25 +128,25 @@ export function StudentSubscriptionPlansPage() {
       </section>
 
       {error ? (
-        <Alert variant="destructive" className="border-red-200 bg-red-50">
+        <Alert variant="destructive">
           <FileQuestion aria-hidden="true" />
           <AlertTitle>Không thể tạo đơn thanh toán</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : null}
       {info ? (
-        <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800">
+        <Alert variant="success">
           <CheckCircle2 aria-hidden="true" />
           <AlertTitle>Đã kích hoạt</AlertTitle>
-          <AlertDescription className="text-emerald-700">{info}</AlertDescription>
+          <AlertDescription>{info}</AlertDescription>
         </Alert>
       ) : null}
 
       <section aria-label="Gói hiện tại">
         {subscriptionLoading ? (
-          <Card className="border-indigo-100 bg-card shadow-sm">
+          <Card className="border-border bg-card shadow-sm">
             <CardContent className="space-y-3">
-              <Badge variant="outline" className="border-indigo-200 bg-card text-indigo-700">
+              <Badge variant="secondary">
                 Gói hiện tại
               </Badge>
               <Skeleton className="h-5 w-40" />
@@ -154,9 +154,9 @@ export function StudentSubscriptionPlansPage() {
             </CardContent>
           </Card>
         ) : subscription?.planCode ? (
-          <Card className="border-indigo-100 bg-card shadow-sm">
+          <Card className="border-border bg-card shadow-sm">
             <CardContent className="space-y-3">
-              <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+              <Badge variant="success">
                 <CheckCircle2 aria-hidden="true" />
                 Gói hiện tại
               </Badge>
@@ -170,9 +170,9 @@ export function StudentSubscriptionPlansPage() {
             </CardContent>
           </Card>
         ) : (
-          <Card className="border-indigo-100 bg-card shadow-sm">
+          <Card className="border-border bg-card shadow-sm">
             <CardContent className="space-y-2">
-              <Badge variant="outline" className="border-indigo-200 bg-card text-indigo-700">
+              <Badge variant="secondary">
                 Gói hiện tại
               </Badge>
               <p className="text-sm text-muted-foreground">Chưa có gói đang hoạt động</p>
@@ -189,14 +189,14 @@ export function StudentSubscriptionPlansPage() {
           const couponDisabled = isActive || checkoutPlanCode !== null
 
           return (
-            <Card key={plan.code} className="border-indigo-100 bg-card shadow-sm">
+            <Card key={plan.code} className="border-border bg-card shadow-sm">
               <CardHeader>
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
                   <Icon aria-hidden="true" className="h-6 w-6" />
                 </div>
                 <CardTitle className="flex items-baseline justify-between gap-3">
                   <span>{plan.name}</span>
-                  <span className="text-xl font-bold text-indigo-700">{formatVnd(plan.priceVnd)}</span>
+                  <span className="text-xl font-bold text-primary">{formatVnd(plan.priceVnd)}</span>
                 </CardTitle>
                 <p className="text-sm leading-6 text-muted-foreground">{plan.description}</p>
               </CardHeader>
@@ -204,7 +204,7 @@ export function StudentSubscriptionPlansPage() {
                 <ul className="space-y-3 text-sm text-foreground">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex gap-2">
-                      <CheckCircle2 aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                      <CheckCircle2 aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-success" />
                       <span>{feature}</span>
                     </li>
                   ))}

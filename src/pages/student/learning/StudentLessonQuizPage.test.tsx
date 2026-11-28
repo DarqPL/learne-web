@@ -58,6 +58,15 @@ function renderAt(path: string) {
 }
 
 describe('StudentLessonQuizPage back navigation polish', () => {
+  it('uses theme tokens for question progress and input focus', async () => {
+    mockedGetStudentLessonQuiz.mockResolvedValue(quizApiResponse(makeQuiz()))
+    renderAt('/student/enrollments/10/lessons/20/quiz')
+
+    await screen.findByText('What is the capital of France?')
+    expect(screen.getByRole('progressbar').firstElementChild).toHaveClass('bg-primary')
+    expect(screen.getByRole('radio', { name: 'Paris' })).toHaveClass('focus:ring-ring/30')
+  })
+
   beforeEach(() => {
     mockedGetStudentLessonQuiz.mockReset()
   })

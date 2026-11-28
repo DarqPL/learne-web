@@ -233,19 +233,19 @@ export function StudentPlacementTestPage() {
 
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-2xl border border-indigo-100 bg-card shadow-sm">
-        <div className="bg-gradient-to-br from-indigo-50 via-white to-violet-50 p-6">
+      <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+        <div className="bg-muted p-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Placement test</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-primary">Placement test</p>
               <h1 className="mt-2 text-2xl font-bold text-foreground">Bài kiểm tra đầu vào</h1>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
                 Hoàn thành 20 câu hỏi để AI phân tích năng lực hiện tại và đề xuất khóa học phù hợp nhất.
               </p>
             </div>
             <div className="rounded-2xl bg-card px-5 py-4 text-center shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wide text-violet-600">Thời gian còn lại</p>
-              <p className={`mt-1 text-2xl font-bold ${timerExpired ? 'text-red-700' : 'text-violet-800'}`}>{formatDuration(remainingSeconds)}</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Thời gian còn lại</p>
+              <p className={`mt-1 text-2xl font-bold ${timerExpired ? 'text-destructive' : 'text-foreground'}`}>{formatDuration(remainingSeconds)}</p>
             </div>
           </div>
 
@@ -257,7 +257,7 @@ export function StudentPlacementTestPage() {
               </span>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPercent}>
-              <div className="h-full rounded-full bg-indigo-600" style={{ width: `${progressPercent}%` }} />
+              <div className="h-full rounded-full bg-primary" style={{ width: `${progressPercent}%` }} />
             </div>
           </div>
         </div>
@@ -294,9 +294,9 @@ export function StudentPlacementTestPage() {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-                      <span className="rounded-full bg-indigo-100 px-3 py-1 text-indigo-700">Câu {index + 1}</span>
+                      <span className="rounded-full bg-secondary px-3 py-1 text-secondary-foreground">Câu {index + 1}</span>
                       <span className="rounded-full bg-muted px-3 py-1 text-foreground">{getQuestionTypeLabel(question.type)}</span>
-                      <span className="rounded-full bg-violet-100 px-3 py-1 text-violet-700">{question.skill}</span>
+                      <span className="rounded-full bg-info-background px-3 py-1 text-info-foreground">{question.skill}</span>
                     </div>
                     {question.knowledgePoint ? <p className="mt-3 text-xs font-medium text-muted-foreground">{question.knowledgePoint}</p> : null}
                     <h2 className="mt-2 whitespace-pre-wrap text-lg font-bold text-foreground">{question.questionText}</h2>
@@ -313,8 +313,8 @@ export function StudentPlacementTestPage() {
                             key={option.id}
                             type="button"
                             role={multipleSelect ? 'checkbox' : 'radio'}
-                            className={`w-full rounded-xl border p-4 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-100 ${
-                              selected ? 'border-indigo-400 bg-indigo-50' : 'border-border bg-card hover:border-indigo-200 hover:bg-muted'
+                            className={`w-full rounded-xl border p-4 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                              selected ? 'border-primary bg-primary/10' : 'border-border bg-card hover:border-ring/50 hover:bg-muted'
                             }`}
                             aria-checked={selected}
                             onClick={() => (multipleSelect ? toggleSelectedOption(question.id, option.id) : updateSelectedOption(question.id, option.id))}
@@ -326,7 +326,7 @@ export function StudentPlacementTestPage() {
                     </div>
                   ) : question.type === 'TRANSLATION' || question.type === 'SHORT_ANSWER' ? (
                     <textarea
-                      className="min-h-32 w-full rounded-xl border border-border px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                      className="min-h-32 w-full rounded-xl border border-border px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring"
                       aria-labelledby={labelId}
                       value={answer.answerText}
                       onChange={(event) => updateTextAnswer(question.id, event.target.value)}
@@ -334,7 +334,7 @@ export function StudentPlacementTestPage() {
                     />
                   ) : (
                     <input
-                      className="w-full rounded-xl border border-border px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                      className="w-full rounded-xl border border-border px-4 py-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring"
                       aria-labelledby={labelId}
                       value={answer.answerText}
                       onChange={(event) => updateTextAnswer(question.id, event.target.value)}

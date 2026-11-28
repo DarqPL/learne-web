@@ -105,10 +105,10 @@ export function StudentQuizResultPage() {
   return (
     <div className="space-y-6">
       <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-        <div className="bg-gradient-to-br from-indigo-50 via-white to-emerald-50 p-6">
+        <div className="bg-muted p-6">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Kết quả bài học</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-primary">Kết quả bài học</p>
               <h1 className="mt-2 text-3xl font-bold text-foreground">{formatScorePercent(result.scorePercent)}</h1>
               <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold">
                 <span className={`rounded-full px-3 py-1 ${tone.className}`}>{tone.label}</span>
@@ -140,7 +140,7 @@ export function StudentQuizResultPage() {
               aria-valuenow={progressPercent}
               aria-label="Tiến độ khóa học sau khi nộp quiz"
             >
-              <div className="h-full rounded-full bg-indigo-600" style={{ width: `${progressPercent}%` }} />
+              <div className="h-full rounded-full bg-primary" style={{ width: `${progressPercent}%` }} />
             </div>
           </div>
         </div>
@@ -163,7 +163,7 @@ export function StudentQuizResultPage() {
       <section className="rounded-2xl border border-border bg-card p-6 shadow-sm">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Xem lại câu trả lời</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">Xem lại câu trả lời</p>
             <h2 className="mt-2 text-2xl font-bold text-foreground">Chi tiết chấm điểm</h2>
           </div>
           <span className="text-sm font-medium text-muted-foreground">{result.answers.length} câu hỏi</span>
@@ -181,7 +181,7 @@ export function StudentQuizResultPage() {
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-                        <span className={answer.correct ? 'rounded-full bg-green-100 px-3 py-1 text-green-700' : 'rounded-full bg-red-100 px-3 py-1 text-red-700'}>
+                        <span className={answer.correct ? 'rounded-full bg-success-background px-3 py-1 text-success-foreground' : 'rounded-full bg-destructive/10 px-3 py-1 text-destructive'}>
                           {answer.correct ? 'Đúng' : 'Chưa đúng'}
                         </span>
                         <span className="rounded-full bg-card px-3 py-1 text-foreground">{studentQuestionTypeLabels[answer.type]}</span>
@@ -210,15 +210,15 @@ export function StudentQuizResultPage() {
                   {answer.feedback || answer.explanation ? (
                     <div className="mt-4 space-y-3">
                       {answer.feedback ? (
-                        <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">Phản hồi</p>
-                          <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-indigo-900">{answer.feedback}</p>
+                        <div className="rounded-xl border border-info/30 bg-info-background p-4">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-info">Phản hồi</p>
+                          <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-info-foreground">{answer.feedback}</p>
                         </div>
                       ) : null}
                       {answer.explanation ? (
-                        <div className="rounded-xl border border-amber-100 bg-amber-50 p-4">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">Giải thích</p>
-                          <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-amber-900">{answer.explanation}</p>
+                        <div className="rounded-xl border border-warning/30 bg-warning-background p-4">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-warning">Giải thích</p>
+                          <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-warning-foreground">{answer.explanation}</p>
                         </div>
                       ) : null}
                     </div>

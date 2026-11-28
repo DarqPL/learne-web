@@ -173,7 +173,7 @@ export function AdminCourseCoverReviewPanel() {
                 aria-current={selectedId === review.id ? 'true' : undefined}
                 disabled={busy}
                 className={`rounded-lg border p-3 text-left ${
-                  selectedId === review.id ? 'border-indigo-300 bg-indigo-50' : 'border-border hover:bg-muted'
+                  selectedId === review.id ? 'border-ring bg-accent text-accent-foreground' : 'border-border hover:border-ring/50 hover:bg-muted'
                 }`}
                 onClick={() => {
                   setError(null)
@@ -262,9 +262,9 @@ export function AdminCourseCoverReviewPanel() {
                       setReason(event.target.value)
                       setReasonError(null)
                     }}
-                    className="rounded-md border border-border p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                    className="rounded-md border border-border p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
-                  {reasonError ? <p role="alert" className="text-sm text-red-700">{reasonError}</p> : null}
+                  {reasonError ? <p role="alert" className="text-sm text-destructive">{reasonError}</p> : null}
                   <div className="flex justify-end">
                     <Button type="button" variant="destructive" disabled={busy} onClick={() => void handleReject()}>
                       {action === 'reject' ? 'Đang từ chối...' : 'Xác nhận từ chối'}

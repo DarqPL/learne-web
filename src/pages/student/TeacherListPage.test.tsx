@@ -51,6 +51,7 @@ describe('TeacherListPage', () => {
     renderPage()
 
     expect(await screen.findByText('Nguyen Van Giao')).toBeInTheDocument()
+    expect(screen.getByText('Nguyen Van Giao').closest('button')).toHaveClass('border-border', 'bg-card')
     expect(screen.getByText('Giao tiep, IELTS')).toBeInTheDocument()
     expect(screen.getByText(/5 năm kinh nghiệm/)).toBeInTheDocument()
     expect(screen.getByText('Tran Thi Vien')).toBeInTheDocument()

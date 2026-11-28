@@ -55,7 +55,7 @@ export function TeacherInvitationDelivery({ delivery, onResend }: {
             <DialogTitle>Gửi lại email cấp tài khoản?</DialogTitle>
             <DialogDescription>Mật khẩu tạm mới sẽ vô hiệu hóa mật khẩu tạm cũ. Xác nhận yêu cầu gửi lại email cấp tài khoản cho giảng viên này?</DialogDescription>
           </DialogHeader>
-          {error ? <p role="alert" className="text-sm text-red-700">{error} Bạn có thể đóng hộp thoại và chọn Làm mới danh sách để kiểm tra trạng thái.</p> : null}
+          {error ? <p role="alert" className="text-sm text-destructive">{error} Bạn có thể đóng hộp thoại và chọn Làm mới danh sách để kiểm tra trạng thái.</p> : null}
           <DialogFooter>
             <Button variant="outline" disabled={pending} onClick={() => setOpen(false)}>Hủy</Button>
             <Button loading={pending} disabled={pending || !delivery?.canResend} onClick={() => void confirm()}>Xác nhận gửi lại</Button>

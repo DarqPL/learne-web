@@ -340,6 +340,14 @@ describe('AdminRevenueSection', () => {
     expect(screen.getByRole('button', { name: /theo năm/i })).toHaveAttribute('aria-pressed', 'true')
   })
 
+  it('uses semantic primary and chart tokens for view controls and revenue series', async () => {
+    setupMocks()
+    render(<AdminRevenueSection />)
+    const trendButton = await screen.findByRole('button', { name: '6 tháng' })
+    expect(trendButton).toHaveClass('bg-primary', 'text-primary-foreground')
+    expect(document.querySelector('[data-slot="chart"] [data-chart-series="plan"]')).toBeNull()
+  })
+
   it('shows year breakdown totals for course and plan revenue', async () => {
     mockedCourseSales.mockImplementation(
       async (month: string) =>

@@ -86,7 +86,7 @@ export function StudentAccountMenu({ userName, userEmail, onLogout }: StudentAcc
                 Gói học
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => setConfirmOpen(true)} className={cn('cursor-pointer')}>
+            <DropdownMenuItem onSelect={() => setConfirmOpen(true)} variant="destructive" className={cn('cursor-pointer')}>
               <span className={cn('flex w-full items-center gap-2')}>
                 <LogOut data-icon="inline-start" aria-hidden="true" />
                 Đăng xuất
@@ -106,10 +106,7 @@ export function StudentAccountMenu({ userName, userEmail, onLogout }: StudentAcc
             <AlertDialogCancel className={cn('cursor-pointer rounded-lg border border-border px-3 py-1.5 text-sm text-foreground hover:bg-muted')}>
               Hủy
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={onLogout}
-              className={cn('cursor-pointer rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700')}
-            >
+            <AlertDialogAction onClick={onLogout}>
               Đăng xuất
             </AlertDialogAction>
           </AlertDialogFooter>

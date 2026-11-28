@@ -264,7 +264,7 @@ export function LessonAudioEditor({
 
   return (
     <section
-      className="rounded-2xl border border-indigo-100 bg-card p-4 shadow-sm"
+      className="rounded-2xl border border-border bg-card p-4 shadow-sm"
       aria-label={`Quản lý audio bài học: ${lesson.title}`}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -292,7 +292,7 @@ export function LessonAudioEditor({
       {status === 'locked' ? <p className="mt-3 text-sm text-muted-foreground">{lockedMessage}</p> : null}
 
       {messageText ? (
-        <p role="status" className="mt-3 text-sm text-red-600">
+        <p role="status" className="mt-3 text-sm text-destructive">
           {messageText}
         </p>
       ) : null}
@@ -315,7 +315,7 @@ export function LessonAudioEditor({
             <Button
               size="sm"
               variant="outline"
-              className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
               disabled={busy}
               onClick={handleDelete}
             >

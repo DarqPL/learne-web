@@ -40,7 +40,7 @@ export function TeacherListPage() {
   if (error) {
     return (
       <div>
-        <h1 className="mb-6 text-2xl font-bold text-indigo-950">Đội ngũ giảng viên</h1>
+        <h1 className="mb-6 text-2xl font-bold text-foreground">Đội ngũ giảng viên</h1>
         <Alert variant="destructive">
           <TriangleAlert aria-hidden="true" />
           <AlertTitle>Không thể tải danh sách giảng viên</AlertTitle>
@@ -52,7 +52,7 @@ export function TeacherListPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-indigo-950">Đội ngũ giảng viên</h1>
+      <h1 className="mb-6 text-2xl font-bold text-foreground">Đội ngũ giảng viên</h1>
       {teachers === null ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-label="Đang tải danh sách giảng viên">
           {Array.from({ length: 6 }, (_, index) => (
@@ -77,14 +77,14 @@ export function TeacherListPage() {
               type="button"
               onClick={() => navigate(`/student/teachers/${teacher.teacherId}`)}
               aria-label={`Xem hồ sơ giảng viên ${teacher.fullName}`}
-              className="cursor-pointer rounded-2xl border border-border bg-card p-6 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-md"
+              className="cursor-pointer rounded-2xl border border-border bg-card p-6 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-ring/50 hover:shadow-md"
             >
               <div className="flex items-center gap-4">
-                <Avatar size="lg" className="size-16 border-2 border-indigo-100">
+                <Avatar size="lg" className="size-16 border-2 border-border">
                   {teacher.avatarUrl ? (
                     <AvatarImage src={teacher.avatarUrl} alt={`Ảnh đại diện của ${teacher.fullName}`} />
                   ) : null}
-                  <AvatarFallback className="bg-indigo-100 text-base font-semibold text-indigo-700">
+                  <AvatarFallback className="bg-muted text-base font-semibold text-foreground">
                     {getInitials(teacher.fullName)}
                   </AvatarFallback>
                 </Avatar>
@@ -94,7 +94,7 @@ export function TeacherListPage() {
                 </div>
               </div>
               <div className="mt-4">
-                <Badge variant="outline" className="border-indigo-200 bg-indigo-50 text-indigo-700">
+                <Badge variant="secondary">
                   <GraduationCap data-icon="inline-start" aria-hidden="true" />
                   {teacher.expertise}
                 </Badge>

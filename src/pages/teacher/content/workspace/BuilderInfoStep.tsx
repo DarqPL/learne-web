@@ -50,7 +50,7 @@ export function BuilderInfoStep({
           </CardHeader>
           <CardContent>
             {editable ? (
-              <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
+              <div className="rounded-xl border border-border bg-muted p-4">
                 <CourseForm
                   initialValue={courseInitialValue}
                   loading={action === 'update-course'}
@@ -60,7 +60,7 @@ export function BuilderInfoStep({
                 />
               </div>
             ) : (
-              <p className="rounded-xl border border-dashed border-indigo-200 p-4 text-sm text-muted-foreground">
+              <p className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
                 Khóa học đang ở trạng thái chỉ đọc. Bạn không thể chỉnh sửa nội dung khi khóa học đang chờ duyệt, đã duyệt hoặc đã ẩn.
               </p>
             )}
@@ -74,13 +74,13 @@ export function BuilderInfoStep({
           <CardContent className="flex flex-col gap-3">
             <div className="flex flex-wrap items-center gap-2">
               <TeacherContentStatusBadge status={course.status} />
-              <Badge variant="outline" className="border-violet-200 bg-violet-50 text-violet-700">
+              <Badge variant="taxonomy1">
                 {course.topics.length} chủ đề
               </Badge>
-              <Badge variant="outline" className="border-sky-200 bg-sky-50 text-sky-700">
+              <Badge variant="taxonomy2">
                 {lessonCount} bài học
               </Badge>
-              <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+              <Badge variant="taxonomy3">
                 {questionCount} câu hỏi
               </Badge>
             </div>
@@ -92,9 +92,9 @@ export function BuilderInfoStep({
               </Alert>
             ) : null}
             {submitReason ? (
-              <p className="rounded-xl border border-sky-200 bg-sky-50/70 px-3 py-2 text-sm text-sky-800">{submitReason}</p>
+              <p className="rounded-xl border border-warning/40 bg-warning-background px-3 py-2 text-sm text-warning-foreground">{submitReason}</p>
             ) : (
-              <p className="rounded-xl border border-emerald-200 bg-emerald-50/70 px-3 py-2 text-sm text-emerald-800">
+              <p className="rounded-xl border border-success/40 bg-success-background px-3 py-2 text-sm text-success-foreground">
                 Khóa học đã sẵn sàng. Bạn có thể gửi duyệt ngay.
               </p>
             )}

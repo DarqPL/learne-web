@@ -239,6 +239,14 @@ describe('TeacherCourseBuilderPage edit revisions', () => {
     expect(removeCourseCover).not.toHaveBeenCalled()
   })
 
+  it('uses semantic taxonomy and primary tokens for course metadata and cover action', async () => {
+    mockedGetTeacherCourse.mockResolvedValue({ data: makeCourse() } as AxiosResponse<never> as Awaited<ReturnType<typeof getTeacherCourse>>)
+    renderBuilderPage()
+    const taxonomyBadge = (await screen.findAllByText('Tổng hợp')).find((element) => element.getAttribute('data-slot') === 'badge')
+    expect(taxonomyBadge).toHaveClass('bg-taxonomy-1', 'text-taxonomy-1-foreground')
+    expect(screen.getByRole('button', { name: 'Lưu khóa học' })).toHaveClass('bg-primary', 'text-primary-foreground')
+  })
+
   it('shows an approved revision cover as historical preview without a remove action', async () => {
     mockedGetTeacherCourse.mockResolvedValue({
       data: makeCourse({ latestRevisionStatus: 'APPROVED', hasEditableRevision: false }),

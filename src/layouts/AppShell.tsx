@@ -52,7 +52,7 @@ export function AppShell({ children, header, headerActions, fullWidth, hideDefau
       <header className="border-b border-border bg-card">
         <div className={`flex h-16 items-center justify-between gap-3 px-4 sm:px-6 ${fullWidth || isTeacher ? 'w-full' : 'mx-auto max-w-6xl'}`}>
           <div className="flex min-w-0 items-center gap-3 sm:gap-6">
-            <Link to={homePathFor(user.role)} className="shrink-0 text-xl font-bold text-indigo-600">
+            <Link to={homePathFor(user.role)} className="shrink-0 text-xl font-bold text-primary">
               LearnE
             </Link>
             <nav className={`${isTeacher ? 'hidden md:flex' : 'flex'} min-w-0 items-center gap-1`}>

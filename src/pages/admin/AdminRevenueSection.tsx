@@ -210,10 +210,10 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
       </div>
 
       {error ? (
-        <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-800">
+        <Alert variant="destructive">
           <XCircle aria-hidden="true" data-icon="inline-start" />
           <AlertTitle>Không thể tải dữ liệu doanh thu</AlertTitle>
-          <AlertDescription className="text-red-700">{error}</AlertDescription>
+          <AlertDescription className="text-destructive">{error}</AlertDescription>
         </Alert>
       ) : null}
 
@@ -227,7 +227,7 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
             }}
             className={
               viewMode === 'trend'
-                ? 'bg-indigo-600 px-4 py-2 text-sm font-medium text-white'
+                ? 'bg-primary px-4 py-2 text-sm font-medium text-primary-foreground'
                 : 'bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted'
             }
           >
@@ -241,7 +241,7 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
             }}
             className={
               viewMode === 'year'
-                ? 'bg-indigo-600 px-4 py-2 text-sm font-medium text-white'
+                ? 'bg-primary px-4 py-2 text-sm font-medium text-primary-foreground'
                 : 'bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted'
             }
           >
@@ -329,7 +329,7 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
                           />
                           <Tooltip contentStyle={{ background: 'var(--popover)', borderColor: 'var(--border)', color: 'var(--popover-foreground)' }} formatter={(value) => formatVnd(Number(value))} />
                           <Bar dataKey="course" name="Khóa học" stackId="revenue" fill="var(--primary)" />
-                          <Bar dataKey="plan" name="Gói" stackId="revenue" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="plan" name="Gói" stackId="revenue" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
@@ -373,8 +373,8 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
-                  <div className="rounded-xl border border-indigo-100 bg-card shadow-sm [&>[data-slot=table-container]]:max-h-[40vh] [&>[data-slot=table-container]]:overflow-y-auto">
-                    <Table className="[&_tr]:border-indigo-100/70">
+                  <div className="rounded-xl border border-border bg-card shadow-sm [&>[data-slot=table-container]]:max-h-[40vh] [&>[data-slot=table-container]]:overflow-y-auto">
+                    <Table className="[&_tr]:border-border">
                       <TableHeader className="sticky top-0 z-10 [&_th]:bg-muted">
                         <TableRow>
                           <TableHead>Tháng</TableHead>
@@ -425,8 +425,8 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
-                    <div className="rounded-xl border border-indigo-100 bg-card shadow-sm [&>[data-slot=table-container]]:max-h-[40vh] [&>[data-slot=table-container]]:overflow-y-auto">
-                      <Table className="[&_tr]:border-indigo-100/70">
+                    <div className="rounded-xl border border-border bg-card shadow-sm [&>[data-slot=table-container]]:max-h-[40vh] [&>[data-slot=table-container]]:overflow-y-auto">
+                      <Table className="[&_tr]:border-border">
                           <TableHeader className="sticky top-0 z-10 [&_th]:bg-muted">
                           <TableRow>
                             <TableHead>Khóa học</TableHead>
@@ -471,12 +471,12 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
                             width={80}
                           />
                           <Tooltip contentStyle={{ background: 'var(--popover)', borderColor: 'var(--border)', color: 'var(--popover-foreground)' }} formatter={(value) => formatVnd(Number(value))} />
-                          <Bar dataKey="total" name="Doanh thu" fill="#059669" radius={[6, 6, 0, 0]} />
+                          <Bar dataKey="total" name="Doanh thu" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
-                    <div className="rounded-xl border border-indigo-100 bg-card shadow-sm [&>[data-slot=table-container]]:max-h-[40vh] [&>[data-slot=table-container]]:overflow-y-auto">
-                      <Table className="[&_tr]:border-indigo-100/70">
+                    <div className="rounded-xl border border-border bg-card shadow-sm [&>[data-slot=table-container]]:max-h-[40vh] [&>[data-slot=table-container]]:overflow-y-auto">
+                      <Table className="[&_tr]:border-border">
                           <TableHeader className="sticky top-0 z-10 [&_th]:bg-muted">
                           <TableRow>
                             <TableHead>Gói</TableHead>
@@ -512,8 +512,8 @@ export function AdminRevenueSection({ initialMonth }: AdminRevenueSectionProps) 
                   Chưa có dữ liệu chia sẻ giảng viên.
                 </p>
               ) : (
-                <div className="rounded-xl border border-indigo-100 bg-card shadow-sm [&>[data-slot=table-container]]:max-h-[60vh] [&>[data-slot=table-container]]:overflow-y-auto">
-                  <Table className="[&_tr]:border-indigo-100/70">
+                <div className="rounded-xl border border-border bg-card shadow-sm [&>[data-slot=table-container]]:max-h-[60vh] [&>[data-slot=table-container]]:overflow-y-auto">
+                  <Table className="[&_tr]:border-border">
                     <TableHeader className="sticky top-0 z-10 [&_th]:bg-muted">
                       <TableRow>
                         <TableHead>giảng viên</TableHead>
